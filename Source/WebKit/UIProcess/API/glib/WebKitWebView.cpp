@@ -4757,9 +4757,9 @@ struct ViewSaveAsyncData {
     RefPtr<API::Data> webData;
     GRefPtr<GFile> file;
 };
+#if ENABLE(MHTML)
 WEBKIT_DEFINE_ASYNC_DATA_STRUCT(ViewSaveAsyncData)
 
-#if ENABLE(MHTML)
 static void fileReplaceContentsCallback(GObject* object, GAsyncResult* result, gpointer data)
 {
     GRefPtr<GTask> task = adoptGRef(G_TASK(data));

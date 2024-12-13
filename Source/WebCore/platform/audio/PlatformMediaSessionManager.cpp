@@ -221,12 +221,16 @@ void PlatformMediaSessionManager::endInterruption(PlatformMediaSession::EndInter
     forEachSession([flags] (auto& session) {
         session.endInterruption(flags);
     });
+#else
+    UNUSED_PARAM(flags);
 #endif
 }
 
 void PlatformMediaSessionManager::addSession(PlatformMediaSession& session)
 {
+#if ENABLE(VIDEO) || ENABLE(WEB_AUDIO)
     PLATFORMMEDIASESSIONMANAGER_RELEASE_LOG(PLATFORMMEDIASESSIONMANAGER_ADDSESSION, session.logIdentifier());
+#endif
 
     m_sessions.append(session);
 #if ENABLE(VIDEO) || ENABLE(WEB_AUDIO)
@@ -234,7 +238,7 @@ void PlatformMediaSessionManager::addSession(PlatformMediaSession& session)
         session.beginInterruption(*m_currentInterruption);
 #endif
 
-#if !RELEASE_LOG_DISABLED
+#if !RELEASE_LOG_DISABLED && (ENABLE(VIDEO) || ENABLE(WEB_AUDIO))
     m_logger->addLogger(session.logger());
 #endif
 
@@ -248,7 +252,9 @@ bool PlatformMediaSessionManager::hasNoSession() const
 
 void PlatformMediaSessionManager::removeSession(PlatformMediaSession& session)
 {
+#if ENABLE(VIDEO) || ENABLE(WEB_AUDIO)
     PLATFORMMEDIASESSIONMANAGER_RELEASE_LOG(PLATFORMMEDIASESSIONMANAGER_REMOVESESSION, session.logIdentifier());
+#endif
 
     size_t index = m_sessions.find(&session);
     if (index == notFound)
@@ -259,7 +265,7 @@ void PlatformMediaSessionManager::removeSession(PlatformMediaSession& session)
     if (hasNoSession() && !activeAudioSessionRequired())
         maybeDeactivateAudioSession();
 
-#if !RELEASE_LOG_DISABLED
+#if !RELEASE_LOG_DISABLED && (ENABLE(VIDEO) || ENABLE(WEB_AUDIO))
     m_logger->removeLogger(session.logger());
 #endif
 
@@ -319,7 +325,9 @@ bool PlatformMediaSessionManager::sessionWillBeginPlayback(PlatformMediaSession&
     
 void PlatformMediaSessionManager::sessionWillEndPlayback(PlatformMediaSession& session, DelayCallingUpdateNowPlaying)
 {
+#if ENABLE(VIDEO) || ENABLE(WEB_AUDIO)
     PLATFORMMEDIASESSIONMANAGER_RELEASE_LOG(PLATFORMMEDIASESSIONMANAGER_SESSIONWILLENDPLAYBACK, session.logIdentifier());
+#endif
 
     if (m_sessions.size() < 2)
         return;
@@ -364,7 +372,9 @@ void PlatformMediaSessionManager::sessionStateChanged(PlatformMediaSession& sess
 
 void PlatformMediaSessionManager::setCurrentSession(PlatformMediaSession& session)
 {
+#if ENABLE(VIDEO) || ENABLE(AUDIO)
     ALWAYS_LOG(LOGIDENTIFIER, session.logIdentifier());
+#endif
     
     if (m_sessions.size() < 2)
         return;
@@ -392,22 +402,26 @@ void PlatformMediaSessionManager::applicationWillBecomeInactive()
 {
     ALWAYS_LOG(LOGIDENTIFIER);
 
+#if ENABLE(VIDEO) || ENABLE(AUDIO)
     forEachMatchingSession([&](auto& session) {
         return restrictions(session.mediaType()) & InactiveProcessPlaybackRestricted;
     }, [](auto& session) {
         session.beginInterruption(PlatformMediaSession::InterruptionType::ProcessInactive);
     });
+#endif
 }
 
 void PlatformMediaSessionManager::applicationDidBecomeActive()
 {
     ALWAYS_LOG(LOGIDENTIFIER);
 
+#if ENABLE(VIDEO) || ENABLE(AUDIO)
     forEachMatchingSession([&](auto& session) {
         return restrictions(session.mediaType()) & InactiveProcessPlaybackRestricted;
     }, [](auto& session) {
         session.endInterruption(PlatformMediaSession::EndInterruptionFlags::MayResumePlaying);
     });
+#endif
 }
 
 void PlatformMediaSessionManager::applicationDidEnterBackground(bool suspendedUnderLock)
@@ -419,12 +433,14 @@ void PlatformMediaSessionManager::applicationDidEnterBackground(bool suspendedUn
 
     m_isApplicationInBackground = true;
 
+#if ENABLE(VIDEO) || ENABLE(AUDIO)
     forEachSession([&] (auto& session) {
         if (suspendedUnderLock && restrictions(session.mediaType()) & SuspendedUnderLockPlaybackRestricted)
             session.beginInterruption(PlatformMediaSession::InterruptionType::SuspendedUnderLock);
         else if (restrictions(session.mediaType()) & BackgroundProcessPlaybackRestricted)
             session.beginInterruption(PlatformMediaSession::InterruptionType::EnteringBackground);
     });
+#endif
 }
 
 void PlatformMediaSessionManager::applicationWillEnterForeground(bool suspendedUnderLock)
@@ -436,11 +452,13 @@ void PlatformMediaSessionManager::applicationWillEnterForeground(bool suspendedU
 
     m_isApplicationInBackground = false;
 
+#if ENABLE(VIDEO) || ENABLE(AUDIO)
     forEachMatchingSession([&](auto& session) {
         return (suspendedUnderLock && restrictions(session.mediaType()) & SuspendedUnderLockPlaybackRestricted) || restrictions(session.mediaType()) & BackgroundProcessPlaybackRestricted;
     }, [](auto& session) {
         session.endInterruption(PlatformMediaSession::EndInterruptionFlags::MayResumePlaying);
     });
+#endif
 }
 
 void PlatformMediaSessionManager::processWillSuspend()
@@ -451,11 +469,15 @@ void PlatformMediaSessionManager::processWillSuspend()
 
     ALWAYS_LOG(LOGIDENTIFIER);
 
+#if ENABLE(VIDEO) || ENABLE(AUDIO)
     forEachSession([&] (auto& session) {
         session.client().processIsSuspendedChanged();
     });
+#endif
 
+#if USE(AUDIO_SESSION)
     maybeDeactivateAudioSession();
+#endif
 }
 
 void PlatformMediaSessionManager::processDidResume()
@@ -464,9 +486,11 @@ void PlatformMediaSessionManager::processDidResume()
         return;
     m_processIsSuspended = false;
 
+#if ENABLE(VIDEO) || ENABLE(AUDIO)
     forEachSession([&] (auto& session) {
         session.client().processIsSuspendedChanged();
     });
+#endif
 
 #if USE(AUDIO_SESSION)
     if (!m_becameActive)
@@ -523,10 +547,15 @@ void PlatformMediaSessionManager::sessionCanProduceAudioChanged()
 
 void PlatformMediaSessionManager::processDidReceiveRemoteControlCommand(PlatformMediaSession::RemoteControlCommandType command, const PlatformMediaSession::RemoteCommandArgument& argument)
 {
+#if ENABLE(VIDEO) || ENABLE(audio)
     PlatformMediaSession* activeSession = currentSession();
     if (!activeSession || !activeSession->canReceiveRemoteControlCommands())
         return;
     activeSession->didReceiveRemoteControlCommand(command, argument);
+#else
+    UNUSED_PARAM(command);
+    UNUSED_PARAM(argument);
+#endif
 }
 
 bool PlatformMediaSessionManager::computeSupportsSeeking() const
@@ -542,9 +571,11 @@ void PlatformMediaSessionManager::processSystemWillSleep()
     if (m_currentInterruption)
         return;
 
+#if ENABLE(VIDEO) || ENABLE(AUDIO)
     forEachSession([] (auto& session) {
         session.beginInterruption(PlatformMediaSession::InterruptionType::SystemSleep);
     });
+#endif
 }
 
 void PlatformMediaSessionManager::processSystemDidWake()
@@ -552,9 +583,11 @@ void PlatformMediaSessionManager::processSystemDidWake()
     if (m_currentInterruption)
         return;
 
+#if ENABLE(VIDEO) || ENABLE(AUDIO)
     forEachSession([] (auto& session) {
         session.endInterruption(PlatformMediaSession::EndInterruptionFlags::MayResumePlaying);
     });
+#endif
 }
 
 void PlatformMediaSessionManager::pauseAllMediaPlaybackForGroup(std::optional<MediaSessionGroupIdentifier> mediaSessionGroupIdentifier)
@@ -577,23 +610,33 @@ bool PlatformMediaSessionManager::mediaPlaybackIsPaused(std::optional<MediaSessi
 
 void PlatformMediaSessionManager::stopAllMediaPlaybackForProcess()
 {
+#if ENABLE(VIDEO) || ENABLE(AUDIO)
     forEachSession([] (auto& session) {
         session.stopSession();
     });
+#endif
 }
 
 void PlatformMediaSessionManager::suspendAllMediaPlaybackForGroup(std::optional<MediaSessionGroupIdentifier> mediaSessionGroupIdentifier)
 {
+#if ENABLE(VIDEO) || ENABLE(AUDIO)
     forEachSessionInGroup(mediaSessionGroupIdentifier, [](auto& session) {
         session.beginInterruption(PlatformMediaSession::InterruptionType::PlaybackSuspended);
     });
+#else
+    UNUSED_PARAM(mediaSessionGroupIdentifier);
+#endif
 }
 
 void PlatformMediaSessionManager::resumeAllMediaPlaybackForGroup(std::optional<MediaSessionGroupIdentifier> mediaSessionGroupIdentifier)
 {
+#if ENABLE(VIDEO) || ENABLE(AUDIO)
     forEachSessionInGroup(mediaSessionGroupIdentifier, [](auto& session) {
         session.endInterruption(PlatformMediaSession::EndInterruptionFlags::MayResumePlaying);
     });
+#else
+    UNUSED_PARAM(mediaSessionGroupIdentifier);
+#endif
 }
 
 void PlatformMediaSessionManager::suspendAllMediaBufferingForGroup(std::optional<MediaSessionGroupIdentifier> mediaSessionGroupIdentifier)
@@ -840,6 +883,8 @@ WeakPtr<PlatformMediaSession> PlatformMediaSessionManager::bestEligibleSessionFo
 {
     Vector<WeakPtr<PlatformMediaSession>> eligibleAudioVideoSessions;
     Vector<WeakPtr<PlatformMediaSession>> eligibleWebAudioSessions;
+
+#if ENABLE(VIDEO) || ENABLE(AUDIO)
     forEachMatchingSession(filterFunction, [&](auto& session) {
         if (session.presentationType() == PlatformMediaSession::MediaType::WebAudio) {
             if (eligibleAudioVideoSessions.isEmpty())
@@ -847,6 +892,9 @@ WeakPtr<PlatformMediaSession> PlatformMediaSessionManager::bestEligibleSessionFo
         } else
             eligibleAudioVideoSessions.append(session);
     });
+#else
+    UNUSED_PARAM(filterFunction);
+#endif
 
     if (eligibleAudioVideoSessions.isEmpty()) {
         if (eligibleWebAudioSessions.isEmpty())
@@ -881,9 +929,13 @@ bool PlatformMediaSessionManager::hasActiveNowPlayingSessionInGroup(std::optiona
 {
     bool hasActiveNowPlayingSession = false;
 
+#if ENABLE(VIDEO) || ENABLE(AUDIO)
     forEachSessionInGroup(mediaSessionGroupIdentifier, [&](auto& session) {
         hasActiveNowPlayingSession |= session.isActiveNowPlayingSession();
     });
+#else
+    UNUSED_PARAM(mediaSessionGroupIdentifier);
+#endif
 
     return hasActiveNowPlayingSession;
 }
@@ -914,9 +966,11 @@ void PlatformMediaSessionManager::dumpSessionStates()
 {
     StringBuilder builder;
 
+#if ENABLE(VIDEO) || ENABLE(AUDIO)
     forEachSession([&](auto& session) {
         builder.append('(', hex(session.logIdentifier()), "): "_s, session.description(), "\n"_s);
     });
+#endif
 
     ALWAYS_LOG(LOGIDENTIFIER, " Sessions:\n", builder.toString());
 }

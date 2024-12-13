@@ -7114,6 +7114,8 @@ void Document::privateBrowsingStateDidChange(PAL::SessionID sessionID)
     forEachMediaElement([sessionID] (HTMLMediaElement& element) {
         element.privateBrowsingStateDidChange(sessionID);
     });
+#else
+    UNUSED_PARAM(sessionID);
 #endif
 }
 
