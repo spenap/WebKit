@@ -74,6 +74,9 @@ ScreenProperties ScreenManager::collectScreenProperties() const
     ScreenProperties properties;
     properties.primaryDisplayID = m_primaryDisplayID;
 
+    auto* display = wpe_display_get_primary();
+    const auto displayInputTypes = static_cast<DisplayInputTypes>(wpe_display_get_input_types(display));
+
     for (const auto& iter : m_screenToDisplayIDMap) {
         WPEScreen* screen = iter.key;
         auto width = wpe_screen_get_width(screen);
@@ -89,6 +92,8 @@ ScreenProperties ScreenManager::collectScreenProperties() const
         double diagonalInPixels = std::hypot(width, height);
         double diagonalInInches = std::hypot(data.screenSize.width(), data.screenSize.height()) / millimetresPerInch;
         data.dpi = diagonalInPixels / diagonalInInches;
+        // This should be calculated per-screen, or per something associated to a screen
+        data.displayInputTypes = displayInputTypes;
         properties.screenDataMap.add(iter.value, WTFMove(data));
     }
 

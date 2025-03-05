@@ -585,3 +585,14 @@ gboolean wpe_display_use_explicit_sync(WPEDisplay* display)
     auto* wpeDisplayClass = WPE_DISPLAY_GET_CLASS(display);
     return wpeDisplayClass->use_explicit_sync ? wpeDisplayClass->use_explicit_sync(display) : FALSE;
 }
+
+WPEDisplayInputTypes wpe_display_get_input_types(WPEDisplay* display)
+{
+    g_return_val_if_fail(WPE_IS_DISPLAY(display), WPE_DISPLAY_INPUT_NONE);
+
+    auto* wpeDisplayClass = WPE_DISPLAY_GET_CLASS(display);
+    if (!wpeDisplayClass->get_input_types)
+        return WPE_DISPLAY_INPUT_NONE;
+
+    return wpeDisplayClass->get_input_types(display);
+}

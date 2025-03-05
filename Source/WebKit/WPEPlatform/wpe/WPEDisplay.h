@@ -46,6 +46,13 @@ G_BEGIN_DECLS
 #define WPE_TYPE_DISPLAY (wpe_display_get_type())
 WPE_DECLARE_DERIVABLE_TYPE (WPEDisplay, wpe_display, WPE, DISPLAY, GObject)
 
+typedef enum {
+    WPE_DISPLAY_INPUT_NONE     = 0,
+    WPE_DISPLAY_INPUT_MOUSE    = (1 << 0),
+    WPE_DISPLAY_INPUT_KEYBOARD = (1 << 1),
+    WPE_DISPLAY_INPUT_TOUCH    = (1 << 2)
+} WPEDisplayInputTypes;
+
 struct _WPEDisplayClass
 {
     GObjectClass parent_class;
@@ -65,7 +72,9 @@ struct _WPEDisplayClass
     const char             *(* get_drm_render_node)           (WPEDisplay *display);
     gboolean                (* use_explicit_sync)             (WPEDisplay *display);
 
-    WPEInputMethodContext   *(* create_input_method_context)    (WPEDisplay *display);
+    WPEInputMethodContext  *(* create_input_method_context)   (WPEDisplay *display);
+
+    WPEDisplayInputTypes    (* get_input_types)               (WPEDisplay *display);
 
     gpointer padding[32];
 };
@@ -107,6 +116,7 @@ WPE_API const char             *wpe_display_get_drm_render_node           (WPEDi
 WPE_API gboolean                wpe_display_use_explicit_sync             (WPEDisplay *display);
 
 WPE_API WPESettings            *wpe_display_get_settings                  (WPEDisplay *display);
+WPE_API WPEDisplayInputTypes    wpe_display_get_input_types               (WPEDisplay *display);
 
 G_END_DECLS
 

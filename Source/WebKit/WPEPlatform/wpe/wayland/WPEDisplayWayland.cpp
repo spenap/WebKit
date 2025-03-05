@@ -517,6 +517,13 @@ static gboolean wpeDisplayWaylandUseExplicitSync(WPEDisplay* display)
     return !!WPE_DISPLAY_WAYLAND(display)->priv->linuxExplicitSync;
 }
 
+static WPEDisplayInputTypes wpeGetInputTypes(WPEDisplay* display)
+{
+    if (auto* wlSeat = wpeDisplayWaylandGetSeat(WPE_DISPLAY_WAYLAND(display)))
+        return wlSeat->inputTypes();
+    return WPE_DISPLAY_INPUT_NONE;
+}
+
 struct xdg_wm_base* wpeDisplayWaylandGetXDGWMBase(WPEDisplayWayland* display)
 {
     return display->priv->xdgWMBase;
@@ -589,6 +596,7 @@ static void wpe_display_wayland_class_init(WPEDisplayWaylandClass* displayWaylan
     displayClass->get_drm_device = wpeDisplayWaylandGetDRMDevice;
     displayClass->get_drm_render_node = wpeDisplayWaylandGetDRMRenderNode;
     displayClass->use_explicit_sync = wpeDisplayWaylandUseExplicitSync;
+    displayClass->get_input_types = wpeGetInputTypes;
 }
 
 /**

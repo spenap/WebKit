@@ -153,12 +153,44 @@ bool screenSupportsExtendedColor(Widget*)
 #if ENABLE(TOUCH_EVENTS)
 bool screenHasTouchDevice()
 {
+#if ENABLE(WPE_PLATFORM)
+    const auto& screenProperties = getScreenProperties();
+    const auto& dataMap = screenProperties.screenDataMap;
+    return std::any_of(dataMap.begin(), dataMap.end(), [](const auto& iter) -> bool {
+        return iter.value.displayInputTypes.contains(DisplayInputTypes::Touch);
+    });
+#else
     return true;
+#endif
 }
 
 bool screenIsTouchPrimaryInputDevice()
 {
+#if ENABLE(WPE_PLATFORM)
+    if (const auto* primaryScreenData = screenData(primaryScreenDisplayID()))
+        return primaryScreenData->displayInputTypes.contains(DisplayInputTypes::Touch);
+    return false;
+#else
     return true;
+#endif
+}
+#endif
+
+#if PLATFORM(WPE) && ENABLE(WPE_PLATFORM)
+bool screenHasPointerDevice()
+{
+    const auto& screenProperties = getScreenProperties();
+    const auto& dataMap = screenProperties.screenDataMap;
+    return std::any_of(dataMap.begin(), dataMap.end(), [](const auto& iter) -> bool {
+        return iter.value.displayInputTypes.contains(DisplayInputTypes::Mouse);
+    });
+}
+
+bool screenIsPointerPrimaryInputDevice()
+{
+    if (const auto* primaryScreenData = screenData(primaryScreenDisplayID()))
+        return primaryScreenData->displayInputTypes.contains(DisplayInputTypes::Mouse);
+    return false;
 }
 #endif
 

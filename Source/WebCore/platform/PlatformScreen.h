@@ -169,4 +169,16 @@ constexpr bool screenIsTouchPrimaryInputDevice() { return true; }
 #endif
 #endif
 
+#if PLATFORM(WPE) && ENABLE(WPE_PLATFORM)
+enum class DisplayInputTypes : uint8_t {
+    None     = 0,
+    Mouse    = (1 << 0),
+    Keyboard = (1 << 1),
+    Touch    = (1 << 2)
+};
+
+bool screenHasPointerDevice();
+bool screenIsPointerPrimaryInputDevice();
+#endif
+
 } // namespace WebCore

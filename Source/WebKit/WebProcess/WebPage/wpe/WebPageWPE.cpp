@@ -49,7 +49,11 @@ bool WebPage::platformCanHandleRequest(const ResourceRequest&)
 bool WebPage::hoverSupportedByPrimaryPointingDevice() const
 {
 #if ENABLE(TOUCH_EVENTS)
-    return !screenIsTouchPrimaryInputDevice();
+    if (screenIsTouchPrimaryInputDevice())
+        return false;
+#endif
+#if ENABLE(WPE_PLATFORM)
+    return screenIsPointerPrimaryInputDevice();
 #else
     return true;
 #endif
@@ -57,8 +61,8 @@ bool WebPage::hoverSupportedByPrimaryPointingDevice() const
 
 bool WebPage::hoverSupportedByAnyAvailablePointingDevice() const
 {
-#if ENABLE(TOUCH_EVENTS)
-    return !screenHasTouchDevice();
+#if ENABLE(WPE_PLATFORM)
+    return screenHasPointerDevice();
 #else
     return true;
 #endif
@@ -70,16 +74,26 @@ std::optional<PointerCharacteristics> WebPage::pointerCharacteristicsOfPrimaryPo
     if (screenIsTouchPrimaryInputDevice())
         return PointerCharacteristics::Coarse;
 #endif
+#if ENABLE(WPE_PLATFORM)
+    return screenIsPointerPrimaryInputDevice() ? PointerCharacteristics::Fine : std::optional<PointerCharacteristics> { };
+#endif
     return PointerCharacteristics::Fine;
 }
 
 OptionSet<PointerCharacteristics> WebPage::pointerCharacteristicsOfAllAvailablePointingDevices() const
 {
+    OptionSet<PointerCharacteristics> pointerCharacteristics;
 #if ENABLE(TOUCH_EVENTS)
     if (screenHasTouchDevice())
-        return PointerCharacteristics::Coarse;
+        pointerCharacteristics.add(PointerCharacteristics::Coarse);
 #endif
+#if ENABLE(WPE_PLATFORM)
+    if (screenHasPointerDevice())
+        pointerCharacteristics.add(PointerCharacteristics::Fine);
+    return pointerCharacteristics;
+#else
     return PointerCharacteristics::Fine;
+#endif
 }
 
 #if USE(GBM) && ENABLE(WPE_PLATFORM)

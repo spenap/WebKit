@@ -48,6 +48,8 @@ public:
     uint32_t pointerModifiers() const { return m_pointer.modifiers; }
     std::pair<double, double> pointerCoords() const { return std::pair<double, double>(m_pointer.x, m_pointer.y); }
 
+    WPEDisplayInputTypes inputTypes() const;
+
     void startListening();
 
     void setCursor(struct wl_surface*, int32_t, int32_t);

@@ -55,6 +55,9 @@ struct ScreenData {
     IntSize screenSize; // In millimeters.
     double dpi; // Already corrected for device scaling.
 #endif
+#if PLATFORM(WPE) && ENABLE(WPE_PLATFORM)
+    OptionSet<DisplayInputTypes> displayInputTypes;
+#endif
 
 #if PLATFORM(MAC) || PLATFORM(IOS_FAMILY)
     float scaleFactor { 1 };

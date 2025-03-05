@@ -54,6 +54,18 @@ WaylandSeat::~WaylandSeat()
     wl_seat_destroy(m_seat);
 }
 
+WPEDisplayInputTypes WaylandSeat::inputTypes() const
+{
+    WPEDisplayInputTypes source = WPE_DISPLAY_INPUT_NONE;
+    if (m_pointer.object)
+        source = WPE_DISPLAY_INPUT_MOUSE;
+    if (m_keyboard.object)
+        source = static_cast<WPEDisplayInputTypes>(source | WPE_DISPLAY_INPUT_KEYBOARD);
+    if (m_touch.object)
+        source = static_cast<WPEDisplayInputTypes>(source | WPE_DISPLAY_INPUT_TOUCH);
+    return source;
+}
+
 const struct wl_pointer_listener WaylandSeat::s_pointerListener = {
     // enter
     [](void* data, struct wl_pointer*, uint32_t serial, struct wl_surface* surface, wl_fixed_t x, wl_fixed_t y)
