@@ -195,7 +195,6 @@ set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_VISIBILITY_INLINES_HIDDEN ON)
 set(bmalloc_LIBRARY_TYPE OBJECT)
 set(WTF_LIBRARY_TYPE OBJECT)
-set(JavaScriptCore_LIBRARY_TYPE OBJECT)
 set(WebCore_LIBRARY_TYPE OBJECT)
 
 # These are shared variables, but we special case their definition so that we can use the
@@ -456,6 +455,7 @@ set(WPEPlatform_DERIVED_SOURCES_DIR "${CMAKE_BINARY_DIR}/DerivedSources/WPEPlatf
 set(JavaScriptCoreGLib_FRAMEWORK_HEADERS_DIR "${CMAKE_BINARY_DIR}/JavaScriptCoreGLib/Headers")
 set(JavaScriptCoreGLib_DERIVED_SOURCES_DIR "${CMAKE_BINARY_DIR}/JavaScriptCoreGLib/DerivedSources")
 
+set(JavaScriptCore_PKGCONFIG_FILE ${CMAKE_BINARY_DIR}/Source/JavaScriptCore/wpejavascriptcore-${WPE_API_VERSION}.pc)
 set(WPE_PKGCONFIG_FILE ${CMAKE_BINARY_DIR}/wpe-webkit-${WPE_API_VERSION}.pc)
 set(WPE_Uninstalled_PKGCONFIG_FILE ${CMAKE_BINARY_DIR}/wpe-webkit-${WPE_API_VERSION}-uninstalled.pc)
 
@@ -468,6 +468,9 @@ EXPOSE_STRING_VARIABLE_TO_BUILD(WPE_WEB_PROCESS_EXTENSION_PC_MODULE)
 
 set(WPEWebProcessExtension_PKGCONFIG_FILE ${CMAKE_BINARY_DIR}/${WPE_WEB_PROCESS_EXTENSION_PC_MODULE}.pc)
 set(WPEWebProcessExtension_Uninstalled_PKGCONFIG_FILE ${CMAKE_BINARY_DIR}/${WPE_WEB_PROCESS_EXTENSION_PC_MODULE}-uninstalled.pc)
+
+set(JavaScriptCore_LIBRARY_TYPE SHARED)
+set(SHOULD_INSTALL_JS_SHELL ON)
 
 include(BubblewrapSandboxChecks)
 include(GStreamerChecks)
