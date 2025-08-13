@@ -26,6 +26,7 @@
 #include "PluginDocument.h"
 
 #include "ContainerNodeInlines.h"
+#include "DocumentInlines.h"
 #include "DocumentLoader.h"
 #include "FrameDestructionObserverInlines.h"
 #include "FrameLoader.h"
@@ -36,9 +37,7 @@
 #include "HTMLNames.h"
 #include "HTMLStyleElement.h"
 #include "LocalFrame.h"
-#include "LocalFrameInlines.h"
 #include "LocalFrameLoaderClient.h"
-#include "LocalFrameView.h"
 #include "Logging.h"
 #include "PluginViewBase.h"
 #include "RawDataDocumentParser.h"

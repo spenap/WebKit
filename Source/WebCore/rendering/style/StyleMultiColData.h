@@ -26,6 +26,9 @@
 
 #include "BorderValue.h"
 #include "RenderStyleConstants.h"
+#include "StyleValueTypes.h"
+#include "StylePrimitiveNumericTypes.h"
+#include "StylePrimitiveNumericTypes+Evaluation.h"
 #include <wtf/RefCounted.h>
 
 namespace WTF {
@@ -33,6 +36,8 @@ class TextStream;
 }
 
 namespace WebCore {
+
+using namespace CSS::Literals;
 
 // CSS3 Multi Column Layout
 

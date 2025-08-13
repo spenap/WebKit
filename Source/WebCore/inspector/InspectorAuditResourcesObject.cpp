@@ -32,9 +32,8 @@
 #include "CachedRawResource.h"
 #include "CachedResource.h"
 #include "CachedSVGDocument.h"
-#include "Document.h"
+#include "DocumentInlines.h"
 #include "ExceptionOr.h"
-#include "FrameDestructionObserverInlines.h"
 #include "InspectorPageAgent.h"
 #include <wtf/Vector.h>
 #include <wtf/text/MakeString.h>

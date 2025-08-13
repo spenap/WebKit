@@ -33,7 +33,7 @@
 #include "InspectorDOMDebuggerAgent.h"
 
 #include "Event.h"
-#include "EventTarget.h"
+#include "EventTargetInlines.h"
 #include "InspectorDOMAgent.h"
 #include "InstrumentingAgents.h"
 #include "JSDOMGlobalObject.h"

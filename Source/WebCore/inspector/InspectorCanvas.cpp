@@ -38,6 +38,7 @@
 #include "DOMPointInit.h"
 #include "Document.h"
 #include "Element.h"
+#include "EventTargetInlines.h"
 #include "FloatPoint.h"
 #include "Gradient.h"
 #include "HTMLCanvasElement.h"

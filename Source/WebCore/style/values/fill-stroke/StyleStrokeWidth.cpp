@@ -27,6 +27,7 @@
 #include "StyleStrokeWidth.h"
 
 #include "CSSPrimitiveValue.h"
+#include "CalculationValue.h"
 #include "StyleBuilderChecking.h"
 #include "StyleLengthWrapper+CSSValueConversion.h"
 #include "StylePrimitiveNumericTypes+CSSValueConversion.h"

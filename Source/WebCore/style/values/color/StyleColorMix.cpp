@@ -32,6 +32,7 @@
 #include "ColorSerialization.h"
 #include "StyleColorResolutionState.h"
 #include "StylePrimitiveNumericTypes+Conversions.h"
+#include "StylePrimitiveNumericTypes+Evaluation.h"
 #include <wtf/text/TextStream.h>
 
 namespace WebCore {

@@ -27,11 +27,9 @@
 #include "config.h"
 #include "CachedSVGDocumentReference.h"
 
-#include "CachedResourceHandle.h"
-#include "CachedResourceLoader.h"
-#include "CachedResourceRequest.h"
 #include "CachedResourceRequestInitiatorTypes.h"
 #include "CachedSVGDocument.h"
+#include "DocumentInlines.h"
 
 namespace WebCore {
 

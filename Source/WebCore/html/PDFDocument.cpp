@@ -28,10 +28,10 @@
 #if ENABLE(PDFJS)
 
 #include "AddEventListenerOptions.h"
+#include "DocumentInlines.h"
 #include "DocumentLoader.h"
 #include "EventListener.h"
 #include "EventNames.h"
-#include "FrameDestructionObserverInlines.h"
 #include "HTMLAnchorElement.h"
 #include "HTMLBodyElement.h"
 #include "HTMLHeadElement.h"

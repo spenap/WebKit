@@ -33,6 +33,7 @@
 #include "PageConsoleAgent.h"
 
 #include "CommandLineAPIHost.h"
+#include "EventTargetInlines.h"
 #include "InspectorDOMAgent.h"
 #include "InstrumentingAgents.h"
 #include "LogInitialization.h"

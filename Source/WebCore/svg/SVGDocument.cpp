@@ -22,6 +22,7 @@
 #include "config.h"
 #include "SVGDocument.h"
 
+#include "DocumentInlines.h"
 #include "DocumentSVG.h"
 #include "SVGSVGElement.h"
 #include "SVGViewSpec.h"

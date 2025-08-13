@@ -29,7 +29,7 @@
 #include "Attr.h"
 #include "CDATASection.h"
 #include "Comment.h"
-#include "Document.h"
+#include "DocumentInlines.h"
 #include "DocumentType.h"
 #include "HTMLAttachmentElement.h"
 #include "HTMLScriptElement.h"
@@ -40,6 +40,7 @@
 #include "SVGScriptElement.h"
 #include "SecurityOriginPolicy.h"
 #include "Text.h"
+#include "TextResourceDecoder.h"
 #include "WebVTTElement.h"
 
 namespace WebCore {

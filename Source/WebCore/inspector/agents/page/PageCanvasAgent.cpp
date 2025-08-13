@@ -34,6 +34,7 @@
 #include "Document.h"
 #include "DocumentInlines.h"
 #include "Element.h"
+#include "EventTargetInlines.h"
 #include "FrameDestructionObserverInlines.h"
 #include "HTMLCanvasElement.h"
 #include "HTMLImageElement.h"

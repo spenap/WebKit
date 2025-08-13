@@ -26,16 +26,12 @@
 #if ENABLE(XSLT)
 
 #include "DOMImplementation.h"
-#include "CachedResourceLoader.h"
 #include "CommonAtomStrings.h"
 #include "ContentSecurityPolicy.h"
 #include "DocumentFragment.h"
+#include "DocumentInlines.h"
 #include "FrameLoader.h"
 #include "LocalFrame.h"
-#include "LocalFrameInlines.h"
-#include "LocalFrameView.h"
-#include "NodeInlines.h"
-#include "SecurityOrigin.h"
 #include "SecurityOriginPolicy.h"
 #include "Text.h"
 #include "TextResourceDecoder.h"

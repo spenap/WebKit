@@ -28,6 +28,7 @@
 
 #include <JavaScriptCore/JSRemoteInspector.h>
 #include <JavaScriptCore/JSRetainPtr.h>
+#include <wtf/NeverDestroyed.h>
 #include <wtf/RunLoop.h>
 #include <wtf/RuntimeApplicationChecks.h>
 
