@@ -1566,6 +1566,9 @@ public:
 #if ENABLE(WEBXR)
     virtual GCGLExternalSync createExternalSync(ExternalSyncSource&&) = 0;
     virtual void deleteExternalSync(GCGLExternalSync) = 0;
+#if USE(OPENXR)
+    virtual WTF::UnixFileDescriptor exportExternalSync(GCGLExternalSync) { return { }; }
+#endif
 #endif
 
     // ========== Extension related entry points.

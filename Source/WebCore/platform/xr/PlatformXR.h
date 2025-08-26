@@ -422,6 +422,9 @@ public:
         LayerHandle handle { 0 };
         bool visible { true };
         Vector<LayerView> views;
+#if USE(OPENXR)
+        WTF::UnixFileDescriptor fenceFD;
+#endif
     };
 
     struct ViewData {
