@@ -31,6 +31,7 @@ sys.path.insert(0, os.path.join(top_level_directory, "Tools", "glib"))
 import common
 from webkitpy.common.host import Host
 from webkitpy.common.test_expectations import TestExpectations
+from webkitpy.port.monadodriver import MonadoDriver
 from webkitpy.port.westondriver import WestonDriver
 from webkitcorepy import Timeout
 
@@ -184,9 +185,13 @@ class TestRunner(object):
     def _run_test_glib(self, test_program, subtests, skipped_test_cases):
         timeout = self._options.timeout
         wpe_legacy_api = self._use_wpe_legacy_api()
-        env = self._weston_env if self.is_wpe_platform_wayland_test(test_program) else self._test_env
-        if self.is_wpe_platform_test(test_program):
-            # WPE Platform tests can run without swrast since nothing is rendered.
+        uses_weston = self.is_wpe_platform_wayland_test(test_program) or self.is_openxr_test(test_program)
+        env = self._weston_env if uses_weston else self._test_env
+        if self.is_openxr_test(test_program):
+            env = {**env, **self._monado_env}
+        if uses_weston:
+            # WPE Platform tests can run without swrast since nothing is rendered,
+            # and OpenXR tests expect certain extensions when creating a GL display
             env = dict(env)
             env.pop('LIBGL_ALWAYS_SOFTWARE')
 
@@ -301,6 +306,9 @@ class TestRunner(object):
     def is_wpe_platform_wayland_test(self, test_program):
         raise NotImplementedError
 
+    def is_openxr_test(self, test_program):
+        return NotImplementedError
+
     def _run_test(self, test_program, subtests, skipped_test_cases):
         if self.is_glib_test(test_program):
             return self._run_test_glib(test_program, subtests, skipped_test_cases)
@@ -354,11 +362,14 @@ class TestRunner(object):
         self._tests = [test for test in self._tests if self._should_run_test_program(test)]
         number_of_qt_tests = 0
         number_of_wpe_platform_wayland_tests = 0
+        number_of_openxr_tests = 0
         for test in self._tests:
             if self.is_qt_test(test):
                 number_of_qt_tests += 1
             elif self.is_wpe_platform_wayland_test(test):
                 number_of_wpe_platform_wayland_tests += 1
+            elif self.is_openxr_test(test):
+                number_of_openxr_tests += 1
 
         # Skip Qt tests if there is no GPU <https://webkit.org/b/264458>
         if number_of_qt_tests > 0 and not self._has_gpu_available():
@@ -366,7 +377,7 @@ class TestRunner(object):
             self._tests = [test for test in self._tests if not self.is_qt_test(test)]
 
         # Start Weston if WPE Platform Wayland tests are going to be run.
-        if number_of_wpe_platform_wayland_tests > 0:
+        if number_of_wpe_platform_wayland_tests > 0 or number_of_openxr_tests > 0:
             if WestonDriver.check_driver(self._port):
                 self._weston = WestonDriver(self._port, worker_number=0, pixel_tests=False, no_timeout=True)
                 self._weston_env = self._weston._setup_environ_for_test()
@@ -374,6 +385,11 @@ class TestRunner(object):
                 # Skip tests if Weston is not available.
                 sys.stderr.write("WARNING: Skipping %d WPE Platform Wayland tests because Weston couldn't be found.\n" % number_of_wpe_platform_wayland_tests)
                 self._tests = [test for test in self._tests if not self.is_wpe_platform_wayland_test(test)]
+
+        if number_of_openxr_tests > 0:
+            if MonadoDriver.check_driver(self._port):
+                self._monado = MonadoDriver(self._port, worker_number=0, pixel_tests=False, no_timeout=True)
+                self._monado_env = self._monado._setup_environ_for_test()
 
         number_of_executed_tests = len(self._tests)
 
