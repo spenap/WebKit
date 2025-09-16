@@ -56,8 +56,11 @@ namespace WebCore {
 std::unique_ptr<PlatformDisplayLibWPE> PlatformDisplayLibWPE::create(int hostFd)
 {
     auto* backend = wpe_renderer_backend_egl_create(hostFd);
-    if (!backend)
+    if (!backend) {
+        LOG_ERROR("Could not create renderer backend for fd: %d. Aborting...", hostFd);
+        CRASH();
         return nullptr;
+    }
 
     EGLNativeDisplayType eglNativeDisplay = wpe_renderer_backend_egl_get_native_display(backend);
 
