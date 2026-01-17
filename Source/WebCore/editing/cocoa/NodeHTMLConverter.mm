@@ -181,7 +181,7 @@ private:
     SingleThreadWeakPtr<DocumentLoader> m_dataSource;
 
     HashMap<Ref<Element>, RetainPtr<NSDictionary>> m_attributesForElements;
-    HashMap<RetainPtr<CFTypeRef>, RefPtr<Element>> m_textTableFooters;
+    HashMap<RetainPtr<CFTypeRef>, Ref<Element>> m_textTableFooters;
     HashMap<Ref<Element>, RetainPtr<NSDictionary>> m_aggregatedAttributesForElements;
 
     UserSelectNoneStateCache m_userSelectNoneStateCache;
@@ -1782,7 +1782,7 @@ BOOL HTMLConverter::_processElement(Element& element, NSInteger depth)
             _addTableCellForElement(nil);
         _addTableForElement(tableElement.get());
     } else if (displayValue == "table-footer-group"_s && [_textTables count] > 0) {
-        m_textTableFooters.add((__bridge CFTypeRef)[_textTables lastObject], &element);
+        m_textTableFooters.add((__bridge CFTypeRef)[_textTables lastObject], element);
         retval = NO;
     } else if (displayValue == "table-row"_s && [_textTables count] > 0) {
         auto color = _colorForElement(element, CSSPropertyBackgroundColor);
