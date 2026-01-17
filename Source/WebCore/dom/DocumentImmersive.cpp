@@ -64,16 +64,14 @@ HTMLModelElement* DocumentImmersive::immersiveElement() const
     return m_immersiveElement.get();
 }
 
-void DocumentImmersive::exitImmersive(Document& document, RefPtr<DeferredPromise>&& promise)
+void DocumentImmersive::exitImmersive(Document& document, Ref<DeferredPromise>&& promise)
 {
-    RefPtr protectedImmersive = document.immersiveIfExists();
-    if (!document.isFullyActive() || !protectedImmersive) {
+    RefPtr immersive = document.immersiveIfExists();
+    if (!document.isFullyActive() || !immersive) {
         promise->reject(Exception { ExceptionCode::TypeError, "Not in immersive"_s });
         return;
     }
-    protectedImmersive->exitImmersive([promise = WTF::move(promise)] (auto result) {
-        if (!promise)
-            return;
+    immersive->exitImmersive([promise = WTF::move(promise)](auto result) {
         if (result.hasException())
             promise->reject(result.releaseException());
         else

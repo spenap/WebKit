@@ -50,7 +50,7 @@ public:
     void deref() const { m_document->deref(); }
 
     // Document+Fullscreen.idl methods.
-    static void exitFullscreen(Document&, RefPtr<DeferredPromise>&&);
+    static void exitFullscreen(Document&, Ref<DeferredPromise>&&);
     static bool fullscreenEnabled(Document&);
     static bool webkitFullscreenEnabled(Document& document) { return document.protectedFullscreen()->enabledByPermissionsPolicy(); }
     static Element* webkitFullscreenElement(Document& document) { return document.ancestorElementInThisScope(document.protectedFullscreen()->protectedFullscreenElement().get()); };

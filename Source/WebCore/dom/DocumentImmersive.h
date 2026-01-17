@@ -48,7 +48,7 @@ public:
     // Document+Immersive.idl methods.
     static bool immersiveEnabled(Document&);
     static Element* immersiveElement(Document&);
-    static void exitImmersive(Document&, RefPtr<DeferredPromise>&&);
+    static void exitImmersive(Document&, Ref<DeferredPromise>&&);
 
     // Helpers.
     Document& document() { return m_document.get(); }
