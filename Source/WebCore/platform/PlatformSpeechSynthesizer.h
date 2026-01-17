@@ -36,7 +36,6 @@
 
 #if PLATFORM(COCOA)
 #include <wtf/RetainPtr.h>
-OBJC_CLASS AVSpeechSynthesisVoice;
 OBJC_CLASS NSArray;
 OBJC_CLASS WebSpeechSynthesisWrapper;
 #endif
