@@ -57,9 +57,6 @@
 #define LABEL_REFERENCE(name) GLOBAL_REFERENCE(name)
 #endif
 
-// Deprecated: misleading name. Will be removed once the dependency in WebKitAdditions is gone.
-#define LOCAL_REFERENCE(name) LABEL_REFERENCE(name)
-
 #if OS(DARWIN)
     // Mach-O platform
 #define HIDE_SYMBOL(name) ".private_extern _" #name
