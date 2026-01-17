@@ -31,8 +31,7 @@
 interface NotificationEvent : ExtendableEvent {
     constructor([AtomString] DOMString type, NotificationEventInit eventInitDict);
 
-    // FIXME: `notification` should not be nullable.
-    readonly attribute Notification? notification;
+    readonly attribute Notification notification;
     readonly attribute DOMString action;
 };
 

@@ -719,8 +719,7 @@ std::optional<ReducedResolutionSeconds> IntersectionObserver::nowTimestamp() con
 
 void IntersectionObserver::appendQueuedEntry(Ref<IntersectionObserverEntry>&& entry)
 {
-    ASSERT(entry->target());
-    m_pendingTargets.append(*entry->target());
+    m_pendingTargets.append(entry->target());
     m_queuedEntries.append(WTF::move(entry));
 }
 

@@ -31,8 +31,7 @@
 ] interface SpeechSynthesisEvent : Event {
     constructor([AtomString] DOMString type, SpeechSynthesisEventInit eventInitDict);
 
-    // FIXME: `utterance` should not be nullable.
-    readonly attribute SpeechSynthesisUtterance? utterance;
+    readonly attribute SpeechSynthesisUtterance utterance;
     readonly attribute unsigned long charIndex;
     readonly attribute unsigned long charLength;
     readonly attribute unrestricted float elapsedTime;

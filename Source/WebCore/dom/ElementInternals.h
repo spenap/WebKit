@@ -57,7 +57,7 @@ public:
 
     ExceptionOr<void> setValidity(ValidityStateFlags, String&& message, HTMLElement* validationAnchor);
     ExceptionOr<bool> willValidate() const;
-    ExceptionOr<Ref<ValidityState>> validity();
+    ExceptionOr<ValidityState&> validity();
     ExceptionOr<String> validationMessage() const;
     ExceptionOr<bool> reportValidity();
     ExceptionOr<bool> checkValidity();

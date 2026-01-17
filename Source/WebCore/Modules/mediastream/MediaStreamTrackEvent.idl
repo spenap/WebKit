@@ -28,8 +28,7 @@
     Exposed=Window
 ] interface MediaStreamTrackEvent : Event {
     constructor([AtomString] DOMString type, MediaStreamTrackEventInit eventInitDict);
-    // FIXME: `track` should not be nullable.
-    [SameObject] readonly attribute MediaStreamTrack? track;
+    [SameObject] readonly attribute MediaStreamTrack track;
 };
 
 dictionary MediaStreamTrackEventInit : EventInit {

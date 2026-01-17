@@ -29,6 +29,5 @@
     Exposed=ServiceWorker
 ] interface BackgroundFetchEvent : ExtendableEvent {
   constructor([AtomString] DOMString type, BackgroundFetchEventInit init);
-  // FIXME: `registration` should not be nullable.
-  readonly attribute BackgroundFetchRegistration? registration;
+  readonly attribute BackgroundFetchRegistration registration;
 };

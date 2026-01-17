@@ -23,7 +23,6 @@
     EnabledBySetting=GeolocationAPIEnabled,
     ImplementedBy=NavigatorGeolocation
 ] partial interface Navigator {
-    // FIXME: `geolocation` should not be nullable.
-    readonly attribute Geolocation? geolocation;
+    readonly attribute Geolocation geolocation;
 };
 

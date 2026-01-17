@@ -131,7 +131,6 @@ bindings/js/JSIDBObjectStoreCustom.cpp
 bindings/js/JSIDBRequestCustom.cpp
 bindings/js/JSIDBTransactionCustom.cpp
 bindings/js/JSIntersectionObserverCustom.cpp
-bindings/js/JSIntersectionObserverEntryCustom.cpp
 bindings/js/JSKeyframeEffectCustom.cpp
 bindings/js/JSLazyEventListener.cpp
 bindings/js/JSLocationCustom.cpp
@@ -868,8 +867,6 @@ svg/properties/SVGAnimatedValueProperty.h
 svg/properties/SVGAttributeAnimator.cpp
 svg/properties/SVGPointerMemberAccessor.h
 svg/properties/SVGPropertyAccessorImpl.h
-svg/properties/SVGValuePropertyListAnimator.h
-svg/properties/SVGValuePropertyListAnimatorImpl.h
 testing/InternalSettings.cpp
 testing/Internals.cpp
 testing/LegacyMockCDM.cpp

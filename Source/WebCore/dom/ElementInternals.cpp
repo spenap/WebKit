@@ -86,10 +86,10 @@ ExceptionOr<bool> ElementInternals::willValidate() const
     return Exception { ExceptionCode::NotSupportedError };
 }
 
-ExceptionOr<Ref<ValidityState>> ElementInternals::validity()
+ExceptionOr<ValidityState&> ElementInternals::validity()
 {
     if (RefPtr element = elementAsFormAssociatedCustom())
-        return Ref { element->validity() };
+        return element->validity();
     return Exception { ExceptionCode::NotSupportedError };
 }
 

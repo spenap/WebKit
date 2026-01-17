@@ -55,7 +55,6 @@ bindings/js/JSHTMLElementCustom.cpp
 bindings/js/JSHTMLTemplateElementCustom.cpp
 bindings/js/JSIDBObjectStoreCustom.cpp
 bindings/js/JSIntersectionObserverCustom.cpp
-bindings/js/JSIntersectionObserverEntryCustom.cpp
 bindings/js/JSLazyEventListener.cpp
 bindings/js/JSNavigatorCustom.cpp
 bindings/js/JSNodeCustom.cpp
