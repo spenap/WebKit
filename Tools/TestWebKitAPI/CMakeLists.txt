@@ -228,6 +228,7 @@ if (ENABLE_WEBCORE)
         Tests/WebCore/RegionTests.cpp
         Tests/WebCore/RenderStyleChange.cpp
         Tests/WebCore/SecurityOrigin.cpp
+        Tests/WebCore/ShareableBitmap.cpp
         Tests/WebCore/SharedBuffer.cpp
         Tests/WebCore/SharedBufferTest.cpp
         Tests/WebCore/StyleGradient.cpp
