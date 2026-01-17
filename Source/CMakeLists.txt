@@ -1,7 +1,9 @@
 # -----------------------------------------------------------------------------
 # Add module directories
 # -----------------------------------------------------------------------------
-add_subdirectory(bmalloc)
+if (NOT USE_SYSTEM_MALLOC)
+    add_subdirectory(bmalloc)
+endif ()
 
 add_subdirectory(WTF)
 

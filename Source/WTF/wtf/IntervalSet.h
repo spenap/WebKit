@@ -865,7 +865,7 @@ private:
     void freeNode(NodeType* node)
     {
         ASSERT(assertOnlyNumNodes--);
-        fastFree(node);
+        fastAlignedFree(node);
     }
 
     void freeAllNodes()

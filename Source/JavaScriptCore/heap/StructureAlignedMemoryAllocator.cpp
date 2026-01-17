@@ -30,13 +30,13 @@
 #include "MarkedBlock.h"
 #include "Options.h"
 #include "StructureID.h"
-#include <bmalloc/bmalloc.h>
 #include <wtf/BitVector.h>
 
 #if CPU(ADDRESS64)
 #include <wtf/NeverDestroyed.h>
 WTF_ALLOW_UNSAFE_BUFFER_USAGE_BEGIN
-#if USE(LIBPAS)
+#if !USE(SYSTEM_MALLOC)
+#include <bmalloc/bmalloc.h>
 #include <bmalloc/bmalloc_heap.h>
 #include <bmalloc/bmalloc_heap_config.h>
 #include <bmalloc/bmalloc_heap_inlines.h>
@@ -46,8 +46,6 @@ WTF_ALLOW_UNSAFE_BUFFER_USAGE_BEGIN
 #include <bmalloc/pas_probabilistic_guard_malloc_allocator.h>
 #include <bmalloc/pas_scavenger.h>
 #include <bmalloc/pas_thread_local_cache.h>
-#elif USE(MIMALLOC)
-#include <bmalloc/mimalloc.h>
 #endif
 WTF_ALLOW_UNSAFE_BUFFER_USAGE_END
 #endif
@@ -86,15 +84,10 @@ void* StructureAlignedMemoryAllocator::tryReallocateMemory(void*, size_t)
 }
 
 #if CPU(ADDRESS64)
-#if USE(LIBPAS)
+#if !USE(SYSTEM_MALLOC)
 
 static const bmalloc_type structureHeapType { BMALLOC_TYPE_INITIALIZER(MarkedBlock::blockSize, MarkedBlock::blockSize, "Structure Heap") };
 static pas_primitive_heap_ref structureHeap { BMALLOC_AUXILIARY_HEAP_REF_INITIALIZER(&structureHeapType, pas_bmalloc_heap_ref_kind_compact) };
-
-#elif USE(MIMALLOC)
-
-static mi_arena_id_t structureArena { };
-static mi_heap_t* structureHeap { };
 
 #endif
 
@@ -126,8 +119,8 @@ public:
         g_jscConfig.structureIDBase = g_jscConfig.startOfStructureHeap & ~StructureID::structureIDMask;
 
         // Don't use the first page because zero is used as the empty StructureID and the first allocation will conflict.
+#if !USE(SYSTEM_MALLOC)
         m_useSystemHeap = !bmalloc::api::isEnabled();
-#if USE(LIBPAS)
         if (!m_useSystemHeap) [[likely]] {
 #if OS(WINDOWS) || PLATFORM(PLAYSTATION)
             // libpas isn't calling pas_page_malloc commit, so we've got to commit the region ourselves
@@ -137,33 +130,27 @@ public:
             bmalloc_force_auxiliary_heap_into_reserved_memory(&structureHeap, reinterpret_cast<uintptr_t>(g_jscConfig.startOfStructureHeap) + MarkedBlock::blockSize, reinterpret_cast<uintptr_t>(g_jscConfig.startOfStructureHeap) + g_jscConfig.sizeOfStructureHeap);
             return;
         }
-        m_usedBlocks.set(0);
-#elif USE(MIMALLOC)
-        void* memory = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(g_jscConfig.startOfStructureHeap) + MarkedBlock::blockSize);
-        size_t size = g_jscConfig.sizeOfStructureHeap - MarkedBlock::blockSize;
-        RELEASE_ASSERT(mi_manage_os_memory_ex(memory, size, false, false, false, -1, true, &structureArena));
-        structureHeap = mi_heap_new_in_arena(structureArena);
-#else
-        m_usedBlocks.set(0);
 #endif
+        m_usedBlocks.set(0);
     }
 
     void* tryMallocStructureBlock()
     {
-        if (!m_useSystemHeap) [[likely]] {
-#if USE(LIBPAS)
-            void* result = bmalloc_try_allocate_auxiliary_with_alignment_inline(&structureHeap, MarkedBlock::blockSize, MarkedBlock::blockSize, pas_always_compact_allocation_mode);
-
+#if !USE(SYSTEM_MALLOC)
 #if OS(WINDOWS) || PLATFORM(PLAYSTATION)
+        if (!m_useSystemHeap) [[likely]] {
+            void* result = bmalloc_try_allocate_auxiliary_with_alignment_inline(&structureHeap, MarkedBlock::blockSize, MarkedBlock::blockSize, pas_maybe_compact_allocation_mode);
+
             // libpas isn't calling pas_page_malloc commit, so we've got to commit the region ourselves
             // https://bugs.webkit.org/show_bug.cgi?id=292771
             OSAllocator::commit(result, MarkedBlock::blockSize, true, false);
-#endif
             return result;
-#elif USE(MIMALLOC)
-            return mi_heap_malloc_aligned(structureHeap, MarkedBlock::blockSize, MarkedBlock::blockSize);
-#endif
         }
+#else
+        if (!m_useSystemHeap) [[likely]]
+            return bmalloc_try_allocate_auxiliary_with_alignment_inline(&structureHeap, MarkedBlock::blockSize, MarkedBlock::blockSize, pas_always_compact_allocation_mode);
+#endif
+#endif
 
         size_t freeIndex;
         {
@@ -186,15 +173,12 @@ WTF_ALLOW_UNSAFE_BUFFER_USAGE_END
 
     void freeStructureBlock(void* blockPtr)
     {
+#if !USE(SYSTEM_MALLOC)
         if (!m_useSystemHeap) [[likely]] {
-#if USE(LIBPAS)
             bmalloc_deallocate_inline(blockPtr);
             return;
-#elif USE(MIMALLOC)
-            mi_free(blockPtr);
-            return;
-#endif
         }
+#endif
 
         decommitBlock(blockPtr);
         uintptr_t block = reinterpret_cast<uintptr_t>(blockPtr);
@@ -231,7 +215,9 @@ WTF_ALLOW_UNSAFE_BUFFER_USAGE_END
 
 private:
     Lock m_lock;
+#if !USE(SYSTEM_MALLOC)
     bool m_useSystemHeap { true };
+#endif
     BitVector m_usedBlocks;
 };
 
@@ -272,7 +258,7 @@ void* StructureAlignedMemoryAllocator::tryAllocateAlignedMemory(size_t alignment
 
 void StructureAlignedMemoryAllocator::freeAlignedMemory(void* block)
 {
-    fastFree(block);
+    fastAlignedFree(block);
 }
 
 #endif // CPU(ADDRESS64)

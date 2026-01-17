@@ -26,8 +26,10 @@ set(WebKitTestRunner_FRAMEWORKS
     WTF
     WebCore
     WebKit
-    bmalloc
 )
+if (NOT USE_SYSTEM_MALLOC)
+    list(APPEND WebKitTestRunner_FRAMEWORKS bmalloc)
+endif ()
 
 if (COMPILER_IS_GCC_OR_CLANG)
     if (HAVE_STD_EXPERIMENTAL_FILESYSTEM)

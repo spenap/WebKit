@@ -23,8 +23,11 @@ endif ()
 
 set(WebDriver_FRAMEWORKS
     WTF
-    bmalloc
 )
+if (NOT USE_SYSTEM_MALLOC)
+    list(APPEND WebDriver_FRAMEWORKS bmalloc)
+endif ()
+
 
 set(WebDriver_SCRIPTS
     ${WebDriver_DERIVED_SOURCES_DIR}/ElementAttribute.js

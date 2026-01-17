@@ -26,7 +26,6 @@
 #pragma once
 
 #include <JavaScriptCore/JSExportMacros.h>
-#include <bmalloc/BPlatform.h>
 #include <wtf/CodePtr.h>
 #include <wtf/RawPointer.h>
 
@@ -37,8 +36,11 @@
 #include <wtf/MetaAllocatorHandle.h>
 #endif
 
+#if !USE(SYSTEM_MALLOC)
+#include <bmalloc/BPlatform.h>
 #if BENABLE(LIBPAS) && (OS(DARWIN) || OS(LINUX))
 #define ENABLE_LIBPAS_JIT_HEAP 1
+#endif
 #endif
 
 namespace JSC {

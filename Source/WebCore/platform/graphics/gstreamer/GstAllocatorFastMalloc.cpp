@@ -104,7 +104,7 @@ static void gstAllocatorFastMallocFree(GstAllocator* allocator, GstMemory* memor
     UNUSED_PARAM(allocator);
 #endif
 
-    fastFree(memory);
+    fastAlignedFree(memory);
 }
 
 static gpointer gstAllocatorFastMallocMemMap(GstMemory* baseMemory, gsize, GstMapFlags)

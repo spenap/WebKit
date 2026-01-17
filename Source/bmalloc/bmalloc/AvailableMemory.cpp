@@ -29,6 +29,8 @@
 #if BPLATFORM(IOS_FAMILY)
 #include "MemoryStatusSPI.h"
 #endif
+#include "PerProcess.h"
+#include "Scavenger.h"
 #include "Sizes.h"
 #include <array>
 #include <mutex>
@@ -55,8 +57,6 @@
 #include <sys/user.h>
 #endif
 #include <unistd.h>
-#elif BOS(WINDOWS)
-#include <windows.h>
 #endif
 
 namespace bmalloc {
@@ -166,19 +166,12 @@ static size_t computeAvailableMemory()
     if (!sysinfo(&info))
         return info.totalram * info.mem_unit;
     return availableMemoryGuess;
-#elif BOS(UNIX) || BOS(HAIKU)
+#elif BOS(UNIX)
     long pages = sysconf(_SC_PHYS_PAGES);
     long pageSize = sysconf(_SC_PAGE_SIZE);
     if (pages == -1 || pageSize == -1)
         return availableMemoryGuess;
     return pages * pageSize;
-#elif BOS(WINDOWS)
-    MEMORYSTATUSEX status;
-    status.dwLength = sizeof(status);
-    bool result = GlobalMemoryStatusEx(&status);
-    if (!result)
-        return availableMemoryGuess;
-    return status.ullTotalPhys;
 #else
     return availableMemoryGuess;
 #endif

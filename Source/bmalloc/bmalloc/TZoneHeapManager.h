@@ -34,6 +34,7 @@
 
 #include "Map.h"
 #include "Mutex.h"
+#include "SegmentedVector.h"
 #include "TZoneHeap.h"
 #include <CommonCrypto/CommonDigest.h>
 #include <mutex>

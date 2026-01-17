@@ -167,8 +167,10 @@ list(APPEND JavaScriptCore_SOURCES
 
 set(JavaScriptCore_FRAMEWORKS
     WTF
-    bmalloc
 )
+if (NOT USE_SYSTEM_MALLOC)
+    list(APPEND JavaScriptCore_FRAMEWORKS bmalloc)
+endif ()
 
 if (USE_CAPSTONE)
     list(APPEND JavaScriptCore_LIBRARIES capstone)

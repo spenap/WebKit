@@ -138,7 +138,7 @@ public:
         m_buffer = fastAlignedMalloc(alignment, size);
     }
 
-    ~StructBuffer() { fastFree(m_buffer); }
+    ~StructBuffer() { fastAlignedFree(m_buffer); }
     operator void*() const { return m_buffer; }
 
 private:

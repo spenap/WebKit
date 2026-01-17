@@ -59,19 +59,25 @@
 #if USE(APPLE_INTERNAL_SDK)
 #include <WebKitAdditions/WTFConfigAdditions.h>
 #endif
+#if !USE(SYSTEM_MALLOC)
 #if BUSE(LIBPAS)
 #include "bmalloc/pas_mte_config.h"
+#endif
 #endif
 
 #include <mutex>
 
-#if OS(DARWIN) && BUSE(LIBPAS)
+#if OS(DARWIN) && !USE(SYSTEM_MALLOC)
+
+#if BUSE(LIBPAS)
 #if HAVE(36BIT_ADDRESS) && !PAS_HAVE(36BIT_ADDRESS)
 #error HAVE(36BIT_ADDRESS) is true, but PAS_HAVE(36BIT_ADDRESS) is false. They should match.
 #elif !HAVE(36BIT_ADDRESS) && PAS_HAVE(36BIT_ADDRESS)
 #error HAVE(36BIT_ADDRESS) is false, but PAS_HAVE(36BIT_ADDRESS) is true. They should match.
 #endif
-#endif // OS(DARWIN) && BUSE(LIBPAS)
+#endif // BUSE(LIBPAS)
+
+#endif // OS(DARWIN)
 
 WTF_ALLOW_UNSAFE_BUFFER_USAGE_BEGIN
 

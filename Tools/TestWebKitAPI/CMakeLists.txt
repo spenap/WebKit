@@ -151,8 +151,10 @@ set(TestWTF_LIBRARIES
 
 set(TestWTF_FRAMEWORKS
     WTF
-    bmalloc
 )
+if (NOT USE_SYSTEM_MALLOC)
+    list(APPEND TestWTF_FRAMEWORKS bmalloc)
+endif ()
 
 WEBKIT_EXECUTABLE_DECLARE(TestWTF)
 
@@ -172,8 +174,10 @@ if (ENABLE_JAVASCRIPTCORE)
     set(TestJavaScriptCore_FRAMEWORKS
         JavaScriptCore
         WTF
-        bmalloc
     )
+    if (NOT USE_SYSTEM_MALLOC)
+        list(APPEND TestJavaScriptCore_FRAMEWORKS bmalloc)
+    endif ()
 
     set(TestJavaScriptCore_PRIVATE_INCLUDE_DIRECTORIES
         ${CMAKE_BINARY_DIR}
@@ -246,8 +250,10 @@ if (ENABLE_WEBCORE)
         PAL
         WTF
         WebCore
-        bmalloc
     )
+    if (NOT USE_SYSTEM_MALLOC)
+        list(APPEND TestWebCore_FRAMEWORKS bmalloc)
+    endif ()
 
     set(TestWebCore_PRIVATE_INCLUDE_DIRECTORIES
         ${CMAKE_BINARY_DIR}
@@ -277,8 +283,10 @@ if (ENABLE_WEBKIT_LEGACY)
         PAL
         WTF
         WebCore
-        bmalloc
     )
+    if (NOT USE_SYSTEM_MALLOC)
+        list(APPEND TestWebKitLegacy_FRAMEWORKS bmalloc)
+    endif ()
     if (NOT APPLE)
         list(APPEND TestWebKitLegacy_FRAMEWORKS WebKitLegacy)
     endif ()
