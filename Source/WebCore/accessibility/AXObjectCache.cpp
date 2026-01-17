@@ -1591,6 +1591,13 @@ void AXObjectCache::childrenChanged(AccessibilityObject* object)
 void AXObjectCache::valueChanged(Element& element)
 {
     postNotification(&element, AXNotification::ValueChanged);
+
+    for (RefPtr ancestor = get(element); ancestor; ancestor = ancestor->parentObject()) {
+        if (ancestor->supportsLiveRegion()) {
+            postLiveRegionChangeNotification(*ancestor);
+            break;
+        }
+    }
 }
 
 #if ENABLE(ACCESSIBILITY_ISOLATED_TREE)

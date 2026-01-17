@@ -390,6 +390,8 @@ public:
     void accessibilityText(Vector<AccessibilityText>&) const override { };
     // A single method for getting a computed label for an AXObject. It condenses the nuances of accessibilityText. Used by Inspector.
     WEBCORE_EXPORT String computedLabel();
+    // Used by aria live regions for the text spoken via announcements.
+    String announcementText() const;
 
     // A programmatic way to set a name on an AccessibleObject.
     void setAccessibleName(const AtomString&) override { }

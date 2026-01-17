@@ -372,6 +372,32 @@ String AccessibilityObject::computedLabel()
     return { };
 }
 
+// FIXME: We should unify all of the special cases for live regions, textUnderElement, title, description, etc. under one method, similar to computedLabel.
+String AccessibilityObject::announcementText() const
+{
+    Vector<AccessibilityText> computedText;
+    accessibilityText(computedText);
+
+#if PLATFORM(COCOA)
+    String descriptionText = descriptionAttributeValue(&computedText);
+    if (!descriptionText.isEmpty())
+        return descriptionText;
+#endif
+
+    if (is<HTMLInputElement>(node())) {
+        // Many inputs derive their accessible name from their title.
+        if (String titleText = title(&computedText); !titleText.isEmpty())
+            return titleText;
+    }
+
+    TextUnderElementMode mode;
+    mode.includeListMarkers = IncludeListMarkerText::Yes;
+    // We want all of the text beneath this object when speaking live regions.
+    mode.descendIntoContainers = DescendIntoContainers::Yes;
+    mode.childrenInclusion = TextUnderElementMode::Children::IncludeNameFromContentsChildren;
+    return textUnderElement(mode);
+}
+
 bool AccessibilityObject::isEditableWebArea() const
 {
     if (!isWebArea())
