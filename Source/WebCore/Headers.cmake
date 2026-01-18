@@ -2197,7 +2197,6 @@ set(WebCore_PRIVATE_FRAMEWORK_HEADERS
     page/UserMediaRequestIdentifier.h
     page/UserMessageHandler.h
     page/UserMessageHandlerDescriptor.h
-    page/UserMessageHandlerDescriptorTypes.h
     page/UserMessageHandlersNamespace.h
     page/UserScript.h
     page/UserScriptTypes.h

@@ -475,7 +475,7 @@ bool ScrollingTree::updateTreeFromStateNodeRecursive(const ScrollingStateNode* s
 
     RefPtr<ScrollingTreeNode> node;
     if (it != m_nodeMap.end()) {
-        node = it->value;
+        node = it->value.ptr();
         state.unvisitedNodes.remove(nodeID);
     } else {
         node = createScrollingTreeNode(stateNode->nodeType(), nodeID);
@@ -488,7 +488,7 @@ bool ScrollingTree::updateTreeFromStateNodeRecursive(const ScrollingStateNode* s
             removeAllNodes();
         }
 
-        m_nodeMap.set(nodeID, node.get());
+        m_nodeMap.set(nodeID, *node);
         {
             Locker locker { m_frameIDMapLock };
             m_nodeMapPerFrame.ensure(state.frameId, [] { return HashSet<ScrollingNodeID> { }; }).iterator->value.add(node->scrollingNodeID());
@@ -563,7 +563,7 @@ void ScrollingTree::removeAllNodes()
 {
     auto nodes = std::exchange(m_nodeMap, { });
     for (auto iter : nodes)
-        Ref { *iter.value }->willBeDestroyed();
+        Ref { iter.value }->willBeDestroyed();
 
     m_nodeMap.clear();
     {
