@@ -43,12 +43,6 @@
 
 #import <pal/cocoa/AVFoundationSoftLink.h>
 
-typedef void (^AVSpeechSynthesisVoiceCallbackBlock)(NSArray<AVSpeechSynthesisVoice *> *);
-
-@interface AVSpeechSynthesisVoice (AsyncAddition)
-+ (void)speechVoicesIncludingSuperCompactWithCompletionHandler:(nonnull AVSpeechSynthesisVoiceCallbackBlock)completion;
-@end
-
 static float getAVSpeechUtteranceDefaultSpeechRate()
 {
     static float value;
