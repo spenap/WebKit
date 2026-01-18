@@ -555,6 +555,7 @@ def serialized_identifiers():
         'WebKit::WebPageProxyIdentifier',
         'WebKit::WebTransportSessionIdentifier',
         'WebKit::WebURLSchemeHandlerIdentifier',
+        'WebKit::WebUndoStepID',
     ]
 
 
@@ -677,6 +678,7 @@ def types_that_cannot_be_forward_declared():
         'WebKit::WebExtensionTabQueryParameters',
         'WebKit::WebExtensionWindowParameters',
         'WebKit::WebTransportSessionIdentifier',
+        'WebKit::WebUndoStepID',
         'WebKit::XRDeviceIdentifier',
         'WTF::SystemMemoryPressureStatus',
     ] + types_that_must_be_moved())
