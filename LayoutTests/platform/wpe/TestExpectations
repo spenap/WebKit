@@ -493,6 +493,8 @@ css3/scroll-snap/resnap-after-layout.html [ Skip ] # Timeout.
 # 4. TESTS CRASHING
 #////////////////////////////////////////////////////////////////////////////////////////
 
+webkit.org/b/305722 [ Debug ] platform/wpe/media/video-punch-hole.html [ Crash Pass ]
+
 webkit.org/b/177633 editing/async-clipboard/clipboard-change-data-while-writing.html [ Failure Pass ]
 webkit.org/b/177633 editing/async-clipboard/clipboard-read-text-from-platform.html [ Failure ]
 
