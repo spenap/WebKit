@@ -100,7 +100,6 @@ CSSParserContext::CSSParserContext(const Settings& settings)
     , gridLanesEnabled { settings.gridLanesEnabled() }
     , cssAppearanceBaseEnabled { settings.cssAppearanceBaseEnabled() }
     , cssPaintingAPIEnabled { settings.cssPaintingAPIEnabled() }
-    , cssShapeFunctionEnabled { settings.cssShapeFunctionEnabled() }
     , cssTextDecorationLineErrorValues { settings.cssTextDecorationLineErrorValues() }
     , cssBackgroundClipBorderAreaEnabled { settings.cssBackgroundClipBorderAreaEnabled() }
     , cssWordBreakAutoPhraseEnabled { settings.cssWordBreakAutoPhraseEnabled() }
@@ -142,34 +141,31 @@ void add(Hasher& hasher, const CSSParserContext& context)
         | context.gridLanesEnabled                          << 6
         | context.cssAppearanceBaseEnabled                  << 7
         | context.cssPaintingAPIEnabled                     << 8
-        | context.cssShapeFunctionEnabled                   << 9
-        | context.cssBackgroundClipBorderAreaEnabled        << 10
-        | context.cssWordBreakAutoPhraseEnabled             << 11
-        | context.popoverAttributeEnabled                   << 12
-        | context.sidewaysWritingModesEnabled               << 13
-        | context.cssTextWrapPrettyEnabled                  << 14
-        | context.thumbAndTrackPseudoElementsEnabled        << 15
+        | context.cssBackgroundClipBorderAreaEnabled        << 9
+        | context.cssWordBreakAutoPhraseEnabled             << 10
+        | context.popoverAttributeEnabled                   << 11
+        | context.sidewaysWritingModesEnabled               << 12
+        | context.cssTextWrapPrettyEnabled                  << 13
+        | context.thumbAndTrackPseudoElementsEnabled        << 14
 #if ENABLE(SERVICE_CONTROLS)
-        | context.imageControlsEnabled                      << 16
+        | context.imageControlsEnabled                      << 15
 #endif
-        | context.colorLayersEnabled                        << 17
-        | context.contrastColorEnabled                      << 18
-        | context.targetTextPseudoElementEnabled            << 19
-        | context.cssProgressFunctionEnabled                << 20
-        | context.cssRandomFunctionEnabled                  << 21
-        | context.cssTreeCountingFunctionsEnabled           << 22
-        | context.cssURLModifiersEnabled                    << 23
-        | context.cssURLIntegrityModifierEnabled            << 24
-        | context.cssAxisRelativePositionKeywordsEnabled    << 25
-        | context.cssDynamicRangeLimitMixEnabled            << 26
-        | context.cssConstrainedDynamicRangeLimitEnabled    << 27
-        | context.cssTextDecorationLineErrorValues          << 28
-        | context.cssTextTransformMathAutoEnabled           << 29
-        | context.cssInternalAutoBaseParsingEnabled         << 30
-        | context.cssTextTransformMathAutoEnabled           << 31;
+        | context.colorLayersEnabled                        << 16
+        | context.contrastColorEnabled                      << 17
+        | context.targetTextPseudoElementEnabled            << 18
+        | context.cssProgressFunctionEnabled                << 19
+        | context.cssRandomFunctionEnabled                  << 20
+        | context.cssTreeCountingFunctionsEnabled           << 21
+        | context.cssURLModifiersEnabled                    << 22
+        | context.cssURLIntegrityModifierEnabled            << 23
+        | context.cssAxisRelativePositionKeywordsEnabled    << 24
+        | context.cssDynamicRangeLimitMixEnabled            << 25
+        | context.cssConstrainedDynamicRangeLimitEnabled    << 26
+        | context.cssTextDecorationLineErrorValues          << 27
+        | context.cssTextTransformMathAutoEnabled           << 28
+        | context.cssInternalAutoBaseParsingEnabled         << 29
+        | context.cssMathDepthEnabled                       << 30;
     add(hasher, context.baseURL, context.charset, context.propertySettings, context.mode, bits);
-    uint32_t bits2 =  context.cssMathDepthEnabled           << 0;
-    add(hasher, context.baseURL, context.charset, context.propertySettings, context.mode, bits, bits2);
 }
 
 void CSSParserContext::setUASheetMode()

@@ -1455,20 +1455,6 @@ CSSSelectorJITCompilerEnabled:
     WebCore:
       default: true
 
-CSSShapeFunctionEnabled:
-  type: bool
-  status: stable
-  category: css
-  humanReadableName: "CSS shape() function"
-  humanReadableDescription: "Enable the CSS shape() function"
-  defaultValue:
-    WebKitLegacy:
-      default: true
-    WebKit:
-      default: true
-    WebCore:
-      default: true
-
 CSSTextAutospaceEnabled:
   type: bool
   status: stable

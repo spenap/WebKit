@@ -64,7 +64,6 @@ struct CSSParserContext {
     bool gridLanesEnabled : 1 { false };
     bool cssAppearanceBaseEnabled : 1 { false };
     bool cssPaintingAPIEnabled : 1 { false };
-    bool cssShapeFunctionEnabled : 1 { false };
     bool cssTextDecorationLineErrorValues : 1 { false };
     bool cssBackgroundClipBorderAreaEnabled : 1 { false };
     bool cssWordBreakAutoPhraseEnabled : 1 { false };
