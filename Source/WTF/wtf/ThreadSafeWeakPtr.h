@@ -585,7 +585,7 @@ public:
         m_weak = nullptr;
         m_strong = WTF::move(strong);
         ASSERT(isStrong());
-        return m_strong.get();
+        return m_strong;
     }
 
     ThreadSafeWeakOrStrongPtr& operator=(const ThreadSafeWeakOrStrongPtr& other)

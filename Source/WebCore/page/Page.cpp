@@ -686,7 +686,7 @@ ScrollingCoordinator* Page::scrollingCoordinator()
         protectedScrollingCoordinator()->windowScreenDidChange(m_displayID, m_displayNominalFramesPerSecond);
     }
 
-    return m_scrollingCoordinator.get();
+    return m_scrollingCoordinator;
 }
 
 RefPtr<ScrollingCoordinator> Page::protectedScrollingCoordinator()

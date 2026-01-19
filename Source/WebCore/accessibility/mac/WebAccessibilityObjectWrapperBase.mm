@@ -568,7 +568,7 @@ NSRange makeNSRange(std::optional<SimpleRange> range)
         return NSMakeRange(NSNotFound, 0);
 
     RefPtr rootEditableElement = frame->selection().selection().rootEditableElement();
-    RefPtr scope = rootEditableElement ? rootEditableElement : document->documentElement();
+    RefPtr scope = rootEditableElement ? rootEditableElement : RefPtr { document->documentElement() };
     if (!scope)
         return NSMakeRange(NSNotFound, 0);
 
@@ -593,7 +593,7 @@ std::optional<SimpleRange> makeDOMRange(Document* document, NSRange range)
     // to use the root editable element of the selection start as the positional base.
     // That fits with AppKit's idea of an input context.
     RefPtr selectionRoot = document->frame()->selection().selection().rootEditableElement();
-    RefPtr scope = selectionRoot ? selectionRoot : document->documentElement();
+    RefPtr scope = selectionRoot ? selectionRoot : RefPtr { document->documentElement() };
     if (!scope)
         return std::nullopt;
 

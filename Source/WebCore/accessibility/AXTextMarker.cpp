@@ -1467,7 +1467,7 @@ AXTextMarker AXTextMarker::toTextRunMarker(std::optional<AXID> stopAtID) const
     // AXTextMarker { ID 3: StaticText, Offset 3 }
     // Because we had to walk over ID 2 which had length 3 text.
     size_t precedingOffset = 0;
-    RefPtr current = runs ? WTF::move(object) : findObjectWithRuns(*object, AXDirection::Next, stopAtID);
+    RefPtr current = runs ? WTF::move(object) : RefPtr { findObjectWithRuns(*object, AXDirection::Next, stopAtID) };
     while (current) {
         unsigned totalLength = current->textRuns()->totalLength();
         if (precedingOffset + totalLength >= offset())

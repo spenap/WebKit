@@ -329,7 +329,7 @@ void WebChromeClient::takeFocus(FocusDirection direction)
 
 void WebChromeClient::focusedElementChanged(Element* element, LocalFrame* frame, FocusOptions options, BroadcastFocusedElement broadcast)
 {
-    RefPtr coreFrame =  element ? element->document().protectedFrame() : frame;
+    RefPtr coreFrame =  element ? element->document().frame() : frame;
     RefPtr webFrame = coreFrame ? WebFrame::fromCoreFrame(*coreFrame) : nullptr;
     RefPtr page = m_page.get();
     if (page && broadcast == BroadcastFocusedElement::Yes)

@@ -1750,7 +1750,7 @@ void DocumentLoader::clearArchiveResources()
 
 SharedBuffer* DocumentLoader::parsedArchiveData() const
 {
-    return m_parsedArchiveData.get();
+    return m_parsedArchiveData;
 }
 
 #endif // ENABLE(WEB_ARCHIVE) || ENABLE(MHTML)
@@ -2584,7 +2584,7 @@ void DocumentLoader::setPreviewConverter(RefPtr<PreviewConverter>&& previewConve
 
 PreviewConverter* DocumentLoader::previewConverter() const
 {
-    return m_previewConverter.get();
+    return m_previewConverter;
 }
 
 #endif

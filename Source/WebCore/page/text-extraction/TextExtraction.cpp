@@ -1895,7 +1895,8 @@ RefPtr<Element> elementForExtractedText(const LocalFrame& frame, ExtractedText&&
     if (!node)
         return { };
 
-    return dynamicDowncast<Element>(node) ?: node->parentElementInComposedTree();
+    RefPtr element = dynamicDowncast<Element>(node);
+    return element ? element : RefPtr { node->parentElementInComposedTree() };
 }
 
 std::optional<SimpleRange> rangeForExtractedText(const LocalFrame& frame, ExtractedText&& extractedText)

@@ -315,7 +315,7 @@ void WebAnimation::setTimeline(RefPtr<AnimationTimeline>&& timeline)
     Ref protectedThis { *this };
     setTimelineInternal(WTF::move(timeline));
 
-    RefPtr documentTimeline = dynamicDowncast<DocumentTimeline>(m_timeline.get());
+    RefPtr documentTimeline = dynamicDowncast<DocumentTimeline>(m_timeline);
     setSuspended(documentTimeline && documentTimeline->animationsAreSuspended());
 
     // 9. Perform the steps corresponding to the first matching condition from the following, if any:
@@ -752,7 +752,7 @@ void WebAnimation::setEffectiveFrameRate(std::optional<FramesPerSecond> effectiv
         return;
 
     std::optional<FramesPerSecond> maximumFrameRate = std::nullopt;
-    if (RefPtr timeline = dynamicDowncast<DocumentTimeline>(m_timeline.get()))
+    if (RefPtr timeline = dynamicDowncast<DocumentTimeline>(m_timeline))
         maximumFrameRate = timeline->maximumFrameRate();
 
     std::optional<FramesPerSecond> adjustedEffectiveFrameRate;
@@ -857,7 +857,7 @@ void WebAnimation::cancel(Silently silently)
         //    scheduled event time is an unresolved time value.
         // Otherwise, queue a task to dispatch cancelEvent at animation. The task source for this task is the DOM manipulation task source.
         auto scheduledTime = [&]() -> std::optional<WebAnimationTime> {
-            if (RefPtr documentTimeline = dynamicDowncast<DocumentTimeline>(m_timeline.get())) {
+            if (RefPtr documentTimeline = dynamicDowncast<DocumentTimeline>(m_timeline)) {
                 if (auto currentTime = documentTimeline->currentTime())
                     return documentTimeline->convertTimelineTimeToOriginRelativeTime(*currentTime);
             }
@@ -899,7 +899,7 @@ void WebAnimation::enqueueAnimationEvent(Ref<AnimationEventBase>&& event)
     auto documentTimeline = [&]() -> DocumentTimeline* {
         if (auto* timeline = dynamicDowncast<DocumentTimeline>(m_timeline.get()))
             return timeline;
-        if (RefPtr scrollTimeline = dynamicDowncast<ScrollTimeline>(m_timeline.get())) {
+        if (RefPtr scrollTimeline = dynamicDowncast<ScrollTimeline>(m_timeline)) {
             if (RefPtr source = scrollTimeline->source())
                 return Ref { source->document() }->existingTimeline();
         }
@@ -1148,7 +1148,7 @@ void WebAnimation::finishNotificationSteps()
     //    effect end to an origin-relative time.
     //    Otherwise, queue a task to dispatch finishEvent at animation. The task source for this task is the DOM manipulation task source.
     auto scheduledTime = [&]() -> std::optional<WebAnimationTime> {
-        if (RefPtr documentTimeline = dynamicDowncast<DocumentTimeline>(m_timeline.get())) {
+        if (RefPtr documentTimeline = dynamicDowncast<DocumentTimeline>(m_timeline)) {
             if (auto animationEndTime = convertAnimationTimeToTimelineTime(effectEndTime()))
                 return documentTimeline->convertTimelineTimeToOriginRelativeTime(*animationEndTime);
         }

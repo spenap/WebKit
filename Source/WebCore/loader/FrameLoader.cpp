@@ -2222,8 +2222,8 @@ void FrameLoader::stopForUserCancel(bool deferCheckLoadComplete)
 DocumentLoader* FrameLoader::activeDocumentLoader() const
 {
     if (m_state == FrameState::Provisional)
-        return m_provisionalDocumentLoader.get();
-    return m_documentLoader.get();
+        return m_provisionalDocumentLoader;
+    return m_documentLoader;
 }
 
 RefPtr<DocumentLoader> FrameLoader::protectedActiveDocumentLoader() const
@@ -4647,7 +4647,7 @@ void FrameLoader::retryAfterFailedCacheOnlyMainResourceLoad()
     ASSERT(!m_loadingFromCachedPage);
     ASSERT(history().provisionalItem());
     ASSERT(history().provisionalItem()->formData());
-    ASSERT(history().provisionalItem() == m_requestedHistoryItem.get());
+    ASSERT(history().provisionalItem() == m_requestedHistoryItem);
 
     FrameLoadType loadType = m_loadType;
     RefPtr item = history().provisionalItem();
@@ -4791,7 +4791,7 @@ void FrameLoader::tellClientAboutPastMemoryCacheLoads()
 
 NetworkingContext* FrameLoader::networkingContext() const
 {
-    return m_networkingContext.get();
+    return m_networkingContext;
 }
 
 RefPtr<NetworkingContext> FrameLoader::protectedNetworkingContext() const
