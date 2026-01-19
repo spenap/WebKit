@@ -188,7 +188,6 @@ webkit.org/b/298588 fast/media/mq-pointer.html [ Skip ]
 
 # Pending to create bug.
 [ Release ] fast/events/prevent-default-prevents-interaction-with-scrollbars.html [ Failure Pass ]
-media/no-fullscreen-when-hidden.html [ Failure ]
 media/video-background-tab-playback.html [ Failure ]
 media/video-muted-holds-sleep-assertion.html [ Failure ]
 media/video-unmuted-after-play-holds-sleep-assertion.html [ Failure ]
