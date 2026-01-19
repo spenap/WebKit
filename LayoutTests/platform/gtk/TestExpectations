@@ -122,9 +122,6 @@ webkit.org/b/254733 inspector/canvas/recording-offscreen-webgl-memoryLimit.html 
 webkit.org/b/254733 inspector/canvas/shaderProgram-add-remove-webgl2.html [ Failure ]
 webkit.org/b/254733 inspector/canvas/shaderProgram-add-remove-webgl.html [ Failure ]
 
-webkit.org/b/303375 inspector/debugger/async-stack-trace-basic.html [ Crash Timeout Pass ]
-webkit.org/b/303375 inspector/debugger/async-stack-trace-truncate.html [ Crash Timeout ]
-
 # Crash on EWS bot.
 webrtc/vp8-then-h264-gpu-process-crash.html [ Skip ]
 
