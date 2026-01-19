@@ -1130,6 +1130,8 @@ compositing/repaint/copy-forward-clear-rect.html [ ImageOnlyFailure Pass ]
 compositing/repaint/copy-forward-dirty-region-purged.html [ ImageOnlyFailure Pass ]
 compositing/repaint/not-self-painting-layer-stops-compositing.html [ ImageOnlyFailure Pass ]
 
+webkit.org/b/305740 compositing/backing/solid-color-with-paints-into-ancestor.html [ ImageOnlyFailure Pass ]
+
 #////////////////////////////////////////////////////////////////////////////////////////
 # End of Compositing tests
 #////////////////////////////////////////////////////////////////////////////////////////
@@ -1336,6 +1338,8 @@ webkit.org/b/279421 imported/w3c/web-platform-tests/css/css-multicol/crashtests/
 
 imported/w3c/web-platform-tests/css/css-view-transitions/inline-with-offset-from-containing-block.html [ ImageOnlyFailure ]
 
+webkit.org/b/305742 imported/w3c/web-platform-tests/css/css-viewport/zoom/iframe-zoom-nested.html [ ImageOnlyFailure Pass ]
+
 #////////////////////////////////////////////////////////////////////////////////////////
 # End of CSS-related bugs
 #////////////////////////////////////////////////////////////////////////////////////////
@@ -1349,6 +1353,8 @@ webkit.org/b/219530 fast/dom/HTMLAnchorElement/anchor-download.html [ Failure ]
 webkit.org/b/219530 fast/dom/HTMLAnchorElement/anchor-nodownload-set.html [ Failure ]
 
 webkit.org/b/185913 fast/dom/HTMLAnchorElement/anchor-file-blob-download-then-revoke.html [ Failure ]
+
+webkit.org/b/305744 imported/w3c/web-platform-tests/html/dom/idlharness.https.html? [ Failure Pass ]
 
 #////////////////////////////////////////////////////////////////////////////////////////
 # End of DOM-related bugs
@@ -1608,6 +1614,7 @@ webkit.org/b/271631 media/media-source/media-managedmse-stall-endofstream.html [
 webkit.org/b/282791 media/media-source/media-source-vp8-hiddenframes.html [ ImageOnlyFailure ]
 webkit.org/b/282827 media/media-video-videorange.html [ Failure ]
 webkit.org/b/282827 media/media-video-videorange-offscreen.html [ Failure ]
+webkit.org/b/305743 media/media-source/media-managedmse-video-with-poster.html [ ImageOnlyFailure Timeout Pass ]
 
 webkit.org/b/283624 media/media-source/media-source-rvfc-paused.html [ Timeout ]
 webkit.org/b/283624 media/media-source/media-source-rvfc-paused-offscreen.html [ Timeout ]
@@ -2196,6 +2203,8 @@ webkit.org/b/304406 http/wpt/service-workers/service-worker-process-crashing-bet
 http/wpt/service-workers/fetch-service-worker-preload-use-download-and-clone.https.html [ Failure ]
 http/wpt/service-workers/fetch-service-worker-preload-use-download.https.html [ Failure ]
 http/wpt/service-workers/media-range-request.html [ DumpJSConsoleLogInStdErr ]
+
+webkit.org/b/305747 http/wpt/service-workers/online.https.html [ Failure Pass ]
 
 webkit.org/b/296469 imported/w3c/web-platform-tests/service-workers/service-worker/windowclient-navigate.https.html [ Failure ]
 
