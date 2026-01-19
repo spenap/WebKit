@@ -44,6 +44,7 @@ bool isRegexpMatching(const String& pattern, StringView value, bool shouldIgnore
 #else
     UNUSED_PARAM(pattern);
     UNUSED_PARAM(value);
+    UNUSED_PARAM(shouldIgnoreCase);
     return false;
 #endif
 }
