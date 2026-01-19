@@ -362,21 +362,21 @@ TEST(WTF_WeakPtr, DerivedConstructAndAssignConst)
 {
     const Derived derived;
     {
-        WeakPtr derivedWeakPtr { derived };
+        WeakPtr<const Derived> derivedWeakPtr { derived };
         WeakPtr<const Base> baseWeakPtr { WTF::move(derivedWeakPtr) };
         EXPECT_EQ(baseWeakPtr.get(), &derived);
         SUPPRESS_USE_AFTER_MOVE EXPECT_NULL(derivedWeakPtr.get());
     }
 
     {
-        WeakPtr derivedWeakPtr { derived };
+        WeakPtr<const Derived> derivedWeakPtr { derived };
         WeakPtr<const Base> baseWeakPtr { derivedWeakPtr };
         EXPECT_EQ(baseWeakPtr.get(), &derived);
         EXPECT_EQ(derivedWeakPtr.get(), &derived);
     }
 
     {
-        WeakPtr derivedWeakPtr { derived };
+        WeakPtr<const Derived> derivedWeakPtr { derived };
         WeakPtr<const Base> baseWeakPtr;
         baseWeakPtr = WTF::move(derivedWeakPtr);
         EXPECT_EQ(baseWeakPtr.get(), &derived);
@@ -384,7 +384,7 @@ TEST(WTF_WeakPtr, DerivedConstructAndAssignConst)
     }
 
     {
-        WeakPtr derivedWeakPtr { derived };
+        WeakPtr<const Derived> derivedWeakPtr { derived };
         WeakPtr<const Base> baseWeakPtr;
         baseWeakPtr = derivedWeakPtr;
         EXPECT_EQ(baseWeakPtr.get(), &derived);
@@ -418,7 +418,7 @@ TEST(WTF_WeakPtr, MakeWeakPtrTakesRef)
     EXPECT_EQ(baseObject->refCount(), 1U);
     EXPECT_EQ(baseObject->weakCount(), 0U);
     {
-        WeakPtr baseObjectWeakPtr { baseObject.get() };
+        WeakPtr<BaseObjectWithRefAndWeakPtr> baseObjectWeakPtr { baseObject.get() };
         EXPECT_EQ(baseObject->refCount(), 1U);
         EXPECT_EQ(baseObject->weakCount(), 1U);
         EXPECT_EQ(baseObjectWeakPtr.get(), baseObject.ptr());
@@ -461,7 +461,7 @@ TEST(WTF_WeakPtr, MakeWeakPtrTakesRefPtr)
     EXPECT_EQ(baseObject->refCount(), 1U);
     EXPECT_EQ(baseObject->weakCount(), 0U);
     {
-        WeakPtr baseObjectWeakPtr { baseObject.get() };
+        WeakPtr<BaseObjectWithRefAndWeakPtr> baseObjectWeakPtr { baseObject.get() };
         EXPECT_EQ(baseObject->refCount(), 1U);
         EXPECT_EQ(baseObject->weakCount(), 1U);
         EXPECT_EQ(baseObjectWeakPtr.get(), baseObject.get());
