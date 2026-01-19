@@ -2845,11 +2845,6 @@ webrtc/datachannel/multiple-connections.html [ Slow ]
 # Skia crash in GrResourceCache::notifyARefCntReachedZero
 webkit.org/b/286859 imported/w3c/web-platform-tests/webrtc-stats/hardware-capability-stats.https.html [ Crash Pass ]
 
-webkit.org/b/305356 webrtc/video-vp8-videorange.html [ Pass Failure ]
-
-# This also crashes with that skia issue, but since 303624@main it started having a text failure:
-webkit.org/b/286859 webrtc/captureCanvas-webrtc-with-video-scaling-adaptation.html [ Failure Crash Pass ]
-
 # This test is almost the same as http/wpt/webrtc/transfer-datachannel-service-worker.https.html.
 # The main difference is that in this test an additional message is sent on the data-channel.
 webkit.org/b/264936 imported/w3c/web-platform-tests/webrtc-extensions/transfer-datachannel-service-worker.https.html [ Failure ]
