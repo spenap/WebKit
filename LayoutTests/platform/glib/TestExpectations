@@ -2377,8 +2377,10 @@ webkit.org/b/223416 fast/text/image-alt-text-bidi-2.html [ ImageOnlyFailure ]
 
 fast/text/font-load-data-partitioned-alphabet.html [ Failure ]
 
+# Slightly different results, even if hyphenation happens, it probably needs to be checked.
 fast/text/simple-line-layout-hyphen-limit-before.html [ ImageOnlyFailure ]
 fast/text/simple-line-layout-hyphen-limit-lines.html [ ImageOnlyFailure ]
+fast/text/simple-line-layout-hyphenation-constrains.html [ ImageOnlyFailure ]
 
 #////////////////////////////////////////////////////////////////////////////////////////
 # End of Text-related bugs
@@ -2987,6 +2989,8 @@ webkit.org/b/209080 imported/w3c/web-platform-tests/css/css-writing-modes/text-c
 webkit.org/b/164510 imported/w3c/web-platform-tests/css/css-writing-modes/text-combine-upright-line-breaking-rules-001.html [ ImageOnlyFailure ]
 
 # Overrides over general expectations that are shared between GTK and WPE after updating css-text WPT tests
+webkit.org/b/214290 imported/w3c/web-platform-tests/css/css-text/hyphens/hyphens-auto-010.html [ Pass ]
+webkit.org/b/214290 imported/w3c/web-platform-tests/css/css-text/hyphens/hyphens-auto-inline-010.html [ Pass ]
 webkit.org/b/214290 imported/w3c/web-platform-tests/css/css-text/hyphens/hyphens-none-011.html [ Pass ]
 webkit.org/b/214290 imported/w3c/web-platform-tests/css/css-text/hyphens/hyphens-none-012.html [ Pass ]
 webkit.org/b/214290 imported/w3c/web-platform-tests/css/css-text/hyphens/hyphens-none-013.html [ Pass ]

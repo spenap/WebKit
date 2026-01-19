@@ -113,6 +113,7 @@ WEBKIT_OPTION_DEFINE(USE_FLITE "Whether to enable usage of Flite for speech synt
 WEBKIT_OPTION_DEFINE(USE_GBM "Whether to enable usage of GBM." PUBLIC ON)
 WEBKIT_OPTION_DEFINE(USE_LIBBACKTRACE "Whether to enable usage of libbacktrace." PUBLIC ON)
 WEBKIT_OPTION_DEFINE(USE_LIBDRM "Whether to enable usage of libdrm." PUBLIC ON)
+WEBKIT_OPTION_DEFINE(USE_LIBHYPHEN "Whether to enable the default automatic hyphenation implementation." PUBLIC ON)
 WEBKIT_OPTION_DEFINE(USE_SKIA_OPENTYPE_SVG "Whether to use the Skia built-in support for OpenType SVG fonts." PUBLIC ON)
 WEBKIT_OPTION_DEFINE(USE_QT6 "Whether to use Qt6 instead of Qt5" PUBLIC OFF)
 
@@ -248,6 +249,13 @@ if (USE_JPEGXL)
     find_package(JPEGXL 0.7.0)
     if (NOT JPEGXL_FOUND)
         message(FATAL_ERROR "libjxl is required for USE_JPEGXL")
+    endif ()
+endif ()
+
+if (USE_LIBHYPHEN)
+    find_package(Hyphen)
+    if (NOT Hyphen_FOUND)
+       message(FATAL_ERROR "libhyphen is needed for USE_LIBHYPHEN.")
     endif ()
 endif ()
 
