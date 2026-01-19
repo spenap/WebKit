@@ -52,7 +52,6 @@ bindings/js/JSDOMWindowBase.cpp
 bindings/js/JSElementCustom.cpp
 bindings/js/JSExecState.cpp
 bindings/js/JSHTMLElementCustom.cpp
-bindings/js/JSHTMLTemplateElementCustom.cpp
 bindings/js/JSIDBObjectStoreCustom.cpp
 bindings/js/JSIntersectionObserverCustom.cpp
 bindings/js/JSLazyEventListener.cpp

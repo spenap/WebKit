@@ -56,8 +56,8 @@ static bool jsDOMWindowPropertiesGetOwnPropertySlotNamedItemGetter(JSDOMWindowPr
         return false;
 
     // Allow shortcuts like 'Image1' instead of document.images.Image1
-    auto* document = window.document();
-    if (auto* htmlDocument = dynamicDowncast<HTMLDocument>(document)) {
+    CheckedPtr document = window.document();
+    if (CheckedPtr htmlDocument = dynamicDowncast<HTMLDocument>(document.get())) {
         AtomString atomPropertyName = propertyName.publicName();
         if (!atomPropertyName.isEmpty() && htmlDocument->hasWindowNamedItem(atomPropertyName)) {
             JSValue namedItem;

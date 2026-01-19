@@ -48,7 +48,7 @@ void JSXMLHttpRequest::visitAdditionalChildren(Visitor& visitor)
     if (auto* upload = wrapped().optionalUpload())
         addWebCoreOpaqueRoot(visitor, *upload);
 
-    if (auto* responseDocument = wrapped().optionalResponseXML())
+    if (SUPPRESS_UNCHECKED_LOCAL auto* responseDocument = wrapped().optionalResponseXML())
         addWebCoreOpaqueRoot(visitor, *responseDocument);
 }
 

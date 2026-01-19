@@ -51,7 +51,7 @@ template<typename T> struct Converter<IDLPromise<T>> : DefaultConverter<IDLPromi
         if (scope.exception()) {
             CheckedPtr scriptExecutionContext = globalObject->scriptExecutionContext();
             if (RefPtr globalScope = dynamicDowncast<WorkerGlobalScope>(scriptExecutionContext.get())) {
-                auto* scriptController = globalScope->script();
+                CheckedPtr scriptController = globalScope->script();
                 bool terminatorCausedException = vm.isTerminationException(scope.exception());
                 if (terminatorCausedException || (scriptController && scriptController->isTerminatingExecution())) {
                     scriptController->forbidExecution();

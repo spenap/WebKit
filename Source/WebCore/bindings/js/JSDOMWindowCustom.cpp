@@ -400,7 +400,7 @@ static void addScopedChildrenIndexes(JSGlobalObject& lexicalGlobalObject, DOMWin
     if (!localDOMWindow)
         return;
 
-    auto* document = localDOMWindow->document();
+    CheckedPtr document = localDOMWindow->document();
     if (!document)
         return;
 

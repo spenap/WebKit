@@ -506,7 +506,7 @@ AXTextMarkerRange AccessibilityObject::textInputMarkedTextMarkerRange() const
     if (!frame)
         return { };
 
-    auto* cache = axObjectCache();
+    CheckedPtr cache = axObjectCache();
     if (!cache)
         return { };
 
@@ -530,7 +530,7 @@ AccessibilityObject* AccessibilityObject::displayContentsParent() const
     if (RefPtr parentElement = dynamicDowncast<Element>(parentNode); !parentElement || !parentElement->hasDisplayContents())
         return nullptr;
 
-    auto* cache = axObjectCache();
+    CheckedPtr cache = axObjectCache();
     return cache ? cache->getOrCreate(*parentNode) : nullptr;
 }
 
@@ -604,7 +604,7 @@ AccessibilityObject* firstAccessibleObjectFromNode(const Node* node, NOESCAPE co
     if (!axNode)
         return nullptr;
 
-    AXObjectCache* cache = axNode->document().axObjectCache();
+    CheckedPtr cache = axNode->document().axObjectCache();
     if (!cache)
         return nullptr;
 
@@ -747,7 +747,7 @@ void AccessibilityObject::resetChildrenIndexInParent() const
 
 AXCoreObject::AccessibilityChildrenVector AccessibilityObject::findMatchingObjects(AccessibilitySearchCriteria&& criteria)
 {
-    if (auto* cache = axObjectCache())
+    if (CheckedPtr cache = axObjectCache())
         cache->startCachingComputedObjectAttributesUntilTreeMutates();
 
     criteria.anchorObject = this;
@@ -916,7 +916,7 @@ std::optional<SimpleRange> AccessibilityObject::visibleCharacterRangeInternal(Si
     auto startBoundary = range.start;
     auto endBoundary = range.end;
 
-    const auto* style = this->style();
+    const CheckedPtr style = this->style();
     bool isFlipped = style && style->writingMode().isBlockFlipped();
     // In vertical-rl writing-modes (e.g. some Japanese text), text lays out vertically from right-to-left, meaning the the start of the text
     // has a larger `x`-coordinate than the end.
@@ -1374,7 +1374,7 @@ IntRect AccessibilityRenderObject::boundsForVisiblePositionRange(const VisiblePo
 
 IntRect AccessibilityObject::boundsForRange(const SimpleRange& range) const
 {
-    auto cache = axObjectCache();
+    CheckedPtr cache = axObjectCache();
     if (!cache)
         return { };
 
@@ -1573,7 +1573,7 @@ String AccessibilityObject::language() const
 VisiblePosition AccessibilityObject::visiblePositionForPoint(const IntPoint& point) const
 {
     // convert absolute point to view coordinates
-    RenderView* renderView = topRenderer();
+    CheckedPtr renderView = topRenderer();
     if (!renderView)
         return VisiblePosition();
 
@@ -1600,7 +1600,7 @@ VisiblePosition AccessibilityObject::visiblePositionForPoint(const IntPoint& poi
         if (!innerNode)
             return VisiblePosition();
 
-        RenderObject* renderer = innerNode->renderer();
+        CheckedPtr renderer = innerNode->renderer();
         if (!renderer)
             return VisiblePosition();
 
@@ -1673,7 +1673,7 @@ static VisiblePosition updateAXLineStartForVisiblePosition(const VisiblePosition
         if (tempPosition.isNull())
             break;
         Position p = tempPosition.deepEquivalent();
-        RenderObject* renderer = p.deprecatedNode()->renderer();
+        CheckedPtr renderer = p.deprecatedNode()->renderer();
         if (!renderer || (renderer->isRenderBlock() && !p.deprecatedEditingOffset()))
             break;
         if (!RenderedPosition(tempPosition).isNull())
@@ -1747,18 +1747,18 @@ VisiblePositionRange AccessibilityObject::rightLineVisiblePositionRange(const Vi
 
 static VisiblePosition startOfStyleRange(const VisiblePosition& visiblePos)
 {
-    RenderObject* renderer = visiblePos.deepEquivalent().deprecatedNode()->renderer();
-    RenderObject* startRenderer = renderer;
-    auto* style = &renderer->style();
+    CheckedPtr renderer = visiblePos.deepEquivalent().deprecatedNode()->renderer();
+    CheckedPtr startRenderer = renderer;
+    CheckedPtr style = &renderer->style();
 
     // traverse backward by renderer to look for style change
-    for (RenderObject* r = renderer->previousInPreOrder(); r; r = r->previousInPreOrder()) {
+    for (CheckedPtr r = renderer->previousInPreOrder(); r; r = r->previousInPreOrder()) {
         // skip non-leaf nodes
         if (r->firstChildSlow())
             continue;
 
         // stop at style change
-        if (&r->style() != style)
+        if (&r->style() != style.get())
             break;
 
         // remember match
@@ -1770,18 +1770,18 @@ static VisiblePosition startOfStyleRange(const VisiblePosition& visiblePos)
 
 static VisiblePosition endOfStyleRange(const VisiblePosition& visiblePos)
 {
-    RenderObject* renderer = visiblePos.deepEquivalent().deprecatedNode()->renderer();
-    RenderObject* endRenderer = renderer;
-    const RenderStyle& style = renderer->style();
+    CheckedPtr renderer = visiblePos.deepEquivalent().deprecatedNode()->renderer();
+    CheckedPtr endRenderer = renderer;
+    const CheckedRef style = renderer->style();
 
     // traverse forward by renderer to look for style change
-    for (RenderObject* r = renderer->nextInPreOrder(); r; r = r->nextInPreOrder()) {
+    for (CheckedPtr r = renderer->nextInPreOrder(); r; r = r->nextInPreOrder()) {
         // skip non-leaf nodes
         if (r->firstChildSlow())
             continue;
 
         // stop at style change
-        if (&r->style() != &style)
+        if (&r->style() != style.ptr())
             break;
 
         // remember match
@@ -1820,7 +1820,7 @@ std::optional<SimpleRange> AccessibilityObject::rangeForCharacterRange(const Cha
     if (!range.location && !range.length && !textLength)
         return std::nullopt;
 
-    if (auto* cache = axObjectCache()) {
+    if (CheckedPtr cache = axObjectCache()) {
         auto start = cache->characterOffsetForIndex(range.location, this);
         auto end = cache->characterOffsetForIndex(range.location + range.length, this);
         return cache->rangeForUnorderedCharacterOffsets(start, end);
@@ -1920,7 +1920,7 @@ static StringView lineStartListMarkerText(const RenderListItem* listItem, const 
 
 StringView AccessibilityObject::listMarkerTextForNodeAndPosition(Node* node, Position&& startPosition)
 {
-    auto* listItem = renderListItemContainer(node);
+    CheckedPtr listItem = renderListItemContainer(node);
     if (!listItem)
         return { };
     // Creating a VisiblePosition and determining its relationship to a line of text can be expensive.
@@ -1928,7 +1928,7 @@ StringView AccessibilityObject::listMarkerTextForNodeAndPosition(Node* node, Pos
     auto markerText = listItem->markerTextWithSuffix();
     if (markerText.isEmpty())
         return { };
-    return lineStartListMarkerText(listItem, startPosition, markerText);
+    return lineStartListMarkerText(listItem.get(), startPosition, markerText);
 }
 
 String AccessibilityObject::textContentPrefixFromListMarker() const
@@ -2063,7 +2063,7 @@ bool AccessibilityObject::isVisited() const
         return false;
     }
 
-    auto* style = this->style();
+    CheckedPtr style = this->style();
     if (!style || !style->isLink())
         return false;
     return style->insideLink() == InsideLink::InsideVisited;
@@ -2256,7 +2256,7 @@ void AccessibilityObject::updateBackingStore()
             document->updateLayoutIgnorePendingStylesheets();
     }
 
-    if (auto* cache = axObjectCache())
+    if (CheckedPtr cache = axObjectCache())
         cache->performDeferredCacheUpdate(ForceLayout::Yes);
 
     updateChildrenIfNecessary();
@@ -2362,7 +2362,7 @@ AccessibilityObject* AccessibilityObject::headingElementForNode(Node* node)
     if (!node)
         return nullptr;
 
-    RenderObject* renderObject = node->renderer();
+    CheckedPtr renderObject = node->renderer();
     if (!renderObject)
         return nullptr;
 
@@ -2613,7 +2613,7 @@ bool AccessibilityObject::hasAttribute(const QualifiedName& attribute) const
     if (element->hasAttributeWithoutSynchronization(attribute))
         return true;
 
-    if (auto* defaultARIA = element->customElementDefaultARIAIfExists()) {
+    if (CheckedPtr defaultARIA = element->customElementDefaultARIAIfExists()) {
         // We do not want to use CustomElementDefaultARIA::hasAttribute here, as it returns true
         // even if the author has set the attribute to null (e.g. this.internals.ariaValueNow = null),
         // which should be treated the same as removing the attribute.
@@ -3172,8 +3172,8 @@ AccessibilityObject* AccessibilityObject::elementAccessibilityHitTest(const IntP
 
 AccessibilityObject* AccessibilityObject::focusedUIElement() const
 {
-    CheckedPtr axObjectCache = this->axObjectCache();
-    return axObjectCache ? axObjectCache->focusedObjectForLocalFrame() : nullptr;
+    CheckedPtr cache = axObjectCache();
+    return cache ? cache->focusedObjectForLocalFrame() : nullptr;
 }
 
 AccessibilityObject* AccessibilityObject::focusedUIElementInAnyLocalFrame() const
@@ -3190,7 +3190,7 @@ AccessibilityObject* AccessibilityObject::focusedUIElementInAnyLocalFrame() cons
     if (!focusedDocument)
         return nullptr;
 
-    auto* axObjectCache = focusedDocument->axObjectCache();
+    CheckedPtr axObjectCache = focusedDocument->axObjectCache();
     if (!axObjectCache)
         return nullptr;
 
@@ -3655,7 +3655,7 @@ void AccessibilityObject::scrollToMakeVisibleWithSubFocus(IntRect&& subfocus) co
 {
     // Search up the parent chain until we find the first one that's scrollable.
     AccessibilityObject* scrollParent = parentObject();
-    ScrollableArea* scrollableArea = nullptr;
+    CheckedPtr<ScrollableArea> scrollableArea;
     while (scrollParent) {
         scrollableArea = scrollParent->getScrollableAreaIfScrollable();
         if (scrollableArea)
@@ -3729,7 +3729,7 @@ void AccessibilityObject::scrollToGlobalPoint(IntPoint&& point) const
         RefPtr outer = objects[i];
         RefPtr inner = objects[i + 1];
 
-        ScrollableArea* scrollableArea = outer->getScrollableAreaIfScrollable();
+        CheckedPtr scrollableArea = outer->getScrollableAreaIfScrollable();
 
         LayoutRect innerRect = inner->isScrollView() ? inner->parentObject()->boundingBoxRect() : inner->boundingBoxRect();
         LayoutRect objectRect = innerRect;
@@ -3789,7 +3789,7 @@ ScrollableArea* AccessibilityObject::scrollableAreaAncestor() const
 
 IntPoint AccessibilityObject::scrollPosition() const
 {
-    if (auto scroller = scrollableAreaAncestor())
+    if (CheckedPtr scroller = scrollableAreaAncestor())
         return scroller->scrollPosition();
 
     return IntPoint();
@@ -3797,7 +3797,7 @@ IntPoint AccessibilityObject::scrollPosition() const
 
 IntRect AccessibilityObject::scrollVisibleContentRect() const
 {
-    if (auto scroller = scrollableAreaAncestor())
+    if (CheckedPtr scroller = scrollableAreaAncestor())
         return scroller->visibleContentRect(ScrollableArea::LegacyIOSDocumentVisibleRect);
 
     return IntRect();
@@ -3805,7 +3805,7 @@ IntRect AccessibilityObject::scrollVisibleContentRect() const
 
 IntSize AccessibilityObject::scrollContentsSize() const
 {
-    if (auto scroller = scrollableAreaAncestor())
+    if (CheckedPtr scroller = scrollableAreaAncestor())
         return scroller->contentsSize();
 
     return IntSize();
@@ -3815,7 +3815,7 @@ bool AccessibilityObject::scrollByPage(ScrollByPageDirection direction) const
 {
     std::pair<ScrollableArea*, AccessibilityObject*> scrollers;
     scrollAreaAndAncestor(scrollers);
-    ScrollableArea* scrollableArea = scrollers.first;
+    CheckedPtr scrollableArea = scrollers.first;
     RefPtr scrollParent = scrollers.second;
 
     if (!scrollableArea)
@@ -4018,8 +4018,8 @@ bool AccessibilityObject::isWithinHiddenWebArea() const
     CheckedPtr renderView = webArea ? dynamicDowncast<RenderView>(webArea->renderer()) : nullptr;
     CheckedPtr frameRenderer = renderView ? renderView->frameView().frame().ownerRenderer() : nullptr;
     while (frameRenderer) {
-        const auto& style = frameRenderer->style();
-        if (isVisibilityHidden(style) || style.effectiveInert())
+        const CheckedRef style = frameRenderer->style();
+        if (isVisibilityHidden(style) || style->effectiveInert())
             return true;
 
         renderView = frameRenderer->document().renderView();

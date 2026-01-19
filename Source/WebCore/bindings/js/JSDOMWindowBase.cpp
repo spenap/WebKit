@@ -287,19 +287,19 @@ void JSDOMWindowBase::queueMicrotaskToEventLoop(JSGlobalObject& object, QueuedTa
 {
     JSDOMWindowBase& thisObject = static_cast<JSDOMWindowBase&>(object);
 
-    auto* objectScriptExecutionContext = thisObject.scriptExecutionContext();
-    auto& eventLoop = objectScriptExecutionContext->eventLoop();
+    CheckedPtr objectScriptExecutionContext = thisObject.scriptExecutionContext();
+    CheckedRef eventLoop = objectScriptExecutionContext->eventLoop();
     // Propagating media only user gesture for Fetch API's promise chain.
     auto userGestureToken = UserGestureIndicator::currentUserGestureForMainThread();
     if (userGestureToken && (!userGestureToken->shouldPropagateToMicroTask() || !objectScriptExecutionContext->settingsValues().userGesturePromisePropagationEnabled))
         userGestureToken = nullptr;
 
     if (!userGestureToken)
-        task.setDispatcher(eventLoop.jsMicrotaskDispatcher(task));
+        task.setDispatcher(eventLoop->jsMicrotaskDispatcher(task));
     else
-        task.setDispatcher(UserGestureInitiatedMicrotaskDispatcher::create(eventLoop, Ref { *userGestureToken }));
+        task.setDispatcher(UserGestureInitiatedMicrotaskDispatcher::create(eventLoop.get(), Ref { *userGestureToken }));
 
-    eventLoop.queueMicrotask(WTF::move(task));
+    eventLoop->queueMicrotask(WTF::move(task));
 }
 
 JSC::JSObject* JSDOMWindowBase::currentScriptExecutionOwner(JSGlobalObject* object)
@@ -319,11 +319,11 @@ void JSDOMWindowBase::reportViolationForUnsafeEval(JSGlobalObject* object, const
     const JSDOMWindowBase* thisObject = static_cast<const JSDOMWindowBase*>(object);
     CheckedPtr<ContentSecurityPolicy> contentSecurityPolicy;
     RefPtr localWindow = dynamicDowncast<LocalDOMWindow>(thisObject->wrapped());
-    if (auto* element = localWindow ? localWindow->frameElement() : nullptr)
+    if (CheckedPtr element = localWindow ? localWindow->frameElement() : nullptr)
         contentSecurityPolicy = element->document().contentSecurityPolicy();
 
     if (!contentSecurityPolicy) {
-        if (auto* document = localWindow ? localWindow->document() : nullptr)
+        if (CheckedPtr document = localWindow ? localWindow->document() : nullptr)
             contentSecurityPolicy = document->contentSecurityPolicy();
     }
 

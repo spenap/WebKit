@@ -1789,7 +1789,7 @@ ExceptionOr<void> WebAnimation::commitStyles()
 
     // 2.2 If, after applying any pending style changes, target is not being rendered, throw an "InvalidStateError" DOMException and abort these steps.
     styledElement->protectedDocument()->updateStyleIfNeeded();
-    auto* renderer = styledElement->renderer();
+    CheckedPtr renderer = styledElement->renderer();
     if (!renderer)
         return Exception { ExceptionCode::InvalidStateError };
 
@@ -1798,7 +1798,7 @@ ExceptionOr<void> WebAnimation::commitStyles()
 
     auto unanimatedStyle = [&]() {
         if (auto styleable = Styleable::fromRenderer(*renderer)) {
-            if (auto* lastStyleChangeEventStyle = styleable->lastStyleChangeEventStyle())
+            if (CheckedPtr lastStyleChangeEventStyle = styleable->lastStyleChangeEventStyle())
                 return RenderStyle::clone(*lastStyleChangeEventStyle);
         }
         // If we don't have a style for the last style change event, then the

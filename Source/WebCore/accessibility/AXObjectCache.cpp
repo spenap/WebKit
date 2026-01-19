@@ -478,8 +478,8 @@ bool AXObjectCache::isNodeVisible(const Node* node) const
     if (!renderer)
         return false;
 
-    const auto& style = renderer->style();
-    if (style.display() == DisplayType::None)
+    CheckedRef style = renderer->style();
+    if (style->display() == DisplayType::None)
         return false;
 
     CheckedPtr renderLayer = renderer->enclosingLayer();
@@ -1045,7 +1045,7 @@ void AXObjectCache::remove(Node& node)
     m_nodeObjectMapping.remove(node);
     remove(m_nodeIdMapping.take(node));
 
-    if (auto* renderer = node.renderer())
+    if (CheckedPtr renderer = node.renderer())
         remove(*renderer);
 
     // If we're in the middle of a cache update, don't modify any of these vectors because we are currently
@@ -1904,7 +1904,7 @@ static bool shouldDeferFocusChange(Element* element)
     if (!element)
         return false;
 
-    auto* renderer = element->renderer();
+    CheckedPtr renderer = element->renderer();
     if (renderer && rendererNeedsDeferredUpdate(*renderer))
         return true;
 
@@ -1919,7 +1919,7 @@ static bool shouldDeferFocusChange(Element* element)
 #endif // PLATFORM(IOS_FAMILY)
 
     // We also want to defer handling focus changes for nodes that haven't yet attached their renderer.
-    if (const auto* style = element->existingComputedStyle())
+    if (CheckedPtr style = element->existingComputedStyle())
         return !renderer && element->rendererIsNeeded(*style);
     // No existing style, so we can't easily determine whether this element will need a renderer.
     // Resolving style is expensive and we don't want to do it now, so make this decision assuming
@@ -2168,7 +2168,7 @@ void AXObjectCache::onAccessibilityPaintFinished()
         return;
 
     for (auto iterator = m_mostRecentlyPaintedText.begin(); iterator != m_mostRecentlyPaintedText.end(); ++iterator) {
-        const auto& renderText = iterator->key;
+        CheckedRef renderText = iterator->key;
         if (auto textBox = InlineIterator::firstTextBoxInLogicalOrderFor(renderText).first) {
             // The line index from TextBox::lineIndex is relative to the containing block, which count lines from
             // other renderers. The LineRange struct we have built expects the start and end line indices to be
@@ -3338,7 +3338,7 @@ void AXObjectCache::handleAttributeChange(Element* element, const QualifiedName&
             for (auto& id : ids) {
                 if (RefPtr ownsTarget = element->treeScope().elementByIdResolvingReferenceTarget(id)) {
                     CheckedPtr renderer = ownsTarget->renderer();
-                    if (auto* containingBlock = renderer ? renderer->containingBlock() : nullptr)
+                    if (CheckedPtr containingBlock = renderer ? renderer->containingBlock() : nullptr)
                         setDirtyStitchGroups(*containingBlock);
                 }
             }
@@ -3488,11 +3488,11 @@ VisiblePosition AXObjectCache::visiblePositionForTextMarkerData(const TextMarker
     if (deepPosition.isNull())
         return { };
 
-    auto* renderer = deepPosition.deprecatedNode()->renderer();
+    CheckedPtr renderer = deepPosition.deprecatedNode()->renderer();
     if (!renderer)
         return { };
 
-    auto* cache = renderer->document().axObjectCache();
+    CheckedPtr cache = renderer->document().axObjectCache();
     // Return an empty position if the object associated with the text marker has been destroyed.
     if (!cache || !cache->objectForID(*textMarkerData.axObjectID()))
         return { };
@@ -4695,8 +4695,8 @@ CharacterOffset AXObjectCache::characterOffsetForIndex(int index, const AXCoreOb
 
 const Element* AXObjectCache::rootAXEditableElement(const Node* node)
 {
-    const auto* result = node->rootEditableElement();
-    const auto* element = dynamicDowncast<Element>(*node);
+    CheckedPtr<const Element> result = node->rootEditableElement();
+    CheckedPtr element = dynamicDowncast<Element>(*node);
     if (!element)
         element = node->parentElement();
 
@@ -4705,7 +4705,7 @@ const Element* AXObjectCache::rootAXEditableElement(const Node* node)
             result = element;
     }
 
-    return result;
+    return result.unsafeGet();
 }
 
 static void conditionallyAddNodeToFilterList(Node* node, const Document& document, HashSet<Ref<Node>>& nodesToRemove)
@@ -5471,7 +5471,7 @@ void AXObjectCache::deferSelectedChildrenChangedIfNeeded(Element& selectElement)
 
 void AXObjectCache::deferTextReplacementNotificationForTextControl(HTMLTextFormControlElement& formControlElement, const String& previousValue)
 {
-    auto* renderer = formControlElement.renderer();
+    CheckedPtr renderer = formControlElement.renderer();
     if (!renderer)
         return;
     m_deferredTextFormControlValue.add(formControlElement, previousValue);
@@ -5920,7 +5920,7 @@ bool AXObjectCache::addRelation(Element& origin, const QualifiedName& attribute)
 
     auto& value = origin.attributeWithoutSynchronization(attribute);
     if (value.isNull()) {
-        if (auto* defaultARIA = origin.customElementDefaultARIAIfExists()) {
+        if (CheckedPtr defaultARIA = origin.customElementDefaultARIAIfExists()) {
             for (auto& target : defaultARIA->elementsForAttribute(origin, attribute)) {
                 if (addRelation(origin, target, relation))
                     addedRelation = true;

@@ -205,7 +205,7 @@ AccessibilityObject* AXIsolatedObject::associatedAXObject() const
     // lifetime of isolated objects) in the middle of this method.
     AX_ASSERT(isMainThread());
 
-    auto* axObjectCache = this->axObjectCache();
+    CheckedPtr axObjectCache = this->axObjectCache();
     return axObjectCache ? axObjectCache->objectForID(objectID()) : nullptr;
 }
 
@@ -331,7 +331,7 @@ void AXIsolatedObject::setSelectedChildren(const AccessibilityChildrenVector& se
             return;
         }
 
-        auto* axObjectCache = protectedThis->axObjectCache();
+        CheckedPtr axObjectCache = protectedThis->axObjectCache();
         if (!axObjectCache)
             return;
 
@@ -530,7 +530,7 @@ void AXIsolatedObject::setSelectedRows(AccessibilityChildrenVector&& selectedRow
             return;
         }
 
-        auto* axObjectCache = protectedThis->axObjectCache();
+        CheckedPtr axObjectCache = protectedThis->axObjectCache();
         if (!axObjectCache)
             return;
 

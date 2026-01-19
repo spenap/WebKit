@@ -177,7 +177,7 @@ AccessibilityObject* AccessibilityNodeObject::firstChild() const
     if (!currentChild)
         return nullptr;
 
-    auto* cache = axObjectCache();
+    CheckedPtr cache = axObjectCache();
     if (!cache)
         return nullptr;
 
@@ -198,7 +198,7 @@ AccessibilityObject* AccessibilityNodeObject::lastChild() const
     if (!lastChild)
         return nullptr;
 
-    auto objectCache = axObjectCache();
+    CheckedPtr objectCache = axObjectCache();
     return objectCache ? objectCache->getOrCreate(*lastChild) : nullptr;
 }
 
@@ -211,7 +211,7 @@ AccessibilityObject* AccessibilityNodeObject::previousSibling() const
     if (!previousSibling)
         return nullptr;
 
-    auto objectCache = axObjectCache();
+    CheckedPtr objectCache = axObjectCache();
     return objectCache ? objectCache->getOrCreate(*previousSibling) : nullptr;
 }
 
@@ -224,7 +224,7 @@ AccessibilityObject* AccessibilityNodeObject::nextSibling() const
     if (!nextSibling)
         return nullptr;
 
-    auto objectCache = axObjectCache();
+    CheckedPtr objectCache = axObjectCache();
     return objectCache ? objectCache->getOrCreate(*nextSibling) : nullptr;
 }
 
@@ -289,7 +289,7 @@ LayoutRect AccessibilityNodeObject::checkboxOrRadioRect() const
     if (labels.isEmpty())
         return boundingBoxRect();
 
-    auto* cache = axObjectCache();
+    CheckedPtr cache = axObjectCache();
     if (!cache)
         return boundingBoxRect();
 
@@ -1440,7 +1440,7 @@ Element* AccessibilityNodeObject::anchorElement() const
     if (RefPtr areaElement = dynamicDowncast<HTMLAreaElement>(*node))
         return areaElement.unsafeGet();
 
-    AXObjectCache* cache = axObjectCache();
+    CheckedPtr cache = axObjectCache();
     if (!cache)
         return nullptr;
 
@@ -1635,7 +1635,7 @@ bool AccessibilityNodeObject::showsCursorOnHover() const
         return false;
     }
 
-    auto* box = dynamicDowncast<RenderBox>(*renderer);
+    CheckedPtr box = dynamicDowncast<RenderBox>(*renderer);
     if (box && (box->hasScrollableOverflowX() || box->hasScrollableOverflowY())) {
         // This heuristic is not valid for scrollable boxes.
         return false;
@@ -1827,7 +1827,7 @@ void AccessibilityNodeObject::setNodeValue(StepAction stepAction, float value)
     bool didSet = setValue(String::number(value));
 
     if (didSet) {
-        if (auto* cache = axObjectCache())
+        if (CheckedPtr cache = axObjectCache())
             cache->postNotification(this, document(), AXNotification::ValueChanged);
     } else
         postKeyboardKeysForValueChange(stepAction);
@@ -1949,7 +1949,7 @@ VisiblePositionRange AccessibilityNodeObject::visiblePositionRangeForLine(unsign
         return { };
 
     RefPtr document = this->document();
-    auto* renderView = document ? document->renderView() : nullptr;
+    CheckedPtr renderView = document ? document->renderView() : nullptr;
     if (!renderView)
         return { };
 
@@ -3136,7 +3136,7 @@ AccessibilityObject* AccessibilityNodeObject::captionForFigure() const
     if (!isFigureElement())
         return nullptr;
 
-    AXObjectCache* cache = axObjectCache();
+    CheckedPtr cache = axObjectCache();
     if (!cache)
         return nullptr;
 
@@ -3345,7 +3345,7 @@ void AccessibilityNodeObject::alternativeText(Vector<AccessibilityText>& textOrd
     if (!node)
         return;
 
-    auto objectCache = axObjectCache();
+    CheckedPtr objectCache = axObjectCache();
     // The fieldset element derives its alternative text from the first associated legend element if one is available.
     if (RefPtr fieldset = dynamicDowncast<HTMLFieldSetElement>(*node); fieldset && objectCache) {
         RefPtr object = objectCache->getOrCreate(fieldset->legend());
@@ -3645,7 +3645,7 @@ String AccessibilityNodeObject::helpText() const
                 return title;
         }
 
-        auto* cache = axObjectCache();
+        CheckedPtr cache = axObjectCache();
         if (!cache)
             return { };
 
@@ -3814,8 +3814,8 @@ String AccessibilityNodeObject::textUnderElement(TextUnderElementMode mode) cons
     if (auto* text = dynamicDowncast<Text>(node.get()))
         return !mode.isHidden() ? text->data() : emptyString();
 
-    const auto* style = this->style();
-    mode.inHiddenSubtree = WebCore::isRenderHidden(style);
+    CheckedPtr style = this->style();
+    mode.inHiddenSubtree = WebCore::isRenderHidden(style.get());
     // The Accname specification states that if the current node is hidden, and not directly
     // referenced by aria-labelledby or aria-describedby, and is not a host language text
     // alternative, the empty string should be returned.
@@ -3989,8 +3989,8 @@ Vector<AXStitchGroup> AccessibilityNodeObject::stitchGroups() const
 
             // FIXME: We should also be able to stitch ellipsis-type boxes.
             if (box->isText() || box->isLineBreak()) {
-                const auto& renderer = box->renderer();
-                RefPtr object = cache->getOrCreate(const_cast<RenderObject&>(renderer));
+                const CheckedRef renderer = box->renderer();
+                RefPtr object = cache->getOrCreate(const_cast<RenderObject&>(renderer.get()));
                 if (!object)
                     continue;
                 AXID axID = object->objectID();
@@ -4179,7 +4179,7 @@ static String accessibleNameForNode(Node& node, Node* labelledbyNode)
 
     // If the node can be turned into an AX object, we can use standard name computation rules.
     // If however, the node cannot (because there's no renderer e.g.) fallback to using the basic text underneath.
-    auto* cache = node.document().axObjectCache();
+    CheckedPtr cache = node.document().axObjectCache();
     RefPtr axObject = cache ? cache->getOrCreate(node) : nullptr;
     if (axObject) {
         String valueDescription = axObject->valueDescription();
@@ -4258,7 +4258,7 @@ String AccessibilityNodeObject::accessibilityDescriptionForChildren() const
     if (!node)
         return String();
 
-    AXObjectCache* cache = axObjectCache();
+    CheckedPtr cache = axObjectCache();
     if (!cache)
         return String();
 
@@ -4388,7 +4388,7 @@ void AccessibilityNodeObject::setFocused(bool on)
         document->setFocusedElement(nullptr);
 
     // If we return from setFocusedElement and our element has been removed from a tree, axObjectCache() may be null.
-    if (auto* cache = axObjectCache()) {
+    if (CheckedPtr cache = axObjectCache()) {
         cache->setIsSynchronizingSelection(true);
         downcast<Element>(*m_node).focus();
         cache->setIsSynchronizingSelection(false);

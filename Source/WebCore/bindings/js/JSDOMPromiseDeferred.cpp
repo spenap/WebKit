@@ -309,9 +309,9 @@ bool DeferredPromise::handleTerminationExceptionIfNeeded(CatchScope& scope, JSDO
     auto* exception = scope.exception();
     VM& vm = scope.vm();
 
-    auto& scriptExecutionContext = *lexicalGlobalObject.scriptExecutionContext();
-    if (auto* globalScope = dynamicDowncast<WorkerGlobalScope>(scriptExecutionContext)) {
-        auto* scriptController = globalScope->script();
+    CheckedRef scriptExecutionContext = *lexicalGlobalObject.scriptExecutionContext();
+    if (CheckedPtr globalScope = dynamicDowncast<WorkerGlobalScope>(scriptExecutionContext)) {
+        CheckedPtr scriptController = globalScope->script();
         bool terminatorCausedException = vm.isTerminationException(exception);
         if (terminatorCausedException || (scriptController && scriptController->isTerminatingExecution())) {
             scriptController->forbidExecution();
