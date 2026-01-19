@@ -24,7 +24,9 @@
  */
 
 // https://w3c.github.io/uievents/#idl-mouseeventinit
-dictionary MouseEventInit : EventModifierInit {
+[
+    LegacyNativeDictionaryRequiredInterfaceNullability,
+] dictionary MouseEventInit : EventModifierInit {
     unrestricted double screenX = 0;
     unrestricted double screenY = 0;
     unrestricted double clientX = 0;

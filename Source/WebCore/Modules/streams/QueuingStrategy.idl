@@ -24,7 +24,8 @@
  */
 
 [
-    JSGenerateToNativeObject
+    JSGenerateToNativeObject,
+    LegacyNativeDictionaryRequiredInterfaceNullability,
 ] dictionary QueuingStrategy {
     unrestricted double highWaterMark;
     QueuingStrategySize size;

@@ -23,7 +23,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-dictionary StreamPipeOptions {
+[
+    LegacyNativeDictionaryRequiredInterfaceNullability,
+] dictionary StreamPipeOptions {
   boolean preventClose = false;
   boolean preventAbort = false;
   boolean preventCancel = false;

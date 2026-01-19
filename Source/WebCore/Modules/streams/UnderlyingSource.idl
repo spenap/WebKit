@@ -24,7 +24,8 @@
  */
 
 [
-    JSGenerateToNativeObject
+    JSGenerateToNativeObject,
+    LegacyNativeDictionaryRequiredInterfaceNullability,
 ] dictionary UnderlyingSource {
     UnderlyingSourceStartCallback start;
     UnderlyingSourcePullCallback pull;

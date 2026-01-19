@@ -32,7 +32,9 @@ typedef (
     ImageBitmapRenderingContext or
     OffscreenCanvasRenderingContext2D) OffscreenRenderingContext;
 
-dictionary ImageEncodeOptions
+[
+    LegacyNativeDictionaryRequiredInterfaceNullability,
+] dictionary ImageEncodeOptions
 {
    DOMString type = "image/png";
    unrestricted double quality = 1.0;

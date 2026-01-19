@@ -40,7 +40,7 @@ IntersectionObserverEntry::IntersectionObserverEntry(Init&& init)
     , m_boundingClientRect(DOMRectReadOnly::fromRect(init.boundingClientRect))
     , m_intersectionRect(DOMRectReadOnly::fromRect(init.intersectionRect))
     , m_intersectionRatio(init.intersectionRatio)
-    , m_target(init.target.releaseNonNull())
+    , m_target(WTF::move(init.target))
     , m_isIntersecting(init.isIntersecting)
 {
 }

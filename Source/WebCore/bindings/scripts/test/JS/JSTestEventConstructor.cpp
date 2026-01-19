@@ -60,7 +60,6 @@ template<> ConversionResult<IDLDictionary<TestEventConstructor::Init>> convertDi
         throwTypeError(&lexicalGlobalObject, throwScope);
         return ConversionResultException { };
     }
-    TestEventConstructor::Init result;
     JSValue bubblesValue;
     if (isNullOrUndefined)
         bubblesValue = jsUndefined();
@@ -71,7 +70,6 @@ template<> ConversionResult<IDLDictionary<TestEventConstructor::Init>> convertDi
     auto bubblesConversionResult = convertOptionalWithDefault<IDLBoolean>(lexicalGlobalObject, bubblesValue, [&]() -> ConversionResult<IDLBoolean> { return Converter<IDLBoolean>::ReturnType { false }; });
     if (bubblesConversionResult.hasException(throwScope)) [[unlikely]]
         return ConversionResultException { };
-    result.bubbles = bubblesConversionResult.releaseReturnValue();
     JSValue cancelableValue;
     if (isNullOrUndefined)
         cancelableValue = jsUndefined();
@@ -82,7 +80,6 @@ template<> ConversionResult<IDLDictionary<TestEventConstructor::Init>> convertDi
     auto cancelableConversionResult = convertOptionalWithDefault<IDLBoolean>(lexicalGlobalObject, cancelableValue, [&]() -> ConversionResult<IDLBoolean> { return Converter<IDLBoolean>::ReturnType { false }; });
     if (cancelableConversionResult.hasException(throwScope)) [[unlikely]]
         return ConversionResultException { };
-    result.cancelable = cancelableConversionResult.releaseReturnValue();
     JSValue composedValue;
     if (isNullOrUndefined)
         composedValue = jsUndefined();
@@ -93,7 +90,6 @@ template<> ConversionResult<IDLDictionary<TestEventConstructor::Init>> convertDi
     auto composedConversionResult = convertOptionalWithDefault<IDLBoolean>(lexicalGlobalObject, composedValue, [&]() -> ConversionResult<IDLBoolean> { return Converter<IDLBoolean>::ReturnType { false }; });
     if (composedConversionResult.hasException(throwScope)) [[unlikely]]
         return ConversionResultException { };
-    result.composed = composedConversionResult.releaseReturnValue();
     JSValue attr2Value;
     if (isNullOrUndefined)
         attr2Value = jsUndefined();
@@ -104,7 +100,6 @@ template<> ConversionResult<IDLDictionary<TestEventConstructor::Init>> convertDi
     auto attr2ConversionResult = convertOptionalWithDefault<IDLDOMString>(lexicalGlobalObject, attr2Value, [&]() -> ConversionResult<IDLDOMString> { return Converter<IDLDOMString>::ReturnType { emptyString() }; });
     if (attr2ConversionResult.hasException(throwScope)) [[unlikely]]
         return ConversionResultException { };
-    result.attr2 = attr2ConversionResult.releaseReturnValue();
 #if ENABLE(SPECIAL_EVENT)
     JSValue attr3Value;
     if (isNullOrUndefined)
@@ -116,9 +111,18 @@ template<> ConversionResult<IDLDictionary<TestEventConstructor::Init>> convertDi
     auto attr3ConversionResult = convertOptionalWithDefault<IDLDOMString>(lexicalGlobalObject, attr3Value, [&]() -> ConversionResult<IDLDOMString> { return Converter<IDLDOMString>::ReturnType { emptyString() }; });
     if (attr3ConversionResult.hasException(throwScope)) [[unlikely]]
         return ConversionResultException { };
-    result.attr3 = attr3ConversionResult.releaseReturnValue();
 #endif
-    return result;
+    return TestEventConstructor::Init {
+        EventInit {
+            bubblesConversionResult.releaseReturnValue(),
+            cancelableConversionResult.releaseReturnValue(),
+            composedConversionResult.releaseReturnValue(),
+        },
+        attr2ConversionResult.releaseReturnValue(),
+#if ENABLE(SPECIAL_EVENT)
+        attr3ConversionResult.releaseReturnValue(),
+#endif
+    };
 }
 
 // Attributes

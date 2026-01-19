@@ -72,7 +72,7 @@ template<typename T> struct Converter<IDLInterface<T>> : DefaultConverter<IDLInt
             return Result::exception();
         }
 
-        return Result { object.get() };
+        return Result { *object };
     }
 };
 
@@ -165,7 +165,7 @@ template<typename T> struct VariadicConverter<IDLInterface<T>> {
         if (result.hasException(scope)) [[unlikely]]
             return std::nullopt;
 
-        return Item { *result.releaseReturnValue() };
+        return Item { result.releaseReturnValue() };
     }
 };
 

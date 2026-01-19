@@ -25,9 +25,9 @@
 
 [
     Conditional=MEDIA_SOURCE,
-    EnabledBySetting=ManagedMediaSourceEnabled
-]
-dictionary BufferedChangeEventInit : EventInit {
+    EnabledBySetting=ManagedMediaSourceEnabled,
+    LegacyNativeDictionaryRequiredInterfaceNullability,
+] dictionary BufferedChangeEventInit : EventInit {
   TimeRanges addedRanges;
   TimeRanges removedRanges;
 };

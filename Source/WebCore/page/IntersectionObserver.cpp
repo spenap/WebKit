@@ -686,9 +686,9 @@ auto IntersectionObserver::updateObservations(const Frame& hostFrame) -> NeedNot
                 reportedRootBounds,
                 { targetBoundingClientRect.x(), targetBoundingClientRect.y(), targetBoundingClientRect.width(), targetBoundingClientRect.height() },
                 { clientIntersectionRect.x(), clientIntersectionRect.y(), clientIntersectionRect.width(), clientIntersectionRect.height() },
-                intersectionState.intersectionRatio,
-                target.get(),
                 intersectionState.thresholdIndex > 0,
+                intersectionState.intersectionRatio,
+                *target,
             }));
 
             needNotify = NeedNotify::Yes;

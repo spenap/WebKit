@@ -28,6 +28,7 @@
 #include "JSDOMBinding.h"
 #include "JSDOMConstructor.h"
 #include "JSDOMConvertInterface.h"
+#include "JSDOMConvertOptional.h"
 #include "JSDOMExceptionHandling.h"
 #include "JSDOMGlobalObject.h"
 #include "JSDOMGlobalObjectInlines.h"
@@ -61,7 +62,6 @@ template<> ConversionResult<IDLDictionary<ExposedToWorkerAndWindow::Dict>> conve
         throwTypeError(&lexicalGlobalObject, throwScope);
         return ConversionResultException { };
     }
-    ExposedToWorkerAndWindow::Dict result;
     JSValue objValue;
     if (isNullOrUndefined)
         objValue = jsUndefined();
@@ -69,13 +69,12 @@ template<> ConversionResult<IDLDictionary<ExposedToWorkerAndWindow::Dict>> conve
         objValue = object->get(&lexicalGlobalObject, Identifier::fromString(vm, "obj"_s));
         RETURN_IF_EXCEPTION(throwScope, ConversionResultException { });
     }
-    if (!objValue.isUndefined()) {
-        auto objConversionResult = convert<IDLInterface<TestObj>>(lexicalGlobalObject, objValue);
-        if (objConversionResult.hasException(throwScope)) [[unlikely]]
-            return ConversionResultException { };
-        result.obj = objConversionResult.releaseReturnValue();
-    }
-    return result;
+    auto objConversionResult = convert<IDLOptional<IDLInterface<TestObj>>>(lexicalGlobalObject, objValue);
+    if (objConversionResult.hasException(throwScope)) [[unlikely]]
+        return ConversionResultException { };
+    return ExposedToWorkerAndWindow::Dict {
+        objConversionResult.releaseReturnValue(),
+    };
 }
 
 JSC::JSObject* convertDictionaryToJS(JSC::JSGlobalObject& lexicalGlobalObject, JSDOMGlobalObject& globalObject, const ExposedToWorkerAndWindow::Dict& dictionary)

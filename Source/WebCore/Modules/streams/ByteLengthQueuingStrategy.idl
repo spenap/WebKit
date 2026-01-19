@@ -28,7 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-dictionary QueuingStrategyInit {
+[
+    LegacyNativeDictionaryRequiredInterfaceNullability,
+] dictionary QueuingStrategyInit {
   required unrestricted double highWaterMark;
 };
 

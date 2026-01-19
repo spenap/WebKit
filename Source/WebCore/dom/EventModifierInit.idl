@@ -24,7 +24,9 @@
  *
  */
 
-dictionary EventModifierInit : UIEventInit {
+[
+    LegacyNativeDictionaryRequiredInterfaceNullability,
+] dictionary EventModifierInit : UIEventInit {
     boolean ctrlKey = false;
     boolean shiftKey = false;
     boolean altKey = false;

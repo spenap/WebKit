@@ -48,9 +48,9 @@ public:
         std::optional<DOMRectInit> rootBounds;
         DOMRectInit boundingClientRect;
         DOMRectInit intersectionRect;
-        double intersectionRatio;
-        RefPtr<Element> target;
         bool isIntersecting;
+        double intersectionRatio;
+        Ref<Element> target;
     };
 
     static Ref<IntersectionObserverEntry> create(Init&& init)

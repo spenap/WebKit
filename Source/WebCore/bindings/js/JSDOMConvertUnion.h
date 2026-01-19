@@ -190,7 +190,7 @@ template<typename... T> struct Converter<IDLUnion<T...>> : DefaultConverter<IDLU
                 if (!castedValue)
                     return;
 
-                returnValue = functor(ConversionResult<Type> { castedValue });
+                returnValue = functor(ConversionResult<Type> { *castedValue });
             });
 
             if (returnValue)

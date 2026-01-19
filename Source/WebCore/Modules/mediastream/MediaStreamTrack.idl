@@ -59,6 +59,7 @@ enum MediaStreamTrackState { "live", "ended" };
 [
     Conditional=MEDIA_STREAM,
     JSGenerateToJSObject,
+    LegacyNativeDictionaryRequiredInterfaceNullability,
 ] dictionary MediaTrackSettings {
     long width;
     long height;

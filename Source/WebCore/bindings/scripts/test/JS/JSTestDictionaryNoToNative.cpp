@@ -22,6 +22,7 @@
 #include "JSTestDictionaryNoToNative.h"
 
 #include "JSDOMConvertNumbers.h"
+#include "JSDOMConvertOptional.h"
 #include "JSDOMGlobalObject.h"
 #include <JavaScriptCore/JSCInlines.h>
 #include <JavaScriptCore/ObjectConstructor.h>
@@ -56,7 +57,6 @@ template<> ConversionResult<IDLDictionary<TestDictionaryNoToNative::GenerateKeyw
         throwTypeError(&lexicalGlobalObject, throwScope);
         return ConversionResultException { };
     }
-    TestDictionaryNoToNative::GenerateKeyword result;
     JSValue memberValue;
     if (isNullOrUndefined)
         memberValue = jsUndefined();
@@ -64,13 +64,12 @@ template<> ConversionResult<IDLDictionary<TestDictionaryNoToNative::GenerateKeyw
         memberValue = object->get(&lexicalGlobalObject, Identifier::fromString(vm, "member"_s));
         RETURN_IF_EXCEPTION(throwScope, ConversionResultException { });
     }
-    if (!memberValue.isUndefined()) {
-        auto memberConversionResult = convert<IDLDouble>(lexicalGlobalObject, memberValue);
-        if (memberConversionResult.hasException(throwScope)) [[unlikely]]
-            return ConversionResultException { };
-        result.member = memberConversionResult.releaseReturnValue();
-    }
-    return result;
+    auto memberConversionResult = convert<IDLOptional<IDLDouble>>(lexicalGlobalObject, memberValue);
+    if (memberConversionResult.hasException(throwScope)) [[unlikely]]
+        return ConversionResultException { };
+    return TestDictionaryNoToNative::GenerateKeyword {
+        memberConversionResult.releaseReturnValue(),
+    };
 }
 
 } // namespace WebCore

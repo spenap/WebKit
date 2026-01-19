@@ -44,7 +44,9 @@
     readonly attribute RTCRtpTransceiver? transceiver;
 };
 
-dictionary RTCTrackEventInit : EventInit {
+[
+    LegacyNativeDictionaryRequiredInterfaceNullability,
+] dictionary RTCTrackEventInit : EventInit {
     required RTCRtpReceiver receiver;
     required MediaStreamTrack track;
     sequence<MediaStream> streams = [];

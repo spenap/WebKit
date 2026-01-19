@@ -24,6 +24,7 @@
 #include "DOMWrapperWorld.h"
 #include "JSDOMConvertBoolean.h"
 #include "JSDOMConvertNumbers.h"
+#include "JSDOMConvertOptional.h"
 #include <JavaScriptCore/JSCInlines.h>
 
 
@@ -41,22 +42,22 @@ template<> ConversionResult<IDLDictionary<TestDictionary>> convertDictionary<Tes
         throwTypeError(&lexicalGlobalObject, throwScope);
         return ConversionResultException { };
     }
-    TestDictionary result;
-    if (worldForDOMObject(*&lexicalGlobalObject).someWorld()) {
-        JSValue guardedMemberValue;
-        if (isNullOrUndefined)
-            guardedMemberValue = jsUndefined();
-        else {
-            guardedMemberValue = object->get(&lexicalGlobalObject, Identifier::fromString(vm, "guardedMember"_s));
-            RETURN_IF_EXCEPTION(throwScope, ConversionResultException { });
+    auto guardedMemberConversionResult = [&]() -> ConversionResult<IDLOptional<IDLBoolean>> {
+        if (worldForDOMObject(*&lexicalGlobalObject).someWorld()) {
+            JSValue guardedMemberValue;
+            if (isNullOrUndefined)
+                guardedMemberValue = jsUndefined();
+            else {
+                guardedMemberValue = object->get(&lexicalGlobalObject, Identifier::fromString(vm, "guardedMember"_s));
+                RETURN_IF_EXCEPTION(throwScope, ConversionResultException { });
+            }
+            return convert<IDLOptional<IDLBoolean>>(lexicalGlobalObject, guardedMemberValue);
+        } else {
+            return ConversionResult<IDLOptional<IDLBoolean>> { Converter<IDLOptional<IDLBoolean>>::ReturnType { } };
         }
-        if (!guardedMemberValue.isUndefined()) {
-            auto guardedMemberConversionResult = convert<IDLBoolean>(lexicalGlobalObject, guardedMemberValue);
-            if (guardedMemberConversionResult.hasException(throwScope)) [[unlikely]]
-                return ConversionResultException { };
-            result.guardedMember = guardedMemberConversionResult.releaseReturnValue();
-        }
-    }
+    }();
+    if (guardedMemberConversionResult.hasException(throwScope)) [[unlikely]]
+        return ConversionResultException { };
     JSValue memberValue;
     if (isNullOrUndefined)
         memberValue = jsUndefined();
@@ -64,13 +65,13 @@ template<> ConversionResult<IDLDictionary<TestDictionary>> convertDictionary<Tes
         memberValue = object->get(&lexicalGlobalObject, Identifier::fromString(vm, "member"_s));
         RETURN_IF_EXCEPTION(throwScope, ConversionResultException { });
     }
-    if (!memberValue.isUndefined()) {
-        auto memberConversionResult = convert<IDLDouble>(lexicalGlobalObject, memberValue);
-        if (memberConversionResult.hasException(throwScope)) [[unlikely]]
-            return ConversionResultException { };
-        result.member = memberConversionResult.releaseReturnValue();
-    }
-    return result;
+    auto memberConversionResult = convert<IDLOptional<IDLDouble>>(lexicalGlobalObject, memberValue);
+    if (memberConversionResult.hasException(throwScope)) [[unlikely]]
+        return ConversionResultException { };
+    return TestDictionary {
+        memberConversionResult.releaseReturnValue(),
+        guardedMemberConversionResult.releaseReturnValue(),
+    };
 }
 
 } // namespace WebCore

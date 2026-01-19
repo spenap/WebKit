@@ -26,6 +26,7 @@
 [
     JSGenerateToJSObject,
     JSGenerateToNativeObject,
+    LegacyNativeDictionaryRequiredInterfaceNullability,
 ] dictionary TimelineRangeOffset {
     DOMString rangeName;
     CSSNumericValue offset;

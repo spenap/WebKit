@@ -42,7 +42,9 @@
     undefined removeRule(optional unsigned long index = 0);
 };
 
-dictionary CSSStyleSheetInit {
+[
+    LegacyNativeDictionaryRequiredInterfaceNullability,
+] dictionary CSSStyleSheetInit {
     DOMString baseURL = null;
     (MediaList or DOMString) media = "";
     boolean disabled = false;
