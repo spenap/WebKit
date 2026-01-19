@@ -100,7 +100,10 @@ private:
             owner->setInTLS(nullptr);
         }
 
-        SUPPRESS_MEMORY_UNSAFE_CAST PointerType storagePointer() const { return const_cast<PointerType>(reinterpret_cast<const T*>(&m_storage)); }
+        PointerType storagePointer() const
+        {
+            SUPPRESS_MEMORY_UNSAFE_CAST return const_cast<PointerType>(reinterpret_cast<const T*>(&m_storage));
+        }
 
         union alignas(T) {
             std::byte bytes[sizeof(T)];
