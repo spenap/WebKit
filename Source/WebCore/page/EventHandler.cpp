@@ -2482,15 +2482,12 @@ bool EventHandler::swallowAnyClickEvent(const PlatformMouseEvent& platformMouseE
     if (!nodeToClick && !m_clickCaptureElement)
         return false;
 
-    bool isPrimaryPointerButton = platformMouseEvent.button() == MouseButton::Left;
-    if (!isPrimaryPointerButton && !protectedFrame()->settings().auxclickEventEnabled())
-        return false;
-
     // The auxclick event should only be fired for the non-primary pointer buttons.
     // In the case of right button, the auxclick event is dispatched after any contextmenu event.
     //
     // The click event should only be fired for the primary pointer button.
 
+    bool isPrimaryPointerButton = platformMouseEvent.button() == MouseButton::Left;
     auto& eventName = isPrimaryPointerButton ? eventNames().clickEvent : eventNames().auxclickEvent;
 
     bool swallowed = false;

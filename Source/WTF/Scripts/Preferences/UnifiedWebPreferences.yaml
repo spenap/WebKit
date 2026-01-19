@@ -742,20 +742,6 @@ AutomaticallyForceEnableScrollingIfNeededToRevealUI:
     WebCore:
       default: true
 
-AuxclickEventEnabled:
-  type: bool
-  status: stable
-  category: dom
-  humanReadableName: "Enable `auxclick` event"
-  humanReadableDescription: "Enable the `auxclick` UI event"
-  defaultValue:
-    WebKitLegacy:
-      default: true
-    WebKit:
-      default: true
-    WebCore:
-      default: true
-
 AzimuthAngleEnabled:
   type: bool
   status: stable
