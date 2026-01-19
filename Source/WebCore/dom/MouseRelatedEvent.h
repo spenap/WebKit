@@ -88,6 +88,7 @@ protected:
         IsSimulated = IsSimulated::No, IsTrusted = IsTrusted::Yes);
     MouseRelatedEvent(enum EventInterfaceType, const AtomString& type, IsCancelable, MonotonicTime, RefPtr<WindowProxy>&&, const DoublePoint& globalLocation, OptionSet<Modifier>);
     MouseRelatedEvent(enum EventInterfaceType, const AtomString& type, const MouseRelatedEventInit&, IsTrusted = IsTrusted::No);
+    MouseRelatedEvent(enum EventInterfaceType, const AtomString& type, const EventModifierInit&, IsTrusted = IsTrusted::No);
 
     void initCoordinates();
     void initCoordinates(const DoublePoint& clientLocation);

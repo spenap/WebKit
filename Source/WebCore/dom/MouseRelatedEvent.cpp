@@ -87,6 +87,12 @@ MouseRelatedEvent::MouseRelatedEvent(enum EventInterfaceType eventInterface, con
     init(false, DoublePoint::zero());
 }
 
+MouseRelatedEvent::MouseRelatedEvent(enum EventInterfaceType eventInterface, const AtomString& eventType, const EventModifierInit& initializer, IsTrusted isTrusted)
+    : UIEventWithKeyState(eventInterface, eventType, initializer, isTrusted)
+{
+    init(false, DoublePoint::zero());
+}
+
 static inline bool isMoveEventType(const AtomString& eventType)
 {
     auto& eventNames = WebCore::eventNames();
