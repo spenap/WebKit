@@ -6532,17 +6532,17 @@ ReadableByteStreamFetchSourceEnabled:
 
 ReadableStreamIterableEnabled:
   type: bool
-  status: preview
+  status: stable
   category: dom
   humanReadableName: "ReadableStream async iterable"
   humanReadableDescription: "Enable ReadableStream async iterable"
   defaultValue:
     WebCore:
-      default: false
+      default: true
     WebKitLegacy:
-      default: false
+      default: true
     WebKit:
-      default: false
+      default: true
 
 RemoteMediaSessionManagerEnabled:
   type: bool
