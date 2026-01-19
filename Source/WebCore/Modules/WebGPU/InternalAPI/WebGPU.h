@@ -119,6 +119,7 @@ public:
     virtual bool isValid(const XRView&) const = 0;
 
     virtual bool isRemoteGPUProxy() const { return false; }
+    virtual bool isGPUImpl() const { return false; }
 
 protected:
     GPU() = default;
