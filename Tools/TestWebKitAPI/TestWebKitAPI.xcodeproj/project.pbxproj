@@ -199,7 +199,9 @@
 		41157237234B240C0050A1D1 /* GetUserMedia.mm in Sources */ = {isa = PBXBuildFile; fileRef = 41157236234B24040050A1D1 /* GetUserMedia.mm */; };
 		4135FB842011FAA700332139 /* InjectInternals_Bundle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4135FB832011FAA300332139 /* InjectInternals_Bundle.cpp */; };
 		4135FB852011FABF00332139 /* libWebCoreTestSupport.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4135FB862011FABF00332139 /* libWebCoreTestSupport.dylib */; };
+		415F540A2F15527E000ABC8B /* ServiceWorkerRegistrationsVersion1.sqlite3 in Copy Resources */ = {isa = PBXBuildFile; fileRef = 415F54092F15527E000ABC8B /* ServiceWorkerRegistrationsVersion1.sqlite3 */; };
 		4181C62D255A891100AEB0FF /* RTCRtpSFrameTransformerTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4181C62C255A891100AEB0FF /* RTCRtpSFrameTransformerTests.cpp */; };
+		41832D4E2F16AF1800103096 /* ServiceWorkerRegistrationsVersion1Salt.bin in Copy Resources */ = {isa = PBXBuildFile; fileRef = 41832D4D2F16AF1800103096 /* ServiceWorkerRegistrationsVersion1Salt.bin */; };
 		41D2A21F27906F9F0088FCCE /* UUID.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 144D40EC221B46A7004B474F /* UUID.cpp */; };
 		41E67A8525D16E83007B0A4C /* STUNMessageParsingTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 41E67A8425D16E83007B0A4C /* STUNMessageParsingTest.cpp */; };
 		41EBA9F228ABA06700953013 /* ImageRotationSessionVT.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 41EBA9F128ABA06500953013 /* ImageRotationSessionVT.cpp */; };
@@ -2271,6 +2273,8 @@
 				A17C46652C98E4BB0023F3C7 /* scrollable-page.html in Copy Resources */,
 				A17C47F42C98E5C20023F3C7 /* selected-text-and-textarea.html in Copy Resources */,
 				A17C47F52C98E5C20023F3C7 /* selected-text-image-link-and-editable.html in Copy Resources */,
+				415F540A2F15527E000ABC8B /* ServiceWorkerRegistrationsVersion1.sqlite3 in Copy Resources */,
+				41832D4E2F16AF1800103096 /* ServiceWorkerRegistrationsVersion1Salt.bin in Copy Resources */,
 				A17C46E72C98E54B0023F3C7 /* set-long-title.html in Copy Resources */,
 				A17C46662C98E4BB0023F3C7 /* set-timeout-function.html in Copy Resources */,
 				A17C46862C98E4D20023F3C7 /* SetDocumentURI.html in Copy Resources */,
@@ -2891,10 +2895,12 @@
 		4135FB832011FAA300332139 /* InjectInternals_Bundle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = InjectInternals_Bundle.cpp; path = Tests/InjectInternals_Bundle.cpp; sourceTree = SOURCE_ROOT; };
 		4135FB862011FABF00332139 /* libWebCoreTestSupport.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; path = libWebCoreTestSupport.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		414AD6852285D1B000777F2D /* StorageQuota.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = StorageQuota.mm; sourceTree = "<group>"; };
+		415F54092F15527E000ABC8B /* ServiceWorkerRegistrationsVersion1.sqlite3 */ = {isa = PBXFileReference; lastKnownFileType = file; path = ServiceWorkerRegistrationsVersion1.sqlite3; sourceTree = "<group>"; };
 		41661C652355D98B00D33C27 /* getUserMedia-webaudio.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = "getUserMedia-webaudio.html"; sourceTree = "<group>"; };
 		41733D7A25DE96DA00A136E5 /* UserMediaCaptureUIDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = UserMediaCaptureUIDelegate.h; path = cocoa/UserMediaCaptureUIDelegate.h; sourceTree = "<group>"; };
 		41733D7B25DE96DA00A136E5 /* UserMediaCaptureUIDelegate.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = UserMediaCaptureUIDelegate.mm; path = cocoa/UserMediaCaptureUIDelegate.mm; sourceTree = "<group>"; };
 		4181C62C255A891100AEB0FF /* RTCRtpSFrameTransformerTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RTCRtpSFrameTransformerTests.cpp; sourceTree = "<group>"; };
+		41832D4D2F16AF1800103096 /* ServiceWorkerRegistrationsVersion1Salt.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = ServiceWorkerRegistrationsVersion1Salt.bin; sourceTree = "<group>"; };
 		41848F4324891815000E2588 /* open-window-with-file-url-with-host.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = "open-window-with-file-url-with-host.html"; sourceTree = "<group>"; };
 		41882F0221010A70002FF288 /* ProcessPreWarming.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ProcessPreWarming.mm; sourceTree = "<group>"; };
 		418FCBD52707066100F96ECA /* PushAPI.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = PushAPI.mm; sourceTree = "<group>"; };
@@ -6066,6 +6072,8 @@
 				562C00362E82F4A7009D428B /* SafeFontParser-Worker.html */,
 				F4E0A295211FC5A300AF7C7F /* selected-text-and-textarea.html */,
 				F4D65DA71F5E46C0009D8C27 /* selected-text-image-link-and-editable.html */,
+				415F54092F15527E000ABC8B /* ServiceWorkerRegistrationsVersion1.sqlite3 */,
+				41832D4D2F16AF1800103096 /* ServiceWorkerRegistrationsVersion1Salt.bin */,
 				467C565221B5ECDF0057516D /* SetSessionCookie.html */,
 				F4E3D80720F708E4007B58C5 /* significant-text-milestone-article.html */,
 				F4FC077620F0108100CA043C /* significant-text-milestone.html */,

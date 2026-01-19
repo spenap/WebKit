@@ -273,6 +273,22 @@ ServiceWorkerRouteCondition ServiceWorkerRouteCondition::isolatedCopy() &&
     };
 }
 
+ServiceWorkerRouteCondition ServiceWorkerRouteCondition::isolatedCopy() const &
+{
+    std::unique_ptr<ServiceWorkerRouteCondition> notConditionCopy;
+    if (notCondition)
+        notConditionCopy = makeUnique<ServiceWorkerRouteCondition>(notCondition->isolatedCopy());
+    return {
+        crossThreadCopy(urlPattern),
+        crossThreadCopy(requestMethod),
+        requestMode,
+        requestDestination,
+        runningStatus,
+        crossThreadCopy(orConditions),
+        WTF::move(notConditionCopy)
+    };
+}
+
 ServiceWorkerRouteCondition ServiceWorkerRouteCondition::copy() const
 {
     std::unique_ptr<ServiceWorkerRouteCondition> notConditionCopy;
@@ -290,7 +306,6 @@ ServiceWorkerRouteCondition ServiceWorkerRouteCondition::copy() const
     };
 }
 
-
 ServiceWorkerRoutePattern ServiceWorkerRoutePattern::isolatedCopy() &&
 {
     return {
@@ -306,10 +321,34 @@ ServiceWorkerRoutePattern ServiceWorkerRoutePattern::isolatedCopy() &&
     };
 }
 
+ServiceWorkerRoutePattern ServiceWorkerRoutePattern::isolatedCopy() const  &
+{
+    return {
+        shouldIgnoreCase,
+        crossThreadCopy(protocol),
+        crossThreadCopy(username),
+        crossThreadCopy(password),
+        crossThreadCopy(hostname),
+        crossThreadCopy(port),
+        crossThreadCopy(pathname),
+        crossThreadCopy(search),
+        crossThreadCopy(hash)
+    };
+}
+
 static RouterSource crossThreadCopyRouterSource(RouterSource&& source)
 {
     return WTF::switchOn(source, [](RouterSourceDict& dict) -> RouterSource {
         return WTF::move(dict).isolatedCopy();
+    }, [](auto value) -> RouterSource {
+        return value;
+    });
+}
+
+static RouterSource crossThreadCopyRouterSource(const RouterSource& source)
+{
+    return WTF::switchOn(source, [](const RouterSourceDict& dict) -> RouterSource {
+        return dict.isolatedCopy();
     }, [](auto value) -> RouterSource {
         return value;
     });
@@ -320,6 +359,14 @@ ServiceWorkerRoute ServiceWorkerRoute::isolatedCopy() &&
     return {
         WTF::move(condition).isolatedCopy(),
         crossThreadCopyRouterSource(WTF::move(source))
+    };
+}
+
+ServiceWorkerRoute ServiceWorkerRoute::isolatedCopy() const &
+{
+    return {
+        condition.isolatedCopy(),
+        crossThreadCopyRouterSource(source)
     };
 }
 

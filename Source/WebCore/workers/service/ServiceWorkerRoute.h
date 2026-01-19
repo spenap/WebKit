@@ -42,6 +42,7 @@ struct FetchOptions;
 
 struct ServiceWorkerRoutePattern {
     ServiceWorkerRoutePattern isolatedCopy() &&;
+    ServiceWorkerRoutePattern isolatedCopy() const &;
 
     using Component = String;
 
@@ -60,6 +61,7 @@ struct ServiceWorkerRouteCondition {
     WTF_DEPRECATED_MAKE_STRUCT_FAST_ALLOCATED(ServiceWorkerRouteCondition);
 
     ServiceWorkerRouteCondition isolatedCopy() &&;
+    ServiceWorkerRouteCondition isolatedCopy() const &;
     ServiceWorkerRouteCondition copy() const;
 
     std::optional<ServiceWorkerRoutePattern> urlPattern;
@@ -80,6 +82,7 @@ struct ServiceWorkerRoute {
 
     ServiceWorkerRoute copy() const { return { condition.copy(), source }; }
     ServiceWorkerRoute isolatedCopy() &&;
+    ServiceWorkerRoute isolatedCopy() const &;
 };
 
 std::optional<size_t> countRouterInnerConditions(const ServiceWorkerRouteCondition&, size_t result, size_t depth);
