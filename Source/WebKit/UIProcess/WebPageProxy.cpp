@@ -5139,7 +5139,7 @@ void WebPageProxy::receivedNavigationActionPolicyDecision(WebProcessProxy& proce
     auto lockdownMode = (websitePolicies ? websitePolicies->lockdownModeEnabled() : shouldEnableLockdownMode()) ? WebProcessProxy::LockdownMode::Enabled : WebProcessProxy::LockdownMode::Disabled;
 
     if (frame.isMainFrame() && protectedPreferences()->enhancedSecurityHeuristicsEnabled())
-        internals().enhancedSecurityTracker.trackNavigation(navigation);
+        internals().enhancedSecurityTracker.trackNavigation(navigation, hasOpenedPage());
 
     auto enhancedSecurity = currentEnhancedSecurityState(websitePolicies.get());
 

@@ -365,6 +365,82 @@ static void runHttpOpeningHttpsTargetSelf(bool useSiteIsolation)
 }
 TEST_WITH_AND_WITHOUT_SITE_ISOLATION(HttpOpeningHttpsTargetSelf)
 
+static void runHttpsOpeningHttp(bool useSiteIsolation)
+{
+    HTTPServer plaintextServer({
+        { "http://insecure.example.internal/"_s, { "<script>alert('opened-window'); alert(!!window.opener)</script>"_s } }
+    });
+
+    HTTPServer secureServer({
+        { "/"_s, { "<script>window.onload = function() { window.open('http://insecure.example.internal/'); }</script>"_s } }
+    }, HTTPServer::Protocol::HttpsProxy);
+
+    auto webView = enhancedSecurityTestConfiguration(&plaintextServer, &secureServer, useSiteIsolation);
+
+    loadRequestAndCheckEnhancedSecurityAlerts(webView, @"https://secure.different.internal/", {
+        { "opened-window"_s, ExpectedEnhancedSecurity::Disabled },
+        { "true"_s, ExpectedEnhancedSecurity::Disabled }
+    });
+}
+TEST_WITH_AND_WITHOUT_SITE_ISOLATION(HttpsOpeningHttp)
+
+static void runOpenerMultipleNavigations(bool useSiteIsolation)
+{
+    HTTPServer plaintextServer({
+        { "http://insecure.example.internal/"_s, { "<script>alert('opened-window'); alert(!!window.opener); window.location = 'http://insecure.final.internal/second-page'</script>"_s } },
+        { "http://insecure.final.internal/second-page"_s, { "<script>alert('second-page'); alert(!!window.opener);</script>"_s } }
+    });
+
+    HTTPServer secureServer({
+        { "/"_s, { "<script>window.onload = function() { window.open('http://insecure.example.internal/'); }</script>"_s } }
+    }, HTTPServer::Protocol::HttpsProxy);
+
+    auto webView = enhancedSecurityTestConfiguration(&plaintextServer, &secureServer, useSiteIsolation);
+
+    loadRequestAndCheckEnhancedSecurityAlerts(webView, @"https://secure.different.internal/", {
+        { "opened-window"_s, ExpectedEnhancedSecurity::Disabled },
+        { "true"_s, ExpectedEnhancedSecurity::Disabled },
+        { "second-page"_s, ExpectedEnhancedSecurity::Disabled },
+        { "true"_s, ExpectedEnhancedSecurity::Disabled }
+    });
+}
+TEST_WITH_AND_WITHOUT_SITE_ISOLATION(OpenerMultipleNavigations)
+
+static void runOpenerThenSelfNavigation(bool useSiteIsolation)
+{
+    HTTPServer plaintextServer({
+        { "http://insecure.example.internal/"_s, { "<script>alert('initial-page'); window.open('https://secure.different.internal/'); window.location = 'https://secure.final.internal/self-navigate';</script>"_s } }
+    });
+
+    HTTPServer secureServer({
+        { "/"_s, { "<script>setTimeout(function() { alert('opened-window'); alert(!!window.opener); window.opener.location = 'https://secure.final.internal/navigated'; }, 500);</script>"_s } },
+        { "/self-navigate"_s, { "<script>alert('self-new-page');</script>"_s } },
+        { "/navigated"_s, { "<script>alert('navigated');</script>"_s } }
+    }, HTTPServer::Protocol::HttpsProxy);
+
+    auto webView = enhancedSecurityTestConfiguration(&plaintextServer, &secureServer, useSiteIsolation);
+
+    // Ensure the navigation to secure.final.internal would be considered valid
+    // to drop out of Enhanced Security by having a cookie present.
+    RetainPtr<NSHTTPCookie> sessionCookie = [NSHTTPCookie cookieWithProperties:@{
+        NSHTTPCookiePath: @"/",
+        NSHTTPCookieName: @"CookieName",
+        NSHTTPCookieValue: @"CookieValue",
+        NSHTTPCookieDomain: @"secure.final.internal",
+    }];
+    [[webView configuration].websiteDataStore.httpCookieStore setCookie:sessionCookie.get() completionHandler:^{ }];
+
+    loadRequestAndCheckEnhancedSecurityAlerts(webView, @"http://insecure.example.internal/", {
+        { "initial-page"_s, ExpectedEnhancedSecurity::Enabled },
+        { "self-new-page"_s, ExpectedEnhancedSecurity::Enabled },
+        { "opened-window"_s, ExpectedEnhancedSecurity::Enabled },
+        { "true"_s, ExpectedEnhancedSecurity::Enabled },
+        { "navigated"_s, ExpectedEnhancedSecurity::Enabled },
+    });
+}
+// FIXME: rdar://164474301 (Fix SiteIsolation compatibility with EnhancedSecurity feature)
+TEST_WITHOUT_SITE_ISOLATION(OpenerThenSelfNavigation)
+
 static void runHttpOpeningHttpsNoOpener(bool useSiteIsolation)
 {
     HTTPServer plaintextServer({
