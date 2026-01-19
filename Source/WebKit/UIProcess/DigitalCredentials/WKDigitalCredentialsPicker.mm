@@ -308,10 +308,10 @@ static RetainPtr<NSArray<NSArray<WKIdentityDocumentPresentmentRequestAuthenticat
 
     for (auto&& validatedRequest : requestData.requests) {
 
-        RetainPtr<NSArray<WKIdentityDocumentPresentmentMobileDocumentPresentmentRequest *>> presentmentRequests = mapPresentmentRequests(validatedRequest.presentmentRequests);
-        RetainPtr<NSArray<NSArray<WKIdentityDocumentPresentmentRequestAuthenticationCertificate *> *>> authenticationCertificates = mapRequestAuthentications(validatedRequest.requestAuthentications);
+        RetainPtr presentmentRequests = mapPresentmentRequests(validatedRequest.presentmentRequests);
+        RetainPtr authenticationCertificates = mapRequestAuthentications(validatedRequest.requestAuthentications);
 
-        RetainPtr mobileDocumentRequest = [WebKit::allocWKIdentityDocumentPresentmentMobileDocumentRequestInstance() initWithPresentmentRequests:presentmentRequests.get() authenticationCertificates:authenticationCertificates.get()];
+        RetainPtr mobileDocumentRequest = adoptNS([WebKit::allocWKIdentityDocumentPresentmentMobileDocumentRequestInstance() initWithPresentmentRequests:presentmentRequests.get() authenticationCertificates:authenticationCertificates.get()]);
         [mobileDocumentRequests addObject:mobileDocumentRequest.get()];
     }
 

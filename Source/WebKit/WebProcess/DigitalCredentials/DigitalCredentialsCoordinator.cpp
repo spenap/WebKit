@@ -98,8 +98,7 @@ void DigitalCredentialsCoordinator::dismissDigitalCredentialsPicker(CompletionHa
 void DigitalCredentialsCoordinator::provideRawDigitalCredentialRequests(CompletionHandler<void(Vector<WebCore::UnvalidatedDigitalCredentialRequest>&&)>&& completionHandler)
 {
     ASSERT(!m_rawRequests.isEmpty());
-    completionHandler(WTF::move(m_rawRequests));
-    m_rawRequests.clear();
+    completionHandler(std::exchange(m_rawRequests, { }));
 }
 
 } // namespace WebKit
