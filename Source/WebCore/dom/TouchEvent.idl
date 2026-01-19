@@ -43,9 +43,7 @@
     readonly attribute boolean metaKey;
 };
 
-[
-    LegacyNativeDictionaryRequiredInterfaceNullability,
-] dictionary TouchEventInit : UIEventInit {
+dictionary TouchEventInit : EventModifierInit {
     TouchList? touches = null;
     TouchList? targetTouches = null;
     TouchList? changedTouches = null;
