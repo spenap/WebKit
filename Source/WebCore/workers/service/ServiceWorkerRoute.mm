@@ -37,10 +37,10 @@
 
 namespace WebCore {
 
-bool isRegexpMatching(const String& pattern, StringView value)
+bool isRegexpMatching(const String& pattern, StringView value, bool shouldIgnoreCase)
 {
 #if !defined(CLANG_WEBKIT_BRANCH)
-    return pal::RegexHelper::match(pattern.createNSString().get(), value.createNSString().get());
+    return pal::RegexHelper::match(pattern.createNSString().get(), value.createNSString().get(), shouldIgnoreCase);
 #else
     UNUSED_PARAM(pattern);
     UNUSED_PARAM(value);
