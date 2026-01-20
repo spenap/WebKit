@@ -2599,20 +2599,20 @@ bool AbstractInterpreter<AbstractStateType>::executeEffects(unsigned clobberLimi
         setNonCellTypeForNode(node, SpecInt32Only);
         break;
 
-    case StringFromCharCode:
-        switch (node->child1().useKind()) {
-        case Int32Use:
-        case KnownInt32Use:
-            break;
-        case UntypedUse:
+    case StringFromCharCode: {
+        if (node->child1().useKind() == Int32Use || node->child1().useKind() == KnownInt32Use) {
+            if (node->child1()->isInt32Constant() && node->child1()->asUInt32() <= maxSingleCharacterString) {
+                JSString* string = m_vm.smallStrings.singleCharacterString(static_cast<unsigned char>(node->child1()->asUInt32()));
+                setConstant(node, *m_graph.freeze(string));
+                break;
+            }
+        } else if (node->child1().useKind() == UntypedUse)
             clobberWorld();
-            break;
-        default:
+        else
             DFG_CRASH(m_graph, node, "Bad use kind");
-            break;
-        }
         setTypeForNode(node, SpecStringResolved);
         break;
+    }
 
     case StringCharAt: {
         auto& value = forNode(node->child1());
