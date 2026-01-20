@@ -238,7 +238,11 @@ function split(string, limit)
     // 4. Let C be ? SpeciesConstructor(rx, %RegExp%).
     var speciesConstructor = @speciesConstructor(regexp, @RegExp);
 
-    if (speciesConstructor === @RegExp && !@hasObservableSideEffectsForRegExpSplit(regexp))
+    // Skip fast path if limit is number or undefined
+    // https://bugzilla.mozilla.org/show_bug.cgi?id=1287525
+    var isLimitNumberOrUndefined = typeof limit === "number" || limit === @undefined;
+
+    if (speciesConstructor === @RegExp && !@hasObservableSideEffectsForRegExpSplit(regexp) && isLimitNumberOrUndefined)
         return @regExpSplitFast.@call(regexp, str, limit);
 
     // 5. Let flags be ? ToString(? Get(rx, "flags")).
@@ -256,7 +260,7 @@ function split(string, limit)
 
     // We need to check again for RegExp subclasses that will fail the speciesConstructor test
     // but can still use the fast path after we invoke the constructor above.
-    if (!@hasObservableSideEffectsForRegExpSplit(splitter))
+    if (!@hasObservableSideEffectsForRegExpSplit(splitter) && isLimitNumberOrUndefined)
         return @regExpSplitFast.@call(splitter, str, limit);
 
     // 11. Let A be ArrayCreate(0).

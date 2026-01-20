@@ -746,9 +746,6 @@ test/staging/sm/RegExp/replace-sticky-lastIndex.js:
 test/staging/sm/RegExp/replace-sticky.js:
   default: 'Test262Error: Expected SameValue(«"ABCDEabcdeabcdefghij"», «"abcdeABCDEabcdefghij"») to be true'
   strict mode: 'Test262Error: Expected SameValue(«"ABCDEabcdeabcdefghij"», «"abcdeABCDEabcdefghij"») to be true'
-test/staging/sm/RegExp/split-limit.js:
-  default: 'Test262Error: Expected SameValue(«3», «1») to be true'
-  strict mode: 'Test262Error: Expected SameValue(«3», «1») to be true'
 test/staging/sm/RegExp/unicode-braced.js:
   default: 'SyntaxError: Invalid regular expression: regular expression too large'
   strict mode: 'SyntaxError: Invalid regular expression: regular expression too large'
