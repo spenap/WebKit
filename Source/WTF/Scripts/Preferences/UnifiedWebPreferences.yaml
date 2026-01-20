@@ -8124,6 +8124,20 @@ TextAutosizingUsesIdempotentMode:
     WebCore:
       default: false
 
+TextExtractionDebugUIEnabled:
+  type: bool
+  status: internal
+  humanReadableName: "Text Extraction Debug UI"
+  humanReadableDescription: "Enable Text Extraction Debug UI"
+  exposed: [ WebKit ]
+  defaultValue:
+    WebCore:
+      default: false
+    WebKitLegacy:
+      default: false
+    WebKit:
+      default: false
+
 TextExtractionEnabled:
   type: bool
   status: embedder

@@ -37,6 +37,7 @@
 #include "DocumentView.h"
 #include "Editing.h"
 #include "Editor.h"
+#include "ElementAncestorIteratorInlines.h"
 #include "ElementInlines.h"
 #include "EventHandler.h"
 #include "EventListenerMap.h"
@@ -78,6 +79,7 @@
 #include "RenderView.h"
 #include "RunJavaScriptParameters.h"
 #include "ScriptController.h"
+#include "Settings.h"
 #include "SimpleRange.h"
 #include "StaticRange.h"
 #include "StringEntropyHelpers.h"
@@ -1034,6 +1036,12 @@ Item extractItem(Request&& request, LocalFrame& frame)
     if (request.dataDetectorTypes && extractionRootNode)
         extractionRootNode = findContainerNodeForDataDetectorResults(*extractionRootNode, request.dataDetectorTypes);
 #endif
+
+    if (frame.settings().textExtractionDebugUIEnabled() && extractionRootNode) {
+        RefPtr elementAncestor = lineageOfType<HTMLElement>(*extractionRootNode).first();
+        if (elementAncestor && elementAncestor != bodyElement)
+            elementAncestor->setInlineStyleProperty(CSSPropertyBoxShadow, "0 0 10px #0088FF"_s, IsImportant::Yes);
+    }
 
     if (!extractionRootNode)
         return root;
