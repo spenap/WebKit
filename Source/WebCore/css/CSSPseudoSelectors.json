@@ -541,6 +541,10 @@
         "part": {
             "argument": "required"
         },
+        "picker": {
+            "argument": "required",
+            "settings-flag": "htmlEnhancedSelectPseudoElementsEnabled"
+        },
         "placeholder": {
             "aliases": [
                 "-webkit-input-placeholder"

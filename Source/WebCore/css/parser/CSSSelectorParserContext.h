@@ -40,6 +40,7 @@ struct CSSSelectorParserContext {
     bool imageControlsEnabled : 1 { false };
 #endif
     bool popoverAttributeEnabled : 1 { false };
+    bool htmlEnhancedSelectPseudoElementsEnabled : 1 { false };
     bool targetTextPseudoElementEnabled : 1 { false };
     bool thumbAndTrackPseudoElementsEnabled : 1 { false };
     bool viewTransitionsEnabled : 1 { false };

@@ -3493,6 +3493,20 @@ HTMLEnhancedSelectParsingEnabled:
      WebCore:
        default: true
 
+HTMLEnhancedSelectPseudoElementsEnabled:
+   type: bool
+   status: unstable
+   category: css
+   humanReadableName: "Enhanced HTML select element pseudo-elements"
+   humanReadableDescription: "Enable enhanced HTML select element pseudo-elements"
+   defaultValue:
+     WebKitLegacy:
+       default: false
+     WebKit:
+       default: false
+     WebCore:
+       default: false
+
 HTMLEnhancedSelectSelectedContentEnabled:
    type: bool
    status: unstable

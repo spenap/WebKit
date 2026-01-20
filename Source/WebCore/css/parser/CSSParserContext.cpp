@@ -111,6 +111,7 @@ CSSParserContext::CSSParserContext(const Settings& settings)
 #endif
     , colorLayersEnabled { settings.cssColorLayersEnabled() }
     , targetTextPseudoElementEnabled { settings.targetTextPseudoElementEnabled() }
+    , htmlEnhancedSelectPseudoElementsEnabled { settings.htmlEnhancedSelectPseudoElementsEnabled() }
     , cssProgressFunctionEnabled { settings.cssProgressFunctionEnabled() }
     , cssRandomFunctionEnabled { settings.cssRandomFunctionEnabled() }
     , cssTreeCountingFunctionsEnabled { settings.cssTreeCountingFunctionsEnabled() }
@@ -161,7 +162,8 @@ void add(Hasher& hasher, const CSSParserContext& context)
         context.cssTextDecorationLineErrorValues,
         context.cssTextTransformMathAutoEnabled,
         context.cssInternalAutoBaseParsingEnabled,
-        context.cssMathDepthEnabled
+        context.cssMathDepthEnabled,
+        context.htmlEnhancedSelectPseudoElementsEnabled
     );
     add(hasher, context.baseURL, context.charset, context.propertySettings, context.mode, bits);
 }

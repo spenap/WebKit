@@ -352,6 +352,20 @@ SelectorChecker::MatchResult SelectorChecker::matchRecursively(CheckingContext& 
                 return MatchResult::fails(Match::SelectorFailsLocally);
             break;
         }
+        case CSSSelector::PseudoElement::Picker: {
+            auto* root = context.element->containingShadowRoot();
+            if (!root || root->mode() != ShadowRootMode::UserAgent)
+                return MatchResult::fails(Match::SelectorFailsLocally);
+
+            auto* argumentList = context.selector->argumentList();
+            ASSERT(argumentList && !argumentList->isEmpty());
+
+            auto part = makeString("picker("_s, argumentList->at(0), ')');
+            if (context.element->userAgentPart() != part)
+                return MatchResult::fails(Match::SelectorFailsLocally);
+
+            break;
+        }
         case CSSSelector::PseudoElement::WebKitUnknown:
             return MatchResult::fails(Match::SelectorFailsLocally);
         default: {

@@ -1517,6 +1517,7 @@ static FunctionType constructFragmentsInternal(const CSSSelector& rootSelector, 
 #endif
             case CSSSelector::PseudoElement::Highlight:
             case CSSSelector::PseudoElement::Part:
+            case CSSSelector::PseudoElement::Picker:
             case CSSSelector::PseudoElement::Slotted:
             case CSSSelector::PseudoElement::ViewTransitionGroup:
             case CSSSelector::PseudoElement::ViewTransitionImagePair:
