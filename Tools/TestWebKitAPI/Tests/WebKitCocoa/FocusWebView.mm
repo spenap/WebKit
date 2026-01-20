@@ -25,8 +25,6 @@
 
 #import "config.h"
 
-#if PLATFORM(MAC)
-
 #import "HTTPServer.h"
 #import "PlatformUtilities.h"
 #import "Test.h"
@@ -41,11 +39,15 @@
 #import <wtf/RetainPtr.h>
 #import <wtf/darwin/DispatchExtras.h>
 
+#if PLATFORM(MAC)
 @interface NSApplication ()
 - (void)_setKeyWindow:(NSWindow *)newKeyWindow;
 @end
 
 @interface TestNSTextView : NSTextView
+#else
+@interface TestNSTextView : UITextView
+#endif
 @property (readonly) BOOL didBecomeFirstResponder;
 @property (readonly) BOOL didSeeKeyDownEvent;
 @end
@@ -54,11 +56,13 @@
     BOOL _isBecomingFirstResponder;
 }
 
+#if PLATFORM(MAC)
 - (void)keyDown:(NSEvent *)event
 {
     _didSeeKeyDownEvent = YES;
     [super keyDown:event];
 }
+#endif
 
 - (BOOL)acceptsFirstResponder
 {
@@ -129,8 +133,6 @@ static WebViewAndDelegates makeWebViewAndDelegates(HTTPServer& server)
     };
 };
 
-
-// FIXME: To enable, need `typeCharacter:` support for TestWKWebView on iOS
 TEST(FocusWebView, AdvanceFocusRelinquishToChrome)
 {
     HTTPServer server({
@@ -142,25 +144,31 @@ TEST(FocusWebView, AdvanceFocusRelinquishToChrome)
     RetainPtr navigationDelegate = WTF::move(webViewAndDelegates.navigationDelegate);
     RetainPtr uiDelegate = WTF::move(webViewAndDelegates.uiDelegate);
 
+#if PLATFORM(MAC)
     NSRect newWindowFrame = NSMakeRect(0, 0, 400, 500);
+#endif
     NSRect textFieldFrame = NSMakeRect(0, 400, 400, 100);
 
-    __block RetainPtr textField = [[TestNSTextView alloc] initWithFrame:textFieldFrame];
+    __block RetainPtr textField = adoptNS([[TestNSTextView alloc] initWithFrame:textFieldFrame]);
     textField.get().editable = YES;
     textField.get().selectable = YES;
+#if PLATFORM(MAC)
     [textField setString:@"Hello world"];
-
     [[[webView window] contentView] addSubview:textField.get()];
     [[webView window] setFrame:newWindowFrame display:YES];
-
     [[webView window] makeKeyWindow];
     [NSApp _setKeyWindow:[webView window]];
     [[webView window] makeFirstResponder:webView.get()];
+#else
+    [webView becomeFirstResponder];
+#endif
 
     __block bool takeFocusCalled = false;
     uiDelegate.get().takeFocus = ^(WKWebView *view, _WKFocusDirection) {
         takeFocusCalled = true;
+#if PLATFORM(MAC)
         [view.window makeFirstResponder:textField.get()];
+#endif
     };
 
     [webView loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"https://example.com/example"]]];
@@ -178,7 +186,9 @@ TEST(FocusWebView, AdvanceFocusRelinquishToChrome)
     }];
     Util::run(&jsDone);
 
+#if PLATFORM(MAC)
     EXPECT_TRUE(textField.get().didBecomeFirstResponder);
+#endif
     EXPECT_FALSE(textField.get().didSeeKeyDownEvent);
 }
 
@@ -265,23 +275,31 @@ void CrossOriginIframeRelinquishToChromeTests::runTest()
     [navigationDelegate allowAnyTLSCertificate];
     [webView setNavigationDelegate:navigationDelegate.get()];
 
+#if PLATFORM(MAC)
     NSRect newWindowFrame = NSMakeRect(0, 0, 400, 500);
+#endif
     NSRect textFieldFrame = NSMakeRect(0, 400, 400, 100);
-    RetainPtr textField = [[TestNSTextView alloc] initWithFrame:textFieldFrame];
+    RetainPtr textField = adoptNS([[TestNSTextView alloc] initWithFrame:textFieldFrame]);
     [textField setEditable:YES];
     [textField setSelectable:YES];
 
+#if PLATFORM(MAC)
     [[[webView window] contentView] addSubview:textField.get()];
     [[webView window] setFrame:newWindowFrame display:YES];
     [[webView window] makeKeyWindow];
     [NSApp _setKeyWindow:[webView window]];
     [[webView window] makeFirstResponder:webView.get()];
+#else
+    [webView becomeFirstResponder];
+#endif
 
     RetainPtr uiDelegate = adoptNS([TestUIDelegate new]);
     bool takeFocusCalled = false;
     [uiDelegate setTakeFocus:[&takeFocusCalled, textField](WKWebView *view, _WKFocusDirection) {
         takeFocusCalled = true;
+#if PLATFORM(MAC)
         [view.window makeFirstResponder:textField.get()];
+#endif
     }];
     [webView setUIDelegate:uiDelegate.get()];
 
@@ -305,6 +323,14 @@ void CrossOriginIframeRelinquishToChromeTests::runTest()
 
     checkFocusState({ "mainFrameBody", true }, { "iframeBody", false });
 
+#if PLATFORM(IOS_FAMILY)
+    // FIXME: Make this behavior the same on iOS as macOS.
+    // It may be related to differences in WebPage::elementDidFocus
+    // and WebPage::focusedElementInformation
+    if (siteIsolationEnabled())
+        return;
+#endif
+
     [webView typeCharacter:'\t'];
     Util::run(&didFocusMainFrameInput);
     checkFocusState({ "input", true }, { "iframeBody", false });
@@ -316,7 +342,9 @@ void CrossOriginIframeRelinquishToChromeTests::runTest()
     [webView typeCharacter:'\t'];
     Util::run(&takeFocusCalled);
     checkFocusState({ "mainFrameBody", false }, { "iframeBody", false });
+#if PLATFORM(MAC)
     EXPECT_TRUE([textField didBecomeFirstResponder]);
+#endif
     EXPECT_FALSE([textField didSeeKeyDownEvent]);
 }
 
@@ -328,5 +356,3 @@ TEST_P(CrossOriginIframeRelinquishToChromeTests, Test)
 INSTANTIATE_TEST_SUITE_P(FocusWebView, CrossOriginIframeRelinquishToChromeTests, testing::Bool(), &TestWebKitAPI::CrossOriginIframeRelinquishToChromeTests::testNameGenerator);
 
 } // namespace TestWebKitAPI
-
-#endif // PLATFORM(MAC)
