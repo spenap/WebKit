@@ -175,7 +175,7 @@ void DigitalCredential::discoverFromExternalSource(const Document& document, Cre
 
 #if HAVE(DIGITAL_CREDENTIALS_UI)
     Ref coordinator = page->credentialRequestCoordinator();
-    coordinator->presentPicker(document, WTF::move(promise), presentationRequestsOrException.releaseReturnValue(), options.signal);
+    coordinator->prepareCredentialRequest(document, WTF::move(promise), presentationRequestsOrException.releaseReturnValue(), options.signal);
 #else
     promise.reject(Exception { ExceptionCode::NotSupportedError, "Digital credentials are not supported."_s });
 #endif
