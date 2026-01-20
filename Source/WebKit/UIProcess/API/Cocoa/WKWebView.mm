@@ -168,6 +168,7 @@
 #import <WebCore/ColorSerialization.h>
 #import <WebCore/ContentExtensionsBackend.h>
 #import <WebCore/DOMException.h>
+#import <WebCore/DataDetectorType.h>
 #import <WebCore/ElementContext.h>
 #import <WebCore/ElementTargetingTypes.h>
 #import <WebCore/ExceptionCode.h>
@@ -7161,6 +7162,8 @@ static HashMap<String, HashMap<WebCore::JSHandleIdentifier, String>> extractClie
     return result;
 }
 
+#if ENABLE(DATA_DETECTION)
+
 static OptionSet<WebCore::DataDetectorType> coreDataDetectorTypes(_WKTextExtractionDataDetectorTypes types)
 {
     OptionSet<WebCore::DataDetectorType> coreTypes;
@@ -7174,6 +7177,8 @@ static OptionSet<WebCore::DataDetectorType> coreDataDetectorTypes(_WKTextExtract
         coreTypes.add(WebCore::DataDetectorType::TrackingNumber);
     return coreTypes;
 }
+
+#endif // ENABLE(DATA_DETECTION)
 
 #endif // USE(APPLE_INTERNAL_SDK) || (!PLATFORM(WATCHOS) && !PLATFORM(APPLETV))
 
@@ -7227,7 +7232,9 @@ static OptionSet<WebCore::DataDetectorType> coreDataDetectorTypes(_WKTextExtract
             .includeEventListeners = !!configuration.includeEventListeners,
             .includeAccessibilityAttributes = !!configuration.includeAccessibilityAttributes,
             .includeTextInAutoFilledControls = !!configuration.includeTextInAutoFilledControls,
+#if ENABLE(DATA_DETECTION)
             .dataDetectorTypes = coreDataDetectorTypes(configuration.dataDetectorTypes),
+#endif
         };
     };
 
