@@ -10178,6 +10178,8 @@ IGNORE_CLANG_WARNINGS_END
 
         if (m_node->child1().useKind() == ArrayUse)
             speculateArray(m_node->child1());
+        else if (m_node->child1().useKind() == SetObjectUse)
+            speculateSetObject(m_node->child1());
 
         if (m_graph.canDoFastSpread(m_node, m_state.forNode(m_node->child1()))) {
             LBasicBlock copyOnWriteContiguousCheck = m_out.newBlock();
@@ -10270,7 +10272,9 @@ IGNORE_CLANG_WARNINGS_END
             m_out.appendTo(continuation, lastNext);
             result = m_out.phi(pointerType(), sharedResult, fastResult, slowResult);
             mutatorFence();
-        } else
+        } else if (m_node->child1().useKind() == SetObjectUse)
+            result = vmCall(pointerType(), operationSpreadSet, weakPointer(globalObject), argument);
+        else
             result = vmCall(pointerType(), operationSpreadGeneric, weakPointer(globalObject), argument);
 
         setJSValue(result);

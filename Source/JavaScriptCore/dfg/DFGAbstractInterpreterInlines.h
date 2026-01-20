@@ -3669,9 +3669,13 @@ bool AbstractInterpreter<AbstractStateType>::executeEffects(unsigned clobberLimi
         case PhantomCreateRest:
             break;
         default:
-            if (!m_graph.canDoFastSpread(node, forNode(node->child1())))
-                clobberWorld();
-            else
+            if (!m_graph.canDoFastSpread(node, forNode(node->child1()))) {
+                // SetObjectUse has no side effects since we iterate directly over internal storage.
+                if (node->child1().useKind() == SetObjectUse)
+                    didFoldClobberWorld();
+                else
+                    clobberWorld();
+            } else
                 didFoldClobberWorld();
             break;
         }
