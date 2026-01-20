@@ -3476,12 +3476,10 @@ void AccessibilityNodeObject::helpText(Vector<AccessibilityText>& textOrder) con
 
     // The title attribute should be used as help text unless it is already being used as descriptive text.
     // However, when the title attribute is the only text alternative provided, it may be exposed as the
-    // descriptive text. This is problematic in the case of meters because the HTML spec suggests authors
-    // can expose units through this attribute. Therefore, if the element is a meter, change its source
-    // type to AccessibilityTextSource::Help.
+    // descriptive text.
     const AtomString& title = getAttribute(titleAttr);
     if (!title.isEmpty()) {
-        if (!isMeter() && !roleIgnoresTitle())
+        if (!roleIgnoresTitle())
             textOrder.append(AccessibilityText(title, AccessibilityTextSource::TitleTag));
         else
             textOrder.append(AccessibilityText(title, AccessibilityTextSource::Help));
