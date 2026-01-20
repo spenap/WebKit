@@ -16717,8 +16717,10 @@ void WebPageProxy::waitForInitialLinkDecorationFilteringData(WebFramePolicyListe
 void WebPageProxy::beginSiteHasStorageCheck(const URL& url, API::Navigation& navigation, WebFramePolicyListenerProxy& listener)
 {
     protectedWebsiteDataStore()->hasLocalStorageOrCookies(url, [navigation = Ref { navigation }, url, listener = Ref { listener }] (bool hasStorage) mutable {
-        navigation->setHasStorageForCurrentSite(url, hasStorage);
-        listener->didReceiveSiteHasStorageResults();
+        if (url == navigation->currentRequest().url()) {
+            navigation->setHasStorageForCurrentSite(hasStorage);
+            listener->didReceiveSiteHasStorageResults();
+        }
     });
 }
 
