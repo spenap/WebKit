@@ -38,8 +38,8 @@
     [EnabledBySetting=AzimuthAngleEnabled] double azimuthAngle;
     DOMString pointerType = "";
     boolean isPrimary = false;
-    [EnabledBySetting=GetCoalescedEventsEnabled] sequence<PointerEvent> coalescedEvents = [];
-    [EnabledBySetting=GetPredictedEventsEnabled] sequence<PointerEvent> predictedEvents = [];
+    sequence<PointerEvent> coalescedEvents = [];
+    sequence<PointerEvent> predictedEvents = [];
 };
 
 [
@@ -63,7 +63,7 @@
     readonly attribute DOMString pointerType;
     readonly attribute boolean isPrimary;
 
-    [SecureContext, EnabledBySetting=GetCoalescedEventsEnabled] sequence<PointerEvent> getCoalescedEvents();
-    [EnabledBySetting=GetPredictedEventsEnabled] sequence<PointerEvent> getPredictedEvents();
+    [SecureContext] sequence<PointerEvent> getCoalescedEvents();
+    sequence<PointerEvent> getPredictedEvents();
 };
 
