@@ -36,7 +36,6 @@ rendering/cocoa/RenderThemeCocoa.mm
 rendering/svg/RenderSVGResourcePattern.cpp
 rendering/svg/SVGRenderTreeAsText.cpp
 rendering/svg/SVGTextQuery.cpp
-svg/SVGPathSegListSource.cpp
 svg/properties/SVGAnimatedDecoratedProperty.h
 svg/properties/SVGAnimatedPrimitiveProperty.h
 svg/properties/SVGAnimatedPropertyAccessorImpl.h
