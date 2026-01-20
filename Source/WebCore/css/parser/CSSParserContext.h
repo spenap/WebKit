@@ -65,7 +65,6 @@ struct CSSParserContext {
     bool cssAppearanceBaseEnabled : 1 { false };
     bool cssPaintingAPIEnabled : 1 { false };
     bool cssTextDecorationLineErrorValues : 1 { false };
-    bool cssBackgroundClipBorderAreaEnabled : 1 { false };
     bool cssWordBreakAutoPhraseEnabled : 1 { false };
     bool popoverAttributeEnabled : 1 { false };
     bool sidewaysWritingModesEnabled : 1 { false };

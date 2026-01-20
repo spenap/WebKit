@@ -1074,20 +1074,6 @@ CSSAxisRelativePositionKeywordsEnabled:
     WebCore:
       default: true
 
-CSSBackgroundClipBorderAreaEnabled:
-  type: bool
-  status: stable
-  category: css
-  humanReadableName: "CSS background-clip: border-area"
-  humanReadableDescription: "Enable the border-area value for background-clip"
-  defaultValue:
-    WebKitLegacy:
-      default: true
-    WebKit:
-      default: true
-    WebCore:
-      default: true
-
 CSSColorLayersEnabled:
   type: bool
   category: css

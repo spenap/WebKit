@@ -101,7 +101,6 @@ CSSParserContext::CSSParserContext(const Settings& settings)
     , cssAppearanceBaseEnabled { settings.cssAppearanceBaseEnabled() }
     , cssPaintingAPIEnabled { settings.cssPaintingAPIEnabled() }
     , cssTextDecorationLineErrorValues { settings.cssTextDecorationLineErrorValues() }
-    , cssBackgroundClipBorderAreaEnabled { settings.cssBackgroundClipBorderAreaEnabled() }
     , cssWordBreakAutoPhraseEnabled { settings.cssWordBreakAutoPhraseEnabled() }
     , popoverAttributeEnabled { settings.popoverAttributeEnabled() }
     , sidewaysWritingModesEnabled { settings.sidewaysWritingModesEnabled() }
@@ -140,29 +139,28 @@ void add(Hasher& hasher, const CSSParserContext& context)
         | context.gridLanesEnabled                          << 6
         | context.cssAppearanceBaseEnabled                  << 7
         | context.cssPaintingAPIEnabled                     << 8
-        | context.cssBackgroundClipBorderAreaEnabled        << 9
-        | context.cssWordBreakAutoPhraseEnabled             << 10
-        | context.popoverAttributeEnabled                   << 11
-        | context.sidewaysWritingModesEnabled               << 12
-        | context.cssTextWrapPrettyEnabled                  << 13
-        | context.thumbAndTrackPseudoElementsEnabled        << 14
+        | context.cssWordBreakAutoPhraseEnabled             << 9
+        | context.popoverAttributeEnabled                   << 10
+        | context.sidewaysWritingModesEnabled               << 11
+        | context.cssTextWrapPrettyEnabled                  << 12
+        | context.thumbAndTrackPseudoElementsEnabled        << 13
 #if ENABLE(SERVICE_CONTROLS)
-        | context.imageControlsEnabled                      << 15
+        | context.imageControlsEnabled                      << 14
 #endif
-        | context.colorLayersEnabled                        << 16
-        | context.targetTextPseudoElementEnabled            << 17
-        | context.cssProgressFunctionEnabled                << 18
-        | context.cssRandomFunctionEnabled                  << 19
-        | context.cssTreeCountingFunctionsEnabled           << 20
-        | context.cssURLModifiersEnabled                    << 21
-        | context.cssURLIntegrityModifierEnabled            << 22
-        | context.cssAxisRelativePositionKeywordsEnabled    << 23
-        | context.cssDynamicRangeLimitMixEnabled            << 24
-        | context.cssConstrainedDynamicRangeLimitEnabled    << 25
-        | context.cssTextDecorationLineErrorValues          << 26
-        | context.cssTextTransformMathAutoEnabled           << 27
-        | context.cssInternalAutoBaseParsingEnabled         << 28
-        | context.cssMathDepthEnabled                       << 29;
+        | context.colorLayersEnabled                        << 15
+        | context.targetTextPseudoElementEnabled            << 16
+        | context.cssProgressFunctionEnabled                << 17
+        | context.cssRandomFunctionEnabled                  << 18
+        | context.cssTreeCountingFunctionsEnabled           << 19
+        | context.cssURLModifiersEnabled                    << 20
+        | context.cssURLIntegrityModifierEnabled            << 21
+        | context.cssAxisRelativePositionKeywordsEnabled    << 22
+        | context.cssDynamicRangeLimitMixEnabled            << 23
+        | context.cssConstrainedDynamicRangeLimitEnabled    << 24
+        | context.cssTextDecorationLineErrorValues          << 25
+        | context.cssTextTransformMathAutoEnabled           << 26
+        | context.cssInternalAutoBaseParsingEnabled         << 27
+        | context.cssMathDepthEnabled                       << 28;
     add(hasher, context.baseURL, context.charset, context.propertySettings, context.mode, bits);
 }
 
