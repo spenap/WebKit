@@ -180,8 +180,7 @@ static void writeSVGPaintingResource(TextStream& ts, const LegacyRenderSVGResour
         ts << "[type=RADIAL-GRADIENT]"_s;
 
     // All other resources derive from LegacyRenderSVGResourceContainer.
-    // FIXME: This should use a safe cast.
-    const auto& container = static_cast<const LegacyRenderSVGResourceContainer&>(resource);
+    auto& container = downcast<LegacyRenderSVGResourceContainer>(resource);
     ts << " [id=\""_s << container.element().getIdAttribute() << "\"]"_s;
 }
 
@@ -423,7 +422,7 @@ static void writeChildren(TextStream& ts, const RenderElement& parent, OptionSet
 {
     TextStream::IndentScope indentScope(ts);
 
-    for (const auto& child : childrenOfType<RenderObject>(parent)) {
+    for (auto& child : childrenOfType<RenderObject>(parent)) {
         if (parent.document().settings().layerBasedSVGEngineEnabled() && child.hasLayer())
             continue;
         write(ts, child, behavior);
@@ -452,13 +451,12 @@ void writeSVGResourceContainer(TextStream& ts, const LegacyRenderSVGResourceCont
         writeNameValuePair(ts, "maskUnits"_s, masker->maskUnits());
         writeNameValuePair(ts, "maskContentUnits"_s, masker->maskContentUnits());
         ts << '\n';
-    } else if (resource.resourceType() == FilterResourceType) {
-        const auto& filter = static_cast<const LegacyRenderSVGResourceFilter&>(resource);
-        writeNameValuePair(ts, "filterUnits"_s, filter.filterUnits());
-        writeNameValuePair(ts, "primitiveUnits"_s, filter.primitiveUnits());
+    } else if (auto* filter = dynamicDowncast<LegacyRenderSVGResourceFilter>(resource)) {
+        writeNameValuePair(ts, "filterUnits"_s, filter->filterUnits());
+        writeNameValuePair(ts, "primitiveUnits"_s, filter->primitiveUnits());
         ts << '\n';
         // Creating a placeholder filter which is passed to the builder.
-        Ref filterElement = filter.filterElement();
+        Ref filterElement = filter->filterElement();
         auto placeholderFilter = SVGFilterRenderer::create(filterElement.ptr(), filterElement, {
                 .referenceBox = { },
                 .filterRegion = { },
@@ -469,11 +467,11 @@ void writeSVGResourceContainer(TextStream& ts, const LegacyRenderSVGResourceCont
             placeholderFilter->externalRepresentation(ts, FilterRepresentation::TestOutput);
         }
     } else if (resource.resourceType() == ClipperResourceType) {
-        const auto& clipper = static_cast<const LegacyRenderSVGResourceClipper&>(resource);
+        auto& clipper = static_cast<const LegacyRenderSVGResourceClipper&>(resource);
         writeNameValuePair(ts, "clipPathUnits"_s, clipper.clipPathUnits());
         ts << '\n';
     } else if (resource.resourceType() == MarkerResourceType) {
-        const auto& marker = static_cast<const LegacyRenderSVGResourceMarker&>(resource);
+        auto& marker = static_cast<const LegacyRenderSVGResourceMarker&>(resource);
         writeNameValuePair(ts, "markerUnits"_s, marker.markerUnits());
         ts << " [ref at "_s << marker.referencePoint() << ']';
         ts << " [angle="_s;
@@ -612,7 +610,7 @@ void writeResources(TextStream& ts, const RenderObject& renderer, OptionSet<Rend
         [&](const auto&) { }
     );
     if (style.hasFilter()) {
-        const auto& filterOperations = style.filter();
+        auto& filterOperations = style.filter();
         if (filterOperations.size() == 1) {
             if (RefPtr referenceFilterOperation = dynamicDowncast<Style::ReferenceFilterOperation>(filterOperations[0].platform())) {
                 auto id = referenceFilterOperation->fragment();

@@ -17,11 +17,8 @@ html/InputType.cpp
 [ iOS ] platform/ios/wak/WAKWindow.mm
 rendering/BidiRun.cpp
 rendering/BidiRun.h
-rendering/RenderMultiColumnSet.h
 rendering/cocoa/RenderThemeCocoa.mm
-rendering/svg/RenderSVGResourcePattern.cpp
 rendering/svg/SVGRenderTreeAsText.cpp
-rendering/svg/SVGTextQuery.cpp
 svg/properties/SVGAnimatedDecoratedProperty.h
 svg/properties/SVGAnimatedPrimitiveProperty.h
 svg/properties/SVGAnimatedPropertyAccessorImpl.h
