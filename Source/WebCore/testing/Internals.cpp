@@ -272,6 +272,7 @@
 #include "WritingDirection.h"
 #include "XMLHttpRequest.h"
 #include <JavaScriptCore/CodeBlock.h>
+#include <JavaScriptCore/FunctionExecutable.h>
 #include <JavaScriptCore/InspectorAgentBase.h>
 #include <JavaScriptCore/InspectorFrontendChannel.h>
 #include <JavaScriptCore/JSCInlines.h>
@@ -2944,9 +2945,9 @@ String Internals::parserMetaData(JSC::JSValue code)
     String functionName;
     ASCIILiteral suffix = ""_s;
 
-    if (executable->isFunctionExecutable()) {
+    if (auto* functionExecutable = jsDynamicCast<FunctionExecutable*>(executable)) {
         prefix = "function \""_s;
-        functionName = static_cast<FunctionExecutable*>(executable)->ecmaName().string();
+        functionName = functionExecutable->ecmaName().string();
         suffix = "\""_s;
     } else if (executable->isEvalExecutable())
         prefix = "eval"_s;

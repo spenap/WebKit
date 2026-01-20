@@ -43,4 +43,3 @@ svg/properties/SVGAnimatedPropertyAccessorImpl.h
 svg/properties/SVGAnimatedPropertyList.h
 svg/properties/SVGAnimatedPropertyPairAccessorImpl.h
 svg/properties/SVGAnimatedValueProperty.h
-testing/Internals.cpp
