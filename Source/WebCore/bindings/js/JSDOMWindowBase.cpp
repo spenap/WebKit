@@ -156,7 +156,8 @@ void JSDOMWindowBase::finishCreation(VM& vm, JSWindowProxy* proxy)
 
 void JSDOMWindowBase::destroy(JSCell* cell)
 {
-    static_cast<JSDOMWindowBase*>(cell)->JSDOMWindowBase::~JSDOMWindowBase();
+    // We cannot rely on jsCast() during JSObject destruction.
+    SUPPRESS_MEMORY_UNSAFE_CAST static_cast<JSDOMWindowBase*>(cell)->JSDOMWindowBase::~JSDOMWindowBase();
 }
 
 void JSDOMWindowBase::updateDocument()

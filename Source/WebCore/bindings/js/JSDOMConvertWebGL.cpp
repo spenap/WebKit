@@ -257,7 +257,7 @@ JSValue convertToJSValue(JSGlobalObject& lexicalGlobalObject, JSDOMGlobalObject&
 {
 #define TO_JS(EXT) \
     case WebGLExtensionName::EXT: \
-        return toJS(&lexicalGlobalObject, &globalObject, static_cast<EXT&>(extensionAny.get()));
+        return toJS(&lexicalGlobalObject, &globalObject, downcast<EXT>(extensionAny.get()));
     switch (extensionAny->name()) {
         TO_JS(ANGLEInstancedArrays);
         TO_JS(EXTBlendMinMax);
