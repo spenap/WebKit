@@ -10151,5 +10151,61 @@ class TestDisplaySaferCPPResults(BuildStepMixinAdditions, unittest.TestCase):
         self.assertEqual([LeaveComment(), SetBuildSummary()], next_steps)
 
 
+class TestTrigger(BuildStepMixinAdditions, unittest.TestCase):
+    def setUp(self):
+        self.longMessage = True
+        return self.setup_test_build_step()
+
+    def tearDown(self):
+        return self.tear_down_test_build_step()
+
+    def test_defaults(self):
+        step = Trigger(schedulerNames=['test-scheduler'])
+        props = step.propertiesToPassToTriggers()
+        self.assertIn('configuration', props)
+        self.assertIn('platform', props)
+        self.assertIn('fullPlatform', props)
+        self.assertIn('architecture', props)
+        self.assertIn('codebase', props)
+        self.assertIn('retry_count', props)
+        self.assertIn('os_version_builder', props)
+        self.assertIn('xcode_version_builder', props)
+        self.assertIn('ews_revision', props)
+        self.assertNotIn('github.number', props)
+        self.assertNotIn('github.head.sha', props)
+        self.assertNotIn('repository', props)
+        self.assertFalse(step.updateSourceStamp)
+        self.assertNotIn('triggers', props)
+
+    def test_pull_request_properties_included_when_enabled(self):
+        step = Trigger(schedulerNames=['test-scheduler'], pull_request=True)
+        props = step.propertiesToPassToTriggers(pull_request=True)
+        self.assertIn('github.base.ref', props)
+        self.assertIn('github.head.ref', props)
+        self.assertIn('github.head.sha', props)
+        self.assertIn('github.head.repo.full_name', props)
+        self.assertIn('github.number', props)
+        self.assertIn('github.title', props)
+        self.assertIn('repository', props)
+        self.assertIn('project', props)
+        self.assertIn('owners', props)
+        self.assertIn('classification', props)
+        self.assertIn('identifier', props)
+
+    def test_triggers_property_included_when_triggers_set(self):
+        step = Trigger(schedulerNames=['test-scheduler'], triggers=['trigger1', 'trigger2'])
+        props = step.propertiesToPassToTriggers()
+        self.assertIn('triggers', props)
+
+    def test_ews_revision_excluded_when_include_revision_false(self):
+        step = Trigger(schedulerNames=['test-scheduler'], include_revision=False)
+        props = step.propertiesToPassToTriggers()
+        self.assertNotIn('ews_revision', props)
+
+    def test_scheduler_names_set(self):
+        step = Trigger(schedulerNames=['scheduler1', 'scheduler2'])
+        self.assertEqual(step.schedulerNames, ['scheduler1', 'scheduler2'])
+
+
 if __name__ == '__main__':
     unittest.main()
