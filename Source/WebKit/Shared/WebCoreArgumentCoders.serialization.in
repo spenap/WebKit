@@ -6348,9 +6348,6 @@ struct WebCore::MockWebAuthenticationConfiguration {
     std::optional<WebCore::MockWebAuthenticationConfiguration::CcidConfiguration> ccid;
 };
 
-#if HAVE(DIGITAL_CREDENTIALS_UI)
-
-
 header: <WebCore/ISO18013.h>
 [Nested] struct WebCore::ISO18013ElementInfo {
     bool isRetaining;
@@ -6394,8 +6391,6 @@ struct WebCore::DigitalCredentialsResponseData {
 [Nested] enum class WebCore::IdentityCredentialProtocol : uint8_t {
     OrgIsoMdoc
 };
-
-#endif // HAVE(DIGITAL_CREDENTIALS_UI)
 
 #endif // ENABLE(WEB_AUTHN)
 

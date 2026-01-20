@@ -419,15 +419,12 @@
 #endif
 
 #if ENABLE(WEB_AUTHN)
+#include "DigitalCredentialsCoordinator.h"
 #include "WebAuthenticatorCoordinator.h"
 #include <WebCore/AuthenticatorCoordinator.h>
-
-#if HAVE(DIGITAL_CREDENTIALS_UI)
-#include "DigitalCredentialsCoordinator.h"
 #include <WebCore/DigitalCredentialsRequestData.h>
 #include <WebCore/DigitalCredentialsResponseData.h>
 #include <WebCore/ExceptionData.h>
-#endif // HAVE(DIGITAL_CREDENTIALS_UI)
 #endif // ENABLE(WEB_AUTHN)
 
 #if PLATFORM(IOS_FAMILY) && ENABLE(DEVICE_ORIENTATION)
@@ -809,7 +806,7 @@ WebPage::WebPage(PageIdentifier pageID, WebPageCreationParameters&& parameters)
         makeUniqueRef<WebChromeClient>(*this),
         makeUniqueRef<WebCryptoClient>(this->identifier()),
         makeUniqueRef<WebDocumentSyncClient>(*this)
-#if HAVE(DIGITAL_CREDENTIALS_UI)
+#if ENABLE(WEB_AUTHN)
         , DigitalCredentialsCoordinator::create(*this)
 #endif
     );
@@ -8467,7 +8464,7 @@ void WebPage::showContactPicker(WebCore::ContactsRequestData&& requestData, Comp
     sendWithAsyncReply(Messages::WebPageProxy::ShowContactPicker(WTF::move(requestData)), WTF::move(callback));
 }
 
-#if HAVE(DIGITAL_CREDENTIALS_UI)
+#if ENABLE(WEB_AUTHN)
 void WebPage::showDigitalCredentialsPicker(const WebCore::DigitalCredentialsRequestData& requestData, CompletionHandler<void(Expected<WebCore::DigitalCredentialsResponseData, WebCore::ExceptionData>&&)>&& completionHandler)
 {
     sendWithAsyncReply(Messages::WebPageProxy::ShowDigitalCredentialsPicker(requestData), WTF::move(completionHandler));

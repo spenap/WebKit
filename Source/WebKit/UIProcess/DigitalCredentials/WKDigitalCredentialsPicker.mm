@@ -26,7 +26,7 @@
 #import "config.h"
 #import "WKDigitalCredentialsPicker.h"
 
-#if HAVE(DIGITAL_CREDENTIALS_UI)
+#if ENABLE(WEB_AUTHN)
 
 #if PLATFORM(IOS_FAMILY)
 #import "UIKitSPI.h"
@@ -448,4 +448,4 @@ static RetainPtr<NSArray<NSArray<WKIdentityDocumentPresentmentRequestAuthenticat
 
 @end // WKDigitalCredentialsPicker
 
-#endif // HAVE(DIGITAL_CREDENTIALS_UI)
+#endif // ENABLE(WEB_AUTHN)

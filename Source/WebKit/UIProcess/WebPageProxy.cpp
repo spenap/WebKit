@@ -9787,7 +9787,7 @@ void WebPageProxy::showDigitalCredentialsPicker(IPC::Connection& connection, con
         completionHandler(makeUnexpected(WebCore::ExceptionData { WebCore::ExceptionCode::SecurityError, "Digital credentials feature is disabled by preference."_s }))
     );
 
-#if HAVE(DIGITAL_CREDENTIALS_UI)
+#if ENABLE(WEB_AUTHN)
     MESSAGE_CHECK_COMPLETION_BASE(
         requestData.topOrigin.securityOrigin()->isSameOriginDomain(SecurityOrigin::create(protectedMainFrame()->url())),
         connection,
@@ -9802,7 +9802,7 @@ void WebPageProxy::showDigitalCredentialsPicker(IPC::Connection& connection, con
 
 void WebPageProxy::fetchRawDigitalCredentialRequests(CompletionHandler<void(Vector<WebCore::MobileDocumentRequest>)>&& completionHandler)
 {
-#if HAVE(DIGITAL_CREDENTIALS_UI)
+#if ENABLE(WEB_AUTHN)
     sendWithAsyncReply(Messages::DigitalCredentialsCoordinator::ProvideRawDigitalCredentialRequests(), WTF::move(completionHandler));
 #else
     completionHandler({ });
@@ -9816,7 +9816,7 @@ void WebPageProxy::dismissDigitalCredentialsPicker(IPC::Connection& connection, 
         connection,
         completionHandler(false)
     );
-#if HAVE(DIGITAL_CREDENTIALS_UI)
+#if ENABLE(WEB_AUTHN)
     protectedPageClient()->dismissDigitalCredentialsPicker(WTF::move(completionHandler));
 #else
     completionHandler(false);

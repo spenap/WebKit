@@ -55,10 +55,13 @@ void CredentialsContainer::get(CredentialRequestOptions&& options, CredentialPro
 
 #if ENABLE(WEB_AUTHN)
     if (options.digital) {
+#if HAVE(DIGITAL_CREDENTIALS_UI)
         DigitalCredential::discoverFromExternalSource(*document(), WTF::move(promise), WTF::move(options));
+#else
+        promise.resolve(nullptr);
+#endif
         return;
     }
-
     document()->page()->authenticatorCoordinator().discoverFromExternalSource(*document(), WTF::move(options), WTF::move(promise));
 #else
     promise.resolve(nullptr);

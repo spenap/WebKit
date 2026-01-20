@@ -25,7 +25,7 @@
 
 #pragma once
 
-#if HAVE(DIGITAL_CREDENTIALS_UI)
+#if ENABLE(WEB_AUTHN)
 
 #include "MessageReceiver.h"
 #include <WebCore/CredentialRequestCoordinatorClient.h>
@@ -77,4 +77,4 @@ private:
 
 } // namespace WebKit
 
-#endif // ENABLE(DIGITAL_CREDENTIALS_UI)
+#endif // ENABLE(WEB_AUTHN)

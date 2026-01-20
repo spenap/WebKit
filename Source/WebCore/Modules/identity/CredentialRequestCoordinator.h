@@ -68,14 +68,6 @@ public:
 private:
     void dismissPickerAndSettle(ExceptionOr<RefPtr<BasicCredential>>&&);
 
-    static constexpr bool canPresentDigitalCredentialsUI()
-    {
-#if HAVE(DIGITAL_CREDENTIALS_UI)
-        return true;
-#else
-        return false;
-#endif
-    }
     class PickerStateGuard final {
     public:
         explicit PickerStateGuard(CredentialRequestCoordinator&);

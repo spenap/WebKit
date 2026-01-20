@@ -231,7 +231,7 @@
 #import "DataDetectionResult.h"
 #endif
 
-#if HAVE(DIGITAL_CREDENTIALS_UI)
+#if ENABLE(WEB_AUTHN)
 #import <WebKit/WKDigitalCredentialsPicker.h>
 #import <WebCore/DigitalCredentialsRequestData.h>
 #import <WebCore/DigitalCredentialsResponseData.h>
@@ -342,7 +342,7 @@ RetainPtr<NSError> nsErrorFromExceptionDetails(const std::optional<WebCore::Exce
 
 WK_OBJECT_DISABLE_DISABLE_KVC_IVAR_ACCESS;
 
-#if HAVE(DIGITAL_CREDENTIALS_UI)
+#if ENABLE(WEB_AUTHN)
 - (void)_showDigitalCredentialsPicker:(const WebCore::DigitalCredentialsRequestData&)requestData completionHandler:(WTF::CompletionHandler<void(Expected<WebCore::DigitalCredentialsResponseData, WebCore::ExceptionData>&&)>&&)completionHandler
 {
     LOG(DigitalCredentials, "Did not show digital credentials picker because it is not implemented.");
@@ -354,7 +354,7 @@ WK_OBJECT_DISABLE_DISABLE_KVC_IVAR_ACCESS;
     LOG(DigitalCredentials, "Did not dismiss digital credentials picker because it is not implemented.");
     completionHandler(false);
 }
-#endif // HAVE(DIGITAL_CREDENTIALS_UI)
+#endif // ENABLE(WEB_AUTHN)
 
 - (instancetype)initWithFrame:(CGRect)frame
 {

@@ -26,7 +26,7 @@
 #include "config.h"
 #include "DigitalCredentialsCoordinator.h"
 
-#if HAVE(DIGITAL_CREDENTIALS_UI)
+#if ENABLE(WEB_AUTHN)
 #include "DigitalCredentialsCoordinatorMessages.h"
 #include "DigitalCredentialsRequestValidatorBridge.h"
 #include "WebPage.h"
@@ -102,4 +102,4 @@ void DigitalCredentialsCoordinator::provideRawDigitalCredentialRequests(Completi
 }
 
 } // namespace WebKit
-#endif // HAVE(DIGITAL_CREDENTIALS_UI)
+#endif // ENABLE(WEB_AUTHN)

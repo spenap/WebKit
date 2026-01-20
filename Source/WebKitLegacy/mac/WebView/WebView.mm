@@ -1514,7 +1514,7 @@ static void WebKitInitializeGamepadProviderIfNecessary()
 #endif
         makeUniqueRef<WebCryptoClient>(self),
         makeUniqueRef<WebCore::DocumentSyncClient>()
-#if HAVE(DIGITAL_CREDENTIALS_UI)
+#if ENABLE(WEB_AUTHN)
         , WebCore::DummyCredentialRequestCoordinatorClient::create()
 #endif
     );
@@ -1772,7 +1772,7 @@ static void WebKitInitializeGamepadProviderIfNecessary()
         makeUniqueRef<WebChromeClientIOS>(self),
         makeUniqueRef<WebCryptoClient>(self),
         makeUniqueRef<WebCore::DocumentSyncClient>()
-#if HAVE(DIGITAL_CREDENTIALS_UI)
+#if ENABLE(WEB_AUTHN)
         , WebCore::DummyCredentialRequestCoordinatorClient::create()
 #endif
     );

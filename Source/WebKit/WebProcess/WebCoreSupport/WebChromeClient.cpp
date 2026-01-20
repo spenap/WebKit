@@ -1006,7 +1006,7 @@ void WebChromeClient::showContactPicker(WebCore::ContactsRequestData&& requestDa
         page->showContactPicker(WTF::move(requestData), WTF::move(callback));
 }
 
-#if HAVE(DIGITAL_CREDENTIALS_UI)
+#if ENABLE(WEB_AUTHN)
 void WebChromeClient::showDigitalCredentialsPicker(const WebCore::DigitalCredentialsRequestData& requestData, WTF::CompletionHandler<void(Expected<WebCore::DigitalCredentialsResponseData, WebCore::ExceptionData>&&)>&& callback)
 {
     if (RefPtr page = m_page.get())
