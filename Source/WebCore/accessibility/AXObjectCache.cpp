@@ -3139,13 +3139,25 @@ void AXObjectCache::handleAttributeChange(Element* element, const QualifiedName&
         postNotification(element, AXNotification::PlaceholderChanged);
     else if (attrName == hrefAttr || attrName == srcAttr)
         postNotification(element, AXNotification::URLChanged);
-    else if (attrName == idAttr) {
-#if !LOG_DISABLED
-        updateIsolatedTree(get(*element), AXNotification::IdAttributeChanged);
-#endif
-    } else if (attrName == accesskeyAttr)
+    else if (attrName == accesskeyAttr)
         updateIsolatedTree(get(*element), AXNotification::AccessKeyChanged);
 #endif // ENABLE(ACCESSIBILITY_ISOLATED_TREE)
+    else if (attrName == idAttr) {
+        if (RefPtr axObject = get(*element)) {
+            if (std::optional ownerIDs = relatedObjectIDsFor(*axObject, AXRelation::OwnedBy, UpdateRelations::No)) {
+                // If this element is currently owned via aria-owns, notify its owner(s) that their children have
+                // changed (since they no longer own us considering our new id).
+                for (AXID ownerID : *ownerIDs) {
+                    if (RefPtr owner = objectForID(ownerID))
+                        childrenChanged(owner.get());
+                }
+            }
+        }
+
+#if ENABLE(ACCESSIBILITY_ISOLATED_TREE) && !LOG_DISABLED
+        updateIsolatedTree(get(*element), AXNotification::IdAttributeChanged);
+#endif
+    }
     else if (attrName == openAttr) {
         if (is<HTMLDialogElement>(*element)) {
             deferModalChange(*element);
@@ -3344,8 +3356,6 @@ void AXObjectCache::handleAttributeChange(Element* element, const QualifiedName&
             }
         };
 
-        // FIXME: aria-owns relationships can also change when an object's ID changes. We should update
-        // stitch groups in that case too.
         updateStitchGroups(oldValue);
         updateStitchGroups(newValue);
     }
