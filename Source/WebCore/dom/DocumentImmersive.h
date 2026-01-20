@@ -77,6 +77,7 @@ private:
     WeakRef<Document, WeakPtrImplWithEventTargetData> m_document;
     WeakPtr<HTMLModelElement, WeakPtrImplWithEventTargetData> m_immersiveElement;
     void updateElementIsImmersive(HTMLModelElement*, bool);
+    void dismissClientImmersivePresentation(HTMLModelElement*, CompletionHandler<void()>&&);
 
     Deque<std::pair<EventType, GCReachableRef<Element>>> m_pendingEvents;
 };

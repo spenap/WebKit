@@ -1848,6 +1848,11 @@ void WebPageProxy::close()
         fullscreenManager->detachFromClient();
 #endif
 
+#if ENABLE(MODEL_ELEMENT_IMMERSIVE)
+    if (m_immersive)
+        dismissImmersiveElement([] { });
+#endif
+
 #if ENABLE(WK_WEB_EXTENSIONS) && PLATFORM(COCOA)
     if (RefPtr webExtensionController = m_webExtensionController)
         webExtensionController->removePage(*this);
@@ -5465,6 +5470,11 @@ void WebPageProxy::commitProvisionalPage(IPC::Connection& connection, FrameIdent
     // There is no way we'll be able to return to the page in the previous page so close it.
     if (!didSuspendPreviousPage && shouldClosePreviousPage(*provisionalPage))
         send(Messages::WebPage::Close());
+
+#if ENABLE(MODEL_ELEMENT_IMMERSIVE)
+    if (m_immersive)
+        dismissImmersiveElement([] { });
+#endif
 
     const auto oldWebPageID = m_webPageID;
     swapToProvisionalPage(provisionalPage.releaseNonNull());
@@ -13672,16 +13682,22 @@ void WebPageProxy::allowImmersiveElementFromURL(const URL& url, CompletionHandle
         completion(false);
 }
 
-void WebPageProxy::presentImmersiveElement(const WebCore::LayerHostingContextIdentifier contextID, CompletionHandler<void(bool)>&& completion) const
+void WebPageProxy::presentImmersiveElement(const WebCore::LayerHostingContextIdentifier contextID, CompletionHandler<void(bool)>&& completion)
 {
-    if (RefPtr pageClient = this->pageClient())
-        pageClient->presentImmersiveElement(contextID, WTF::move(completion));
-    else
+    if (RefPtr pageClient = this->pageClient()) {
+        pageClient->presentImmersiveElement(contextID, [weakThis = WeakPtr { *this }, completion = WTF::move(completion)](bool success) mutable {
+            if (success && weakThis)
+                weakThis.get()->m_immersive = true;
+            completion(success);
+        });
+    } else
         completion(false);
 }
 
-void WebPageProxy::dismissImmersiveElement(CompletionHandler<void()>&& completion) const
+void WebPageProxy::dismissImmersiveElement(CompletionHandler<void()>&& completion)
 {
+    m_immersive = false;
+
     if (RefPtr pageClient = this->pageClient())
         pageClient->dismissImmersiveElement(WTF::move(completion));
     else

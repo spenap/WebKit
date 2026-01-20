@@ -3090,8 +3090,8 @@ private:
 
 #if ENABLE(MODEL_ELEMENT_IMMERSIVE)
     void allowImmersiveElementFromURL(const URL&, CompletionHandler<void(bool)>&&) const;
-    void presentImmersiveElement(const WebCore::LayerHostingContextIdentifier, CompletionHandler<void(bool)>&&) const;
-    void dismissImmersiveElement(CompletionHandler<void()>&&) const;
+    void presentImmersiveElement(const WebCore::LayerHostingContextIdentifier, CompletionHandler<void(bool)>&&);
+    void dismissImmersiveElement(CompletionHandler<void()>&&);
 #endif
 
     WebCore::Color platformUnderPageBackgroundColor() const;
@@ -4097,6 +4097,10 @@ private:
 #if PLATFORM(VISION)
     bool m_gamepadsConnected { false };
 #endif
+#endif
+
+#if ENABLE(MODEL_ELEMENT_IMMERSIVE)
+    bool m_immersive { false };
 #endif
 
 #if HAVE(AUDIT_TOKEN)
