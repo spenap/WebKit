@@ -8203,10 +8203,11 @@ webkit.org/b/304002 [ Debug ] fast/inline/missing-content-on-autofill-with-out-o
 webkit.org/b/305468 [ Debug ] fast/dynamic/input-crash-after-style-change.html [ Skip ]
 
 # Digital Credentials API tests failing due to lack of implementation
-webkit.org/b/303807 imported/w3c/web-platform-tests/digital-credentials/allow-attribute-with-create.https.html [ Skip ]
-webkit.org/b/303807 imported/w3c/web-platform-tests/digital-credentials/create-enabled-on-self-origin-by-permissions-policy.https.sub.html [ Skip ]
-webkit.org/b/303807 imported/w3c/web-platform-tests/digital-credentials/create.disabled-by-permissions-policy.https.sub.html [ Skip ]
+webkit.org/b/303807 imported/w3c/web-platform-tests/digital-credentials/user-activation-create.tentative.https.html [ Skip ]
 webkit.org/b/303807 imported/w3c/web-platform-tests/digital-credentials/create.tentative.https.html [ Skip ]
+webkit.org/b/303807 imported/w3c/web-platform-tests/digital-credentials/create.disabled-by-permissions-policy.https.sub.html [ Skip ]
+webkit.org/b/303807 imported/w3c/web-platform-tests/digital-credentials/create-enabled-on-self-origin-by-permissions-policy.https.sub.html [ Skip ]
+webkit.org/b/303807 imported/w3c/web-platform-tests/digital-credentials/allow-attribute-with-create.https.html [ Skip ]
 
 # Hits assert in debug, tracked by https://bugs.webkit.org/show_bug.cgi?id=303414
 [ Debug ] fullscreen/fullscreen-grid-item-container-type-crash.html [ Skip ]
