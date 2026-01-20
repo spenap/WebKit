@@ -111,7 +111,10 @@
 #include "RenderTableCell.h"
 #include "RenderView.h"
 #include "RuleFeature.h"
+#include "SVGAElement.h"
 #include "SVGElement.h"
+#include "SVGElementTypeHelpers.h"
+#include "SVGTitleElement.h"
 #include "ShadowRoot.h"
 #include "StyleListStyleType.h"
 #include "StyleResolver.h"
@@ -121,6 +124,7 @@
 #include "TypedElementDescendantIteratorInlines.h"
 #include "UserGestureIndicator.h"
 #include "VisibleUnits.h"
+#include "XLinkNames.h"
 #include <numeric>
 #include <wtf/Scope.h>
 #include <wtf/SetForScope.h>
@@ -4174,6 +4178,12 @@ static String accessibleNameForNode(Node& node, Node* labelledbyNode)
     const AtomString& alt = element ? element->attributeWithoutSynchronization(altAttr) : nullAtom();
     if (!alt.isEmpty())
         return alt;
+
+    if (RefPtr svgElement = dynamicDowncast<SVGElement>(element)) {
+        // For SVG elements, check for SVG-specific labeling mechanisms per SVG-AAM spec.
+        if (String title = svgElement->title(); !title.isEmpty())
+            return title;
+    }
 
     // If the node can be turned into an AX object, we can use standard name computation rules.
     // If however, the node cannot (because there's no renderer e.g.) fallback to using the basic text underneath.
