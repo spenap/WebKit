@@ -31,8 +31,6 @@ loader/cache/CachedResourceClientWalker.h
 [ iOS ] platform/ios/wak/WAKWindow.mm
 rendering/BidiRun.cpp
 rendering/BidiRun.h
-rendering/RenderAncestorIterator.h
-rendering/RenderIterator.h
 rendering/RenderMultiColumnSet.h
 rendering/cocoa/RenderThemeCocoa.mm
 rendering/svg/RenderSVGResourcePattern.cpp
