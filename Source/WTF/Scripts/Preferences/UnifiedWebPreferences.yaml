@@ -1289,20 +1289,6 @@ CSSPaintingAPIEnabled:
     WebCore:
       default: false
 
-CSSProgressFunctionEnabled:
-  type: bool
-  category: css
-  status: stable
-  humanReadableName: "CSS progress()"
-  humanReadableDescription: "Enable support for CSS Values and Units Module Level 5 progress()"
-  defaultValue:
-    WebKitLegacy:
-      default: true
-    WebKit:
-      default: true
-    WebCore:
-      default: true
-
 CSSRandomFunctionEnabled:
   type: bool
   category: css
