@@ -100,6 +100,10 @@
 #include <wtf/text/MakeString.h>
 #include <wtf/text/StringBuilder.h>
 
+#if ENABLE(DATA_DETECTION)
+#include "DataDetection.h"
+#endif
+
 namespace WebCore {
 namespace TextExtraction {
 
@@ -952,6 +956,59 @@ static Node* nodeFromJSHandle(JSHandleIdentifier identifier)
     return nullptr;
 }
 
+#if ENABLE(DATA_DETECTION)
+
+static RefPtr<ContainerNode> findContainerNodeForDataDetectorResults(Node& rootNode, OptionSet<DataDetectorType> types)
+{
+    struct RangeAndArea {
+        SimpleRange range;
+        double area;
+    };
+
+    std::optional<RangeAndArea> largestRange;
+    for (auto range : DataDetection::detectRanges(makeRangeSelectingNodeContents(rootNode), types)) {
+        double areaAboveMaximumYOffset = 0;
+        for (auto rect : RenderObject::absoluteTextRects(range)) {
+            static constexpr auto maximumYOffset = 3000;
+            if (rect.y() < maximumYOffset)
+                areaAboveMaximumYOffset += FloatRect { rect }.area();
+        }
+
+        if (areaAboveMaximumYOffset <= 0)
+            continue;
+
+        if (!largestRange || largestRange->area < areaAboveMaximumYOffset)
+            largestRange = { range, areaAboveMaximumYOffset };
+    }
+
+    if (!largestRange)
+        return { };
+
+    RefPtr commonAncestor = commonInclusiveAncestor<ComposedTree>(largestRange->range);
+    if (!commonAncestor)
+        return { };
+
+    // FIXME: Consider making this size threshold client-configurable in the future.
+    static constexpr FloatSize minimumSize { 280, 300 };
+    for (CheckedPtr renderer = commonAncestor->renderer(); renderer; renderer = renderer->parent()) {
+        bool wasFixed = false;
+        auto bounds = renderer->absoluteBoundingBoxRect(true, &wasFixed);
+        if ((bounds.width() < minimumSize.width() || bounds.height() < minimumSize.height()) && !wasFixed)
+            continue;
+
+        RefPtr node = renderer->node();
+        if (RefPtr containerNode = dynamicDowncast<ContainerNode>(node))
+            return containerNode;
+
+        if (&rootNode == node)
+            break;
+    }
+
+    return { };
+}
+
+#endif // ENABLE(DATA_DETECTION)
+
 Item extractItem(Request&& request, LocalFrame& frame)
 {
     auto frameID = frame.frameID();
@@ -972,6 +1029,11 @@ Item extractItem(Request&& request, LocalFrame& frame)
 
         return nodeFromJSHandle(*request.targetNodeHandleIdentifier);
     }();
+
+#if ENABLE(DATA_DETECTION)
+    if (request.dataDetectorTypes && extractionRootNode)
+        extractionRootNode = findContainerNodeForDataDetectorResults(*extractionRootNode, request.dataDetectorTypes);
+#endif
 
     if (!extractionRootNode)
         return root;

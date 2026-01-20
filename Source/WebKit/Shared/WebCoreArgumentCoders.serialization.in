@@ -4167,6 +4167,7 @@ header: <WebCore/DataDetectorType.h>
     TrackingNumber,
     FlightNumber,
     LookupSuggestion,
+    Money,
 };
 #endif
 
@@ -6829,6 +6830,9 @@ header: <WebCore/TextExtractionTypes.h>
     bool includeEventListeners;
     bool includeAccessibilityAttributes;
     bool includeTextInAutoFilledControls;
+#if ENABLE(DATA_DETECTION)
+    OptionSet<WebCore::DataDetectorType> dataDetectorTypes;
+#endif
 };
 
 header: <WebCore/TextExtractionTypes.h>

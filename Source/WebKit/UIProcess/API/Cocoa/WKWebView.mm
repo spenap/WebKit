@@ -7161,6 +7161,20 @@ static HashMap<String, HashMap<WebCore::JSHandleIdentifier, String>> extractClie
     return result;
 }
 
+static OptionSet<WebCore::DataDetectorType> coreDataDetectorTypes(_WKTextExtractionDataDetectorTypes types)
+{
+    OptionSet<WebCore::DataDetectorType> coreTypes;
+    if (types & _WKTextExtractionDataDetectorMoney)
+        coreTypes.add(WebCore::DataDetectorType::Money);
+    if (types & _WKTextExtractionDataDetectorAddress)
+        coreTypes.add(WebCore::DataDetectorType::Address);
+    if (types & _WKTextExtractionDataDetectorCalendarEvent)
+        coreTypes.add(WebCore::DataDetectorType::CalendarEvent);
+    if (types & _WKTextExtractionDataDetectorTrackingNumber)
+        coreTypes.add(WebCore::DataDetectorType::TrackingNumber);
+    return coreTypes;
+}
+
 #endif // USE(APPLE_INTERNAL_SDK) || (!PLATFORM(WATCHOS) && !PLATFORM(APPLETV))
 
 - (void)_requestTextExtractionInternal:(_WKTextExtractionConfiguration *)configuration completion:(CompletionHandler<void(std::optional<WebCore::TextExtraction::Item>&&)>&&)completion
@@ -7213,6 +7227,7 @@ static HashMap<String, HashMap<WebCore::JSHandleIdentifier, String>> extractClie
             .includeEventListeners = !!configuration.includeEventListeners,
             .includeAccessibilityAttributes = !!configuration.includeAccessibilityAttributes,
             .includeTextInAutoFilledControls = !!configuration.includeTextInAutoFilledControls,
+            .dataDetectorTypes = coreDataDetectorTypes(configuration.dataDetectorTypes),
         };
     };
 
