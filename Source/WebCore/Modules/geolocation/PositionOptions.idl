@@ -24,9 +24,7 @@
  */
 
 // https://w3c.github.io/geolocation-api/#position_options_interface
-[
-    LegacyNativeDictionaryRequiredInterfaceNullability,
-] dictionary PositionOptions {
+dictionary PositionOptions {
     boolean enableHighAccuracy = false;
     [Clamp] unsigned long timeout = 0xFFFFFFFF;
     [Clamp] unsigned long maximumAge = 0;

@@ -31,9 +31,7 @@ typedef (sequence<sequence<ByteString>> or record<ByteString, ByteString>) Heade
 
 enum FetchResponseType { "basic", "cors", "default", "error", "opaque", "opaqueredirect" };
 
-[
-    LegacyNativeDictionaryRequiredInterfaceNullability,
-] dictionary FetchResponseInit {
+dictionary FetchResponseInit {
     unsigned short status = 200;
     [AtomString] ByteString statusText = "";
     HeadersInit headers;

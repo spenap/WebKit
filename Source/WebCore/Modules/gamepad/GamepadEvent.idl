@@ -33,10 +33,7 @@
     readonly attribute Gamepad? gamepad;
 };
 
-[
-    LegacyNativeDictionaryRequiredInterfaceNullability,
-] dictionary GamepadEventInit : EventInit {
-    // The specification says this member should be required and non-nullable.
-    // However, this does not match the behavior of Chrome or Firefox.
+dictionary GamepadEventInit : EventInit {
+    // This should probably be nullable: https://github.com/w3c/gamepad/pull/217.
     Gamepad? gamepad = null;
 };
