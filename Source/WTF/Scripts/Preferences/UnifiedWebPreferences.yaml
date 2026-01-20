@@ -1317,34 +1317,6 @@ CSSRhythmicSizingEnabled:
     WebCore:
       default: false
 
-CSSRubyAlignEnabled:
-  type: bool
-  status: stable
-  category: css
-  humanReadableName: "CSS ruby-align property"
-  humanReadableDescription: "Enable ruby-align"
-  defaultValue:
-    WebKitLegacy:
-      default: true
-    WebKit:
-      default: true
-    WebCore:
-      default: true
-
-CSSRubyOverhangEnabled:
-  type: bool
-  status: stable
-  category: css
-  humanReadableName: "CSS ruby-overhang property"
-  humanReadableDescription: "Enable ruby-overhang"
-  defaultValue:
-    WebKitLegacy:
-      default: true
-    WebKit:
-      default: true
-    WebCore:
-      default: true
-
 CSSScrollAnchoringEnabled:
   type: bool
   status: testable

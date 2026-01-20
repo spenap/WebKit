@@ -7888,7 +7888,6 @@
                 "space-around"
             ],
             "codegen-properties": {
-                "settings-flag": "cssRubyAlignEnabled",
                 "computed-style-storage-path": ["m_inheritedRareData"],
                 "computed-style-storage-kind": "enum",
                 "computed-style-type": "RubyAlign",
@@ -7909,7 +7908,6 @@
                 "none"
             ],
             "codegen-properties": {
-                "settings-flag": "cssRubyOverhangEnabled",
                 "computed-style-storage-path": ["m_inheritedRareData"],
                 "computed-style-storage-kind": "enum",
                 "computed-style-type": "RubyOverhang",
