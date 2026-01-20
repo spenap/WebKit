@@ -1116,20 +1116,6 @@ CSSConstrainedDynamicRangeLimitEnabled:
     WebCore:
       default: false
 
-CSSContrastColorEnabled:
-  type: bool
-  category: css
-  status: stable
-  humanReadableName: "CSS contrast-color()"
-  humanReadableDescription: "Enable support for CSS Color Module Level 5 contrast-color()"
-  defaultValue:
-    WebKitLegacy:
-      default: true
-    WebKit:
-      default: true
-    WebCore:
-      default: true
-
 CSSCornerShapeEnabled:
   type: bool
   category: css
