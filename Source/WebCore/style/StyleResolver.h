@@ -194,8 +194,8 @@ private:
 
     std::unique_ptr<Style::CustomFunctionRegistry> m_customFunctionRegistry;
 
-    MQ::MediaQueryEvaluator m_mediaQueryEvaluator;
     std::unique_ptr<RenderStyle> m_rootDefaultStyle;
+    MQ::MediaQueryEvaluator m_mediaQueryEvaluator;
 
     InspectorCSSOMWrappers m_inspectorCSSOMWrappers;
 

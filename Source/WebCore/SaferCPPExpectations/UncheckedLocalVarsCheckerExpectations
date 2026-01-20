@@ -15,7 +15,6 @@ css/SelectorChecker.cpp
 css/SelectorFilter.cpp
 css/StyleAttributeMutationScope.h
 css/StyleRuleImport.cpp
-css/query/ContainerQueryFeatures.cpp
 css/typedom/ComputedStylePropertyMapReadOnly.cpp
 dom/CollectionIndexCacheInlines.h
 dom/CustomElementReactionQueue.cpp

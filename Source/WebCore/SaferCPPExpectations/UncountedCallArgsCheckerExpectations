@@ -240,7 +240,6 @@ css/StyleRule.cpp
 css/StyleRuleImport.cpp
 css/StyleRuleImport.h
 css/StyleSheetContents.cpp
-css/query/MediaQueryFeatures.cpp
 css/typedom/CSSOMVariableReferenceValue.cpp
 css/typedom/CSSStyleValue.cpp
 css/typedom/CSSStyleValueFactory.cpp

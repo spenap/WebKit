@@ -67,7 +67,6 @@ css/SelectorFilter.cpp
 css/ShorthandSerializer.cpp
 css/StyleProperties.cpp
 css/StyleRuleImport.cpp
-css/query/MediaQueryFeatures.cpp
 css/typedom/ComputedStylePropertyMapReadOnly.cpp
 css/values/CSSValueAggregates.h
 cssjit/SelectorCompiler.cpp
