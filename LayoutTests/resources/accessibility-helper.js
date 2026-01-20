@@ -480,3 +480,23 @@ function formatAnnouncementUserInfo(userInfo) {
     return result;
 }
 
+// Checks that text alternatives include all expected values and exclude all unexpected values.
+// Returns a string with PASS/FAIL results for each check.
+function checkTextAlternatives(axElement, { expected = [], unexpected = [] }) {
+    var alternatives = platformTextAlternatives(axElement);
+    var result = "";
+    for (var i = 0; i < expected.length; i++) {
+        if (alternatives.includes(expected[i]))
+            result += `PASS: Text alternatives include '${expected[i]}'\n`;
+        else
+            result += `FAIL: Text alternatives should include '${expected[i]}' but got:\n${alternatives}\n`;
+    }
+    for (var i = 0; i < unexpected.length; i++) {
+        if (!alternatives.includes(unexpected[i]))
+            result += `PASS: Text alternatives do not include '${unexpected[i]}'\n`;
+        else
+            result += `FAIL: Text alternatives should NOT include '${unexpected[i]}' but got:\n${alternatives}\n`;
+    }
+    return result;
+}
+

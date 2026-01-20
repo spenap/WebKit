@@ -3245,7 +3245,7 @@ String AccessibilityNodeObject::textForLabelElements(Vector<Ref<HTMLElement>>&& 
             appendNameToStringBuilder(result, axLabel->textAsLabelFor(*this));
 #endif
         else
-            appendNameToStringBuilder(result, accessibleNameForNode(labelElement.get()));
+            appendNameToStringBuilder(result, accessibleNameForNode(labelElement.get(), /* labelledByNode */ node()));
     }
 
     return result.toString();
@@ -4223,6 +4223,26 @@ static String accessibleNameForNode(Node& node, Node* labelledbyNode)
     if (RefPtr option = dynamicDowncast<HTMLOptionElement>(element))
         return option->value();
 
+    if (auto* slotElement = dynamicDowncast<HTMLSlotElement>(node); slotElement && labelledbyNode) {
+        // Compute the accessible name for a slot's assigned nodes only if it's being used to label
+        // another node. If no assigned nodes exist, or all assigned nodes are hidden, fall through to
+        // textUnderElement, which will return the slot's fallback content.
+        if (auto* assignedNodes = slotElement->assignedNodes()) {
+            StringBuilder builder;
+            for (const auto& assignedNode : *assignedNodes) {
+                // Skip hidden assigned nodes, e.g. those with display:none.
+                RefPtr assignedElement = dynamicDowncast<Element>(assignedNode.get());
+                if (assignedElement && isRenderHidden(safeStyleFrom(*assignedElement)))
+                    continue;
+                appendNameToStringBuilder(builder, accessibleNameForNode(*assignedNode));
+            }
+
+            auto assignedNodesText = builder.toString();
+            if (!assignedNodesText.isEmpty())
+                return assignedNodesText;
+        }
+    }
+
     String text;
     if (axObject) {
         if (axObject->accessibleNameDerivesFromContent())
@@ -4236,18 +4256,6 @@ static String accessibleNameForNode(Node& node, Node* labelledbyNode)
     const AtomString& title = element ? element->attributeWithoutSynchronization(titleAttr) : nullAtom();
     if (!title.isEmpty())
         return title;
-
-    auto* slotElement = dynamicDowncast<HTMLSlotElement>(node);
-    // Compute the accessible name for a slot's contents only if it's being used to label another node.
-    if (auto* assignedNodes = (slotElement && labelledbyNode) ? slotElement->assignedNodes() : nullptr) {
-        StringBuilder builder;
-        for (const auto& assignedNode : *assignedNodes)
-            appendNameToStringBuilder(builder, accessibleNameForNode(*assignedNode));
-
-        auto assignedNodesText = builder.toString();
-        if (!assignedNodesText.isEmpty())
-            return assignedNodesText;
-    }
 
     return { };
 }
