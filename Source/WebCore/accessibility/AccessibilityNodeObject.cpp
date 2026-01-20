@@ -4208,15 +4208,29 @@ static String accessibleNameForNode(Node& node, Node* labelledbyNode)
     }
 
     if (RefPtr input = dynamicDowncast<HTMLInputElement>(element)) {
-        String inputValue = input->value();
-        if (input->isPasswordField()) {
-            StringBuilder passwordValue;
-            passwordValue.reserveCapacity(inputValue.length());
-            for (size_t i = 0; i < inputValue.length(); i++)
-                passwordValue.append(String::fromUTF8("•"));
-            return passwordValue.toString();
+        // Checkboxes and radio buttons derive their accessible name from labels, not their value attribute.
+        if (input->isCheckbox() || input->isRadioButton()) {
+            auto labels = Accessibility::labelsForElement(element);
+            if (!labels.isEmpty()) {
+                StringBuilder builder;
+                for (auto& label : labels)
+                    appendNameToStringBuilder(builder, accessibleNameForNode(label.get()));
+                String labelText = builder.toString();
+                if (!labelText.isEmpty())
+                    return labelText;
+            }
+            // Fall through to other name computation methods.
+        } else {
+            String inputValue = input->value();
+            if (input->isPasswordField()) {
+                StringBuilder passwordValue;
+                passwordValue.reserveCapacity(inputValue.length());
+                for (size_t i = 0; i < inputValue.length(); i++)
+                    passwordValue.append(String::fromUTF8("•"));
+                return passwordValue.toString();
+            }
+            return inputValue;
         }
-        return inputValue;
     }
     if (RefPtr option = dynamicDowncast<HTMLOptionElement>(element))
         return option->value();
