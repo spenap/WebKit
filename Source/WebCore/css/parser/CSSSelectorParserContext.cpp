@@ -61,8 +61,7 @@ CSSSelectorParserContext::CSSSelectorParserContext(const Document& document)
 
 void add(Hasher& hasher, const CSSSelectorParserContext& context)
 {
-    add(hasher,
-        context.mode,
+    auto bits = WTF::packBools(
 #if ENABLE(SERVICE_CONTROLS)
         context.imageControlsEnabled,
 #endif
@@ -72,6 +71,7 @@ void add(Hasher& hasher, const CSSSelectorParserContext& context)
         context.viewTransitionsEnabled,
         context.webkitMediaTextTrackDisplayQuirkEnabled
     );
+    add(hasher, context.mode, bits);
 }
 
 } // namespace WebCore
