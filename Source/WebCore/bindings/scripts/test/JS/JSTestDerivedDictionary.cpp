@@ -32,11 +32,23 @@
 #include "Settings.h"
 #include <JavaScriptCore/JSCInlines.h>
 #include <JavaScriptCore/ObjectConstructor.h>
+#include <type_traits>
+#include <wtf/IsIncreasing.h>
 
 
 
 namespace WebCore {
 using namespace JSC;
+
+IGNORE_WARNINGS_BEGIN("invalid-offsetof")
+
+static_assert(std::is_aggregate_v<TestDerivedDictionary>);
+static_assert(IsIncreasing<
+      0
+    , offsetof(TestDerivedDictionary, derivedBoolMember)
+>);
+
+IGNORE_WARNINGS_END
 
 template<> ConversionResult<IDLDictionary<TestDerivedDictionary>> convertDictionary<TestDerivedDictionary>(JSGlobalObject& lexicalGlobalObject, JSValue value)
 {

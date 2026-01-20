@@ -44,13 +44,25 @@
 #include <JavaScriptCore/ObjectConstructor.h>
 #include <JavaScriptCore/SlotVisitorMacros.h>
 #include <JavaScriptCore/SubspaceInlines.h>
+#include <type_traits>
 #include <wtf/GetPtr.h>
+#include <wtf/IsIncreasing.h>
 #include <wtf/PointerPreparations.h>
 #include <wtf/URL.h>
 #include <wtf/text/MakeString.h>
 
 namespace WebCore {
 using namespace JSC;
+
+IGNORE_WARNINGS_BEGIN("invalid-offsetof")
+
+static_assert(std::is_aggregate_v<ExposedToWorkerAndWindow::Dict>);
+static_assert(IsIncreasing<
+      0
+    , offsetof(ExposedToWorkerAndWindow::Dict, obj)
+>);
+
+IGNORE_WARNINGS_END
 
 template<> ConversionResult<IDLDictionary<ExposedToWorkerAndWindow::Dict>> convertDictionary<ExposedToWorkerAndWindow::Dict>(JSGlobalObject& lexicalGlobalObject, JSValue value)
 {

@@ -26,11 +26,24 @@
 #include "JSDOMConvertNumbers.h"
 #include "JSDOMConvertOptional.h"
 #include <JavaScriptCore/JSCInlines.h>
+#include <type_traits>
+#include <wtf/IsIncreasing.h>
 
 
 
 namespace WebCore {
 using namespace JSC;
+
+IGNORE_WARNINGS_BEGIN("invalid-offsetof")
+
+static_assert(std::is_aggregate_v<TestDictionary>);
+static_assert(IsIncreasing<
+      0
+    , offsetof(TestDictionary, member)
+    , offsetof(TestDictionary, guardedMember)
+>);
+
+IGNORE_WARNINGS_END
 
 template<> ConversionResult<IDLDictionary<TestDictionary>> convertDictionary<TestDictionary>(JSGlobalObject& lexicalGlobalObject, JSValue value)
 {

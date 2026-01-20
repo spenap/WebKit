@@ -26,11 +26,23 @@
 #include "JSDOMGlobalObject.h"
 #include <JavaScriptCore/JSCInlines.h>
 #include <JavaScriptCore/ObjectConstructor.h>
+#include <type_traits>
+#include <wtf/IsIncreasing.h>
 
 
 
 namespace WebCore {
 using namespace JSC;
+
+IGNORE_WARNINGS_BEGIN("invalid-offsetof")
+
+static_assert(std::is_aggregate_v<TestDictionaryNoToNative>);
+static_assert(IsIncreasing<
+      0
+    , offsetof(TestDictionaryNoToNative, member)
+>);
+
+IGNORE_WARNINGS_END
 
 JSC::JSObject* convertDictionaryToJS(JSC::JSGlobalObject& lexicalGlobalObject, JSDOMGlobalObject& globalObject, const TestDictionaryNoToNative& dictionary)
 {
@@ -46,6 +58,16 @@ JSC::JSObject* convertDictionaryToJS(JSC::JSGlobalObject& lexicalGlobalObject, J
     }
     return result;
 }
+
+IGNORE_WARNINGS_BEGIN("invalid-offsetof")
+
+static_assert(std::is_aggregate_v<TestDictionaryNoToNative::GenerateKeyword>);
+static_assert(IsIncreasing<
+      0
+    , offsetof(TestDictionaryNoToNative::GenerateKeyword, member)
+>);
+
+IGNORE_WARNINGS_END
 
 template<> ConversionResult<IDLDictionary<TestDictionaryNoToNative::GenerateKeyword>> convertDictionary<TestDictionaryNoToNative::GenerateKeyword>(JSGlobalObject& lexicalGlobalObject, JSValue value)
 {

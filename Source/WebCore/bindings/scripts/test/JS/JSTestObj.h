@@ -259,6 +259,8 @@ template<> ConversionResult<IDLDictionary<TestObj::ParentDictionary>> convertDic
 
 template<> ConversionResult<IDLDictionary<TestObj::ChildDictionary>> convertDictionary<TestObj::ChildDictionary>(JSC::JSGlobalObject&, JSC::JSValue);
 
+template<> ConversionResult<IDLDictionary<TestObj::GrandchildDictionary>> convertDictionary<TestObj::GrandchildDictionary>(JSC::JSGlobalObject&, JSC::JSValue);
+
 #if ENABLE(Condition1)
 
 template<> ConversionResult<IDLDictionary<TestObj::ConditionalDictionaryA>> convertDictionary<TestObj::ConditionalDictionaryA>(JSC::JSGlobalObject&, JSC::JSValue);

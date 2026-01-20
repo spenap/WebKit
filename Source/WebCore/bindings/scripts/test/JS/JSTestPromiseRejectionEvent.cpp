@@ -46,13 +46,26 @@
 #include <JavaScriptCore/JSDestructibleObjectHeapCellType.h>
 #include <JavaScriptCore/SlotVisitorMacros.h>
 #include <JavaScriptCore/SubspaceInlines.h>
+#include <type_traits>
 #include <wtf/GetPtr.h>
+#include <wtf/IsIncreasing.h>
 #include <wtf/PointerPreparations.h>
 #include <wtf/URL.h>
 #include <wtf/text/MakeString.h>
 
 namespace WebCore {
 using namespace JSC;
+
+IGNORE_WARNINGS_BEGIN("invalid-offsetof")
+
+static_assert(std::is_aggregate_v<TestPromiseRejectionEvent::Init>);
+static_assert(IsIncreasing<
+      0
+    , offsetof(TestPromiseRejectionEvent::Init, promise)
+    , offsetof(TestPromiseRejectionEvent::Init, reason)
+>);
+
+IGNORE_WARNINGS_END
 
 template<> ConversionResult<IDLDictionary<TestPromiseRejectionEvent::Init>> convertDictionary<TestPromiseRejectionEvent::Init>(JSGlobalObject& lexicalGlobalObject, JSValue value)
 {

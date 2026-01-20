@@ -24,6 +24,8 @@
 #include "JSDOMGlobalObject.h"
 #include <JavaScriptCore/JSCInlines.h>
 #include <JavaScriptCore/ObjectConstructor.h>
+#include <type_traits>
+#include <wtf/IsIncreasing.h>
 
 #if ENABLE(TEST_CONDITIONAL)
 #include "JSDOMConvertOptional.h"
@@ -34,6 +36,18 @@
 
 namespace WebCore {
 using namespace JSC;
+
+IGNORE_WARNINGS_BEGIN("invalid-offsetof")
+
+static_assert(std::is_aggregate_v<TestDictionaryWithOnlyConditionalMembers>);
+static_assert(IsIncreasing<
+      0
+#if ENABLE(TEST_CONDITIONAL)
+    , offsetof(TestDictionaryWithOnlyConditionalMembers, conditionalMember)
+#endif
+>);
+
+IGNORE_WARNINGS_END
 
 template<> ConversionResult<IDLDictionary<TestDictionaryWithOnlyConditionalMembers>> convertDictionary<TestDictionaryWithOnlyConditionalMembers>(JSGlobalObject& lexicalGlobalObject, JSValue value)
 {

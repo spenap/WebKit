@@ -2801,6 +2801,44 @@ sub GenerateDictionariesHeaderContent
     return $result;
 }
 
+sub GenerateDictionaryChecks
+{
+    my ($dictionary, $dictionaries, $className, $interface) = @_;
+
+    AddToImplIncludes("<wtf/IsIncreasing.h>");
+    AddToImplIncludes("<type_traits>");
+
+    my $result = "";
+
+    # GCC and Clang>=18 are less generous with their interpretation of "Use of the offsetof macro
+    # with a type other than a standard-layout class is conditionally-supported".
+    $result .= "IGNORE_WARNINGS_BEGIN(\"invalid-offsetof\")\n\n";
+
+    $result .= "static_assert(std::is_aggregate_v<${className}>);\n";
+    $result .= "static_assert(IsIncreasing<\n";
+    $result .= "      0\n";
+    foreach my $member (@{$dictionary->members}) {
+        my $conditional = $member->extendedAttributes->{Conditional};
+        my $name = $member->name;
+
+        if ($conditional) {
+            my $conditionalString = $codeGenerator->GenerateConditionalStringFromAttributeValue($conditional);
+            $result .= "#if ${conditionalString}\n";
+        }
+
+        $result .= "    , offsetof(${className}, ${name})\n";
+
+        if ($conditional) {
+            $result .= "#endif\n" ;
+        }
+    }
+    $result .= ">);\n\n";
+
+    $result .= "IGNORE_WARNINGS_END\n\n";
+
+    return $result;
+}
+
 sub GenerateDictionaryImplementationMemberConversion
 {
     my ($typeScope, $name, $dictionary, $className, $member, $initializationIndent) = @_;
@@ -3302,6 +3340,10 @@ sub GenerateDictionaryImplementationContent
         assert("Unable to find definition for dictionary named '" . $parentType->name . "'!") unless defined($parentDictionary);
         unshift(@dictionaries, $parentDictionary);
         $parentType = $parentDictionary->parentType;
+    }
+
+    if (!$dictionary->extendedAttributes->{LegacyNativeDictionaryRequiredInterfaceNullability}) {
+        $result .= GenerateDictionaryChecks($dictionary, \@dictionaries, $className, $interface);
     }
 
     if (ShouldGenerateConvertDictionary($dictionary)) {

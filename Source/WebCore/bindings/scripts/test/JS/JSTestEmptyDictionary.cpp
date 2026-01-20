@@ -24,11 +24,22 @@
 #include "JSDOMGlobalObject.h"
 #include <JavaScriptCore/JSCInlines.h>
 #include <JavaScriptCore/ObjectConstructor.h>
+#include <type_traits>
+#include <wtf/IsIncreasing.h>
 
 
 
 namespace WebCore {
 using namespace JSC;
+
+IGNORE_WARNINGS_BEGIN("invalid-offsetof")
+
+static_assert(std::is_aggregate_v<TestEmptyDictionary>);
+static_assert(IsIncreasing<
+      0
+>);
+
+IGNORE_WARNINGS_END
 
 template<> ConversionResult<IDLDictionary<TestEmptyDictionary>> convertDictionary<TestEmptyDictionary>(JSGlobalObject& lexicalGlobalObject, JSValue value)
 {

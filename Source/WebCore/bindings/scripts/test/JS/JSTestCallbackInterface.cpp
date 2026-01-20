@@ -48,6 +48,8 @@
 #include <JavaScriptCore/FunctionPrototype.h>
 #include <JavaScriptCore/JSCInlines.h>
 #include <JavaScriptCore/JSString.h>
+#include <type_traits>
+#include <wtf/IsIncreasing.h>
 #include <wtf/NeverDestroyed.h>
 #include <wtf/SortedArrayMap.h>
 
@@ -92,6 +94,17 @@ template<> ASCIILiteral expectedEnumerationValues<TestCallbackInterface::Enum>()
 {
     return "\"value1\", \"value2\""_s;
 }
+
+IGNORE_WARNINGS_BEGIN("invalid-offsetof")
+
+static_assert(std::is_aggregate_v<TestCallbackInterface::Dictionary>);
+static_assert(IsIncreasing<
+      0
+    , offsetof(TestCallbackInterface::Dictionary, requiredMember)
+    , offsetof(TestCallbackInterface::Dictionary, optionalMember)
+>);
+
+IGNORE_WARNINGS_END
 
 template<> ConversionResult<IDLDictionary<TestCallbackInterface::Dictionary>> convertDictionary<TestCallbackInterface::Dictionary>(JSGlobalObject& lexicalGlobalObject, JSValue value)
 {

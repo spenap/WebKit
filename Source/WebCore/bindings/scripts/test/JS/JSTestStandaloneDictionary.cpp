@@ -38,6 +38,8 @@
 #include <JavaScriptCore/JSCInlines.h>
 #include <JavaScriptCore/JSString.h>
 #include <JavaScriptCore/ObjectConstructor.h>
+#include <type_traits>
+#include <wtf/IsIncreasing.h>
 #include <wtf/NeverDestroyed.h>
 #include <wtf/SortedArrayMap.h>
 #include <wtf/Variant.h>
@@ -48,6 +50,46 @@ namespace WebCore {
 using namespace JSC;
 
 #if ENABLE(Condition1)
+
+IGNORE_WARNINGS_BEGIN("invalid-offsetof")
+
+static_assert(std::is_aggregate_v<DictionaryImplName>);
+static_assert(IsIncreasing<
+      0
+    , offsetof(DictionaryImplName, boolMember)
+    , offsetof(DictionaryImplName, stringMember)
+    , offsetof(DictionaryImplName, enumMember)
+    , offsetof(DictionaryImplName, permissiveEnumMember)
+    , offsetof(DictionaryImplName, callbackMember)
+    , offsetof(DictionaryImplName, unionMemberWithDefaultValue)
+    , offsetof(DictionaryImplName, nullableUnionWithNullDefaultValue)
+#if ENABLE(Conditional13) || ENABLE(Conditional14)
+    , offsetof(DictionaryImplName, partialRequiredLongMember)
+#endif
+#if ENABLE(Conditional13) || ENABLE(Conditional14)
+    , offsetof(DictionaryImplName, partialBooleanMember)
+#endif
+#if ENABLE(Conditional13) || ENABLE(Conditional14)
+    , offsetof(DictionaryImplName, partialStringMember)
+#endif
+#if ENABLE(Conditional13) || ENABLE(Conditional14)
+    , offsetof(DictionaryImplName, partialEnumMember)
+#endif
+#if ENABLE(Conditional13) || ENABLE(Conditional14)
+    , offsetof(DictionaryImplName, partialCallbackMember)
+#endif
+#if ENABLE(Conditional13) || ENABLE(Conditional14)
+    , offsetof(DictionaryImplName, partialUnsignedLongMemberWithImplementedAs)
+#endif
+#if ENABLE(Conditional13) || ENABLE(Conditional14)
+    , offsetof(DictionaryImplName, partialBooleanMemberWithIgnoredConditional)
+#endif
+#if ENABLE(Conditional13) || ENABLE(Conditional14)
+    , offsetof(DictionaryImplName, partialStringMemberWithEnabledBySetting)
+#endif
+>);
+
+IGNORE_WARNINGS_END
 
 template<> ConversionResult<IDLDictionary<DictionaryImplName>> convertDictionary<DictionaryImplName>(JSGlobalObject& lexicalGlobalObject, JSValue value)
 {

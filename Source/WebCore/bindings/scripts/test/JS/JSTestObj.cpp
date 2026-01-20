@@ -104,7 +104,9 @@
 #include <JavaScriptCore/PropertyNameArray.h>
 #include <JavaScriptCore/SlotVisitorMacros.h>
 #include <JavaScriptCore/SubspaceInlines.h>
+#include <type_traits>
 #include <wtf/GetPtr.h>
+#include <wtf/IsIncreasing.h>
 #include <wtf/PointerPreparations.h>
 #include <wtf/SortedArrayMap.h>
 #include <wtf/URL.h>
@@ -797,6 +799,62 @@ template<> ASCIILiteral expectedEnumerationValues<TestObj::EnumWithMissingValueD
 {
     return "\"value1\", \"value2\", \"value3\", \"\""_s;
 }
+
+IGNORE_WARNINGS_BEGIN("invalid-offsetof")
+
+static_assert(std::is_aggregate_v<TestObj::Dictionary>);
+static_assert(IsIncreasing<
+      0
+    , offsetof(TestObj::Dictionary, enumerationValueWithoutDefault)
+    , offsetof(TestObj::Dictionary, enumerationValueWithDefault)
+    , offsetof(TestObj::Dictionary, enumerationValueWithEmptyStringDefault)
+    , offsetof(TestObj::Dictionary, stringWithDefault)
+    , offsetof(TestObj::Dictionary, stringWithoutDefault)
+    , offsetof(TestObj::Dictionary, nullableStringWithDefault)
+    , offsetof(TestObj::Dictionary, stringTreatNullAsEmptyString)
+    , offsetof(TestObj::Dictionary, booleanWithDefault)
+    , offsetof(TestObj::Dictionary, booleanWithoutDefault)
+    , offsetof(TestObj::Dictionary, sequenceOfStrings)
+    , offsetof(TestObj::Dictionary, restrictedDouble)
+    , offsetof(TestObj::Dictionary, unrestrictedDouble)
+    , offsetof(TestObj::Dictionary, restrictedDoubleWithDefault)
+    , offsetof(TestObj::Dictionary, unrestrictedDoubleWithDefault)
+    , offsetof(TestObj::Dictionary, restrictedFloat)
+    , offsetof(TestObj::Dictionary, unrestrictedFloat)
+    , offsetof(TestObj::Dictionary, restrictedFloatWithDefault)
+    , offsetof(TestObj::Dictionary, unrestrictedFloatWithDefault)
+    , offsetof(TestObj::Dictionary, smallIntegerClamped)
+    , offsetof(TestObj::Dictionary, smallIntegerWithDefault)
+    , offsetof(TestObj::Dictionary, smallUnsignedIntegerEnforcedRange)
+    , offsetof(TestObj::Dictionary, smallUnsignedIntegerWithDefault)
+    , offsetof(TestObj::Dictionary, integer)
+    , offsetof(TestObj::Dictionary, integerWithDefault)
+    , offsetof(TestObj::Dictionary, unsignedInteger)
+    , offsetof(TestObj::Dictionary, unsignedIntegerWithDefault)
+    , offsetof(TestObj::Dictionary, largeInteger)
+    , offsetof(TestObj::Dictionary, largeIntegerWithDefault)
+    , offsetof(TestObj::Dictionary, unsignedLargeInteger)
+    , offsetof(TestObj::Dictionary, unsignedLargeIntegerWithDefault)
+    , offsetof(TestObj::Dictionary, nullableIntegerWithDefault)
+    , offsetof(TestObj::Dictionary, nullableNode)
+    , offsetof(TestObj::Dictionary, nullableEnum)
+    , offsetof(TestObj::Dictionary, anyValue)
+    , offsetof(TestObj::Dictionary, anyValueWithNullDefault)
+    , offsetof(TestObj::Dictionary, fooAlias)
+    , offsetof(TestObj::Dictionary, fooWithDefaultAlias)
+    , offsetof(TestObj::Dictionary, anyTypedefValue)
+    , offsetof(TestObj::Dictionary, dictionaryMember)
+    , offsetof(TestObj::Dictionary, dictionaryMemberWithDefault)
+    , offsetof(TestObj::Dictionary, unionMember)
+    , offsetof(TestObj::Dictionary, nullableUnionMember)
+    , offsetof(TestObj::Dictionary, undefinedUnionMember)
+    , offsetof(TestObj::Dictionary, bufferSourceValue)
+    , offsetof(TestObj::Dictionary, requiredBufferSourceValue)
+    , offsetof(TestObj::Dictionary, annotatedTypeInUnionMember)
+    , offsetof(TestObj::Dictionary, annotatedTypeInSequenceMember)
+>);
+
+IGNORE_WARNINGS_END
 
 template<> ConversionResult<IDLDictionary<TestObj::Dictionary>> convertDictionary<TestObj::Dictionary>(JSGlobalObject& lexicalGlobalObject, JSValue value)
 {
@@ -1530,6 +1588,19 @@ JSC::JSObject* convertDictionaryToJS(JSC::JSGlobalObject& lexicalGlobalObject, J
     return result;
 }
 
+IGNORE_WARNINGS_BEGIN("invalid-offsetof")
+
+static_assert(std::is_aggregate_v<TestObj::DictionaryThatShouldNotTolerateNull>);
+static_assert(IsIncreasing<
+      0
+    , offsetof(TestObj::DictionaryThatShouldNotTolerateNull, requiredEnumerationValue)
+    , offsetof(TestObj::DictionaryThatShouldNotTolerateNull, booleanWithoutDefault)
+    , offsetof(TestObj::DictionaryThatShouldNotTolerateNull, nonNullableNode)
+    , offsetof(TestObj::DictionaryThatShouldNotTolerateNull, requiredDictionaryMember)
+>);
+
+IGNORE_WARNINGS_END
+
 template<> ConversionResult<IDLDictionary<TestObj::DictionaryThatShouldNotTolerateNull>> convertDictionary<TestObj::DictionaryThatShouldNotTolerateNull>(JSGlobalObject& lexicalGlobalObject, JSValue value)
 {
     SUPPRESS_UNCOUNTED_LOCAL auto& vm = JSC::getVM(&lexicalGlobalObject);
@@ -1600,6 +1671,17 @@ template<> ConversionResult<IDLDictionary<TestObj::DictionaryThatShouldNotTolera
     };
 }
 
+IGNORE_WARNINGS_BEGIN("invalid-offsetof")
+
+static_assert(std::is_aggregate_v<TestObj::DictionaryThatShouldTolerateNull>);
+static_assert(IsIncreasing<
+      0
+    , offsetof(TestObj::DictionaryThatShouldTolerateNull, enumerationValue)
+    , offsetof(TestObj::DictionaryThatShouldTolerateNull, booleanWithoutDefault)
+>);
+
+IGNORE_WARNINGS_END
+
 template<> ConversionResult<IDLDictionary<TestObj::DictionaryThatShouldTolerateNull>> convertDictionary<TestObj::DictionaryThatShouldTolerateNull>(JSGlobalObject& lexicalGlobalObject, JSValue value)
 {
     SUPPRESS_UNCOUNTED_LOCAL auto& vm = JSC::getVM(&lexicalGlobalObject);
@@ -1635,6 +1717,17 @@ template<> ConversionResult<IDLDictionary<TestObj::DictionaryThatShouldTolerateN
         booleanWithoutDefaultConversionResult.releaseReturnValue(),
     };
 }
+
+IGNORE_WARNINGS_BEGIN("invalid-offsetof")
+
+static_assert(std::is_aggregate_v<AlternateDictionaryName>);
+static_assert(IsIncreasing<
+      0
+    , offsetof(AlternateDictionaryName, enumerationValue)
+    , offsetof(AlternateDictionaryName, booleanWithoutDefault)
+>);
+
+IGNORE_WARNINGS_END
 
 template<> ConversionResult<IDLDictionary<AlternateDictionaryName>> convertDictionary<AlternateDictionaryName>(JSGlobalObject& lexicalGlobalObject, JSValue value)
 {
@@ -1672,6 +1765,17 @@ template<> ConversionResult<IDLDictionary<AlternateDictionaryName>> convertDicti
     };
 }
 
+IGNORE_WARNINGS_BEGIN("invalid-offsetof")
+
+static_assert(std::is_aggregate_v<TestObj::ParentDictionary>);
+static_assert(IsIncreasing<
+      0
+    , offsetof(TestObj::ParentDictionary, parentMember2)
+    , offsetof(TestObj::ParentDictionary, parentMember1)
+>);
+
+IGNORE_WARNINGS_END
+
 template<> ConversionResult<IDLDictionary<TestObj::ParentDictionary>> convertDictionary<TestObj::ParentDictionary>(JSGlobalObject& lexicalGlobalObject, JSValue value)
 {
     SUPPRESS_UNCOUNTED_LOCAL auto& vm = JSC::getVM(&lexicalGlobalObject);
@@ -1707,6 +1811,17 @@ template<> ConversionResult<IDLDictionary<TestObj::ParentDictionary>> convertDic
         parentMember1ConversionResult.releaseReturnValue(),
     };
 }
+
+IGNORE_WARNINGS_BEGIN("invalid-offsetof")
+
+static_assert(std::is_aggregate_v<TestObj::ChildDictionary>);
+static_assert(IsIncreasing<
+      0
+    , offsetof(TestObj::ChildDictionary, childMember2)
+    , offsetof(TestObj::ChildDictionary, childMember1)
+>);
+
+IGNORE_WARNINGS_END
 
 template<> ConversionResult<IDLDictionary<TestObj::ChildDictionary>> convertDictionary<TestObj::ChildDictionary>(JSGlobalObject& lexicalGlobalObject, JSValue value)
 {
@@ -1768,7 +1883,112 @@ template<> ConversionResult<IDLDictionary<TestObj::ChildDictionary>> convertDict
     };
 }
 
+IGNORE_WARNINGS_BEGIN("invalid-offsetof")
+
+static_assert(std::is_aggregate_v<TestObj::GrandchildDictionary>);
+static_assert(IsIncreasing<
+      0
+    , offsetof(TestObj::GrandchildDictionary, grandchildMember2)
+    , offsetof(TestObj::GrandchildDictionary, grandchildMember1)
+>);
+
+IGNORE_WARNINGS_END
+
+template<> ConversionResult<IDLDictionary<TestObj::GrandchildDictionary>> convertDictionary<TestObj::GrandchildDictionary>(JSGlobalObject& lexicalGlobalObject, JSValue value)
+{
+    SUPPRESS_UNCOUNTED_LOCAL auto& vm = JSC::getVM(&lexicalGlobalObject);
+    auto throwScope = DECLARE_THROW_SCOPE(vm);
+    bool isNullOrUndefined = value.isUndefinedOrNull();
+    auto* object = isNullOrUndefined ? nullptr : value.getObject();
+    if (!isNullOrUndefined && !object) [[unlikely]] {
+        throwTypeError(&lexicalGlobalObject, throwScope);
+        return ConversionResultException { };
+    }
+    JSValue parentMember1Value;
+    if (isNullOrUndefined)
+        parentMember1Value = jsUndefined();
+    else {
+        parentMember1Value = object->get(&lexicalGlobalObject, Identifier::fromString(vm, "parentMember1"_s));
+        RETURN_IF_EXCEPTION(throwScope, ConversionResultException { });
+    }
+    auto parentMember1ConversionResult = convert<IDLOptional<IDLBoolean>>(lexicalGlobalObject, parentMember1Value);
+    if (parentMember1ConversionResult.hasException(throwScope)) [[unlikely]]
+        return ConversionResultException { };
+    JSValue parentMember2Value;
+    if (isNullOrUndefined)
+        parentMember2Value = jsUndefined();
+    else {
+        parentMember2Value = object->get(&lexicalGlobalObject, Identifier::fromString(vm, "parentMember2"_s));
+        RETURN_IF_EXCEPTION(throwScope, ConversionResultException { });
+    }
+    auto parentMember2ConversionResult = convert<IDLOptional<IDLBoolean>>(lexicalGlobalObject, parentMember2Value);
+    if (parentMember2ConversionResult.hasException(throwScope)) [[unlikely]]
+        return ConversionResultException { };
+    JSValue childMember1Value;
+    if (isNullOrUndefined)
+        childMember1Value = jsUndefined();
+    else {
+        childMember1Value = object->get(&lexicalGlobalObject, Identifier::fromString(vm, "childMember1"_s));
+        RETURN_IF_EXCEPTION(throwScope, ConversionResultException { });
+    }
+    auto childMember1ConversionResult = convert<IDLOptional<IDLBoolean>>(lexicalGlobalObject, childMember1Value);
+    if (childMember1ConversionResult.hasException(throwScope)) [[unlikely]]
+        return ConversionResultException { };
+    JSValue childMember2Value;
+    if (isNullOrUndefined)
+        childMember2Value = jsUndefined();
+    else {
+        childMember2Value = object->get(&lexicalGlobalObject, Identifier::fromString(vm, "childMember2"_s));
+        RETURN_IF_EXCEPTION(throwScope, ConversionResultException { });
+    }
+    auto childMember2ConversionResult = convert<IDLOptional<IDLBoolean>>(lexicalGlobalObject, childMember2Value);
+    if (childMember2ConversionResult.hasException(throwScope)) [[unlikely]]
+        return ConversionResultException { };
+    JSValue grandchildMember1Value;
+    if (isNullOrUndefined)
+        grandchildMember1Value = jsUndefined();
+    else {
+        grandchildMember1Value = object->get(&lexicalGlobalObject, Identifier::fromString(vm, "grandchildMember1"_s));
+        RETURN_IF_EXCEPTION(throwScope, ConversionResultException { });
+    }
+    auto grandchildMember1ConversionResult = convert<IDLOptional<IDLBoolean>>(lexicalGlobalObject, grandchildMember1Value);
+    if (grandchildMember1ConversionResult.hasException(throwScope)) [[unlikely]]
+        return ConversionResultException { };
+    JSValue grandchildMember2Value;
+    if (isNullOrUndefined)
+        grandchildMember2Value = jsUndefined();
+    else {
+        grandchildMember2Value = object->get(&lexicalGlobalObject, Identifier::fromString(vm, "grandchildMember2"_s));
+        RETURN_IF_EXCEPTION(throwScope, ConversionResultException { });
+    }
+    auto grandchildMember2ConversionResult = convert<IDLOptional<IDLBoolean>>(lexicalGlobalObject, grandchildMember2Value);
+    if (grandchildMember2ConversionResult.hasException(throwScope)) [[unlikely]]
+        return ConversionResultException { };
+    return TestObj::GrandchildDictionary {
+        TestObj::ChildDictionary {
+            TestObj::ParentDictionary {
+                parentMember2ConversionResult.releaseReturnValue(),
+                parentMember1ConversionResult.releaseReturnValue(),
+            },
+            childMember2ConversionResult.releaseReturnValue(),
+            childMember1ConversionResult.releaseReturnValue(),
+        },
+        grandchildMember2ConversionResult.releaseReturnValue(),
+        grandchildMember1ConversionResult.releaseReturnValue(),
+    };
+}
+
 #if ENABLE(Condition1)
+
+IGNORE_WARNINGS_BEGIN("invalid-offsetof")
+
+static_assert(std::is_aggregate_v<TestObj::ConditionalDictionaryA>);
+static_assert(IsIncreasing<
+      0
+    , offsetof(TestObj::ConditionalDictionaryA, stringWithoutDefault)
+>);
+
+IGNORE_WARNINGS_END
 
 template<> ConversionResult<IDLDictionary<TestObj::ConditionalDictionaryA>> convertDictionary<TestObj::ConditionalDictionaryA>(JSGlobalObject& lexicalGlobalObject, JSValue value)
 {
@@ -1799,6 +2019,16 @@ template<> ConversionResult<IDLDictionary<TestObj::ConditionalDictionaryA>> conv
 
 #if ENABLE(Condition1) && ENABLE(Condition2)
 
+IGNORE_WARNINGS_BEGIN("invalid-offsetof")
+
+static_assert(std::is_aggregate_v<TestObj::ConditionalDictionaryB>);
+static_assert(IsIncreasing<
+      0
+    , offsetof(TestObj::ConditionalDictionaryB, stringWithoutDefault)
+>);
+
+IGNORE_WARNINGS_END
+
 template<> ConversionResult<IDLDictionary<TestObj::ConditionalDictionaryB>> convertDictionary<TestObj::ConditionalDictionaryB>(JSGlobalObject& lexicalGlobalObject, JSValue value)
 {
     SUPPRESS_UNCOUNTED_LOCAL auto& vm = JSC::getVM(&lexicalGlobalObject);
@@ -1828,6 +2058,16 @@ template<> ConversionResult<IDLDictionary<TestObj::ConditionalDictionaryB>> conv
 
 #if ENABLE(Condition1) || ENABLE(Condition2)
 
+IGNORE_WARNINGS_BEGIN("invalid-offsetof")
+
+static_assert(std::is_aggregate_v<TestObj::ConditionalDictionaryC>);
+static_assert(IsIncreasing<
+      0
+    , offsetof(TestObj::ConditionalDictionaryC, stringWithoutDefault)
+>);
+
+IGNORE_WARNINGS_END
+
 template<> ConversionResult<IDLDictionary<TestObj::ConditionalDictionaryC>> convertDictionary<TestObj::ConditionalDictionaryC>(JSGlobalObject& lexicalGlobalObject, JSValue value)
 {
     SUPPRESS_UNCOUNTED_LOCAL auto& vm = JSC::getVM(&lexicalGlobalObject);
@@ -1854,6 +2094,17 @@ template<> ConversionResult<IDLDictionary<TestObj::ConditionalDictionaryC>> conv
 }
 
 #endif
+
+IGNORE_WARNINGS_BEGIN("invalid-offsetof")
+
+static_assert(std::is_aggregate_v<TestObj::PromisePair>);
+static_assert(IsIncreasing<
+      0
+    , offsetof(TestObj::PromisePair, promise1)
+    , offsetof(TestObj::PromisePair, promise2)
+>);
+
+IGNORE_WARNINGS_END
 
 template<> ConversionResult<IDLDictionary<TestObj::PromisePair>> convertDictionary<TestObj::PromisePair>(JSGlobalObject& lexicalGlobalObject, JSValue value)
 {
