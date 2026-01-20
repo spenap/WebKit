@@ -824,6 +824,10 @@ class RunTest262Tests(TestWithFailureCount, CustomFlagsMixin, ShellMixin):
     command = ["perl", "Tools/Scripts/test262-runner", "--verbose", WithProperties("--%(configuration)s")]
     test_summary_re = re.compile(r'^\! NEW FAIL')
 
+    def __init__(self, *args, **kwargs):
+        kwargs['timeout'] = 60 * 60
+        super().__init__(*args, **kwargs)
+
     def run(self):
         filter_command = ' '.join(self.command) + ' 2>&1 | python3 Tools/Scripts/filter-test-logs test262'
         self.command = self.shell_command(filter_command)
