@@ -1573,6 +1573,17 @@ ALWAYS_INLINE JSString* replace(VM& vm, JSGlobalObject* globalObject, JSValue th
     RELEASE_AND_RETURN(scope, replaceUsingStringSearch<replaceMode>(vm, globalObject, string, thisString, WTF::move(searchString), replaceValue));
 }
 
+ALWAYS_INLINE char32_t codePointAt(const String& string, unsigned position, unsigned length)
+{
+    RELEASE_ASSERT(position < length);
+    if (string.is8Bit())
+        return string.span8()[position];
+    char32_t character;
+    auto characters = string.span16();
+    U16_NEXT(characters, position, length, character);
+    return character;
+}
+
 } // namespace JSC
 
 WTF_ALLOW_UNSAFE_BUFFER_USAGE_END

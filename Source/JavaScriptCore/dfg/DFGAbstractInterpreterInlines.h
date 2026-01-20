@@ -57,6 +57,7 @@
 #include "RegExpPrototype.h"
 #include "SetPrivateBrandStatus.h"
 #include "StringObject.h"
+#include "StringPrototypeInlines.h"
 #include "StructureCache.h"
 #include "StructureRareDataInlines.h"
 #include "WasmTypeDefinitionInlines.h"
@@ -2594,10 +2595,6 @@ bool AbstractInterpreter<AbstractStateType>::executeEffects(unsigned clobberLimi
         break;
     }
         
-    case StringCodePointAt:
-        setNonCellTypeForNode(node, SpecInt32Only);
-        break;
-
     case StringIndexOf:
         setNonCellTypeForNode(node, SpecInt32Only);
         break;
@@ -2631,12 +2628,16 @@ bool AbstractInterpreter<AbstractStateType>::executeEffects(unsigned clobberLimi
         break;
     }
 
-    case StringCharCodeAt: {
+    case StringCharCodeAt:
+    case StringCodePointAt: {
         if (auto string = node->child1()->tryGetString(m_graph); !string.isNull()) {
             if (node->child2()->isInt32Constant()) {
                 int32_t index = node->child2()->asInt32();
                 if (index >= 0 && static_cast<unsigned>(index) < string.length()) {
-                    setConstant(node, jsNumber(string.characterAt(static_cast<unsigned>(index))));
+                    if (node->op() == StringCharCodeAt)
+                        setConstant(node, jsNumber(string.characterAt(static_cast<unsigned>(index))));
+                    else
+                        setConstant(node, jsNumber(codePointAt(string, static_cast<unsigned>(index), string.length())));
                     break;
                 }
             }
