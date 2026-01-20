@@ -1268,13 +1268,17 @@ bool AccessibilityRenderObject::computeIsIgnored() const
         if (!renderText->hasRenderedText()) {
             // Layout must be clean to make the right decision here (because hasRenderedText() can return false solely because layout is dirty).
             AX_ASSERT(!renderText->needsLayout() || !renderText->text().length());
+            // If this is a RenderTextFragment with an associated first-letter, the entire text may have been
+            // consumed by the first-letter pseudo-element. In this case, don't ignore the text node, as its
+            // text content can still be retrieved from the associated DOM Text node.
+            if (auto* renderTextFragment = dynamicDowncast<RenderTextFragment>(renderText.get())) {
+                if (renderTextFragment->firstLetter())
+                    return false;
+            }
             return true;
         }
 
         if (renderText->text().containsOnly<isASCIIWhitespace>())
-            return true;
-
-        if (renderText->parent()->isFirstLetter())
             return true;
 
         // The alt attribute may be set on a text fragment through CSS, which should be honored.
