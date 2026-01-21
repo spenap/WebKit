@@ -50,7 +50,7 @@ namespace WebCore {
 
 WTF_MAKE_TZONE_ALLOCATED_IMPL(ScrollingTree);
 
-using OrphanScrollingNodeMap = HashMap<ScrollingNodeID, RefPtr<ScrollingTreeNode>>;
+using OrphanScrollingNodeMap = HashMap<ScrollingNodeID, Ref<ScrollingTreeNode>>;
 
 struct CommitTreeState {
     // unvisitedNodes starts with all nodes in the map; we remove nodes as we visit them. At the end, it's the unvisited nodes.
@@ -524,7 +524,7 @@ bool ScrollingTree::updateTreeFromStateNodeRecursive(const ScrollingStateNode* s
         // Move all children into the orphanNodes map. Live ones will get added back as we recurse over children.
         for (auto& childScrollingNode : node->children()) {
             childScrollingNode->setParent(nullptr);
-            state.orphanNodes.add(childScrollingNode->scrollingNodeID(), childScrollingNode.ptr());
+            state.orphanNodes.add(childScrollingNode->scrollingNodeID(), childScrollingNode.copyRef());
         }
         node->removeAllChildren();
 

@@ -1658,7 +1658,7 @@ void NetworkProcessProxy::setWebProcessHasUploads(WebCore::ProcessIdentifier pro
         m_uploadActivity = UploadActivity {
             ProcessAssertion::create(getCurrentProcessID(), "WebKit uploads"_s, ProcessAssertionType::UnboundedNetworking),
             ProcessAssertion::create(*this, "WebKit uploads"_s, ProcessAssertionType::UnboundedNetworking),
-            HashMap<WebCore::ProcessIdentifier, RefPtr<ProcessAssertion>>()
+            HashMap<WebCore::ProcessIdentifier, Ref<ProcessAssertion>>()
         };
     }
 

@@ -184,8 +184,8 @@ class WebProcessProxy final : public AuxiliaryProcessProxy {
     WTF_OVERRIDE_DELETE_FOR_CHECKED_PTR(WebProcessProxy);
 public:
     using WebPageProxyMap = HashMap<WebPageProxyIdentifier, WeakRef<WebPageProxy>>;
-    using UserInitiatedActionByAuthorizationTokenMap = HashMap<WTF::UUID, RefPtr<API::UserInitiatedAction>>;
-    typedef HashMap<WebCore::UserGestureTokenIdentifier, RefPtr<API::UserInitiatedAction>> UserInitiatedActionMap;
+    using UserInitiatedActionByAuthorizationTokenMap = HashMap<WTF::UUID, Ref<API::UserInitiatedAction>>;
+    using UserInitiatedActionMap = HashMap<WebCore::UserGestureTokenIdentifier, Ref<API::UserInitiatedAction>>;
 
     enum class IsPrewarmed : bool { No, Yes };
 

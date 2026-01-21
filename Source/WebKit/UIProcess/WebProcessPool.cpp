@@ -2105,7 +2105,7 @@ bool WebProcessPool::isServiceWorkerPageID(WebPageProxyIdentifier pageID) const
 void WebProcessPool::addProcessToOriginCacheSet(WebProcessProxy& process, const URL& url)
 {
     auto registrableDomain = WebCore::RegistrableDomain { url };
-    auto result = m_swappedProcessesPerRegistrableDomain.add(registrableDomain, &process);
+    auto result = m_swappedProcessesPerRegistrableDomain.add(registrableDomain, process);
     if (!result.isNewEntry)
         result.iterator->value = process;
 
@@ -2120,7 +2120,7 @@ void WebProcessPool::removeProcessFromOriginCacheSet(WebProcessProxy& process)
 
     // FIXME: This can be very inefficient as the number of remembered origins and processes grows
     m_swappedProcessesPerRegistrableDomain.removeIf([&](auto& entry) {
-        return entry.value == &process;
+        return entry.value.ptr() == &process;
     });
 }
 

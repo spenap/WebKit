@@ -466,7 +466,7 @@ private:
     struct UploadActivity {
         RefPtr<ProcessAssertion> uiAssertion;
         RefPtr<ProcessAssertion> networkAssertion;
-        HashMap<WebCore::ProcessIdentifier, RefPtr<ProcessAssertion>> webProcessAssertions;
+        HashMap<WebCore::ProcessIdentifier, Ref<ProcessAssertion>> webProcessAssertions;
     };
     std::optional<UploadActivity> m_uploadActivity;
 
