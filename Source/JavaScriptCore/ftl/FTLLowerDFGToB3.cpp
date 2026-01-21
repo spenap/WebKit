@@ -540,7 +540,7 @@ private:
                     jit.breakpoint();
                 });
             } else
-                m_out.store(m_out.int32Zero, m_out.absolute(&vm().didEnterVM));
+                m_out.store32As8(m_out.int32Zero, m_out.absolute(&vm().didEnterVM));
         }
 
         unsigned codeGeneratedNodes = 0;
@@ -1973,7 +1973,7 @@ private:
                     jit.breakpoint();
                 });
             } else
-                m_out.store(m_out.int32Zero, m_out.absolute(&vm().didEnterVM));
+                m_out.store32As8(m_out.int32Zero, m_out.absolute(&vm().didEnterVM));
         }
 
         if (m_node->isTerminal())

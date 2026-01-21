@@ -414,8 +414,9 @@ private:
 
 public:
     bool didEnterVM { false };
-    bool m_isInService { false };
+
 private:
+    bool m_isInService { false };
     VMIdentifier m_identifier;
     const Ref<JSLock> m_apiLock;
     VMThreadContext m_threadContext;
