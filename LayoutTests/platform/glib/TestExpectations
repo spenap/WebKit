@@ -4839,6 +4839,7 @@ webkit.org/b/298433 [ Release ] imported/w3c/web-platform-tests/selection/caret/
 # Needs rebaseline.
 fast/text/glyph-display-lists [ Skip ]
 fast/repaint/table-in-inline-repaint.html [ Failure ]
+fast/repaint/block-in-inline-fast-path-repaint.html [ Failure ]
 
 # Tests crashing in Debug
 webkit.org/b/299092 [ Debug ] accessibility/aria-flowto.html [ Skip ]
