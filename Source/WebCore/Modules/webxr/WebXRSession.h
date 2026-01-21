@@ -83,7 +83,7 @@ public:
     XRVisibilityState visibilityState() const;
     const WebXRRenderState& renderState() const;
     const WebXRInputSourceArray& inputSources() const { return m_inputSources; }
-    RefPtr<PlatformXR::Device> device() const { return m_device.get(); }
+    RefPtr<PlatformXR::Device> device() const { return m_device; }
 
     const Vector<String> enabledFeatures() const;
 

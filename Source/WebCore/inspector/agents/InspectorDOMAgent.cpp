@@ -3091,7 +3091,7 @@ RefPtr<Node> InspectorDOMAgent::nodeForPath(const String& path)
     if (!m_document)
         return nullptr;
 
-    RefPtr<Node> node = m_document.get();
+    RefPtr<Node> node = m_document;
     auto pathTokens = StringView(path).split(',');
     auto it = pathTokens.begin();
     if (it == pathTokens.end())

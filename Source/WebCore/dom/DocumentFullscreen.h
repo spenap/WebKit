@@ -60,9 +60,9 @@ public:
     static void webkitCancelFullScreen(Document& document) { document.protectedFullscreen()->fullyExitFullscreen(); };
 
     // Helpers.
-    Document& document() { return m_document.get(); }
-    const Document& document() const { return m_document.get(); }
-    Ref<Document> protectedDocument() const { return m_document.get(); }
+    Document& document() { return m_document; }
+    const Document& document() const { return m_document; }
+    Ref<Document> protectedDocument() const { return m_document; }
     LocalFrame* frame() const;
     Element* documentElement() const { return document().documentElement(); }
     bool isSimpleFullscreenDocument() const;

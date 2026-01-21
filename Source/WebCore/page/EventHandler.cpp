@@ -5694,7 +5694,7 @@ void EventHandler::resetCapturingMouseEventsElement()
 
 Ref<LocalFrame> EventHandler::protectedFrame() const
 {
-    return m_frame.get();
+    return m_frame;
 }
 
 #if !PLATFORM(COCOA) && !PLATFORM(WIN)

@@ -92,7 +92,7 @@ Chrome::~Chrome()
 
 Ref<Page> Chrome::protectedPage() const
 {
-    return m_page.get();
+    return m_page;
 }
 
 void Chrome::invalidateRootView(const IntRect& updateRect)

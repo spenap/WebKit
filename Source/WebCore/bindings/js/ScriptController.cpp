@@ -331,7 +331,7 @@ void ScriptController::initScriptForWindowProxy(JSWindowProxy& windowProxy)
 
 Ref<LocalFrame> ScriptController::protectedFrame() const
 {
-    return m_frame.get();
+    return m_frame;
 }
 
 static Identifier jsValueToModuleKey(JSGlobalObject* lexicalGlobalObject, JSValue value)

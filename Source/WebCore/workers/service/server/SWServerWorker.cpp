@@ -150,7 +150,7 @@ void SWServerWorker::startTermination(CompletionHandler<void()>&& callback)
     m_terminationCallbacks.append(WTF::move(callback));
 
     constexpr Seconds terminationDelayForTesting = 1_s;
-    RefPtr<SWServer> server = m_server.get();
+    RefPtr server = m_server;
     m_terminationTimer.startOneShot(server && server->isProcessTerminationDelayEnabled() ? SWServer::defaultTerminationDelay : terminationDelayForTesting);
 
     m_terminationIfPossibleTimer.stop();
@@ -190,7 +190,7 @@ const ClientOrigin& SWServerWorker::origin() const
 
 SWServerToContextConnection* SWServerWorker::contextConnection()
 {
-    RefPtr<SWServer> server = m_server.get();
+    RefPtr server = m_server;
     return server ? server->contextConnectionForRegistrableDomain(topRegistrableDomain()) : nullptr;
 }
 

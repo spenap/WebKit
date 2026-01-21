@@ -51,9 +51,9 @@ public:
     static void exitImmersive(Document&, Ref<DeferredPromise>&&);
 
     // Helpers.
-    Document& document() { return m_document.get(); }
-    const Document& document() const { return m_document.get(); }
-    Ref<Document> protectedDocument() const { return m_document.get(); }
+    Document& document() { return m_document; }
+    const Document& document() const { return m_document; }
+    Ref<Document> protectedDocument() const { return m_document; }
 
     HTMLModelElement* immersiveElement() const;
     RefPtr<HTMLModelElement> protectedImmersiveElement() const { return immersiveElement(); }
