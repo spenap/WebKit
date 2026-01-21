@@ -2046,8 +2046,8 @@ IsolatedObjectData createIsolatedObjectData(const Ref<AccessibilityObject>& axOb
             RefPtr crossFrameParent = axObject->crossFrameParentObject();
             if (crossFrameParent) {
                 WeakPtr parentCache = crossFrameParent->axObjectCache();
-                if (parentCache && parentCache->frameID()) {
-                    setProperty(AXProperty::CrossFrameParentFrameID, *parentCache->frameID());
+                if (parentCache) {
+                    setProperty(AXProperty::CrossFrameParentFrameID, parentCache->frameID());
                     setProperty(AXProperty::CrossFrameParentAXID, Markable { crossFrameParent->objectID() });
                 }
             }

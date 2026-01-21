@@ -202,17 +202,13 @@ namespace ax = WebCore::Accessibility;
     if (!cache)
         return;
 
-    std::optional isolatedTreeFrameID = cache->frameID();
-    if (!isolatedTreeFrameID)
-        return;
-
     RefPtr mainFrame = m_page ? Ref { *m_page }->mainFrame() : nullptr;
     if (!mainFrame)
         return;
 
     // Ignore an isolated tree that's not the main frame, otherwise VoiceOver might jump directly to an iframe
     // when interacting with a page.
-    if (*isolatedTreeFrameID != mainFrame->frameID())
+    if (cache->frameID() != mainFrame->frameID())
         return;
 
     m_isolatedTree = tree.get();
