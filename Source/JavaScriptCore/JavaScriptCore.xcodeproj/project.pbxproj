@@ -2077,6 +2077,10 @@
 		E392E6F824D25FA600B20767 /* B3BottomTupleValue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E392E6F624D25FA600B20767 /* B3BottomTupleValue.cpp */; };
 		E392E6F924D25FA900B20767 /* B3BottomTupleValue.h in Headers */ = {isa = PBXBuildFile; fileRef = E392E6F724D25FA600B20767 /* B3BottomTupleValue.h */; };
 		E393ADD81FE702D00022D681 /* WeakMapImplInlines.h in Headers */ = {isa = PBXBuildFile; fileRef = E393ADD71FE702CC0022D681 /* WeakMapImplInlines.h */; };
+		E3952C182F1DDF5700F5BEE8 /* B3WasmStructGetValue.h in Headers */ = {isa = PBXBuildFile; fileRef = E3952C122F1DDF5700F5BEE8 /* B3WasmStructGetValue.h */; };
+		E3952C192F1DDF5700F5BEE8 /* B3WasmStructNewValue.h in Headers */ = {isa = PBXBuildFile; fileRef = E3952C142F1DDF5700F5BEE8 /* B3WasmStructNewValue.h */; };
+		E3952C1A2F1DDF5700F5BEE8 /* B3WasmStructFieldValue.h in Headers */ = {isa = PBXBuildFile; fileRef = E3952C102F1DDF5700F5BEE8 /* B3WasmStructFieldValue.h */; };
+		E3952C1B2F1DDF5700F5BEE8 /* B3WasmStructSetValue.h in Headers */ = {isa = PBXBuildFile; fileRef = E3952C162F1DDF5700F5BEE8 /* B3WasmStructSetValue.h */; };
 		E399AEC32559457F00B78485 /* IntlDateTimeFormat.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A1587D671B4DC14100D69849 /* IntlDateTimeFormat.cpp */; };
 		E39BF39922A2288B00BD183E /* SymbolTableInlines.h in Headers */ = {isa = PBXBuildFile; fileRef = E39BF39822A2288B00BD183E /* SymbolTableInlines.h */; };
 		E39D45F51D39005600B3B377 /* InterpreterInlines.h in Headers */ = {isa = PBXBuildFile; fileRef = E39D9D841D39000600667282 /* InterpreterInlines.h */; };
@@ -5941,6 +5945,14 @@
 		E392E6F624D25FA600B20767 /* B3BottomTupleValue.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = B3BottomTupleValue.cpp; path = b3/B3BottomTupleValue.cpp; sourceTree = "<group>"; };
 		E392E6F724D25FA600B20767 /* B3BottomTupleValue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = B3BottomTupleValue.h; path = b3/B3BottomTupleValue.h; sourceTree = "<group>"; };
 		E393ADD71FE702CC0022D681 /* WeakMapImplInlines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WeakMapImplInlines.h; sourceTree = "<group>"; };
+		E3952C102F1DDF5700F5BEE8 /* B3WasmStructFieldValue.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = B3WasmStructFieldValue.h; path = b3/B3WasmStructFieldValue.h; sourceTree = "<group>"; };
+		E3952C112F1DDF5700F5BEE8 /* B3WasmStructFieldValue.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = B3WasmStructFieldValue.cpp; path = b3/B3WasmStructFieldValue.cpp; sourceTree = "<group>"; };
+		E3952C122F1DDF5700F5BEE8 /* B3WasmStructGetValue.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = B3WasmStructGetValue.h; path = b3/B3WasmStructGetValue.h; sourceTree = "<group>"; };
+		E3952C132F1DDF5700F5BEE8 /* B3WasmStructGetValue.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = B3WasmStructGetValue.cpp; path = b3/B3WasmStructGetValue.cpp; sourceTree = "<group>"; };
+		E3952C142F1DDF5700F5BEE8 /* B3WasmStructNewValue.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = B3WasmStructNewValue.h; path = b3/B3WasmStructNewValue.h; sourceTree = "<group>"; };
+		E3952C152F1DDF5700F5BEE8 /* B3WasmStructNewValue.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = B3WasmStructNewValue.cpp; path = b3/B3WasmStructNewValue.cpp; sourceTree = "<group>"; };
+		E3952C162F1DDF5700F5BEE8 /* B3WasmStructSetValue.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = B3WasmStructSetValue.h; path = b3/B3WasmStructSetValue.h; sourceTree = "<group>"; };
+		E3952C172F1DDF5700F5BEE8 /* B3WasmStructSetValue.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = B3WasmStructSetValue.cpp; path = b3/B3WasmStructSetValue.cpp; sourceTree = "<group>"; };
 		E3963CEC1B73F75000EB4CE5 /* NodesAnalyzeModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NodesAnalyzeModule.cpp; sourceTree = "<group>"; };
 		E39BF39822A2288B00BD183E /* SymbolTableInlines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SymbolTableInlines.h; sourceTree = "<group>"; };
 		E39D8B2C23021E1E00265852 /* WasmOperations.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = WasmOperations.cpp; sourceTree = "<group>"; };
@@ -6919,6 +6931,14 @@
 				53D444DB1DAF08AB00B92784 /* B3WasmAddressValue.h */,
 				5341FC6F1DAC33E500E7E4D7 /* B3WasmBoundsCheckValue.cpp */,
 				5341FC711DAC343C00E7E4D7 /* B3WasmBoundsCheckValue.h */,
+				E3952C112F1DDF5700F5BEE8 /* B3WasmStructFieldValue.cpp */,
+				E3952C102F1DDF5700F5BEE8 /* B3WasmStructFieldValue.h */,
+				E3952C132F1DDF5700F5BEE8 /* B3WasmStructGetValue.cpp */,
+				E3952C122F1DDF5700F5BEE8 /* B3WasmStructGetValue.h */,
+				E3952C152F1DDF5700F5BEE8 /* B3WasmStructNewValue.cpp */,
+				E3952C142F1DDF5700F5BEE8 /* B3WasmStructNewValue.h */,
+				E3952C172F1DDF5700F5BEE8 /* B3WasmStructSetValue.cpp */,
+				E3952C162F1DDF5700F5BEE8 /* B3WasmStructSetValue.h */,
 				0F2C63AD1E60AE3C00C13839 /* B3Width.cpp */,
 				0F2C63AE1E60AE3D00C13839 /* B3Width.h */,
 				5C3A77BB22F24890003827FF /* testb3.h */,
@@ -10889,6 +10909,10 @@
 				0F2BBD9A1C5FF3F50023EF23 /* B3VariableValue.h in Headers */,
 				53D444DC1DAF08AB00B92784 /* B3WasmAddressValue.h in Headers */,
 				5341FC721DAC343C00E7E4D7 /* B3WasmBoundsCheckValue.h in Headers */,
+				E3952C1A2F1DDF5700F5BEE8 /* B3WasmStructFieldValue.h in Headers */,
+				E3952C182F1DDF5700F5BEE8 /* B3WasmStructGetValue.h in Headers */,
+				E3952C192F1DDF5700F5BEE8 /* B3WasmStructNewValue.h in Headers */,
+				E3952C1B2F1DDF5700F5BEE8 /* B3WasmStructSetValue.h in Headers */,
 				0F2C63B21E60AE4700C13839 /* B3Width.h in Headers */,
 				52DD000826E039B90054E408 /* BaselineJITCode.h in Headers */,
 				723998F7265DBCDB0057867F /* BaselineJITPlan.h in Headers */,

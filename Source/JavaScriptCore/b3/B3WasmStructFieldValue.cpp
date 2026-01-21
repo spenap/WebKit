@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2016 Apple Inc. All rights reserved.
+ * Copyright (C) 2026 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -20,50 +20,19 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#pragma once
+#include "config.h"
+#include "B3WasmStructFieldValue.h"
 
 #if ENABLE(B3_JIT)
 
-#include "B3Value.h"
+namespace JSC::B3 {
 
-namespace JSC { namespace B3 {
+WasmStructFieldValue::~WasmStructFieldValue() = default;
 
-namespace Air {
-
-class StackSlot;
-
-} // namespace Air
-
-
-class JS_EXPORT_PRIVATE SlotBaseValue final : public Value {
-public:
-    static bool accepts(Kind kind) { return kind == SlotBase; }
-
-    ~SlotBaseValue() final;
-
-    Air::StackSlot* slot() const { return m_slot; }
-
-    B3_SPECIALIZE_VALUE_FOR_NO_CHILDREN
-
-private:
-    friend class Procedure;
-    friend class Value;
-
-    void dumpMeta(CommaPrinter&, PrintStream&) const final;
-
-    static Opcode opcodeFromConstructor(Origin, Air::StackSlot*) { return SlotBase; }
-    SlotBaseValue(Origin origin, Air::StackSlot* slot)
-        : Value(CheckedOpcode, SlotBase, pointerType(), Zero, origin)
-        , m_slot(slot)
-    {
-    }
-
-    SUPPRESS_FORWARD_DECL_MEMBER Air::StackSlot* m_slot;
-};
-
-} } // namespace JSC::B3
+} // namespace JSC::B3
 
 #endif // ENABLE(B3_JIT)
+

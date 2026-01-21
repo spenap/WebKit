@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2016 Apple Inc. All rights reserved.
+ * Copyright (C) 2026 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -20,50 +20,40 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #pragma once
 
 #if ENABLE(B3_JIT)
 
-#include "B3Value.h"
+#include "B3WasmStructFieldValue.h"
 
-namespace JSC { namespace B3 {
+WTF_ALLOW_UNSAFE_BUFFER_USAGE_BEGIN
 
-namespace Air {
+namespace JSC::B3 {
 
-class StackSlot;
-
-} // namespace Air
-
-
-class JS_EXPORT_PRIVATE SlotBaseValue final : public Value {
+class WasmStructGetValue final : public WasmStructFieldValue {
 public:
-    static bool accepts(Kind kind) { return kind == SlotBase; }
+    static bool accepts(Kind kind) { return kind.opcode() == WasmStructGet; }
 
-    ~SlotBaseValue() final;
+    ~WasmStructGetValue() final;
 
-    Air::StackSlot* slot() const { return m_slot; }
-
-    B3_SPECIALIZE_VALUE_FOR_NO_CHILDREN
+    B3_SPECIALIZE_VALUE_FOR_FIXED_CHILDREN(1)
+    B3_SPECIALIZE_VALUE_FOR_FINAL_SIZE_FIXED_CHILDREN
 
 private:
+    void dumpMeta(CommaPrinter&, PrintStream&) const final;
+
     friend class Procedure;
     friend class Value;
 
-    void dumpMeta(CommaPrinter&, PrintStream&) const final;
-
-    static Opcode opcodeFromConstructor(Origin, Air::StackSlot*) { return SlotBase; }
-    SlotBaseValue(Origin origin, Air::StackSlot* slot)
-        : Value(CheckedOpcode, SlotBase, pointerType(), Zero, origin)
-        , m_slot(slot)
-    {
-    }
-
-    SUPPRESS_FORWARD_DECL_MEMBER Air::StackSlot* m_slot;
+    static Opcode opcodeFromConstructor(Kind, Origin, Type, Value*, Ref<const Wasm::RTT>, const Wasm::StructType*, Wasm::StructFieldCount, uint64_t, Mutability) { return WasmStructGet; }
+    JS_EXPORT_PRIVATE WasmStructGetValue(Kind, Origin, Type resultType, Value* structPtr, Ref<const Wasm::RTT>, const Wasm::StructType*, Wasm::StructFieldCount fieldIndex, uint64_t fieldHeapKey, Mutability);
 };
 
-} } // namespace JSC::B3
+} // namespace JSC::B3
+
+WTF_ALLOW_UNSAFE_BUFFER_USAGE_END
 
 #endif // ENABLE(B3_JIT)

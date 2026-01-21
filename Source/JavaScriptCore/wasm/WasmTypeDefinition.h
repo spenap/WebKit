@@ -862,17 +862,19 @@ public:
         return *this;
     }
 
-#if CPU(ADDRESS64)
     // Generate a key for each field, which can be usable for B3 TBAA.
-    ptrdiff_t fieldHeapKey(StructFieldCount fieldIndex) const
+    uint64_t fieldHeapKey(StructFieldCount fieldIndex) const
     {
+        uint64_t ptr = std::bit_cast<uintptr_t>(this);
+#if CPU(ADDRESS64)
         static_assert(maxStructFieldCount <= (1U << 20));
         constexpr uint32_t fieldIndexMask = (1 << 20) - 1;
-        uintptr_t ptr = std::bit_cast<uintptr_t>(this);
         uint32_t maskedFieldIndex = fieldIndex & fieldIndexMask; // mod 20-bits.
-        return static_cast<ptrdiff_t>(ptr | (maskedFieldIndex & 0b1111) | (static_cast<uintptr_t>(maskedFieldIndex >> 4) << 48));
-    }
+        return static_cast<uint64_t>(ptr | (maskedFieldIndex & 0b1111) | (static_cast<uint64_t>(maskedFieldIndex >> 4) << 48));
+#else
+        return static_cast<uint64_t>(ptr | (static_cast<uint64_t>(fieldIndex) << 32));
 #endif
+    }
 
     bool isSubRTT(const RTT& other) const;
     bool isStrictSubRTT(const RTT& other) const;

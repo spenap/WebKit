@@ -195,6 +195,10 @@ b3/B3VariableLiveness.cpp
 b3/B3VariableValue.cpp
 b3/B3WasmAddressValue.cpp
 b3/B3WasmBoundsCheckValue.cpp
+b3/B3WasmStructFieldValue.cpp
+b3/B3WasmStructGetValue.cpp
+b3/B3WasmStructNewValue.cpp
+b3/B3WasmStructSetValue.cpp
 b3/B3Width.cpp
 
 builtins/BuiltinExecutables.cpp

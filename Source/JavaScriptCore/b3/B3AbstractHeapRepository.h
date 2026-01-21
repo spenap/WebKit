@@ -347,6 +347,8 @@ public:
     void decorateFenceRead(const AbstractHeap*, Value*);
     void decorateFenceWrite(const AbstractHeap*, Value*);
     void decorateFencedAccess(const AbstractHeap*, Value*);
+    void decorateWasmStructGet(const AbstractHeap*, Value*);
+    void decorateWasmStructSet(const AbstractHeap*, Value*);
 
     void computeRangesAndDecorateInstructions();
 
@@ -375,6 +377,8 @@ private:
     Vector<HeapForValue> m_heapForFenceRead;
     Vector<HeapForValue> m_heapForFenceWrite;
     Vector<HeapForValue> m_heapForFencedAccess;
+    Vector<HeapForValue> m_heapForWasmStructGet;
+    Vector<HeapForValue> m_heapForWasmStructSet;
 };
 
 } // namespace JSC::B3
