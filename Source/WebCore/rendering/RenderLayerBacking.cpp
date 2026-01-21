@@ -2096,6 +2096,8 @@ bool RenderLayerBacking::maintainsEventRegion() const
 #if ENABLE(TOUCH_EVENT_REGIONS)
     if (renderer().document().hasTouchEventHandlers())
         return true;
+    if (renderer().document().needsPointerEventHandlingForPopover())
+        return true;
 #endif
 
     if (m_owningLayer.isRenderViewLayer())
