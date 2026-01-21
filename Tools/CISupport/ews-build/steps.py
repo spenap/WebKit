@@ -259,8 +259,7 @@ class GitHubMixin(object):
     @defer.inlineCallbacks
     def get_number_of_prs_with_label(self, label, retry=0):
         project = self.getProperty('project') or CANONICAL_GITHUB_PROJECT
-        owner, name = project.split('/', 1)
-        query_body = '{repository(owner:"%s", name:"%s") { pullRequests(labels: "%s") { totalCount } } }' % (owner, name, label)
+        query_body = '{search(query: "repo:%s is:pr is:open label:%s", type: ISSUE, first: 1) { issueCount } }' % (project, label)
         query = {'query': query_body}
 
         for attempt in range(retry + 1):
@@ -269,7 +268,7 @@ class GitHubMixin(object):
                 if 'errors' in response:
                     yield self._addToLog('stdio', response['errors'][0]['message'])
                 else:
-                    num_prs = response['data']['repository']['pullRequests']['totalCount']
+                    num_prs = response['data']['search']['issueCount']
                     break
             except Exception as e:
                 yield self._addToLog('stdio', 'Failed to retrieve number of PRs.\n')
@@ -2588,8 +2587,7 @@ class RetrievePRDataFromLabel(buildstep.BuildStep, GitHubMixin, AddToLogMixin):
     @defer.inlineCallbacks
     def getAllPRData(self, limit, label, retry=0):
         project = self.getProperty('project') or CANONICAL_GITHUB_PROJECT
-        owner, name = project.split('/', 1)
-        query_body = '{repository(owner:"%s", name:"%s") { pullRequests(labels: "%s", last: %s) { edges { node { title number commits(last: 3) { nodes { commit { commitUrl status { state contexts { context state } } } } } } } } } }' % (owner, name, label, limit)
+        query_body = '{search(query: "repo:%s is:pr label:%s", type: ISSUE, last: %s) { edges { node { ... on PullRequest { title number commits(last: 3) { nodes { commit { commitUrl status { state contexts { context state } } } } } } } } } }' % (project, label, limit)
         query = {'query': query_body}
 
         yield self._addToLog('stdio', f"Fetching all PRs with label {label}...\n")
@@ -2605,7 +2603,7 @@ class RetrievePRDataFromLabel(buildstep.BuildStep, GitHubMixin, AddToLogMixin):
                 if 'errors' in response:
                     yield self._addToLog('stdio', response['errors'][0]['message'])
                 else:
-                    all_pr_data = response['data']['repository']['pullRequests']['edges']
+                    all_pr_data = response['data']['search']['edges']
                     break
             except Exception as e:
                 yield self._addToLog('stdio', 'Failed to retrieve PR data.\n')

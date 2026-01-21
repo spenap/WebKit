@@ -6435,7 +6435,7 @@ class TestRetrievePRDataFromLabel(BuildStepMixinAdditions, unittest.TestCase):
     def test_success(self):
         self.setup_step(RetrievePRDataFromLabel(project='WebKit/WebKit'))
         GitHubMixin.get_number_of_prs_with_label = lambda self, label, retry=0: 4
-        query_result = {'data': {'repository': {'pullRequests': {'edges': [
+        query_result = {'data': {'search': {'edges': [
             {'node':
                 {'title': 'Fix `test-webkitpy webkitflaskpy`', 'number': 17412, 'commits':
                     {'nodes': [{'commit': {'commitUrl': 'https://github.com/WebKit/WebKit/commit/582fb8b4f85cc9f385c0e0809170cadc48c7fed5', 'status': {'state': 'SUCCESS', 'contexts': [
@@ -6535,7 +6535,7 @@ class TestRetrievePRDataFromLabel(BuildStepMixinAdditions, unittest.TestCase):
                         {'context': 'watch-sim', 'state': 'SUCCESS'},
                         {'context': 'webkitperl', 'state': 'SUCCESS'},
                         {'context': 'webkitpy', 'state': 'SUCCESS'},
-                        {'context': 'wpe', 'state': 'SUCCESS'}]}}}]}}}]}}}}
+                        {'context': 'wpe', 'state': 'SUCCESS'}]}}}]}}}]}}}
         GitHubMixin.query_graph_ql = lambda self, query: query_result
         self.expect_outcome(result=SUCCESS, state_string="Successfully retrieved pull request data")
         rc = self.run_step()
@@ -6547,7 +6547,7 @@ class TestRetrievePRDataFromLabel(BuildStepMixinAdditions, unittest.TestCase):
     def test_success_project(self):
         self.setup_step(RetrievePRDataFromLabel(project='testRepo/WebKit'))
         GitHubMixin.get_number_of_prs_with_label = lambda self, label, retry=0: 4
-        query_result = {'data': {'repository': {'pullRequests': {'edges': [
+        query_result = {'data': {'search': {'edges': [
             {'node':
                 {'title': 'Fix `test-webkitpy webkitflaskpy`', 'number': 17412, 'commits':
                     {'nodes': [{'commit': {'commitUrl': 'https://github.com/WebKit/WebKit/commit/582fb8b4f85cc9f385c0e0809170cadc48c7fed5',
@@ -6645,7 +6645,7 @@ class TestRetrievePRDataFromLabel(BuildStepMixinAdditions, unittest.TestCase):
                         {'context': 'watch-sim', 'state': 'SUCCESS'},
                         {'context': 'webkitperl', 'state': 'SUCCESS'},
                         {'context': 'webkitpy', 'state': 'SUCCESS'},
-                        {'context': 'wpe', 'state': 'SUCCESS'}]}}}]}}}]}}}}
+                        {'context': 'wpe', 'state': 'SUCCESS'}]}}}]}}}]}}}
         GitHubMixin.query_graph_ql = lambda self, query: query_result
         self.expect_outcome(result=SUCCESS, state_string="Successfully retrieved pull request data")
         rc = self.run_step()
