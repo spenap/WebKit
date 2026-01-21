@@ -6477,6 +6477,7 @@
         "web-platform-tests/css/css-position/sticky/position-sticky-table-td-bottom-ref.html",
         "web-platform-tests/css/css-position/sticky/position-sticky-table-td-left-ref.html",
         "web-platform-tests/css/css-position/sticky/position-sticky-table-td-right-ref.html",
+        "web-platform-tests/css/css-position/sticky/position-sticky-table-td-subpixel-zoom-ref.html",
         "web-platform-tests/css/css-position/sticky/position-sticky-table-td-top-ref.html",
         "web-platform-tests/css/css-position/sticky/position-sticky-table-tfoot-bottom-ref.html",
         "web-platform-tests/css/css-position/sticky/position-sticky-table-th-bottom-ref.html",
