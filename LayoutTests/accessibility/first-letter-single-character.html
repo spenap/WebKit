@@ -21,7 +21,7 @@ if (window.accessibilityController) {
     output += expect("singleCharContainer.childrenCount", "1");
     var singleCharText = singleCharContainer.childAtIndex(0);
     output += expect("singleCharText.role.toLowerCase().includes('text')", "true");
-    output += expect("singleCharText.stringValue.includes('H')", "true");
+    output += expectStaticTextValue(singleCharText, "H");
 
     output += "\nTest case 2: Multiple characters (first-letter plus remaining text)\n";
     var multiCharContainer = accessibilityController.accessibleElementById("multi-char");
@@ -29,7 +29,7 @@ if (window.accessibilityController) {
     var multiCharText = multiCharContainer.childAtIndex(0);
     output += expect("multiCharText.role.toLowerCase().includes('text')", "true");
     // Should expose "Hi" - the "h" is capitalized by text-transform
-    output += expect("multiCharText.stringValue.includes('Hi')", "true");
+    output += expectStaticTextValue(multiCharText, "Hi");
 
     debug(output);
 }

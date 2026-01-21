@@ -79,6 +79,38 @@ function platformStaticTextValue(axElement) {
     return accessibilityController.platformName === "ios" ? axElement.description : axElement.stringValue;
 }
 
+function stripAXPrefix(string) {
+    return string.replace(/^AX[A-Za-z]+:\s*/, "");
+}
+
+function expectStaticTextValue(axElement, expectedValue) {
+    if (!axElement)
+        return "";
+
+    if (!axElement.role.toLowerCase().includes("statictext"))
+        return `FAIL: platformStaticTextValue called on a non-text object (role was ${axElement.role}).\n`;
+
+    function pass(expected) {
+        return `PASS: Static text value was "${expected}"\n`;
+    }
+    function fail(expected, actual) {
+        return `FAIL: Static text value was not "${expected}" — was ${stripAXPrefix(actual)}`;
+    }
+
+    var textValue;
+    if (accessibilityController.platformName === "ios") {
+        textValue = axElement.description;
+        if (textValue === `AXLabel: ${expectedValue}`)
+            return pass(expectedValue);
+        return fail(expectedValue, textValue)
+    }
+
+    textValue = axElement.stringValue;
+    if (textValue === `AXValue: ${expectedValue}`)
+        return pass(expectedValue);
+    return fail(expectedValue, textValue)
+}
+
 // Dumps the accessibility tree hierarchy for the given accessibilityObject into
 // an element with id="tree", e.g., <pre id="tree"></pre>. In addition, it
 // returns a two element array with the first element [0] being false if the
