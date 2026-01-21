@@ -1479,7 +1479,7 @@ webgl/2.0.y/conformance/context/context-no-alpha-fbo-with-alpha.html [ Skip ]
 
 webkit.org/b/245324 http/tests/notifications/notification.html  [ Crash Pass ]
 
-webgl/1.0.x/conformance/textures/misc/texture-corner-case-videos.html [ Timeout Pass ]
+webgl/1.0.x/conformance/textures/misc/texture-corner-case-videos.html [ Failure Pass ]
 
 # Flaky tests on Aug-2023
 webkit.org/b/261024 http/wpt/mediarecorder/MediaRecorder-video-bitrate.html [ Crash Failure Pass ]
