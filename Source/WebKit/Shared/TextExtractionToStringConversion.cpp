@@ -520,16 +520,10 @@ private:
 
     void addVersionNumberIfNeeded()
     {
-        if (onlyIncludeText())
+        if (!useJSONOutput())
             return;
 
-        if (useJSONOutput()) {
-            protectedRootJSONObject()->setInteger("version"_s, version());
-            return;
-        }
-
-        auto versionText = (useHTMLOutput() || useMarkdownOutput()) ? makeString("<!-- version="_s, version(), " -->"_s) : makeString("version="_s, version());
-        addResult({ advanceToNextLine(), 0 }, { WTF::move(versionText) });
+        protectedRootJSONObject()->setInteger("version"_s, version());
     }
 
     uint32_t version() const

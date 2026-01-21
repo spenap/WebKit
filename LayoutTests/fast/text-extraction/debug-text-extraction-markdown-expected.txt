@@ -8,4 +8,3 @@ This is a list:
 - baz
 On [sale](https://webkit.org/) for
 £10.99 This ~~text~~ has a ~~line through it~~. The price ~~was \~\~$50~~
-<!-- version=2 -->

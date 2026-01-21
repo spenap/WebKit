@@ -7,4 +7,3 @@ $79.99
 You save $20.00
 
 In Stock - Ships within 24 hours
-<!-- version=2 -->
