@@ -3723,6 +3723,14 @@ ALLOW_DEPRECATED_DECLARATIONS_END
 
     return subarray;
 }
+
+- (NSString *)debugDescription
+{
+    RefPtr<AXCoreObject> backingObject = self.updateObjectBackingStore;
+    if (!backingObject)
+        return nil;
+    return backingObject->debugDescription().createNSString().autorelease();
+}
 @end
 
 #endif // PLATFORM(MAC)

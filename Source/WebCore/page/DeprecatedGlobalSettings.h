@@ -106,6 +106,9 @@ public:
     static void setAccessibilityTextStitchingEnabled(bool isEnabled) { singleton().m_accessibilityTextStitchingEnabled = isEnabled; }
     static bool accessibilityTextStitchingEnabled() { return singleton().m_accessibilityTextStitchingEnabled; }
 
+    static void setAccessibilityThreadHitTestingEnabled(bool isEnabled) { singleton().m_accessibilityThreadHitTestingEnabled = isEnabled; }
+    static bool accessibilityThreadHitTestingEnabled() { return singleton().m_accessibilityThreadHitTestingEnabled; }
+
     static void setArePDFImagesEnabled(bool isEnabled) { singleton().m_arePDFImagesEnabled = isEnabled; }
     static bool arePDFImagesEnabled() { return singleton().m_arePDFImagesEnabled; }
 
@@ -162,6 +165,7 @@ private:
 #endif
 
     bool m_accessibilityTextStitchingEnabled { false };
+    bool m_accessibilityThreadHitTestingEnabled { false };
 
     bool m_arePDFImagesEnabled { true };
 

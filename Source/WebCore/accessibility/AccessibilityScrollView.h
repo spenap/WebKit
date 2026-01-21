@@ -78,7 +78,7 @@ private:
     AccessibilityObject* scrollBar(AccessibilityOrientation) final;
     void addChildren() final;
     void clearChildren() final;
-    AccessibilityObject* accessibilityHitTest(const IntPoint&) const final;
+    RefPtr<AXCoreObject> accessibilityHitTest(const IntPoint&) const final;
     void updateChildrenIfNecessary() final;
     void updateScrollbars();
     void setFocused(bool) final;

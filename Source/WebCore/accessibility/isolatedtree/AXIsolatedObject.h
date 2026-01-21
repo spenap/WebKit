@@ -138,6 +138,8 @@ private:
     bool isAXIsolatedObjectInstance() const final { return true; }
     AccessibilityObject* associatedAXObject() const;
 
+    RefPtr<AXIsolatedObject> approximateHitTest(const IntPoint&) const;
+
     void setProperty(AXProperty, AXPropertyValueVariant&&);
     void setPropertyInVector(AXProperty property, AXPropertyValueVariant&& value)
     {
@@ -291,6 +293,7 @@ private:
     bool isDescriptionList() const final { return elementName() == ElementName::HTML_dl; }
     std::optional<InputType::Type> inputType() const final { return optionalAttributeValue<InputType::Type>(AXProperty::InputType); };
     FloatPoint screenRelativePosition() const final;
+    FloatRect screenRelativeRect() const;
     IntPoint remoteFrameOffset() const final;
     std::optional<IntRect> cachedRelativeFrame() const { return optionalAttributeValue<IntRect>(AXProperty::RelativeFrame); }
 #if PLATFORM(MAC)
@@ -332,7 +335,9 @@ private:
     bool isGrabbed() final { return boolAttributeValue(AXProperty::IsGrabbed); }
     bool isHiddenUntilFoundContainer() const final { return boolAttributeValue(AXProperty::IsHiddenUntilFoundContainer); }
     Vector<String> determineDropEffects() const final;
-    AXIsolatedObject* accessibilityHitTest(const IntPoint&) const final;
+
+    RefPtr<AXCoreObject> accessibilityHitTest(const IntPoint&) const final;
+
     AXIsolatedObject* focusedUIElement() const final
     {
         return tree()->focusedNode().unsafeGet();

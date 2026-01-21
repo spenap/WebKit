@@ -342,9 +342,9 @@ public:
     Vector<String> determineDropEffects() const override { return { }; }
 
     // Called on the root AX object to return the deepest available element.
-    AccessibilityObject* accessibilityHitTest(const IntPoint&) const override { return nullptr; }
+    RefPtr<AXCoreObject> accessibilityHitTest(const IntPoint&) const override { return nullptr; }
     // Called on the AX object after the render tree determines which is the right AccessibilityRenderObject.
-    virtual AccessibilityObject* elementAccessibilityHitTest(const IntPoint&) const;
+    virtual RefPtr<AccessibilityObject> elementAccessibilityHitTest(const IntPoint&) const;
 
     AccessibilityObject* focusedUIElement() const final;
     AccessibilityObject* focusedUIElementInAnyLocalFrame() const final;

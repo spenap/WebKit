@@ -523,6 +523,7 @@ public:
     static bool shouldCreateAXThreadCompatibleMarkers() { return isIsolatedTreeEnabled(); }
 #endif
     static bool isAXTextStitchingEnabled() { return gAccessibilityTextStitchingEnabled; }
+    WEBCORE_EXPORT static bool isAXThreadHitTestingEnabled();
 
 #if PLATFORM(COCOA)
     static bool shouldRepostNotificationsForTests() { return gShouldRepostNotificationsForTests; }
@@ -644,6 +645,9 @@ public:
     Document* document() const { return m_document; }
     RefPtr<Document> protectedDocument() const;
     FrameIdentifier frameID() const { return m_frameID; }
+
+    RefPtr<Page> page() const;
+    IntPoint mapScreenPointToPagePoint(const IntPoint&) const;
 
 #if ENABLE(ACCESSIBILITY_ISOLATED_TREE)
     inline void objectBecameIgnored(const AccessibilityObject&);
@@ -919,6 +923,8 @@ private:
 
     // Accessed on and off the main thread.
     static std::atomic<bool> gAccessibilityTextStitchingEnabled;
+    // Accessed on and off the main thread.
+    static std::atomic<bool> gAccessibilityThreadHitTestingEnabled;
 
 #if PLATFORM(COCOA)
     static std::atomic<bool> gAccessibilityDOMIdentifiersEnabled;

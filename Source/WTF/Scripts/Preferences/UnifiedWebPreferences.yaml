@@ -201,6 +201,21 @@ AccessibilityTextStitchingEnabled:
       "ENABLE(ACCESSIBILITY_TEXT_STITCHING)": true
       default: false
 
+AccessibilityThreadHitTestingEnabled:
+  type: bool
+  status: internal
+  defaultsOverridable: true
+  humanReadableName: "Off Main-Thread Accessibility Hit Testing"
+  humanReadableDescription: "Serve accessibility hit tests off the main-thread"
+  webcoreBinding: DeprecatedGlobalSettings
+  defaultValue:
+    WebKitLegacy:
+      default: true
+    WebKit:
+      default: true
+    WebCore:
+      default: true
+
 AggressiveTileRetentionEnabled:
   type: bool
   status: embedder

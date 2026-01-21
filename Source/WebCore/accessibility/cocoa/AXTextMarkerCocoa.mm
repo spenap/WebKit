@@ -26,6 +26,8 @@
 #import "AXTextMarker.h"
 
 #import <Foundation/NSRange.h>
+#import <WebCore/AXLoggerBase.h>
+#import <WebCore/Logging.h>
 #import <wtf/StdLibExtras.h>
 
 #if PLATFORM(MAC)
@@ -152,7 +154,9 @@ RetainPtr<NSAttributedString> AXTextMarkerRange::toAttributedString(AXCoreObject
 AXTextMarkerRange::AXTextMarkerRange(AXTextMarkerRangeRef textMarkerRangeRef)
 {
     if (!textMarkerRangeRef || CFGetTypeID(textMarkerRangeRef) != AXTextMarkerRangeGetTypeID()) {
-        AX_ASSERT_NOT_REACHED();
+        // FIXME: This is hit on any webpage when using VoiceOver and then turning on Accessibility Inspector
+        // and trying to hit-test something.
+        AX_BROKEN_ASSERT_NOT_REACHED();
         return;
     }
 

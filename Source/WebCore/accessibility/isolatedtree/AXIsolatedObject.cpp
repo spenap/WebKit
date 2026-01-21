@@ -582,19 +582,98 @@ SRGBA<uint8_t> AXIsolatedObject::colorValue() const
     );
 }
 
-AXIsolatedObject* AXIsolatedObject::accessibilityHitTest(const IntPoint& point) const
+RefPtr<AXCoreObject> AXIsolatedObject::accessibilityHitTest(const IntPoint& point) const
 {
-    auto axID = Accessibility::retrieveValueFromMainThread<std::optional<AXID>>([&point, context = mainThreadContext()] () -> std::optional<AXID> {
-        if (RefPtr object = context.axObjectOnMainThread()) {
-            object->updateChildrenIfNecessary();
-            if (auto* axObject = object->accessibilityHitTest(point))
-                return axObject->objectID();
+    auto hitTestOnMainThread = [axID = objectID(), treeID = treeID(), point] -> std::optional<AXID> {
+        if (WeakPtr<AXObjectCache> cache = AXTreeStore<AXObjectCache>::axObjectCacheForID(treeID)) {
+            RefPtr object = cache->objectForID(axID);
+            auto pageRelativePoint = cache->mapScreenPointToPagePoint(point);
+            if (RefPtr hitTestResult = object ? object->accessibilityHitTest(pageRelativePoint) : nullptr)
+                return hitTestResult->objectID();
+        }
+        return std::nullopt;
+    };
+
+    // For layout tests, we want to exercise hit testing using the accessibility thread, so only call.
+    // out to the main-thread in non-testing contexts.
+    if (!AXObjectCache::clientIsInTestMode()) [[likely]] {
+        auto timeoutableValue = Accessibility::retrieveValueFromMainThreadWithTimeout(hitTestOnMainThread, 15_ms);
+        if (std::optional<std::optional<AXID>> optionalAXID = timeoutableValue.value)
+            return *optionalAXID ? tree()->objectForID(**optionalAXID) : nullptr;
+    }
+
+    // If we're here (because !timeoutableValue.value), the request to the main-thread timed out.
+    // Let's use the accessibility thread to serve an approximate hit test. One optimization we
+    // could consider is computing the hit-test on the accessibility thread while waiting for the
+    // main-thread to compute the result (or timeout).
+    return approximateHitTest(point);
+}
+
+RefPtr<AXIsolatedObject> AXIsolatedObject::approximateHitTest(const IntPoint& point) const
+{
+    FloatRect bounds;
+    if (!AXObjectCache::clientIsInTestMode()) [[likely]] {
+        // For "real" off-main-thread hit tests (i.e. those forwarded to us by WKAccessibilityWebPageObjectMac),
+        // the coordinates are in the screen space. Note this may not be true for non-Mac platforms when we
+        // expand ITM to said other platforms (e.g. iOS).
+        bounds = screenRelativeRect();
+    } else {
+        // In a layout text context, the passed coordinates are page-relative, so use relative-frame.
+        bounds = relativeFrame();
+    }
+
+    IntPoint adjustedPoint = point;
+    adjustedPoint.moveBy(-remoteFrameOffset());
+
+    if (!bounds.contains(adjustedPoint) && !bounds.isEmpty()) {
+        // If our bounds are empty, we cannot possible contain the hit-point. However, this may happen
+        // because we haven't got geomtry for |this| yet, but maybe our children contain the hit-point,
+        // so check them before exiting. If our bounds are not empty and we don't contain the hit-point,
+        // we can exit now.
+        //
+        // This early-exit makes the assumption that parents always contain their children's bounds, which
+        // is generally true, but not always. This is OK since it's an approximate hit-test, but maybe we
+        // can improve this heuristic in the future.
+        return nullptr;
+    }
+
+    AXIsolatedObject* mutableThis = const_cast<AXIsolatedObject*>(this);
+    auto children = mutableThis->unignoredChildren();
+    for (int i = children.size() - 1; i >= 0; --i) {
+        RefPtr child = downcast<AXIsolatedObject>(children[i].ptr());
+        if (!child)
+            continue;
+
+        if (child->isTableColumn()) {
+            // Returning columns via hit testing is typically not what ATs expect as they are mock objects
+            // and thus not backed by any real DOM node. Returning nullptr allows us to return the table
+            // cell (or cell contents) instead, which is typically more useful for ATs like Hover Text.
+            //
+            // FIXME: This has been manually tested to behave correctly, but needs a layout test.
+            continue;
         }
 
-        return std::nullopt;
-    });
+        if (RefPtr hitChild = child->approximateHitTest(point))
+            return hitChild;
+    }
 
-    return tree()->objectForID(axID);
+    if (bounds.isEmpty())
+        return nullptr;
+
+    RefPtr result = mutableThis;
+    if (result && result->isIgnored()) {
+        // FIXME: If |result| is the label of a control, a hit test should return the control.
+
+        result = result->parentObjectUnignored();
+    }
+
+    if (result) {
+        if (std::optional stitchedIntoID = result->stitchedIntoID()) {
+            if (RefPtr stitchRepresentative = tree()->objectForID(*stitchedIntoID))
+                return stitchRepresentative;
+        }
+    }
+    return result;
 }
 
 TextEmissionBehavior AXIsolatedObject::textEmissionBehavior() const
@@ -1075,6 +1154,13 @@ FloatPoint AXIsolatedObject::screenRelativePosition() const
     if (auto point = optionalAttributeValue<FloatPoint>(AXProperty::ScreenRelativePosition))
         return *point;
     return convertFrameToSpace(relativeFrame(), AccessibilityConversionSpace::Screen).location();
+}
+
+FloatRect AXIsolatedObject::screenRelativeRect() const
+{
+    if (auto point = optionalAttributeValue<FloatPoint>(AXProperty::ScreenRelativePosition))
+        return { *point, size() };
+    return convertFrameToSpace(relativeFrame(), AccessibilityConversionSpace::Screen);
 }
 
 FloatRect AXIsolatedObject::relativeFrame() const
@@ -1691,7 +1777,6 @@ Element* AXIsolatedObject::element() const
 
 Node* AXIsolatedObject::node() const
 {
-    AX_ASSERT_NOT_REACHED();
     return nullptr;
 }
 

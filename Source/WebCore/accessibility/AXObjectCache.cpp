@@ -60,6 +60,8 @@
 #include "AccessibilityTableHeaderContainer.h"
 #include "AriaNotifyOptions.h"
 #include "CaretRectComputation.h"
+#include "Chrome.h"
+#include "ChromeClient.h"
 #include "ContainerNodeInlines.h"
 #include "CustomElementDefaultARIA.h"
 #include "DeprecatedGlobalSettings.h"
@@ -210,6 +212,7 @@ std::atomic<bool> AXObjectCache::gAccessibilityEnabled = false;
 bool AXObjectCache::gAccessibilityEnhancedUserInterfaceEnabled = false;
 std::atomic<bool> AXObjectCache::gForceDeferredSpellChecking = false;
 std::atomic<bool> AXObjectCache::gAccessibilityTextStitchingEnabled = false;
+std::atomic<bool> AXObjectCache::gAccessibilityThreadHitTestingEnabled = false;
 std::atomic<bool> AXObjectCache::gForceInitialFrameCaching = false;
 #if PLATFORM(COCOA)
 std::atomic<bool> AXObjectCache::gAccessibilityDOMIdentifiersEnabled = false;
@@ -230,6 +233,11 @@ void AXObjectCache::setEnhancedUserInterfaceAccessibility(bool flag)
     if (flag)
         enableAccessibility();
 #endif
+}
+
+bool AXObjectCache::isAXThreadHitTestingEnabled()
+{
+    return gAccessibilityThreadHitTestingEnabled;
 }
 
 void AXObjectCache::setForceInitialFrameCaching(bool shouldForce)
@@ -274,6 +282,7 @@ AXObjectCache::AXObjectCache(LocalFrame& localFrame, Document* document)
 #endif
 
     gAccessibilityTextStitchingEnabled = DeprecatedGlobalSettings::accessibilityTextStitchingEnabled();
+    gAccessibilityThreadHitTestingEnabled = DeprecatedGlobalSettings::accessibilityThreadHitTestingEnabled();
 
 #if PLATFORM(COCOA)
     initializeUserDefaultValues();
@@ -611,6 +620,30 @@ void AXObjectCache::setIsolatedTreeFocusedObject(AccessibilityObject* focus)
 }
 #endif
 
+IntPoint AXObjectCache::mapScreenPointToPagePoint(const IntPoint& screenRelativePoint) const
+{
+    RefPtr page = this->page();
+    if (!page) {
+        // We can't do the conversion if we don't have a page.
+        return screenRelativePoint;
+    }
+
+    // FIXME: WebPage::screenToRootView does sync IPC. Can we find a way to convert this point
+    // without sync IPC?
+    auto convertedPoint = page->chrome().client().screenToRootView(WebCore::IntPoint(screenRelativePoint));
+    RefPtr frame = m_document ? m_document->frame() : nullptr;
+    if (RefPtr frameView = frame ? frame->view() : nullptr)
+        convertedPoint.moveBy(frameView->scrollPosition());
+
+    auto obscuredContentInsets = page->obscuredContentInsets();
+    convertedPoint.move(-obscuredContentInsets.left(), -obscuredContentInsets.top());
+    return convertedPoint;
+}
+
+RefPtr<Page> AXObjectCache::page() const
+{
+    return m_document ? m_document->page() : nullptr;
+}
 
 Ref<AccessibilityRenderObject> AXObjectCache::createObjectFromRenderer(RenderObject& renderer)
 {

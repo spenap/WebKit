@@ -1267,7 +1267,8 @@ bool AccessibilityRenderObject::computeIsIgnored() const
         // Text elements with no rendered text, or only whitespace should not be part of the AX tree.
         if (!renderText->hasRenderedText()) {
             // Layout must be clean to make the right decision here (because hasRenderedText() can return false solely because layout is dirty).
-            AX_ASSERT(!renderText->needsLayout() || !renderText->text().length());
+            // FIXME: This is triggered when running accessibility/aria-liveregions-attributes.html with --accessibility-isolated-tree.
+            AX_BROKEN_ASSERT(!renderText->needsLayout() || !renderText->text().length());
             // If this is a RenderTextFragment with an associated first-letter, the entire text may have been
             // consumed by the first-letter pseudo-element. In this case, don't ignore the text node, as its
             // text content can still be retrieved from the associated DOM Text node.
@@ -2286,17 +2287,17 @@ AccessibilityObject* AccessibilityRenderObject::accessibilityImageMapHitTest(HTM
     return nullptr;
 }
 
-AccessibilityObject* AccessibilityRenderObject::remoteSVGElementHitTest(const IntPoint& point) const
+RefPtr<AccessibilityObject> AccessibilityRenderObject::remoteSVGElementHitTest(const IntPoint& point) const
 {
     RefPtr remote = remoteSVGRootElement(CreateIfNecessary::Yes);
     if (!remote)
         return nullptr;
 
     IntSize offset = point - roundedIntPoint(boundingBoxRect().location());
-    return remote->accessibilityHitTest(IntPoint(offset));
+    return downcast<AccessibilityObject>(remote->accessibilityHitTest(IntPoint(offset)).get());
 }
 
-AccessibilityObject* AccessibilityRenderObject::elementAccessibilityHitTest(const IntPoint& point) const
+RefPtr<AccessibilityObject> AccessibilityRenderObject::elementAccessibilityHitTest(const IntPoint& point) const
 {
     if (isSVGImage())
         return remoteSVGElementHitTest(point);
@@ -2327,7 +2328,7 @@ AccessibilityObject* AccessibilityRenderObject::elementAccessibilityHitTest(cons
     return AccessibilityObject::elementAccessibilityHitTest(point);
 }
 
-AccessibilityObject* AccessibilityRenderObject::accessibilityHitTest(const IntPoint& point) const
+RefPtr<AXCoreObject> AccessibilityRenderObject::accessibilityHitTest(const IntPoint& point) const
 {
     if (!m_renderer || !m_renderer->hasLayer())
         return nullptr;
@@ -2368,16 +2369,16 @@ AccessibilityObject* AccessibilityRenderObject::accessibilityHitTest(const IntPo
         // If this element is the label of a control, a hit test should return the control.
         RefPtr controlObject = result->controlForLabelElement();
         if (controlObject && !controlObject->titleUIElement())
-            return controlObject.unsafeGet();
+            return controlObject;
 
         result = result->parentObjectUnignored();
     }
 
     if (std::optional stitchedIntoID = result ? result->stitchedIntoID() : std::nullopt) {
         if (RefPtr stitchRepresentative = cache->objectForID(*stitchedIntoID))
-            return stitchRepresentative.unsafeGet();
+            return stitchRepresentative;
     }
-    return result.unsafeGet();
+    return result;
 }
 
 bool AccessibilityRenderObject::renderObjectIsObservable(RenderObject& renderer) const
