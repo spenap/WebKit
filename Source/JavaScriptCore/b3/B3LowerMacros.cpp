@@ -687,20 +687,16 @@ private:
 
                 UpsilonValue* fastUpsilon = nullptr;
                 if (useFastPath) {
-                    BasicBlock* fastPath = m_blockInsertionSet.insertBefore(m_block);
                     BasicBlock* fastPathContinuation = m_blockInsertionSet.insertBefore(m_block);
 
                     // Replace the Jump added by splitForward with Nop so we can add our own control flow
                     before->replaceLastWithNew<Value>(m_proc, Nop, m_origin);
 
+                    // The Instance constructor initializes all the allocators on creation, thus it is never nullptr.
                     int32_t allocatorOffset = allocatorsBaseOffset + static_cast<int32_t>(sizeClass * sizeof(Allocator));
                     Value* allocator = before->appendNew<MemoryValue>(m_proc, Load, pointerType(), m_origin, instance, allocatorOffset);
 
-                    Value* allocatorIsNull = before->appendNew<Value>(m_proc, Equal, m_origin, allocator, before->appendIntConstant(m_proc, m_origin, pointerType(), 0));
-                    before->appendNew<Value>(m_proc, Branch, m_origin, allocatorIsNull);
-                    before->setSuccessors(FrequentedBlock(slowPath, FrequencyClass::Rare), FrequentedBlock(fastPath));
-
-                    PatchpointValue* patchpoint = fastPath->appendNew<PatchpointValue>(m_proc, pointerType(), m_origin);
+                    PatchpointValue* patchpoint = before->appendNew<PatchpointValue>(m_proc, pointerType(), m_origin);
                     if (isARM64()) {
                         // emitAllocateWithNonNullAllocator uses the scratch registers on ARM.
                         patchpoint->clobber(RegisterSetBuilder::macroClobberedGPRs());
@@ -739,8 +735,7 @@ private:
                         });
                     });
 
-                    fastPath->appendSuccessor({ fastPathContinuation, FrequencyClass::Normal });
-                    fastPath->appendSuccessor({ slowPath, FrequencyClass::Rare });
+                    before->setSuccessors({ fastPathContinuation, FrequencyClass::Normal }, { slowPath, FrequencyClass::Rare });
 
                     // Header initialization happens in fastPathContinuation, not in fastPath
                     Value* cell = patchpoint;
