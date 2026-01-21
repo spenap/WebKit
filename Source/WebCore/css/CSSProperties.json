@@ -836,7 +836,6 @@
                     "text-box-trim",
                     "text-box-edge"
                 ],
-                "settings-flag": "cssTextBoxTrimEnabled",
                 "parser-function": "consumeTextBoxShorthand",
                 "parser-grammar-unused": "normal | [ <'text-box-trim'> || <'text-box-edge'> ]",
                 "parser-grammar-unused-reason": "Needs support for shorthand grammars."
@@ -860,7 +859,6 @@
                 "cap"
             ],
             "codegen-properties": {
-                "settings-flag": "cssTextBoxTrimEnabled",
                 "computed-style-initial-constexpr": true,
                 "computed-style-storage-path": ["m_inheritedRareData"],
                 "computed-style-storage-kind": "value",
@@ -884,7 +882,6 @@
                 "trim-both"
             ],
             "codegen-properties": {
-                "settings-flag": "cssTextBoxTrimEnabled",
                 "computed-style-storage-path": ["m_nonInheritedData", "rareData"],
                 "computed-style-storage-kind": "enum",
                 "computed-style-type": "TextBoxTrim",
@@ -1563,7 +1560,6 @@
                 "ideograph-numeric"
             ],
             "codegen-properties": {
-                "settings-flag": "cssTextAutospaceEnabled",
                 "font-property": true,
                 "high-priority": true,
                 "sink-priority": true,
