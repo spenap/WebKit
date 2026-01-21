@@ -1111,7 +1111,6 @@ webkit.org/b/279178 fast/scrolling/scroll-into-view-on-composited-scrollable-ove
 webkit.org/b/279179 [ Debug ] imported/w3c/web-platform-tests/eventsource/eventsource-constructor-empty-url.any.sharedworker.html [ Failure Pass ]
 
 fast/hidpi/filters-drop-shadow.html [ ImageOnlyFailure ]
-fast/inline/min-content-width-with-hypens.html [ ImageOnlyFailure ]
 fast/multicol/layers-split-across-columns.html [ ImageOnlyFailure ]
 fast/scrolling/scroll-corner-update-on-direction-change.html [ ImageOnlyFailure Pass ]
 imported/w3c/web-platform-tests/mathml/relations/css-styling/color-003.html [ ImageOnlyFailure ]
