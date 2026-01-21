@@ -48,9 +48,7 @@
 namespace WebCore {
 
 class AXIsolatedTree;
-#if ENABLE(AX_THREAD_TEXT_APIS)
 struct AXTextRuns;
-#endif
 
 class AXIsolatedObject final : public AXCoreObject {
     friend class AXIsolatedTree;
@@ -98,7 +96,6 @@ public:
     AXIsolatedObject* crossFrameChildObject() const final;
 #endif
 
-#if ENABLE(AX_THREAD_TEXT_APIS)
     const AXTextRuns* textRuns() const;
     bool hasTextRuns() final
     {
@@ -109,7 +106,6 @@ public:
     AXTextRunLineID listMarkerLineID() const final { return propertyValue<AXTextRunLineID>(AXProperty::ListMarkerLineID); };
     String listMarkerText() const final { return stringAttributeValue(AXProperty::ListMarkerText); }
     FontOrientation fontOrientation() const final { return propertyValue<FontOrientation>(AXProperty::FontOrientation); }
-#endif // ENABLE(AX_THREAD_TEXT_APIS)
 
     String description() const final { return stringAttributeValue(AXProperty::Description); }
 

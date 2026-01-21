@@ -514,7 +514,7 @@ static void convertPathToScreenSpaceFunction(PathConversionInfo& conversion, con
 // advancing forward by line from top and backwards by line from the bottom, until we have a visible range.
 - (NSRange)accessibilityVisibleCharacterRange
 {
-#if ENABLE(AX_THREAD_TEXT_APIS)
+#if ENABLE(ACCESSIBILITY_ISOLATED_TREE)
     if (AXObjectCache::useAXThreadTextApis()) {
         RefPtr<AXCoreObject> backingObject = self.baseUpdateBackingStore;
         if (!backingObject)
@@ -522,7 +522,7 @@ static void convertPathToScreenSpaceFunction(PathConversionInfo& conversion, con
         std::optional range = backingObject->visibleCharacterRange();
         return range ? *range : NSMakeRange(NSNotFound, 0);
     }
-#endif // ENABLE(AX_THREAD_TEXT_APIS)
+#endif
 
     return Accessibility::retrieveValueFromMainThread<NSRange>([protectedSelf = retainPtr(self)] () -> NSRange {
         RefPtr<AXCoreObject> backingObject = protectedSelf.get().baseUpdateBackingStore;

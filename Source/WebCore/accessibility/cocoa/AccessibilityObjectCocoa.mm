@@ -208,7 +208,7 @@ RetainPtr<CTFontRef> AccessibilityObject::font() const
     return style ? fontFrom(*style) : nil;
 }
 
-#if ENABLE(AX_THREAD_TEXT_APIS)
+#if ENABLE(ACCESSIBILITY_ISOLATED_TREE)
 FontOrientation AccessibilityObject::fontOrientation() const
 {
     if (CheckedPtr style = this->style())

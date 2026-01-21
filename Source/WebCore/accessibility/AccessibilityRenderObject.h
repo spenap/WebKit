@@ -119,11 +119,11 @@ public:
     String stringValue() const override;
     String textUnderElement(TextUnderElementMode = TextUnderElementMode()) const override;
     String selectedText() const final;
-#if ENABLE(AX_THREAD_TEXT_APIS)
+#if ENABLE(ACCESSIBILITY_ISOLATED_TREE)
     AXTextRuns textRuns() final;
     AXTextRunLineID listMarkerLineID() const final;
     String listMarkerText() const final;
-#endif // ENABLE(AX_THREAD_TEXT_APIS)
+#endif
 
     bool isWidget() const final;
     Widget* widget() const final;

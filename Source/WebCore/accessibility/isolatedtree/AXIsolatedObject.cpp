@@ -131,11 +131,6 @@ bool isDefaultValue(AXProperty property, AXPropertyValueVariant& value)
         [](std::nullptr_t&) { return true; },
         [](Markable<AXID> typedValue) { return !typedValue; },
         [&](String& typedValue) {
-#if !ENABLE(AX_THREAD_TEXT_APIS)
-            // We use a null stringValue to indicate when the string value is different than the text content.
-            if (property == AXProperty::StringValue)
-                return typedValue == emptyString(); // Only compares empty, not null
-#endif // !ENABLE(AX_THREAD_TEXT_APIS)
             return typedValue.isEmpty(); // null or empty
         },
         [](bool typedValue) { return !typedValue; },
@@ -180,12 +175,10 @@ bool isDefaultValue(AXProperty property, AXPropertyValueVariant& value)
         [](std::unique_ptr<AXIDAndCharacterRange>& typedValue) {
             return !typedValue || (!typedValue->first && !typedValue->second.location && !typedValue->second.length);
         },
-#if ENABLE(AX_THREAD_TEXT_APIS)
         [](std::unique_ptr<AXTextRuns>& typedValue) { return !typedValue || !typedValue->size(); },
         [](RetainPtr<CTFontRef>& typedValue) { return !typedValue; },
         [](FontOrientation typedValue) { return typedValue == FontOrientation::Horizontal; },
         [](AXTextRunLineID typedValue) { return !typedValue; },
-#endif // ENABLE(AX_THREAD_TEXT_APIS)
         [](WallTime& time) { return !time; },
         [](ElementName& name) { return name == ElementName::Unknown; },
         [](DateComponentsType& typedValue) { return typedValue == DateComponentsType::Invalid; },
@@ -547,10 +540,8 @@ void AXIsolatedObject::setFocused(bool value)
 
 String AXIsolatedObject::selectedText() const
 {
-#if ENABLE(AX_THREAD_TEXT_APIS)
     if (AXObjectCache::useAXThreadTextApis())
         return selectedTextMarkerRange().toString();
-#endif // ENABLE(AX_THREAD_TEXT_APIS)
 
     return Accessibility::retrieveValueFromMainThread<String>([context = mainThreadContext()] () -> String {
         if (RefPtr object = context.axObjectOnMainThread())
@@ -906,7 +897,6 @@ int AXIsolatedObject::intAttributeValue(AXProperty property) const
     );
 }
 
-#if ENABLE(AX_THREAD_TEXT_APIS)
 const AXTextRuns* AXIsolatedObject::textRuns() const
 {
     size_t index = indexOfProperty(AXProperty::TextRuns);
@@ -918,7 +908,6 @@ const AXTextRuns* AXIsolatedObject::textRuns() const
         [] (auto&) -> const AXTextRuns* { return nullptr; }
     );
 }
-#endif
 
 template<typename T>
 T AXIsolatedObject::getOrRetrievePropertyValue(AXProperty property)
@@ -1280,14 +1269,12 @@ int AXIsolatedObject::insertionPointLineNumber() const
         return -1;
     }
 
-#if ENABLE(AX_THREAD_TEXT_APIS)
     if (AXObjectCache::useAXThreadTextApis()) {
         RefPtr selectionObject = selectedMarkerRange.start().isolatedObject();
         if (isTextControl() && selectionObject && isAncestorOfObject(*selectionObject))
             return selectedMarkerRange.start().lineIndex();
         return -1;
     }
-#endif // ENABLE(AX_THREAD_TEXT_APIS)
 
     return Accessibility::retrieveValueFromMainThread<int>([context = mainThreadContext()] () -> int {
         if (RefPtr axObject = context.axObjectOnMainThread())
@@ -1311,10 +1298,8 @@ String AXIsolatedObject::identifierAttribute() const
 
 CharacterRange AXIsolatedObject::doAXRangeForLine(unsigned lineIndex) const
 {
-#if ENABLE(AX_THREAD_TEXT_APIS)
     if (AXObjectCache::useAXThreadTextApis())
         return AXTextMarker { *this, 0 }.characterRangeForLine(lineIndex);
-#endif
 
     return Accessibility::retrieveValueFromMainThread<CharacterRange>([&lineIndex, context = mainThreadContext()] () -> CharacterRange {
         if (RefPtr object = context.axObjectOnMainThread())
@@ -1325,10 +1310,8 @@ CharacterRange AXIsolatedObject::doAXRangeForLine(unsigned lineIndex) const
 
 String AXIsolatedObject::doAXStringForRange(const CharacterRange& range) const
 {
-#if ENABLE(AX_THREAD_TEXT_APIS)
     if (AXObjectCache::useAXThreadTextApis())
         return textMarkerRange().toString().substring(range.location, range.length);
-#endif // ENABLE(AX_THREAD_TEXT_APIS)
 
     return Accessibility::retrieveValueFromMainThread<String>([&range, context = mainThreadContext()] () -> String {
         if (RefPtr object = context.axObjectOnMainThread())
@@ -1385,10 +1368,8 @@ IntRect AXIsolatedObject::doAXBoundsForRangeUsingCharacterOffset(const Character
 
 unsigned AXIsolatedObject::doAXLineForIndex(unsigned index)
 {
-#if ENABLE(AX_THREAD_TEXT_APIS)
     if (AXObjectCache::useAXThreadTextApis())
         return AXTextMarker { *this, 0 }.lineNumberForIndex(index);
-#endif
 
     return Accessibility::retrieveValueFromMainThread<unsigned>([&index, context = mainThreadContext()] () -> unsigned {
         if (RefPtr object = context.axObjectOnMainThread())
@@ -1554,7 +1535,6 @@ bool AXIsolatedObject::hasRowGroupTag() const
 
 bool AXIsolatedObject::hasSameFont(AXCoreObject& otherObject)
 {
-#if ENABLE(AX_THREAD_TEXT_APIS)
     if (AXObjectCache::useAXThreadTextApis()) {
         // Having a font only really makes sense for text, so if this or otherObject isn't text, find the first text descendant to compare.
         RefPtr thisText = selfOrFirstTextDescendant();
@@ -1566,7 +1546,6 @@ bool AXIsolatedObject::hasSameFont(AXCoreObject& otherObject)
         }
         return thisText->font() == otherText->font();
     }
-#endif // ENABLE(AX_THREAD_TEXT_APIS)
 
     if (!is<AXIsolatedObject>(otherObject))
         return false;
@@ -1582,7 +1561,6 @@ bool AXIsolatedObject::hasSameFont(AXCoreObject& otherObject)
 
 bool AXIsolatedObject::hasSameFontColor(AXCoreObject& otherObject)
 {
-#if ENABLE(AX_THREAD_TEXT_APIS)
     if (AXObjectCache::useAXThreadTextApis()) {
         RefPtr thisText = downcast<AXIsolatedObject>(selfOrFirstTextDescendant());
         RefPtr otherText = downcast<AXIsolatedObject>(otherObject.selfOrFirstTextDescendant());
@@ -1591,7 +1569,6 @@ bool AXIsolatedObject::hasSameFontColor(AXCoreObject& otherObject)
             return false;
         return thisText->colorAttributeValue(AXProperty::TextColor) == otherText->colorAttributeValue(AXProperty::TextColor);
     }
-#endif // ENABLE(AX_THREAD_TEXT_APIS)
 
     if (!is<AXIsolatedObject>(otherObject))
         return false;
@@ -1607,7 +1584,6 @@ bool AXIsolatedObject::hasSameFontColor(AXCoreObject& otherObject)
 
 bool AXIsolatedObject::hasSameStyle(AXCoreObject& otherObject)
 {
-#if ENABLE(AX_THREAD_TEXT_APIS)
     if (AXObjectCache::useAXThreadTextApis()) {
         RefPtr thisText = selfOrFirstTextDescendant();
         RefPtr otherText = otherObject.selfOrFirstTextDescendant();
@@ -1616,7 +1592,6 @@ bool AXIsolatedObject::hasSameStyle(AXCoreObject& otherObject)
             return false;
         return thisText->stylesForAttributedString() == otherText->stylesForAttributedString();
     }
-#endif // ENABLE(AX_THREAD_TEXT_APIS)
 
     if (!is<AXIsolatedObject>(otherObject))
         return false;
@@ -1798,7 +1773,6 @@ String AXIsolatedObject::textContentPrefixFromListMarker() const
 
 String AXIsolatedObject::stringValue() const
 {
-#if ENABLE(AX_THREAD_TEXT_APIS)
     size_t index = indexOfProperty(AXProperty::StringValue);
     if (index == notFound) {
         if (hasStitchableRole()) {
@@ -1839,13 +1813,6 @@ String AXIsolatedObject::stringValue() const
         [] (const String& typedValue) { return typedValue; },
         [] (auto&) { return emptyString(); }
     );
-#else
-    if (std::optional stringValue = optionalAttributeValue<String>(AXProperty::StringValue))
-        return *stringValue;
-    if (auto value = platformStringValue())
-        return *value;
-    return { };
-#endif // ENABLE(AX_THREAD_TEXT_APIS)
 }
 
 String AXIsolatedObject::text() const

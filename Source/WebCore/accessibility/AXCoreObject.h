@@ -882,7 +882,7 @@ public:
 
     virtual std::optional<String> textContent() const = 0;
     virtual String textContentPrefixFromListMarker() const = 0;
-#if ENABLE(AX_THREAD_TEXT_APIS)
+#if ENABLE(ACCESSIBILITY_ISOLATED_TREE)
     virtual bool hasTextRuns() = 0;
     virtual TextEmissionBehavior textEmissionBehavior() const = 0;
     bool emitsNewline() const;
@@ -1499,13 +1499,13 @@ inline Vector<AXID> AXCoreObject::childrenIDs(bool updateChildrenIfNeeded)
     return axIDs(children(updateChildrenIfNeeded));
 }
 
-#if ENABLE(AX_THREAD_TEXT_APIS)
+#if ENABLE(ACCESSIBILITY_ISOLATED_TREE)
 inline bool AXCoreObject::emitsNewline() const
 {
     auto behavior = textEmissionBehavior();
     return behavior == TextEmissionBehavior::Newline || behavior == TextEmissionBehavior::DoubleNewline;
 }
-#endif // ENABLE(AX_THREAD_TEXT_APIS)
+#endif // ENABLE(ACCESSIBILITY_ISOLATED_TREE)
 
 namespace Accessibility {
 
@@ -1722,7 +1722,7 @@ using PlatformRoleMap = HashMap<AccessibilityRole, String, DefaultHash<unsigned>
 void initializeRoleMap();
 PlatformRoleMap createPlatformRoleMap();
 String roleToPlatformString(AccessibilityRole);
-#if ENABLE(AX_THREAD_TEXT_APIS)
+#if ENABLE(ACCESSIBILITY_ISOLATED_TREE)
 std::optional<AXTextMarkerRange> markerRangeFrom(NSRange, const AXCoreObject&);
 #endif
 Color defaultColor();

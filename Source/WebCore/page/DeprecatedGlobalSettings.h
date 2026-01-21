@@ -103,11 +103,6 @@ public:
     static bool isAccessibilityIsolatedTreeEnabled() { return singleton().m_accessibilityIsolatedTree; }
 #endif
 
-#if ENABLE(AX_THREAD_TEXT_APIS)
-    static void setAccessibilityThreadTextApisEnabled(bool isEnabled) { singleton().m_accessibilityThreadTextApis = isEnabled; }
-    static bool accessibilityThreadTextApisEnabled() { return singleton().m_accessibilityThreadTextApis; }
-#endif
-
     static void setAccessibilityTextStitchingEnabled(bool isEnabled) { singleton().m_accessibilityTextStitchingEnabled = isEnabled; }
     static bool accessibilityTextStitchingEnabled() { return singleton().m_accessibilityTextStitchingEnabled; }
 
@@ -166,9 +161,6 @@ private:
     bool m_accessibilityIsolatedTree { false };
 #endif
 
-#if ENABLE(AX_THREAD_TEXT_APIS)
-    bool m_accessibilityThreadTextApis { false };
-#endif
     bool m_accessibilityTextStitchingEnabled { false };
 
     bool m_arePDFImagesEnabled { true };

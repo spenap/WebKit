@@ -1396,7 +1396,7 @@ AccessibilityButtonState AccessibilityNodeObject::checkboxOrRadioValue() const
     return AccessibilityObject::checkboxOrRadioValue();
 }
 
-#if ENABLE(AX_THREAD_TEXT_APIS)
+#if ENABLE(ACCESSIBILITY_ISOLATED_TREE)
 TextEmissionBehavior AccessibilityNodeObject::textEmissionBehavior() const
 {
     RefPtr node = this->node();
@@ -1433,7 +1433,7 @@ TextEmissionBehavior AccessibilityNodeObject::textEmissionBehavior() const
     }
     return TextEmissionBehavior::None;
 }
-#endif // ENABLE(AX_THREAD_TEXT_APIS)
+#endif // ENABLE(ACCESSIBILITY_ISOLATED_TREE)
 
 Element* AccessibilityNodeObject::anchorElement() const
 {
