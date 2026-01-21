@@ -2761,11 +2761,10 @@ imported/w3c/web-platform-tests/mediacapture-streams/MediaStream-MediaElement-pr
 
 imported/w3c/web-platform-tests/mediacapture-insertable-streams/VideoTrackGenerator-with-window-tracks.https.html [ Skip ]
 
-# In these tests only one canvas frame is pushed towards the sender webrtcbin,
+# In this test only one canvas frame is pushed towards the sender webrtcbin,
 # this is not enough for the receiver webrtcbin to create its video source pad,
 # because on sender side we need at least a complete GOP... So the tests time
 # out, awaiting forever a remote mediastream.
-webkit.org/b/235885 webrtc/canvas-to-peer-connection-vp8-2d.html [ Crash Failure ]
 webkit.org/b/235885 webrtc/canvas-to-peer-connection-vp8.html [ Failure ]
 
 # Pending investigation. Current status is out of 143 tests, only 44 run as
