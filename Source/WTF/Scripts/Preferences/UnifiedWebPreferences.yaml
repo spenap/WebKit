@@ -6850,6 +6850,20 @@ ScriptTrackingPrivacyLoggingEnabled:
     WebCore:
       default: false
 
+ScriptTrackingPrivacyNetworkRequestBlockingEnabled:
+  type: bool
+  status: internal
+  humanReadableName: "Script Tracking Privacy Network Requests Blocking"
+  humanReadableDescription: "Block network requests made from tracking scripts"
+  exposed: [ WebKit ]
+  defaultValue:
+    WebKitLegacy:
+      default: false
+    WebKit:
+      default: false
+    WebCore:
+      default: false
+
 ScriptTrackingPrivacyProtectionsEnabled:
   type: bool
   status: internal
