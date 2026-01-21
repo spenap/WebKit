@@ -2360,10 +2360,12 @@ std::tuple<Ref<WebProcessProxy>, RefPtr<SuspendedPageProxy>, ASCIILiteral> WebPr
     if (!m_configuration->processSwapsOnNavigationWithinSameNonHTTPFamilyProtocol() && !sourceURL.protocolIsInHTTPFamily() && sourceURL.protocol() == targetURL.protocol() && !siteIsolationEnabled)
         return { WTF::move(sourceProcess), nullptr, "Navigation within the same non-HTTP(s) protocol"_s };
 
-    if (!sourceURL.isValid()
-        || !targetURL.isValid()
-        || sourceURL.isEmpty()
-        || (siteIsolationEnabled ? targetSite.matches(sourceURL) : targetSite.domain().matches(sourceURL)))
+    bool sourceURLIsInvalid = !sourceURL.isValid() || sourceURL.isEmpty();
+    if (!siteIsolationEnabled && (sourceURLIsInvalid || !targetURL.isValid() || targetSite.domain().matches(sourceURL)))
+        return { WTF::move(sourceProcess), nullptr, "Navigation is same-site"_s };
+
+    bool sourceProcessSiteMatchesTarget = !sourceProcess->site() || sourceProcess->site().value() == targetSite || (sourceProcess->site()->isEmpty() && targetSite.isEmpty());
+    if (siteIsolationEnabled && sourceProcessSiteMatchesTarget && (sourceURLIsInvalid || !targetURL.isValid() || targetSite.matches(sourceURL)))
         return { WTF::move(sourceProcess), nullptr, "Navigation is same-site"_s };
 
     if (sourceURL.protocolIsAbout()) {
