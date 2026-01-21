@@ -108,15 +108,11 @@ static auto advanceFocusRelinquishToChrome = R"FOCUSRESOURCE(
 <div id="div1" contenteditable="true" tabindex="1">Main 1</div><br>
 )FOCUSRESOURCE"_s;
 
-struct WebViewAndDelegates {
-    RetainPtr<TestWKWebView> webView;
-    RetainPtr<TestNavigationDelegate> navigationDelegate;
-    RetainPtr<TestUIDelegate> uiDelegate;
-};
-
-static WebViewAndDelegates makeWebViewAndDelegates(HTTPServer& server)
+static std::tuple<RetainPtr<TestWKWebView>, RetainPtr<TestNavigationDelegate>, RetainPtr<TestUIDelegate>> makeWebViewAndDelegates(HTTPServer& server, bool enableSiteIsolation = false)
 {
     RetainPtr configuration = server.httpsProxyConfiguration();
+    [[configuration preferences] _setSiteIsolationEnabled:enableSiteIsolation];
+
     RetainPtr webView = adoptNS([[TestWKWebView alloc] initWithFrame:NSMakeRect(0, 0, 400, 400) configuration:configuration.get()]);
 
     RetainPtr navigationDelegate = adoptNS([TestNavigationDelegate new]);
@@ -139,10 +135,7 @@ TEST(FocusWebView, AdvanceFocusRelinquishToChrome)
         { "/example"_s, { advanceFocusRelinquishToChrome } },
     }, HTTPServer::Protocol::HttpsProxy);
 
-    auto webViewAndDelegates = makeWebViewAndDelegates(server);
-    RetainPtr webView = WTF::move(webViewAndDelegates.webView);
-    RetainPtr navigationDelegate = WTF::move(webViewAndDelegates.navigationDelegate);
-    RetainPtr uiDelegate = WTF::move(webViewAndDelegates.uiDelegate);
+    auto [webView, navigationDelegate, uiDelegate] = makeWebViewAndDelegates(server);
 
 #if PLATFORM(MAC)
     NSRect newWindowFrame = NSMakeRect(0, 0, 400, 500);
@@ -190,6 +183,55 @@ TEST(FocusWebView, AdvanceFocusRelinquishToChrome)
     EXPECT_TRUE(textField.get().didBecomeFirstResponder);
 #endif
     EXPECT_FALSE(textField.get().didSeeKeyDownEvent);
+}
+
+TEST(FocusWebView, MultipleFrames)
+{
+    auto exampleHTML = "<script>"
+        "onload = () => {"
+        "    let i = document.getElementById('input');"
+        "    i.addEventListener('focus', () => {"
+        "        alert('main frame focused');"
+        "    });"
+        "    i.focus()"
+        "};"
+        "</script>"
+        "<body>"
+        "<input id='input'>"
+        "<iframe src='https://webkit.org/webkitframe'></iframe>"
+        "<iframe src='https://apple.com/appleframe'></iframe>"
+        "</body>"_s;
+
+    auto iframeHTML = "<script>"
+        "onload = () => {"
+        "    document.getElementById('iframeInput').addEventListener('focus', () => {"
+        "        alert(window.origin + ' focused');"
+        "    });"
+        "};"
+        "</script>"
+        "<input id='iframeInput' type='text' value='Iframe Input'>"
+        "</body>"_s;
+
+    HTTPServer server({
+        { "/example"_s, { exampleHTML } },
+        { "/webkitframe"_s, { iframeHTML } },
+        { "/appleframe"_s, { iframeHTML } },
+    }, HTTPServer::Protocol::HttpsProxy);
+
+    auto [webView, navigationDelegate, uiDelegate] = makeWebViewAndDelegates(server, true);
+
+    [webView loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"https://example.com/example"]]];
+    [navigationDelegate waitForDidFinishNavigation];
+
+#if PLATFORM(MAC)
+    EXPECT_WK_STREQ([uiDelegate waitForAlert], "main frame focused");
+#else
+    // FIXME: Investigate why this is different than macOS.
+    EXPECT_WK_STREQ([uiDelegate waitForAlert], "https://webkit.org focused");
+#endif
+    [webView typeCharacter:'\t'];
+    EXPECT_WK_STREQ([uiDelegate waitForAlert], "https://webkit.org focused");
+    // FIXME: Typing tab again should focus https://apple.com with site isolation on like it does with site isolation off.
 }
 
 TEST(FocusWebView, DoNotFocusWebViewWhenUnparented)
