@@ -484,13 +484,13 @@ inline JSString* tryReplaceOneCharUsingString(JSGlobalObject* globalObject, JSSt
     RETURN_IF_EXCEPTION(scope, nullptr);
     auto searchString = search->value(globalObject);
     if (searchString->length() != 1)
-        return nullptr;
+        RELEASE_AND_RETURN(scope, nullptr);
 
     auto replaceString = replacement->value(globalObject);
     RETURN_IF_EXCEPTION(scope, nullptr);
     if constexpr (check == DollarCheck::Yes) {
         if (replaceString->find('$') != notFound)
-            return nullptr;
+            RELEASE_AND_RETURN(scope, nullptr);
     }
 
     RELEASE_AND_RETURN(scope, string->tryReplaceOneChar(globalObject, searchString[0], replacement));
