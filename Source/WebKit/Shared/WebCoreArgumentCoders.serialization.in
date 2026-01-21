@@ -2184,6 +2184,11 @@ class WebCore::LayoutRect {
     WebCore::LayoutSize m_size;
 };
 
+struct WebCore::RemoteFrameLayoutInfo {
+    std::optional<WebCore::LayoutRect> visibleRectInParent;
+    float usedZoom;
+};
+
 header: <WebCore/VP9Utilities.h>
 [CustomHeader] struct WebCore::ScreenDataOverrides {
     double width;
