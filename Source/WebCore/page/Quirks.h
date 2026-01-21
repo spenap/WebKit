@@ -307,8 +307,6 @@ public:
 
     bool needsSuppressPostLayoutBoundaryEventsQuirk() const;
 
-    bool shouldExposeCredentialsContainerQuirk() const;
-
 #if ENABLE(PICTURE_IN_PICTURE_API)
     bool shouldReportVisibleDueToActivePictureInPictureContent() const;
 #endif

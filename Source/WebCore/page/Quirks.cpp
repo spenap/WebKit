@@ -2343,15 +2343,6 @@ bool Quirks::shouldDisableDOMAudioSessionQuirk() const
     return m_quirksData.quirkIsEnabled(QuirksData::SiteSpecificQuirk::ShouldDisableDOMAudioSession);
 }
 
-bool Quirks::shouldExposeCredentialsContainerQuirk() const
-{
-#if ENABLE(WEB_AUTHN)
-    if (m_document && m_document->settings().webAuthenticationEnabled())
-        return true;
-#endif
-    return needsQuirks() && m_quirksData.isGoogleAccounts;
-}
-
 #if ENABLE(PICTURE_IN_PICTURE_API)
 bool Quirks::shouldReportVisibleDueToActivePictureInPictureContent() const
 {
@@ -2917,7 +2908,6 @@ static void handleGoogleQuirks(QuirksData& quirksData, const URL& quirksURL, con
     bool shouldEnableEnumerateDeviceQuirk = topDocumentHost == "meet.google.com"_s;
     quirksData.setQuirkState(QuirksData::SiteSpecificQuirk::ShouldEnableEnumerateDeviceQuirk, shouldEnableEnumerateDeviceQuirk);
 #endif
-    quirksData.isGoogleAccounts = topDocumentHost == "accounts.google.com"_s;
 }
 
 static void handleHBOMaxQuirks(QuirksData& quirksData, const URL& quirksURL, const String& quirksDomainString, const URL&  /* documentURL */)
