@@ -54,7 +54,7 @@ class FragmentedSharedBuffer;
 class ProcessIdentity;
 class SharedBuffer;
 
-enum class MemoryLedger { None, Default, Network, Media, Graphics, Neural };
+enum class MemoryLedger : uint8_t { None, Default, Network, Media, Graphics, Neural };
 enum class SharedMemoryProtection : bool { ReadOnly, ReadWrite };
 
 WEBCORE_EXPORT bool isMemoryAttributionDisabled();

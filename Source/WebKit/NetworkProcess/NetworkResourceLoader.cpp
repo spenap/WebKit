@@ -2266,7 +2266,11 @@ void NetworkResourceLoader::sendDidReceiveDataMessage(const FragmentedSharedBuff
     updateBytesTransferredOverNetwork(bytesTransferredOverNetwork);
 #endif
 
-    send(Messages::WebResourceLoader::DidReceiveData(IPC::SharedBufferReference(buffer), bytesTransferredOverNetwork));
+    // Transfer memory footprint of the buffer to the receiving WebProcess. We have to use the
+    // default ledger rather than the network ledger here since the latter requires an entitlement.
+    auto data = IPC::SharedBufferReference { buffer };
+    data.transferOwnershipToReceiver(WebCore::MemoryLedger::Default);
+    send(Messages::WebResourceLoader::DidReceiveData(WTF::move(data), bytesTransferredOverNetwork));
 }
 
 #if ENABLE(CONTENT_EXTENSIONS)

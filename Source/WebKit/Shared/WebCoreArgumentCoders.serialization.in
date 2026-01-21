@@ -2591,6 +2591,16 @@ header: <wtf/MachSendRight.h>
     uint64_t m_size;
 };
 
+header: <WebCore/SharedMemory.h>
+[CustomHeader] enum class WebCore::MemoryLedger : uint8_t {
+    None,
+    Default,
+    Network,
+    Media,
+    Graphics,
+    Neural
+};
+
 header: <WebCore/TextIndicator.h>
 [CustomHeader] struct WebCore::TextIndicatorData {
     WebCore::FloatRect selectionRectInRootViewCoordinates;
