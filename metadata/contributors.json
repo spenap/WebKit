@@ -6018,8 +6018,8 @@
    },
    {
       "emails" : [
-         "mcatanzaro@redhat.com",
          "mcatanzaro@gnome.org",
+         "mcatanzaro@redhat.com",
          "mcatanzaro@igalia.com"
       ],
       "expertise" : "WebKitGTK, Epiphany",
