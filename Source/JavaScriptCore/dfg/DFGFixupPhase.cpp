@@ -5113,6 +5113,7 @@ private:
             if (!m_graph.hasExitSite(node->origin.semantic, BadType)) {
                 if (!node->shouldSpeculateInt32() && node->shouldSpeculateNumber()) {
                     node->setResult(NodeResultDouble);
+                    node->mergeFlags(NodeMustGenerate); // Absorbs speculation check from the using edge
                     return true;
                 }
             }
