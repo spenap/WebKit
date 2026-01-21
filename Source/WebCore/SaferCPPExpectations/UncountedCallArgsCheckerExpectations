@@ -623,7 +623,6 @@ rendering/AccessibilityRegionContext.cpp
 rendering/AttachmentLayout.mm
 rendering/BackgroundPainter.cpp
 rendering/BorderPainter.cpp
-rendering/CSSFilterRenderer.cpp
 rendering/CaretRectComputation.cpp
 rendering/EllipsisBoxPainter.cpp
 rendering/HitTestResult.cpp
@@ -782,6 +781,7 @@ style/Styleable.h
 style/UserAgentStyle.cpp
 style/computed/StyleComputedStyle.cpp
 style/computed/StyleComputedStyleBase.cpp
+style/values/filter-effects/StyleFilterReference.cpp
 style/values/primitives/StyleLengthWrapperData.cpp
 style/values/transforms/StyleRotate.cpp
 style/values/transforms/StyleScale.cpp

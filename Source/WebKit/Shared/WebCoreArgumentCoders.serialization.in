@@ -8032,9 +8032,9 @@ header: <WebCore/SharedBuffer.h>
     float stdDeviation();
 };
 [CustomHeader, RefCounted] class WebCore::DropShadowFilterOperation {
+    WebCore::Color color();
     WebCore::IntPoint location();
     int stdDeviation();
-    WebCore::Color color();
 };
 [CustomHeader, RefCounted] class WebCore::DefaultFilterOperation {
     WebCore::FilterOperation::Type representedType();
@@ -8514,13 +8514,11 @@ enum class WebCore::EdgeModeType : uint8_t {
 
 header: <WebCore/FilterOperation.h>
 [Nested] enum class WebCore::FilterOperation::Type : uint8_t {
-    Reference,
     Grayscale,
     Sepia,
     Saturate,
     HueRotate,
     Invert,
-    AppleInvertLightness,
     Opacity,
     Brightness,
     Contrast,

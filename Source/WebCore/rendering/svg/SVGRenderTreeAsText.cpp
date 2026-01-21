@@ -48,7 +48,6 @@
 #include "NodeRenderStyle.h"
 #include "NullGraphicsContext.h"
 #include "PathOperation.h"
-#include "ReferenceFilterOperation.h"
 #include "RenderElementInlines.h"
 #include "RenderImage.h"
 #include "RenderIterator.h"
@@ -609,11 +608,10 @@ void writeResources(TextStream& ts, const RenderObject& renderer, OptionSet<Rend
         },
         [&](const auto&) { }
     );
-    if (style.hasFilter()) {
-        auto& filterOperations = style.filter();
-        if (filterOperations.size() == 1) {
-            if (RefPtr referenceFilterOperation = dynamicDowncast<Style::ReferenceFilterOperation>(filterOperations[0].platform())) {
-                auto id = referenceFilterOperation->fragment();
+    if (style.filter().size() == 1) {
+        WTF::switchOn(style.filter().first(),
+            [&](const Style::FilterReference& filterReference) {
+                auto& id = filterReference.cachedFragment;
                 if (LegacyRenderSVGResourceFilter* filter = getRenderSVGResourceById<LegacyRenderSVGResourceFilter>(renderer.treeScopeForSVGReferences(), id)) {
                     ts << indent << ' ';
                     writeNameAndQuotedValue(ts, "filter"_s, id);
@@ -621,8 +619,9 @@ void writeResources(TextStream& ts, const RenderObject& renderer, OptionSet<Rend
                     writeStandardPrefix(ts, *filter, behavior, WriteIndentOrNot::No);
                     ts << ' ' << filter->resourceBoundingBox(renderer, RepaintRectCalculation::Accurate) << '\n';
                 }
-            }
-        }
+            },
+            []<CSSValueID C, typename T>(const FunctionNotation<C, T>&) { }
+        );
     }
 }
 

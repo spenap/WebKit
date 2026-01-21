@@ -932,15 +932,10 @@ bool PlatformCALayerCocoa::filtersCanBeComposited(const FilterOperations& filter
     for (unsigned i = 0; i < filters.size(); ++i) {
         const FilterOperation* filterOperation = filters.at(i);
         switch (filterOperation->type()) {
-        case FilterOperation::Type::Reference:
-            return false;
         case FilterOperation::Type::DropShadow:
             // FIXME: For now we can only handle drop-shadow is if it's last in the list
             if (i < (filters.size() - 1))
                 return false;
-            break;
-        case FilterOperation::Type::DropShadowWithStyleColor:
-            ASSERT_NOT_REACHED();
             break;
         default:
             break;

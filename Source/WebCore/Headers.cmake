@@ -3375,7 +3375,19 @@ set(WebCore_PRIVATE_FRAMEWORK_HEADERS
     style/values/fill-stroke/StyleStrokeWidth.h
 
     style/values/filter-effects/StyleAppleColorFilter.h
+    style/values/filter-effects/StyleAppleInvertLightnessFunction.h
+    style/values/filter-effects/StyleBlurFunction.h
+    style/values/filter-effects/StyleBrightnessFunction.h
+    style/values/filter-effects/StyleContrastFunction.h
+    style/values/filter-effects/StyleDropShadowFunction.h
     style/values/filter-effects/StyleFilter.h
+    style/values/filter-effects/StyleFilterReference.h
+    style/values/filter-effects/StyleGrayscaleFunction.h
+    style/values/filter-effects/StyleHueRotateFunction.h
+    style/values/filter-effects/StyleInvertFunction.h
+    style/values/filter-effects/StyleOpacityFunction.h
+    style/values/filter-effects/StyleSaturateFunction.h
+    style/values/filter-effects/StyleSepiaFunction.h
 
     style/values/flexbox/StyleFlexBasis.h
     style/values/flexbox/StyleFlexGrow.h
