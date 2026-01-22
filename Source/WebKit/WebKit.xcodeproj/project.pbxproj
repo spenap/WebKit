@@ -5447,6 +5447,8 @@
 		4105A0652D537C2B00EA2D19 /* FileSystemStorageManagerLock.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FileSystemStorageManagerLock.h; sourceTree = "<group>"; };
 		410BA139257135F2002E2F8A /* NetworkRTCTCPSocketCocoa.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = NetworkRTCTCPSocketCocoa.mm; sourceTree = "<group>"; };
 		410BA13A257135F2002E2F8A /* NetworkRTCTCPSocketCocoa.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NetworkRTCTCPSocketCocoa.h; sourceTree = "<group>"; };
+		411051492F1E9A9D007558EA /* ServiceWorkerTimingInfo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ServiceWorkerTimingInfo.h; sourceTree = "<group>"; };
+		4110514A2F1E9A9D007558EA /* ServiceWorkerTimingInfo.serialization.in */ = {isa = PBXFileReference; lastKnownFileType = text; path = ServiceWorkerTimingInfo.serialization.in; sourceTree = "<group>"; };
 		4111436320F677B10026F912 /* InjectUserScriptImmediately.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InjectUserScriptImmediately.h; sourceTree = "<group>"; };
 		411223B72602152B00B0A0B6 /* RTCDataChannelRemoteManager.messages.in */ = {isa = PBXFileReference; lastKnownFileType = text; name = RTCDataChannelRemoteManager.messages.in; path = Network/webrtc/RTCDataChannelRemoteManager.messages.in; sourceTree = "<group>"; };
 		411223BB26024E8000B0A0B6 /* RTCDataChannelRemoteManagerProxy.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RTCDataChannelRemoteManagerProxy.h; sourceTree = "<group>"; };
@@ -10200,6 +10202,8 @@
 				460B87352AFD9F8200200D8C /* ScrollingAccelerationCurve.serialization.in */,
 				FAA54BCC2E3805FE00E3F012 /* SerializedNode.serialization.in */,
 				5C96003F28C02EAF00F2693B /* SerializedTypeInfo.h */,
+				411051492F1E9A9D007558EA /* ServiceWorkerTimingInfo.h */,
+				4110514A2F1E9A9D007558EA /* ServiceWorkerTimingInfo.serialization.in */,
 				1AFDE6571954A42B00C48FFA /* SessionState.cpp */,
 				1AFDE6581954A42B00C48FFA /* SessionState.h */,
 				5C03D5DD28F765F800D096AF /* SessionState.serialization.in */,

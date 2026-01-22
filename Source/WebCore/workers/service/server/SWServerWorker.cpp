@@ -534,13 +534,18 @@ std::optional<ExceptionData> SWServerWorker::addRoutes(Vector<ServiceWorkerRoute
 }
 
 // https://w3c.github.io/ServiceWorker/#get-router-source
-RouterSource SWServerWorker::getRouterSource(const FetchOptions& options, const ResourceRequest& request) const
+std::optional<RouterSource> SWServerWorker::getRouterSource(const FetchOptions& options, const ResourceRequest& request) const
 {
     for (auto& route : m_routes) {
         if (matchRouterCondition(route.condition, options, request, isRunning()))
             return route.source;
     }
 
+    return { };
+}
+
+RouterSource SWServerWorker::defaultRouterSource() const
+{
     return m_shouldSkipHandleFetch ? RouterSourceEnum::Network : RouterSourceEnum::FetchEvent;
 }
 

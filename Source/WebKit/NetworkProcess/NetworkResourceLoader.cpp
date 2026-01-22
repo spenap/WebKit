@@ -691,8 +691,8 @@ void NetworkResourceLoader::transferToNewWebProcess(NetworkConnectionToWebProces
         if (RefPtr swConnection = newConnection.swConnection())
             swConnection->transferServiceWorkerLoadToNewWebProcess(*this, *serviceWorkerRegistration, parameters.request);
     }
-    if (m_workerStart)
-        send(Messages::WebResourceLoader::SetWorkerStart { m_workerStart }, coreIdentifier());
+    if (m_serviceWorkerTimingInfo)
+        send(Messages::WebResourceLoader::SetServiceWorkerTimingInfo { *m_serviceWorkerTimingInfo }, coreIdentifier());
     bool willWaitForContinueDidReceiveResponse = true;
     send(Messages::WebResourceLoader::DidReceiveResponse { m_response, m_privateRelayed, willWaitForContinueDidReceiveResponse, computeResponseMetrics(m_response) });
 }
@@ -1074,6 +1074,9 @@ void NetworkResourceLoader::didReceiveResponse(ResourceResponse&& receivedRespon
 
 void NetworkResourceLoader::sendDidReceiveResponsePotentiallyInNewBrowsingContextGroup(const WebCore::ResourceResponse& response, PrivateRelayed privateRelayed, bool needsContinueDidReceiveResponseMessage)
 {
+    if (m_serviceWorkerTimingInfo)
+        send(Messages::WebResourceLoader::SetServiceWorkerTimingInfo { *m_serviceWorkerTimingInfo }, coreIdentifier());
+
     Ref connection = m_connection;
     auto browsingContextGroupSwitchDecision = connection->usesSingleWebProcess()? BrowsingContextGroupSwitchDecision::StayInGroup: toBrowsingContextGroupSwitchDecision(m_currentCoopEnforcementResult);
     if (browsingContextGroupSwitchDecision == BrowsingContextGroupSwitchDecision::StayInGroup) {
@@ -1489,6 +1492,7 @@ void NetworkResourceLoader::continueWillSendRequest(ResourceRequest&& newRequest
 
     if (shouldTryToMatchRegistrationOnRedirection(parameters().options, !!m_serviceWorkerFetchTask)) {
         m_serviceWorkerRegistration = { };
+        m_serviceWorkerTimingInfo = { };
         setWorkerStart({ });
         if (auto serviceWorkerFetchTask = protectedConnectionToWebProcess()->createFetchTask(*this, newRequest)) {
             LOADER_RELEASE_LOG("continueWillSendRequest: Created a ServiceWorkerFetchTask to handle the redirect (fetchIdentifier=%" PRIu64 ")", serviceWorkerFetchTask->fetchIdentifier().toUInt64());
@@ -2058,8 +2062,38 @@ bool NetworkResourceLoader::isCrossOriginPrefetch() const
 
 void NetworkResourceLoader::setWorkerStart(MonotonicTime value)
 {
-    m_workerStart = value;
-    send(Messages::WebResourceLoader::SetWorkerStart { m_workerStart }, coreIdentifier());
+    if (!m_serviceWorkerTimingInfo)
+        m_serviceWorkerTimingInfo = ServiceWorkerTimingInfo { };
+    m_serviceWorkerTimingInfo->workerStart = value;
+}
+
+void NetworkResourceLoader::setWorkerRouterEvaluationStart(MonotonicTime time)
+{
+    if (!m_serviceWorkerTimingInfo)
+        m_serviceWorkerTimingInfo = ServiceWorkerTimingInfo { };
+    m_serviceWorkerTimingInfo->workerRouterEvaluationStart = time;
+}
+
+void NetworkResourceLoader::setWorkerCacheLookupStart(MonotonicTime time)
+{
+    if (!m_serviceWorkerTimingInfo)
+        m_serviceWorkerTimingInfo = ServiceWorkerTimingInfo { };
+    m_serviceWorkerTimingInfo->workerCacheLookupStart = time;
+}
+
+void NetworkResourceLoader::setWorkerMatchedRouterSource(WebCore::RouterSourceEnum source)
+{
+    if (!m_serviceWorkerTimingInfo)
+        m_serviceWorkerTimingInfo = ServiceWorkerTimingInfo { };
+    m_serviceWorkerTimingInfo->workerMatchedRouterSource = source;
+}
+
+void NetworkResourceLoader::setWorkerFinalRouterSource(WebCore::RouterSourceEnum source)
+{
+    if (!m_serviceWorkerTimingInfo || !m_serviceWorkerTimingInfo->workerMatchedRouterSource)
+        return;
+
+    m_serviceWorkerTimingInfo->workerFinalRouterSource = source;
 }
 
 void NetworkResourceLoader::startWithServiceWorker()

@@ -130,8 +130,10 @@ public:
     WEBCORE_EXPORT SWServerToContextConnection* contextConnection();
     String userAgent() const;
 
-    WEBCORE_EXPORT RouterSource getRouterSource(const FetchOptions&, const ResourceRequest&) const;
-    
+    bool hasRouterRules() const { return !m_routes.isEmpty(); }
+    WEBCORE_EXPORT std::optional<RouterSource> getRouterSource(const FetchOptions&, const ResourceRequest&) const;
+    WEBCORE_EXPORT RouterSource defaultRouterSource() const;
+
     WEBCORE_EXPORT SWServerRegistration* registration() const;
 
     void setHasTimedOutAnyFetchTasks() { m_hasTimedOutAnyFetchTasks = true; }
