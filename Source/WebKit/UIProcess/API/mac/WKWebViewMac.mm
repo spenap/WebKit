@@ -29,6 +29,7 @@
 #if PLATFORM(MAC)
 
 #import "AppKitSPI.h"
+#import "WKAPICast.h"
 #import "WKIntelligenceTextEffectCoordinator.h"
 #import "WKTextFinderClient.h"
 #import "WKWebViewConfigurationPrivate.h"

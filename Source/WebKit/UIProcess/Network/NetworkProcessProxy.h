@@ -25,6 +25,7 @@
 
 #pragma once
 
+#include "APICustomProtocolManagerClient.h"
 #include "AppPrivacyReport.h"
 #include "AuxiliaryProcessProxy.h"
 #include "BackgroundFetchState.h"
@@ -60,7 +61,6 @@ class FormDataReference;
 }
 
 namespace API {
-class CustomProtocolManagerClient;
 class DataTask;
 }
 

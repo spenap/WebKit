@@ -40,6 +40,7 @@
 #import "_WKElementActionInternal.h"
 #import <UIKit/UIView.h>
 #import <WebCore/CaptionDisplaySettingsOptions.h>
+#import <WebCore/ContextMenuItem.h>
 #import <WebCore/DataDetection.h>
 #import <WebCore/FloatRect.h>
 #import <WebCore/LocalizedStrings.h>
