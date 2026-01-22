@@ -78,7 +78,7 @@ OBJC_CLASS WKFullScreenWindowController;
 OBJC_CLASS WKImageAnalysisOverlayViewDelegate;
 OBJC_CLASS WKImmediateActionController;
 OBJC_CLASS WKMouseTrackingObserver;
-OBJC_CLASS WKPanGestureController;
+OBJC_CLASS WKAppKitGestureController;
 OBJC_CLASS WKRevealItemPresenter;
 OBJC_CLASS _WKWarningView;
 OBJC_CLASS WKShareSheet;
@@ -1122,7 +1122,7 @@ ALLOW_DEPRECATED_DECLARATIONS_END
     bool m_inlinePredictionsEnabled { false };
 #endif
 
-    RetainPtr<WKPanGestureController> m_panGestureController;
+    RetainPtr<WKAppKitGestureController> m_appKitGestureController;
 };
 
 } // namespace WebKit

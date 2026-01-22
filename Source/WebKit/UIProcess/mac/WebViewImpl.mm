@@ -59,13 +59,13 @@
 #import "UIGamepadProvider.h"
 #import "UndoOrRedo.h"
 #import "ViewGestureController.h"
+#import "WKAppKitGestureController.h"
 #import "WKEditCommand.h"
 #import "WKErrorInternal.h"
 #import "WKFullScreenWindowController.h"
 #import "WKImmediateActionController.h"
 #import "WKNSURLExtras.h"
 #import "WKPDFHUDView.h"
-#import "WKPanGestureController.h"
 #import "WKPrintingView.h"
 #import "WKQuickLookPreviewController.h"
 #import "WKRevealItemPresenter.h"
@@ -1388,7 +1388,7 @@ WebViewImpl::WebViewImpl(WKWebView *view, WebProcessPool& processPool, Ref<API::
     m_textInputNotifications = subscribeToTextInputNotifications(this);
 #endif
 
-    m_panGestureController = adoptNS([[WKPanGestureController alloc] initWithPage:m_page viewImpl:*this]);
+    m_appKitGestureController = adoptNS([[WKAppKitGestureController alloc] initWithPage:m_page viewImpl:*this]);
 
     WebProcessPool::statistics().wkViewCount++;
 }
@@ -3573,8 +3573,8 @@ void WebViewImpl::preferencesDidChange()
 {
     updateNeedsViewFrameInWindowCoordinatesIfNeeded();
 
-    if (RetainPtr panGestureController = m_panGestureController)
-        [panGestureController enablePanGestureIfNeeded];
+    if (RetainPtr appKitGestureController = m_appKitGestureController)
+        [appKitGestureController enableGesturesIfNeeded];
 }
 
 CALayer* WebViewImpl::textIndicatorInstallationLayer()

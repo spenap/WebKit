@@ -37,10 +37,10 @@ class WebViewImpl;
 
 OBJC_CLASS NSPanGestureRecognizer;
 
-@interface WKPanGestureController : NSObject <NSGestureRecognizerDelegate>
+@interface WKAppKitGestureController : NSObject <NSGestureRecognizerDelegate>
 
 - (instancetype)initWithPage:(std::reference_wrapper<WebKit::WebPageProxy>)page viewImpl:(std::reference_wrapper<WebKit::WebViewImpl>)viewImpl;
-- (void)enablePanGestureIfNeeded;
+- (void)enableGesturesIfNeeded;
 
 @end
 

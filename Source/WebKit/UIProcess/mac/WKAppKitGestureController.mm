@@ -24,7 +24,7 @@
  */
 
 #import "config.h"
-#import "WKPanGestureController.h"
+#import "WKAppKitGestureController.h"
 
 #if PLATFORM(MAC)
 
@@ -52,7 +52,7 @@
 #import <wtf/UUID.h>
 #import <wtf/WeakPtr.h>
 
-#define WK_PAN_GESTURE_CONTROLLER_RELEASE_LOG(pageID, fmt, ...) RELEASE_LOG(ViewGestures, "[pageProxyID=%llu] %s: " fmt, pageID, std::source_location::current().function_name(), ##__VA_ARGS__)
+#define WK_APPKIT_GESTURE_CONTROLLER_RELEASE_LOG(pageID, fmt, ...) RELEASE_LOG(ViewGestures, "[pageProxyID=%llu] %s: " fmt, pageID, std::source_location::current().function_name(), ##__VA_ARGS__)
 
 static WebCore::FloatSize translationInView(NSPanGestureRecognizer *gesture, WKWebView *view)
 {
@@ -95,15 +95,15 @@ static WebCore::FloatSize toRawPlatformDelta(WebCore::FloatSize delta)
     return -delta;
 }
 
-@implementation WKPanGestureController {
+@implementation WKAppKitGestureController {
     WeakPtr<WebKit::WebPageProxy> _page;
     WeakPtr<WebKit::WebViewImpl> _viewImpl;
     RetainPtr<NSPanGestureRecognizer> _panGestureRecognizer;
     bool _isMomentumActive;
 }
 
-#if USE(APPLE_INTERNAL_SDK) && __has_include(<WebKitAdditions/WKPanGestureControllerAdditions.mm>)
-#import <WebKitAdditions/WKPanGestureControllerAdditions.mm>
+#if USE(APPLE_INTERNAL_SDK) && __has_include(<WebKitAdditions/WKAppKitGestureControllerAdditions.mm>)
+#import <WebKitAdditions/WKAppKitGestureControllerAdditions.mm>
 #else
 
 - (void)configureForScrolling:(NSPanGestureRecognizer *)gesture
@@ -126,12 +126,18 @@ static WebCore::FloatSize toRawPlatformDelta(WebCore::FloatSize delta)
 #if HAVE(NSGESTURERECOGNIZER_NAME)
     [_panGestureRecognizer setName:@"WKPanGesture"];
 #endif
-    [self enablePanGestureIfNeeded];
 
     CheckedPtr checkedViewImpl = _viewImpl.get();
     [checkedViewImpl->protectedView() addGestureRecognizer:_panGestureRecognizer.get()];
 
+    [self enableGesturesIfNeeded];
+
     return self;
+}
+
+- (void)enableGesturesIfNeeded
+{
+    [self enablePanGestureIfNeeded];
 }
 
 - (void)enablePanGestureIfNeeded
@@ -140,7 +146,7 @@ static WebCore::FloatSize toRawPlatformDelta(WebCore::FloatSize delta)
     if (!page)
         return;
     bool panGestureEnabled = page->protectedPreferences()->useAppKitGestures();
-    WK_PAN_GESTURE_CONTROLLER_RELEASE_LOG(page->identifier().toUInt64(), "%@ setEnabled:%d", _panGestureRecognizer.get(), static_cast<int>(panGestureEnabled));
+    WK_APPKIT_GESTURE_CONTROLLER_RELEASE_LOG(page->identifier().toUInt64(), "%@ setEnabled:%d", _panGestureRecognizer.get(), static_cast<int>(panGestureEnabled));
     [_panGestureRecognizer setEnabled:panGestureEnabled];
 }
 
@@ -156,14 +162,14 @@ static WebCore::FloatSize toRawPlatformDelta(WebCore::FloatSize delta)
     if (!page)
         return;
 
-    WK_PAN_GESTURE_CONTROLLER_RELEASE_LOG(page->identifier().toUInt64(), "%@", gesture);
+    WK_APPKIT_GESTURE_CONTROLLER_RELEASE_LOG(page->identifier().toUInt64(), "%@", gesture);
 
     RetainPtr panGesture = dynamic_objc_cast<NSPanGestureRecognizer>(gesture);
     if (!panGesture || _panGestureRecognizer != panGesture)
         return;
 
     if (viewImpl->ignoresAllEvents()) {
-        WK_PAN_GESTURE_CONTROLLER_RELEASE_LOG(page->identifier().toUInt64(), "Ignored gesture");
+        WK_APPKIT_GESTURE_CONTROLLER_RELEASE_LOG(page->identifier().toUInt64(), "Ignored gesture");
         return;
     }
 
@@ -172,7 +178,7 @@ static WebCore::FloatSize toRawPlatformDelta(WebCore::FloatSize delta)
 
     // FIXME: Need to supply a real event here.
     if (viewImpl->allowsBackForwardNavigationGestures() && viewImpl->ensureProtectedGestureController()->handleScrollWheelEvent(nil)) {
-        WK_PAN_GESTURE_CONTROLLER_RELEASE_LOG(page->identifier().toUInt64(), "View gesture controller handled gesture");
+        WK_APPKIT_GESTURE_CONTROLLER_RELEASE_LOG(page->identifier().toUInt64(), "View gesture controller handled gesture");
         return;
     }
 
@@ -296,7 +302,7 @@ static WebCore::FloatSize toRawPlatformDelta(WebCore::FloatSize delta)
     page->handleNativeWheelEvent(nativeMomentumEvent);
     _isMomentumActive = true;
 
-    WK_PAN_GESTURE_CONTROLLER_RELEASE_LOG(page->identifier().toUInt64(), "Started momentum scrolling with velocity %.2f pts/s", velocityMagnitude);
+    WK_APPKIT_GESTURE_CONTROLLER_RELEASE_LOG(page->identifier().toUInt64(), "Started momentum scrolling with velocity %.2f pts/s", velocityMagnitude);
 }
 
 - (void)interruptMomentumIfNeeded
@@ -329,11 +335,11 @@ static WebCore::FloatSize toRawPlatformDelta(WebCore::FloatSize delta)
     };
 
     page->handleNativeWheelEvent(WebKit::NativeWebWheelEvent { cancelEvent });
-    WK_PAN_GESTURE_CONTROLLER_RELEASE_LOG(page->identifier().toUInt64(), "Interrupted momentum scrolling");
+    WK_APPKIT_GESTURE_CONTROLLER_RELEASE_LOG(page->identifier().toUInt64(), "Interrupted momentum scrolling");
 }
 
 @end
 
-#undef WK_PAN_GESTURE_CONTROLLER_RELEASE_LOG
+#undef WK_APPKIT_GESTURE_CONTROLLER_RELEASE_LOG
 
 #endif
