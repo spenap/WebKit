@@ -170,18 +170,14 @@ auto computeGridItemRects = [](const PlacedGridItems& placedGridItems, const Bor
 };
 
 // https://drafts.csswg.org/css-grid-1/#layout-algorithm
-std::pair<UsedTrackSizes, GridItemRects> GridLayout::layout(const GridFormattingContext::GridLayoutConstraints& layoutConstraints, UnplacedGridItems& unplacedGridItems)
+std::pair<UsedTrackSizes, GridItemRects> GridLayout::layout(const GridFormattingContext::GridLayoutConstraints& layoutConstraints, UnplacedGridItems& unplacedGridItems,
+    const GridDefinition& gridDefinition)
 {
-    CheckedRef gridContainerStyle = this->gridContainerStyle();
-    auto& gridTemplateColumnsTrackSizes = gridContainerStyle->gridTemplateColumns().sizes;
-    auto& gridTemplateRowsTrackSizes = gridContainerStyle->gridTemplateRows().sizes;
+    auto& gridTemplateColumnsTrackSizes = gridDefinition.gridTemplateColumns.sizes;
+    auto& gridTemplateRowsTrackSizes = gridDefinition.gridTemplateRows.sizes;
 
     // 1. Run the Grid Item Placement Algorithm to resolve the placement of all grid items in the grid.
-    GridAutoFlowOptions autoFlowOptions {
-        .strategy = gridContainerStyle->gridAutoFlow().isDense() ? PackingStrategy::Dense : PackingStrategy::Sparse,
-        .direction = gridContainerStyle->gridAutoFlow().isRow() ? GridAutoFlowDirection::Row : GridAutoFlowDirection::Column
-    };
-    auto [ gridAreas, columnsCount, rowsCount ] = placeGridItems(unplacedGridItems, gridTemplateColumnsTrackSizes, gridTemplateRowsTrackSizes, autoFlowOptions);
+    auto [ gridAreas, columnsCount, rowsCount ] = placeGridItems(unplacedGridItems, gridTemplateColumnsTrackSizes, gridTemplateRowsTrackSizes, gridDefinition.autoFlowOptions);
     auto placedGridItems = formattingContext().constructPlacedGridItems(gridAreas);
 
     auto columnTrackSizingFunctionsList = trackSizingFunctions(columnsCount, gridTemplateColumnsTrackSizes);
@@ -195,7 +191,7 @@ std::pair<UsedTrackSizes, GridItemRects> GridLayout::layout(const GridFormatting
     auto [ usedInlineSizes, usedBlockSizes ] = layoutGridItems(placedGridItems, usedTrackSizes);
 
     // https://drafts.csswg.org/css-grid-1/#alignment
-    const auto& zoomFactor = gridContainerStyle->usedZoomForLength();
+    const auto& zoomFactor = formattingContext().zoomFactor();
     auto usedInlineMargins = computeInlineMargins(placedGridItems, zoomFactor);
     auto usedBlockMargins = computeBlockMargins(placedGridItems, zoomFactor);
 
@@ -429,16 +425,6 @@ std::pair<UsedInlineSizes, UsedBlockSizes> GridLayout::layoutGridItems(const Pla
         integrationUtils.layoutWithFormattingContextForBox(layoutBox, usedInlineSizeForGridItem, usedBlockSizeForGridItem);
     }
     return { usedInlineSizes, usedBlockSizes };
-}
-
-const ElementBox& GridLayout::gridContainer() const
-{
-    return m_gridFormattingContext.root();
-}
-
-const RenderStyle& GridLayout::gridContainerStyle() const
-{
-    return gridContainer().style();
 }
 
 } // namespace Layout
