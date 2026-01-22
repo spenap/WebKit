@@ -5216,18 +5216,15 @@ class AnalyzeLayoutTestsResultsRedTree(AnalyzeLayoutTestsResults):
         self.setProperty('build_summary', message)
         return SUCCESS
 
-    def report_warning(self, message):
-        self.build.results = WARNINGS
-        self.descriptionDone = message
-        self.setProperty('build_summary', message)
-        return WARNINGS
-
     def report_infrastructure_issue_and_maybe_retry_build(self, message):
         retry_count = int(self.getProperty('retry_count', 0))
         if retry_count >= self.MAX_RETRY:
             message += '\nReached the maximum number of retries ({}). Unable to determine if change is bad or there is a pre-existent infrastructure issue.'.format(self.MAX_RETRY)
             self.send_email_for_infrastructure_issue(message)
-            return self.report_warning(message)
+            self.build.results = FAILURE
+            self.descriptionDone = message
+            self.setProperty('build_summary', message)
+            return FAILURE
         message += "\nRetrying build [retry count is {} of {}]".format(retry_count, self.MAX_RETRY)
         self.setProperty('retry_count', retry_count + 1)
         self.send_email_for_infrastructure_issue(message)

@@ -3322,8 +3322,8 @@ class TestAnalyzeLayoutTestsResultsRedTree(BuildStepMixinAdditions, unittest.Tes
         self.setProperty('clean_tree_run_status', FAILURE)
         expected_infrastructure_error = 'The layout-test run with change generated no list of results and exited with error, and the clean_tree without change run did the same thing.'
         self.expect_outcome(
-            result=WARNINGS,
-            state_string=f'{expected_infrastructure_error}\nReached the maximum number of retries (3). Unable to determine if change is bad or there is a pre-existent infrastructure issue. (warnings)')
+            result=FAILURE,
+            state_string=f'{expected_infrastructure_error}\nReached the maximum number of retries (3). Unable to determine if change is bad or there is a pre-existent infrastructure issue. (failure)')
         step_result = self.run_step()
         self.assertEqual(len(self._emails_list), 1)
         self.assertTrue(expected_infrastructure_error in self._emails_list[0])
@@ -3485,7 +3485,7 @@ class TestAnalyzeLayoutTestsResultsRedTree(BuildStepMixinAdditions, unittest.Tes
         self.setProperty('without_change_repeat_failures_timedout', True)
         self.setProperty('retry_count', 3)
         expected_infrastructure_error = 'The step "layout-tests-repeat-failures-without-change" was interrumped because it reached the timeout.'
-        self.expect_outcome(result=WARNINGS, state_string=f'{expected_infrastructure_error}\nReached the maximum number of retries (3). Unable to determine if change is bad or there is a pre-existent infrastructure issue. (warnings)')
+        self.expect_outcome(result=FAILURE, state_string=f'{expected_infrastructure_error}\nReached the maximum number of retries (3). Unable to determine if change is bad or there is a pre-existent infrastructure issue. (failure)')
         step_result = self.run_step()
         self.assertEqual(len(self._emails_list), 1)
         self.assertTrue(expected_infrastructure_error in self._emails_list[0])
