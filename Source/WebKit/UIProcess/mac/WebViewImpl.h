@@ -126,7 +126,9 @@ namespace WebCore {
 class DestinationColorSpace;
 class IntPoint;
 struct DataDetectorElementInfo;
+struct ExceptionData;
 struct ShareDataWithParsedURL;
+struct TextAnimationData;
 struct TextRecognitionResult;
 
 #if HAVE(TRANSLATION_UI_SERVICES) && ENABLE(CONTEXT_MENUS)
@@ -194,6 +196,7 @@ struct ResolvedCaptionDisplaySettingsOptions;
 
 #if ENABLE(WEB_AUTHN)
 struct DigitalCredentialsRequestData;
+struct DigitalCredentialsResponseData;
 #endif
 
 struct FrameIdentifierType;
