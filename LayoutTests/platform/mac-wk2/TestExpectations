@@ -2447,3 +2447,5 @@ webkit.org/b/305947 compositing/visibility/frameset-visibility-hidden.html [ Ima
 webkit.org/b/305958 imported/w3c/web-platform-tests/media-source/mediasource-changetype-play.html [ Pass Failure ]
 
 webkit.org/b/305959 fast/text/FontFaceSet-status-after-style-update.html [ Pass Failure ]
+
+webkit.org/b/306047 accessibility/mac/replaced-element-text-selection.html [ Pass Failure ]
