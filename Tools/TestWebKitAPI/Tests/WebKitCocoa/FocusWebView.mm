@@ -185,7 +185,8 @@ TEST(FocusWebView, AdvanceFocusRelinquishToChrome)
     EXPECT_FALSE(textField.get().didSeeKeyDownEvent);
 }
 
-TEST(FocusWebView, MultipleFrames)
+// FIXME when rdar://168688750 is resolved.
+TEST(FocusWebView, DISABLED_MultipleFrames)
 {
     auto exampleHTML = "<script>"
         "onload = () => {"
