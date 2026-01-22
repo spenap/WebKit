@@ -206,6 +206,21 @@ void MouseRelatedEvent::computeRelativePosition()
     if (!targetNode)
         return;
 
+    // Find the target renderer, adjusting for SVG elements.
+    auto findTargetRendererAndAdjustedNode = [](const RefPtr<Node>& node) {
+        CheckedPtr renderer = node->renderer();
+        if (!renderer || !renderer->isSVGRenderer())
+            return std::pair { renderer, node };
+
+        // If this is an SVG node, compute the offset to the padding box of the
+        // outermost SVG root (== the closest ancestor that has a CSS layout box.).
+        while (!renderer->isRenderOrLegacyRenderSVGRoot())
+            renderer = renderer->parent();
+
+        // Update the target node to point to the SVG root.
+        return std::pair { renderer, renderer->protectedNode() };
+    };
+
     // Compute coordinates that are based on the target.
     m_layerLocation = LayoutPoint(m_pageLocation);
     m_offsetLocation = m_pageLocation;
@@ -214,7 +229,11 @@ void MouseRelatedEvent::computeRelativePosition()
     targetNode->protectedDocument()->updateLayoutIgnorePendingStylesheets();
 
     // Adjust offsetLocation to be relative to the target's padding box.
-    if (CheckedPtr renderer = targetNode->renderer()) {
+    auto [renderer, adjustedNode] = findTargetRendererAndAdjustedNode(targetNode);
+    if (targetNode != adjustedNode)
+        targetNode = WTF::move(adjustedNode);
+
+    if (renderer) {
         m_offsetLocation = renderer->absoluteToLocal(absoluteLocation(), UseTransforms);
 
         if (CheckedPtr boxModel = dynamicDowncast<RenderBoxModelObject>(renderer.get()))
