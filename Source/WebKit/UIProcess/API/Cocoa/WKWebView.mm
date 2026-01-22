@@ -7059,8 +7059,16 @@ static RetainPtr<_WKTextExtractionResult> createEmptyTextExtractionResult()
         if (!strongPage)
             return completionHandler(result.get());
 
-        strongPage->callAfterNextPresentationUpdate([completionHandler = WTF::move(completionHandler), result] {
-            completionHandler(result.get());
+        Ref aggregator = EagerCallbackAggregator<void()>::create([completion = WTF::move(completionHandler), result] {
+            completion(result.get());
+        });
+
+        strongPage->callAfterNextPresentationUpdate([aggregator] {
+            aggregator.get()();
+        });
+
+        RunLoop::mainSingleton().dispatchAfter(100_ms, [aggregator] {
+            aggregator.get()();
         });
     });
 #endif // USE(APPLE_INTERNAL_SDK) || (!PLATFORM(WATCHOS) && !PLATFORM(APPLETV))
