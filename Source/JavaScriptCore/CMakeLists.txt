@@ -1046,7 +1046,7 @@ set(JavaScriptCore_PRIVATE_FRAMEWORK_HEADERS
     runtime/CacheUpdate.h
     runtime/CagedBarrierPtr.h
     runtime/CallData.h
-    runtime/CatchScope.h
+    runtime/TopExceptionScope.h
     runtime/ClassInfo.h
     runtime/ClonedArguments.h
     runtime/CodeSpecializationKind.h

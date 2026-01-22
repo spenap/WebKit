@@ -373,7 +373,7 @@ void JSPromise::resolvePromise(JSGlobalObject* globalObject, JSValue resolution)
     JSValue then;
     JSValue error;
     {
-        auto catchScope = DECLARE_CATCH_SCOPE(vm);
+        auto catchScope = DECLARE_TOP_EXCEPTION_SCOPE(vm);
         then = resolutionObject->get(globalObject, vm.propertyNames->then);
         if (catchScope.exception()) [[unlikely]] {
             error = catchScope.exception()->value();
@@ -597,7 +597,7 @@ void JSPromise::resolveWithInternalMicrotaskForAsyncAwait(JSGlobalObject* global
         JSValue constructor;
         JSValue error;
         {
-            auto catchScope = DECLARE_CATCH_SCOPE(vm);
+            auto catchScope = DECLARE_TOP_EXCEPTION_SCOPE(vm);
             constructor = promise->get(globalObject, vm.propertyNames->constructor);
             if (catchScope.exception()) [[unlikely]] {
                 error = catchScope.exception()->value();
@@ -642,7 +642,7 @@ void JSPromise::resolveWithInternalMicrotask(JSGlobalObject* globalObject, JSVal
     JSValue then;
     JSValue error;
     {
-        auto catchScope = DECLARE_CATCH_SCOPE(vm);
+        auto catchScope = DECLARE_TOP_EXCEPTION_SCOPE(vm);
         then = resolutionObject->get(globalObject, vm.propertyNames->then);
         if (catchScope.exception()) [[unlikely]] {
             error = catchScope.exception()->value();

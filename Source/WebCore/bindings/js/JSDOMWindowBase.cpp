@@ -168,7 +168,7 @@ void JSDOMWindowBase::updateDocument()
     ASSERT(m_wrapped->documentIfLocal());
     JSGlobalObject* lexicalGlobalObject = this;
     VM& vm = lexicalGlobalObject->vm();
-    auto scope = DECLARE_CATCH_SCOPE(vm);
+    auto scope = DECLARE_TOP_EXCEPTION_SCOPE(vm);
 
     bool shouldThrowReadOnlyError = false;
     bool ignoreReadOnlyErrors = true;

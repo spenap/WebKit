@@ -1322,12 +1322,12 @@ private:
     void checkStaticAsserts(); // Not for calling.
 
     friend class Heap;
-    friend class CatchScope; // Friend for exception checking purpose only.
     friend class ExceptionScope; // Friend for exception checking purpose only.
+    friend class TopExceptionScope; // Friend for exception checking purpose only.
+    friend class ThrowScope; // Friend for exception checking purpose only.
     friend class JSDollarVMHelper;
     friend class LLIntOffsetsExtractor;
     friend class SuspendExceptionScope;
-    friend class ThrowScope; // Friend for exception checking purpose only.
     friend class VMTraps;
 };
 

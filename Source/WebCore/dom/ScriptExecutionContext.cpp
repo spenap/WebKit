@@ -80,7 +80,6 @@
 #include "WorkerThread.h"
 #include "WorkletGlobalScope.h"
 #include <JavaScriptCore/CallFrame.h>
-#include <JavaScriptCore/CatchScope.h>
 #include <JavaScriptCore/DeferredWorkTimer.h>
 #include <JavaScriptCore/Exception.h>
 #include <JavaScriptCore/JSPromise.h>
@@ -88,6 +87,7 @@
 #include <JavaScriptCore/SourceTaintedOrigin.h>
 #include <JavaScriptCore/StackVisitor.h>
 #include <JavaScriptCore/StrongInlines.h>
+#include <JavaScriptCore/TopExceptionScope.h>
 #include <JavaScriptCore/VM.h>
 #include <wtf/Lock.h>
 #include <wtf/MainThread.h>
@@ -503,7 +503,7 @@ void ScriptExecutionContext::reportUnhandledPromiseRejection(JSC::JSGlobalObject
         return;
 
     Ref vm = state.vm();
-    auto scope = DECLARE_CATCH_SCOPE(vm);
+    auto scope = DECLARE_TOP_EXCEPTION_SCOPE(vm);
     JSC::JSValue result = promise.result();
     String resultMessage = retrieveErrorMessage(state, vm, result, scope);
     String errorMessage;

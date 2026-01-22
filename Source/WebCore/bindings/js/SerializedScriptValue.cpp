@@ -76,7 +76,6 @@
 #include <JavaScriptCore/ArrayConventions.h>
 #include <JavaScriptCore/BigIntObject.h>
 #include <JavaScriptCore/BooleanObject.h>
-#include <JavaScriptCore/CatchScope.h>
 #include <JavaScriptCore/DateInstance.h>
 #include <JavaScriptCore/Error.h>
 #include <JavaScriptCore/ErrorInstance.h>
@@ -101,6 +100,7 @@
 #include <JavaScriptCore/RegExp.h>
 #include <JavaScriptCore/RegExpObject.h>
 #include <JavaScriptCore/Strong.h>
+#include <JavaScriptCore/TopExceptionScope.h>
 #include <JavaScriptCore/TypedArrayInlines.h>
 #include <JavaScriptCore/TypedArrays.h>
 #include <JavaScriptCore/WasmModule.h>
@@ -5546,7 +5546,7 @@ private:
 DeserializationResult CloneDeserializer::deserialize()
 {
     VM& vm = m_lexicalGlobalObject->vm();
-    auto scope = DECLARE_CATCH_SCOPE(vm);
+    auto scope = DECLARE_TOP_EXCEPTION_SCOPE(vm);
 
     Vector<uint32_t, 16> indexStack;
     Vector<Identifier, 16> propertyNameStack;
@@ -5832,7 +5832,7 @@ void validateSerializedResult(CloneSerializer& serializer, SerializationReturnCo
     SERIALIZE_TRACE("validation start");
 
     VM& vm = lexicalGlobalObject->vm();
-    auto scope = DECLARE_CATCH_SCOPE(vm);
+    auto scope = DECLARE_TOP_EXCEPTION_SCOPE(vm);
 
     JSGlobalObject* globalObject = lexicalGlobalObject;
     Vector<String> blobURLs;
@@ -6541,7 +6541,7 @@ RefPtr<SerializedScriptValue> SerializedScriptValue::create(JSContextRef originC
     JSGlobalObject* lexicalGlobalObject = toJS(originContext);
     VM& vm = lexicalGlobalObject->vm();
     JSLockHolder locker(vm);
-    auto scope = DECLARE_CATCH_SCOPE(vm);
+    auto scope = DECLARE_TOP_EXCEPTION_SCOPE(vm);
 
     JSValue value = toJS(lexicalGlobalObject, apiValue);
     auto serializedValue = SerializedScriptValue::create(*lexicalGlobalObject, value);
@@ -6580,7 +6580,7 @@ JSValue SerializedScriptValue::deserialize(JSGlobalObject& lexicalGlobalObject, 
 JSValue SerializedScriptValue::deserialize(JSGlobalObject& lexicalGlobalObject, JSGlobalObject* globalObject, const Vector<Ref<MessagePort>>& messagePorts, const Vector<String>& blobURLs, const Vector<String>& blobFilePaths, SerializationErrorMode throwExceptions, bool* didFail)
 {
     VM& vm = lexicalGlobalObject.vm();
-    auto scope = DECLARE_CATCH_SCOPE(vm);
+    auto scope = DECLARE_TOP_EXCEPTION_SCOPE(vm);
 
     DeserializationResult result = CloneDeserializer::deserialize(&lexicalGlobalObject, globalObject, messagePorts, WTF::move(m_internals.detachedImageBitmaps)
 #if ENABLE(OFFSCREEN_CANVAS_IN_WORKERS)
@@ -6634,7 +6634,7 @@ JSValueRef SerializedScriptValue::deserialize(JSContextRef destinationContext, J
     JSGlobalObject* lexicalGlobalObject = toJS(destinationContext);
     VM& vm = lexicalGlobalObject->vm();
     JSLockHolder locker(vm);
-    auto scope = DECLARE_CATCH_SCOPE(vm);
+    auto scope = DECLARE_TOP_EXCEPTION_SCOPE(vm);
 
     JSValue value = deserialize(*lexicalGlobalObject, lexicalGlobalObject);
     if (scope.exception()) [[unlikely]] {

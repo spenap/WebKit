@@ -269,7 +269,7 @@ void ReadableStream::cancel(Exception&& exception)
 
     Ref vm = globalObject->vm();
     JSC::JSLockHolder lock(vm);
-    auto scope = DECLARE_CATCH_SCOPE(vm);
+    auto scope = DECLARE_TOP_EXCEPTION_SCOPE(vm);
     auto jsException = createDOMException(globalObject, exception.code(), exception.message());
 
     if (scope.exception()) [[unlikely]] {

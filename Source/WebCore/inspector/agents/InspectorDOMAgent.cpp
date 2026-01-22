@@ -2173,7 +2173,7 @@ Ref<Inspector::Protocol::DOM::EventListener> InspectorDOMAgent::buildObjectForEv
             JSC::JSFunction* handlerFunction = JSC::jsDynamicCast<JSC::JSFunction*>(handlerObject);
 
             if (!handlerFunction) {
-                auto scope = DECLARE_CATCH_SCOPE(vm);
+                auto scope = DECLARE_TOP_EXCEPTION_SCOPE(vm);
 
                 // If the handler is not actually a function, see if it implements the EventListener interface and use that.
                 auto handleEventValue = handlerObject->get(globalObject, JSC::Identifier::fromString(vm, "handleEvent"_s));

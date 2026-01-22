@@ -311,7 +311,7 @@ void ScriptController::initScriptForWindowProxy(JSWindowProxy& windowProxy)
 {
     Ref world = windowProxy.world();
     JSC::VM& vm = world->vm();
-    auto scope = DECLARE_CATCH_SCOPE(vm);
+    auto scope = DECLARE_TOP_EXCEPTION_SCOPE(vm);
 
     jsCast<JSDOMWindow*>(windowProxy.window())->updateDocument();
     EXCEPTION_ASSERT_UNUSED(scope, !scope.exception());
@@ -365,7 +365,7 @@ void ScriptController::setupModuleScriptHandlers(LoadableModuleScript& moduleScr
     auto& rejectHandler = *JSNativeStdFunction::create(lexicalGlobalObject.vm(), proxy.window(), 1, String(), [moduleScript](JSGlobalObject* globalObject, CallFrame* callFrame) {
         VM& vm = globalObject->vm();
         JSValue errorValue = callFrame->argument(0);
-        auto scope = DECLARE_CATCH_SCOPE(vm);
+        auto scope = DECLARE_TOP_EXCEPTION_SCOPE(vm);
         if (errorValue.isObject()) {
             auto* object = JSC::asObject(errorValue);
             if (JSValue failureKindValue = object->getDirect(vm, vm.propertyNames->builtinNames().moduleFetchFailureKindPrivateName())) {
@@ -680,7 +680,7 @@ ValueOrException ScriptController::callInWorld(RunJavaScriptParameters&& paramet
     for (auto argument = parameters.arguments->begin(); argument != parameters.arguments->end();) {
         functionStringBuilder.append(argument->key);
 
-        auto scope = DECLARE_CATCH_SCOPE(globalObject.vm());
+        auto scope = DECLARE_TOP_EXCEPTION_SCOPE(globalObject.vm());
         auto jsArgument = argument->value(globalObject);
         if (scope.exception()) [[unlikely]] {
             errorMessage = "Unable to deserialize argument to execute asynchronous JavaScript function"_s;

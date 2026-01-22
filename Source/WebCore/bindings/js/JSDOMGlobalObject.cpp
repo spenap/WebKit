@@ -133,7 +133,7 @@ JSC_DEFINE_HOST_FUNCTION(makeThisTypeErrorForBuiltins, (JSGlobalObject* globalOb
     ASSERT(callFrame->argumentCount() == 2);
     VM& vm = globalObject->vm();
     DeferTermination deferScope(vm);
-    auto scope = DECLARE_CATCH_SCOPE(vm);
+    auto scope = DECLARE_TOP_EXCEPTION_SCOPE(vm);
 
     auto interfaceName = callFrame->uncheckedArgument(0).getString(globalObject);
     scope.assertNoException();
@@ -148,7 +148,7 @@ JSC_DEFINE_HOST_FUNCTION(makeGetterTypeErrorForBuiltins, (JSGlobalObject* global
     ASSERT(callFrame->argumentCount() == 2);
     VM& vm = globalObject->vm();
     DeferTermination deferScope(vm);
-    auto scope = DECLARE_CATCH_SCOPE(vm);
+    auto scope = DECLARE_TOP_EXCEPTION_SCOPE(vm);
 
     auto interfaceName = callFrame->uncheckedArgument(0).getString(globalObject);
     scope.assertNoException();
@@ -167,7 +167,7 @@ JSC_DEFINE_HOST_FUNCTION(makeDOMExceptionForBuiltins, (JSGlobalObject* globalObj
 
     auto& vm = globalObject->vm();
     DeferTermination deferScope(vm);
-    auto scope = DECLARE_CATCH_SCOPE(vm);
+    auto scope = DECLARE_TOP_EXCEPTION_SCOPE(vm);
 
     auto codeValue = callFrame->uncheckedArgument(0).getString(globalObject);
     scope.assertNoException();
@@ -609,7 +609,7 @@ static JSC::JSPromise* handleResponseOnStreamingAction(JSC::JSGlobalObject* glob
             if (result.hasException()) {
                 auto exception = result.exception();
                 if (exception.code() == ExceptionCode::ExistingExceptionError) {
-                    auto scope = DECLARE_CATCH_SCOPE(vm);
+                    auto scope = DECLARE_TOP_EXCEPTION_SCOPE(vm);
 
                     EXCEPTION_ASSERT(scope.exception());
 

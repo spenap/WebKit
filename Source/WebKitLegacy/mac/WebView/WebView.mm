@@ -126,7 +126,6 @@
 #import <Foundation/NSURLConnection.h>
 #import <JavaScriptCore/APICast.h>
 #import <JavaScriptCore/ArrayPrototype.h>
-#import <JavaScriptCore/CatchScope.h>
 #import <JavaScriptCore/DateInstance.h>
 #import <JavaScriptCore/Exception.h>
 #import <JavaScriptCore/InitializeThreading.h>
@@ -134,6 +133,7 @@
 #import <JavaScriptCore/JSGlobalObjectInlines.h>
 #import <JavaScriptCore/JSLock.h>
 #import <JavaScriptCore/JSValueRef.h>
+#import <JavaScriptCore/TopExceptionScope.h>
 #import <WebCore/AlternativeTextUIController.h>
 #import <WebCore/BackForwardCache.h>
 #import <WebCore/BackForwardController.h>
@@ -7417,7 +7417,7 @@ static NSAppleEventDescriptor* aeDescFromJSValue(JSC::JSGlobalObject* lexicalGlo
 {
     using namespace JSC;
     VM& vm = lexicalGlobalObject->vm();
-    auto scope = DECLARE_CATCH_SCOPE(vm);
+    auto scope = DECLARE_TOP_EXCEPTION_SCOPE(vm);
 
     NSAppleEventDescriptor* aeDesc = 0;
     if (jsValue.isBoolean())
