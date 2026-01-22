@@ -124,6 +124,7 @@ bool CredentialsContainer::performCommonChecks(const Options& options, Credentia
     }
 
     if constexpr (std::is_same_v<Options, CredentialRequestOptions>) {
+#if ENABLE(WEB_AUTHN)
         if (!options.publicKey && !options.digital) {
             promise.reject(Exception { ExceptionCode::NotSupportedError, "Missing request type."_s });
             return false;
@@ -133,6 +134,12 @@ bool CredentialsContainer::performCommonChecks(const Options& options, Credentia
             promise.reject(Exception { ExceptionCode::NotSupportedError, "Only one request type is supported at a time."_s });
             return false;
         }
+#else
+        if (!options.publicKey) {
+            promise.reject(Exception { ExceptionCode::NotSupportedError, "Missing request type."_s });
+            return false;
+        }
+#endif
     }
 
     ASSERT(document->isSecureContext());

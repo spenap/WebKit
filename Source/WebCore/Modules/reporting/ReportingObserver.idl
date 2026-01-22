@@ -38,9 +38,7 @@ typedef sequence<Report> ReportList;
     ReportList takeRecords();
 };
 
-[
-    LegacyNativeDictionaryRequiredInterfaceNullability,
-] dictionary ReportingObserverOptions {
+dictionary ReportingObserverOptions {
     sequence<[AtomString] DOMString>? types;
     boolean buffered = false;
 };

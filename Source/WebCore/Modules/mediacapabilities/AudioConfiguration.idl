@@ -27,7 +27,6 @@
     EnabledBySetting=MediaCapabilitiesEnabled,
     JSGenerateToJSObject,
     JSGenerateToNativeObject,
-    LegacyNativeDictionaryRequiredInterfaceNullability,
 ] dictionary AudioConfiguration {
   required DOMString contentType;
   DOMString channels;

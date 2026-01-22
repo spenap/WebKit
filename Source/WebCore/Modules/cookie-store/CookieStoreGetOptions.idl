@@ -28,7 +28,6 @@
 [
     JSGenerateToJSObject,
     JSGenerateToNativeObject,
-    LegacyNativeDictionaryRequiredInterfaceNullability,
 ] dictionary CookieStoreGetOptions {
     USVString name;
     USVString url;

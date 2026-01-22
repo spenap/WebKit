@@ -30,22 +30,16 @@
 
 enum ReadableStreamReaderMode { "byob" };
 
-[
-    LegacyNativeDictionaryRequiredInterfaceNullability,
-] dictionary ReadableStreamGetReaderOptions {
+dictionary ReadableStreamGetReaderOptions {
     ReadableStreamReaderMode mode;
 };
 
-[
-    LegacyNativeDictionaryRequiredInterfaceNullability,
-] dictionary ReadableWritablePair {
+dictionary ReadableWritablePair {
     required ReadableStream readable;
     required WritableStream writable;
 };
 
-[
-    LegacyNativeDictionaryRequiredInterfaceNullability,
-] dictionary ReadableStreamIteratorOptions {
+dictionary ReadableStreamIteratorOptions {
     boolean preventCancel = false;
 };
 

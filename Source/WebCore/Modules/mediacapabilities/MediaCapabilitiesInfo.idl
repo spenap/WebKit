@@ -26,7 +26,6 @@
 [
     EnabledBySetting=MediaCapabilitiesEnabled,
     JSGenerateToJSObject,
-    LegacyNativeDictionaryRequiredInterfaceNullability,
 ] dictionary MediaCapabilitiesInfo {
   required boolean supported;
   required boolean smooth;
