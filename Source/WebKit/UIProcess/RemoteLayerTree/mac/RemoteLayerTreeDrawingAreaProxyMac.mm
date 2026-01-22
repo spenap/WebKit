@@ -530,7 +530,6 @@ void RemoteLayerTreeDrawingAreaProxyMac::windowScreenDidChange(PlatformDisplayID
     if (displayID == m_displayID)
         return;
 
-    bool hadDisplayRefreshObserver = m_displayRefreshObserverID.has_value();
     bool hadFullSpeedOberver = m_fullSpeedUpdateObserverID.has_value();
     if (hadFullSpeedOberver)
         removeObserver(m_fullSpeedUpdateObserverID);
@@ -547,8 +546,7 @@ void RemoteLayerTreeDrawingAreaProxyMac::windowScreenDidChange(PlatformDisplayID
     if (page)
         page->checkedScrollingCoordinatorProxy()->windowScreenDidChange(displayID, m_displayNominalFramesPerSecond);
 
-    if (hadDisplayRefreshObserver)
-        scheduleDisplayRefreshCallbacks();
+    scheduleDisplayRefreshCallbacks();
     if (hadFullSpeedOberver) {
         m_fullSpeedUpdateObserverID = DisplayLinkObserverID::generate();
         if (auto* displayLink = existingDisplayLink())
