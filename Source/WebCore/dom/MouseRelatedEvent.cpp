@@ -252,7 +252,7 @@ void MouseRelatedEvent::computeRelativePosition()
     while (node && !node->renderer())
         node = node->parentNode();
 
-    RenderLayer* layer;
+    CheckedPtr<RenderLayer> layer;
     if (node && (layer = node->renderer()->enclosingLayer())) {
         for (; layer; layer = layer->parent()) {
             m_layerLocation -= toLayoutSize(layer->location());

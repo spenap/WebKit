@@ -177,8 +177,7 @@ void RadioButtonGroup::remove(HTMLInputElement& button)
 
 void RadioButtonGroup::setNeedsStyleRecalcForAllButtons()
 {
-    for (auto& checkedButton : m_members) {
-        Ref button = checkedButton;
+    for (Ref button : m_members) {
         ASSERT(button->isRadioButton());
         button->invalidateStyleForSubtree();
     }
@@ -186,8 +185,7 @@ void RadioButtonGroup::setNeedsStyleRecalcForAllButtons()
 
 void RadioButtonGroup::updateValidityForAllButtons()
 {
-    for (auto& checkedButton : m_members) {
-        Ref button = checkedButton;
+    for (Ref button : m_members) {
         ASSERT(button->isRadioButton());
         button->updateValidity();
     }

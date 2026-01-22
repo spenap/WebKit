@@ -167,7 +167,7 @@ void FontFaceSet::load(ScriptExecutionContext& context, const String& font, cons
     for (auto& face : matchingFaces)
         face.get().load();
 
-    if (auto document = dynamicDowncast<Document>(scriptExecutionContext())) {
+    if (CheckedPtr document = dynamicDowncast<Document>(scriptExecutionContext())) {
         if (document->quirks().shouldEnableFontLoadingAPIQuirk()) {
             // HBOMax.com expects that loading fonts will succeed, and will totally break when it doesn't. But when lockdown mode is enabled, fonts
             // fail to load, because that's the whole point of lockdown mode.
