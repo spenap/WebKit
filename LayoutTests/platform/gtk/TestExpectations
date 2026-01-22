@@ -127,6 +127,7 @@ webrtc/vp8-then-h264-gpu-process-crash.html [ Skip ]
 
 webkit.org/b/303924 webrtc/peer-connection-audio-mute2.html [ Failure ]
 webkit.org/b/303925 webrtc/audio-replace-track.html [ Failure ]
+webkit.org/b/306021 webrtc/peer-connection-audio-unmute.html [ Pass Failure ]
 
 webkit.org/b/305553 fast/selectors/selection-window-inactive-stroke-color.html [ ImageOnlyFailure ]
 
@@ -780,8 +781,6 @@ webkit.org/b/194382 mathml/presentation/stretchy-depth-height-symmetric.html [ F
 imported/w3c/web-platform-tests/mathml/presentation-markup/tables/table-002.html [ Pass ]
 
 webkit.org/b/195466 imported/w3c/web-platform-tests/html/semantics/embedded-content/media-elements/ready-states/autoplay.html [ Failure ]
-
-webkit.org/b/197713 imported/w3c/web-platform-tests/service-workers/service-worker/fetch-canvas-tainting-image-cache.https.html [ Failure ]
 
 webkit.org/b/170484 swipe/main-frame-pinning-requirement.html [ Timeout ]
 
