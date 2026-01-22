@@ -285,7 +285,7 @@ namespace WebCore::WebGPU {
 static Vector<UniqueRef<WebCore::IOSurface>> createIOSurfaces(unsigned width, unsigned height)
 {
     const auto colorFormat = IOSurface::Format::BGRA;
-    const auto colorSpace = DestinationColorSpace::SRGB();
+    const auto colorSpace = DestinationColorSpace::LinearDisplayP3();
 
     Vector<UniqueRef<WebCore::IOSurface>> ioSurfaces;
 
