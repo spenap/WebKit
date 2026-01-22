@@ -255,6 +255,14 @@ BorderBoxPositions GridLayout::performBlockAxisSelfAlignment(const PlacedGridIte
         case ItemPosition::SelfStart:
         case ItemPosition::Start:
             return { };
+
+        // https://www.w3.org/TR/css-align-3/#align-grid
+        // Sizes as either stretch (typical non-replaced elements) or start (typical replaced
+        // elements); see Grid Item Sizing in [CSS-GRID-1]. The resulting box is then start-aligned.
+        //
+        // Stretching should be handled by GridLayout::layoutGridItems.
+        case ItemPosition::Normal:
+            return { };
         default:
             ASSERT_NOT_IMPLEMENTED_YET();
             return { };
@@ -407,12 +415,14 @@ std::pair<UsedInlineSizes, UsedBlockSizes> GridLayout::layoutGridItems(const Pla
     auto& integrationUtils = formattingContext.integrationUtils();
     for (auto& gridItem : placedGridItems) {
         auto& gridItemBoxGeometry = formattingContext.geometryForGridItem(gridItem.layoutBox());
+        CheckedRef formattingContextRootStyle = formattingContext.root().style();
 
-        auto columnsGap = GridLayoutUtils::computeGapValue(formattingContext.root().style().columnGap());
+        auto columnsGap = GridLayoutUtils::computeGapValue(formattingContextRootStyle->columnGap());
         auto usedInlineSizeForGridItem = GridLayoutUtils::usedInlineSizeForGridItem(gridItem, gridItemBoxGeometry.horizontalBorderAndPadding(), usedTrackSizes.columnSizes, columnsGap);
         usedInlineSizes.append(usedInlineSizeForGridItem);
 
-        auto usedBlockSizeForGridItem = GridLayoutUtils::usedBlockSizeForGridItem(gridItem) + gridItemBoxGeometry.verticalBorderAndPadding();
+        auto rowsGap = GridLayoutUtils::computeGapValue(formattingContextRootStyle->rowGap());
+        auto usedBlockSizeForGridItem = GridLayoutUtils::usedBlockSizeForGridItem(gridItem, gridItemBoxGeometry.verticalBorderAndPadding(), usedTrackSizes.rowSizes, rowsGap);
         usedBlockSizes.append(usedBlockSizeForGridItem);
 
         auto& layoutBox = gridItem.layoutBox();
