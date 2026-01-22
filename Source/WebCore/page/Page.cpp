@@ -2674,9 +2674,6 @@ bool Page::shouldUpdateAccessibilityRegions() const
 #if ENABLE(ACCESSIBILITY_ANIMATION_CONTROL)
 void Page::setImageAnimationEnabled(bool enabled)
 {
-    if (!settings().imageAnimationControlEnabled())
-        return;
-
     // This method overrides any individually set animation play-states (so we need to do work even if `enabled` is
     // already equal to `m_imageAnimationEnabled` because there may be individually playing or paused images).
     m_imageAnimationEnabled = enabled;

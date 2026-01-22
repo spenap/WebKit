@@ -1069,7 +1069,7 @@ void ContextMenuController::populate()
 
 #if ENABLE(ACCESSIBILITY_ANIMATION_CONTROL)
     auto canAddAnimationControls = [&] () -> bool {
-        if (!frame->page() || !frame->page()->settings().imageAnimationControlEnabled())
+        if (!frame->page())
             return false;
 
         return Image::systemAllowsAnimationControls() || frame->page()->settings().allowAnimationControlsOverride();

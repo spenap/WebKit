@@ -3900,7 +3900,6 @@ static CursorContext cursorContext(const HitTestResult& hitTestResult, const Int
 static void animationPositionInformation(WebPage& page, const InteractionInformationRequest& request, const HitTestResult& hitTestResult, InteractionInformationAtPosition& info)
 {
 #if ENABLE(ACCESSIBILITY_ANIMATION_CONTROL)
-    info.canShowAnimationControls = page.corePage() && page.corePage()->settings().imageAnimationControlEnabled();
     if (!request.gatherAnimations)
         return;
 

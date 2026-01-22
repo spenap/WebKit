@@ -8942,8 +8942,6 @@ void WebPage::synchronizeCORSDisablingPatternsWithNetworkProcess()
 #if ENABLE(ACCESSIBILITY_ANIMATION_CONTROL)
 void WebPage::isAnyAnimationAllowedToPlayDidChange(bool anyAnimationCanPlay)
 {
-    if (!m_page->settings().imageAnimationControlEnabled())
-        return;
     send(Messages::WebPageProxy::IsAnyAnimationAllowedToPlayDidChange(anyAnimationCanPlay));
 }
 #endif
