@@ -692,7 +692,7 @@ TEST(ScriptTrackingPrivacyTests, ScriptAccessCategories)
         @"test://top-domain.org/script.js" : @"internals.enableMockSpeechSynthesizer()",
         @"test://pure.com/script.js" : makeTestScript(@"pure"),
         @"test://tainted.net/script.js" : makeTestScript(@"tainted"),
-    });
+    }, nil, _WKWebsiteNetworkConnectionIntegrityPolicyEnabled);
 
     RetainPtr pureTextFieldValue = [webView stringByEvaluatingJavaScript:@"window.pureTextFieldValue"];
     EXPECT_WK_STREQ(pureTextFieldValue.get(), @"textFieldValue");
