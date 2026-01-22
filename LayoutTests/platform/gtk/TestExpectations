@@ -1526,7 +1526,6 @@ webkit.org/b/264680 media/no-fullscreen-when-hidden.html [ Timeout Pass ]
 webkit.org/b/264680 media/video-background-tab-playback.html [ Timeout Pass ]
 webkit.org/b/264680 media/video-muted-holds-sleep-assertion.html [ Timeout Pass ]
 webkit.org/b/264680 media/video-seek-past-end-playing.html [ Timeout Pass ]
-webkit.org/b/264680 media/video-unmuted-after-play-holds-sleep-assertion.html [ Timeout Pass ]
 webkit.org/b/264680 scrollbars/scrollbar-selectors.html [ Pass Timeout ]
 
 fast/dom/no-scroll-when-command-click-fragment-URL.html [ Skip ]
