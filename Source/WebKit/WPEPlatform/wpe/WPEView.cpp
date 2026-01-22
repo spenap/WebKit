@@ -40,7 +40,7 @@
 #include <wtf/glib/WTFGType.h>
 
 #if USE(ATK)
-#include "WPEViewAccessibleAtk.h"
+#include "atk/WPEViewAccessibleAtk.h"
 #endif
 
 /**

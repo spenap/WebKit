@@ -480,13 +480,9 @@ if (ANDROID)
 endif ()
 
 if (USE_ATK)
-    list(APPEND WebKit_SYSTEM_INCLUDE_DIRECTORIES
-        ${ATK_INCLUDE_DIRS}
-    )
-
-    list(APPEND WebKit_LIBRARIES
+    list(APPEND WebKit_PRIVATE_LIBRARIES
+        ATK::ATK
         ATK::Bridge
-        ${ATK_LIBRARIES}
     )
 endif ()
 
