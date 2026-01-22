@@ -15,8 +15,6 @@ html/InputType.cpp
 [ iOS ] platform/ios/VideoPresentationInterfaceIOS.mm
 [ iOS ] platform/ios/wak/WAKView.mm
 [ iOS ] platform/ios/wak/WAKWindow.mm
-rendering/BidiRun.cpp
-rendering/BidiRun.h
 rendering/cocoa/RenderThemeCocoa.mm
 rendering/svg/SVGRenderTreeAsText.cpp
 svg/properties/SVGAnimatedDecoratedProperty.h
