@@ -255,25 +255,26 @@ void ViewTransition::callUpdateCallback()
         return;
 
     Ref document = *this->document();
-    RefPtr<DOMPromise> callbackPromise;
+    Ref callbackPromise = [&] -> Ref<DOMPromise> {
+        if (!m_updateCallback) {
+            auto promiseAndWrapper = createPromiseAndWrapper(document);
+            Ref { promiseAndWrapper.second }->resolve();
+            return WTF::move(promiseAndWrapper.first);
+        }
 
-    if (!m_updateCallback) {
-        auto promiseAndWrapper = createPromiseAndWrapper(document);
-        Ref { promiseAndWrapper.second }->resolve();
-        callbackPromise = WTF::move(promiseAndWrapper.first);
-    } else {
         auto result = RefPtr { m_updateCallback }->invoke();
-        callbackPromise = result.type() == CallbackResultType::Success ? result.releaseReturnValue() : nullptr;
-        if (!callbackPromise || callbackPromise->isSuspended()) {
+        if (result.type() != CallbackResultType::Success || result.returnValue()->isSuspended()) {
             auto promiseAndWrapper = createPromiseAndWrapper(document);
             // FIXME: First case should reject with `ExceptionCode::ExistingExceptionError`.
             if (result.type() == CallbackResultType::ExceptionThrown)
                 Ref { promiseAndWrapper.second }->reject(ExceptionCode::TypeError);
             else
                 Ref { promiseAndWrapper.second }->reject();
-            callbackPromise = WTF::move(promiseAndWrapper.first);
+            return WTF::move(promiseAndWrapper.first);
         }
-    }
+
+        return result.releaseReturnValue();
+    }();
 
     callbackPromise->whenSettledWithResult([weakThis = WeakPtr { *this }](auto*, bool isFulfilled, auto result) mutable {
         RefPtr protectedThis = weakThis.get();

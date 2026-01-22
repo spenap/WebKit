@@ -210,10 +210,8 @@ template<typename T> struct IDLWrapper : IDLType<Ref<T>> {
     // See "Support using Ref for IDLInterfaces in IDL unions (https://bugs.webkit.org/show_bug.cgi?id=274729)".
     using UnionStorageType = RefPtr<T>;
 
-    // FIXME: These are needed to work around callback return types storing non-nullable interfaces using RefPtr rather than Ref<>.
-    // See "Support using Ref for IDLInterfaces in IDL callback return types (https://bugs.webkit.org/show_bug.cgi?id=305412)".
-    using CallbackReturnType = RefPtr<T>;
-    using NullableCallbackReturnType = std::optional<RefPtr<T>>;
+    using CallbackReturnType = Ref<T>;
+    using NullableCallbackReturnType = RefPtr<T>;
 
     using ConversionResultType = std::reference_wrapper<T>;
     using NullableConversionResultType = T*;
