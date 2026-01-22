@@ -27,14 +27,13 @@ internal import WebGPU_Private.DDModelTypes
 internal import simd
 
 #if canImport(RealityCoreRenderer, _version: 9999)
-@_spi(RealityCoreRendererAPI) @_spi(ShaderGraph) import RealityCoreRenderer
 @_spi(RealityCoreRendererAPI) @_spi(ShaderGraph) import RealityKit
+@_spi(RealityCoreTextureProcessingAPI) import RealityCoreTextureProcessing
 @_spi(UsdLoaderAPI) import _USDStageKit_SwiftUI
 @_spi(SwiftAPI) import DirectResource
 import USDStageKit
 import _USDStageKit_SwiftUI
-import ShaderGraph
-import RealityCoreDeformation
+import RealityKit
 
 extension _USDStageKit_SwiftUI._Proto_MeshDataUpdate_v1 {
     @_silgen_name("$s20_USDStageKit_SwiftUI24_Proto_MeshDataUpdate_v1V18instanceTransformsSaySo13simd_float4x4aGvg")
@@ -126,14 +125,12 @@ private func isNonZero(matrix: simd_float4x4) -> Bool {
     isNonZero(_: matrix.columns.0) || isNonZero(_: matrix.columns.1) || isNonZero(_: matrix.columns.2) || isNonZero(_: matrix.columns.3)
 }
 
-private func makeTextureFromImageAsset(
+private func makeMTLTextureFromImageAsset(
     _ imageAsset: DDBridgeImageAsset,
     device: MTLDevice,
-    resourceContext: _Proto_LowLevelResourceContext_v1,
-    commandQueue: MTLCommandQueue,
     generateMips: Bool,
-    swizzle: MTLTextureSwizzleChannels = .init(red: .red, green: .green, blue: .blue, alpha: .alpha)
-) -> _Proto_LowLevelTextureResource_v1? {
+    overridePixelFormat: Bool = false
+) -> MTLTexture? {
     guard let imageAssetData = imageAsset.data else {
         logError("no image data")
         return nil
@@ -143,7 +140,7 @@ private func makeTextureFromImageAsset(
     )
 
     var pixelFormat = imageAsset.pixelFormat
-    if imageAsset.textureType != .typeCube {
+    if overridePixelFormat {
         switch imageAsset.bytesPerPixel {
         case 1:
             pixelFormat = .r8Unorm
@@ -211,8 +208,32 @@ private func makeTextureFromImageAsset(
         }
     }
 
+    return mtlTexture
+}
+
+private func makeTextureFromImageAsset(
+    _ imageAsset: DDBridgeImageAsset,
+    device: MTLDevice,
+    renderContext: _Proto_LowLevelRenderContext_v1,
+    commandQueue: MTLCommandQueue,
+    generateMips: Bool,
+    overridePixelFormat: Bool,
+    swizzle: MTLTextureSwizzleChannels = .init(red: .red, green: .green, blue: .blue, alpha: .alpha)
+) -> _Proto_LowLevelTextureResource_v1? {
+    guard
+        let mtlTexture = makeMTLTextureFromImageAsset(
+            imageAsset,
+            device: device,
+            generateMips: generateMips,
+            overridePixelFormat: overridePixelFormat
+        )
+    else {
+        logError("could not create metal texture")
+        return nil
+    }
+
     let descriptor = _Proto_LowLevelTextureResource_v1.Descriptor.from(mtlTexture, swizzle: swizzle)
-    if let textureResource = try? resourceContext.makeTextureResource(descriptor: descriptor) {
+    if let textureResource = try? renderContext.makeTextureResource(descriptor: descriptor) {
         guard let commandBuffer = commandQueue.makeCommandBuffer() else {
             fatalError("Could not create command buffer")
         }
@@ -237,12 +258,11 @@ private func makeTextureFromImageAsset(
 
 private func makeParameters(
     for function: _Proto_LowLevelMaterialResource_v1.Function?,
-    resourceContext: _Proto_LowLevelResourceContext_v1,
-    renderer: _Proto_LowLevelRenderer_v1,
+    renderContext: _Proto_LowLevelRenderContext_v1,
     textureResources: [String: _Proto_LowLevelTextureResource_v1]
-) throws -> _Proto_LowLevelArgumentBuffer_v1? {
+) throws -> _Proto_LowLevelArgumentTable_v1? {
     guard let function else { return nil }
-    guard let argumentTableDescriptor = function.argumentBufferDescriptor?.table else { return nil }
+    guard let argumentTableDescriptor = function.argumentTableDescriptor else { return nil }
     let parameterMapping = function.parameterMapping
 
     var optTextures: [_Proto_LowLevelTextureResource_v1?] = argumentTableDescriptor.textures.map({ _ in nil })
@@ -256,7 +276,7 @@ private func makeParameters(
 
     let buffers: [_Proto_LowLevelBufferSpan_v1] = try argumentTableDescriptor.buffers.map { bufferRequirements in
         let capacity = (bufferRequirements.size + 16 - 1) / 16 * 16
-        let buffer = try resourceContext.makeBufferResource(descriptor: .init(capacity: capacity))
+        let buffer = try renderContext.makeBufferResource(descriptor: .init(capacity: capacity))
         buffer.replace { span in
             for byteOffset in span.byteOffsets {
                 span.storeBytes(of: 0, toByteOffset: byteOffset, as: UInt8.self)
@@ -265,13 +285,11 @@ private func makeParameters(
         return try _Proto_LowLevelBufferSpan_v1(buffer: buffer, offset: 0, size: bufferRequirements.size)
     }
 
-    let parametersTable = try resourceContext.makeArgumentTable(
+    return try renderContext.makeArgumentTable(
         descriptor: argumentTableDescriptor,
         buffers: buffers,
         textures: textures
     )
-    let parameters = try renderer.makeArgumentBuffer(for: parametersTable, function: function)
-    return parameters
 }
 
 extension Logger {
@@ -312,18 +330,27 @@ extension DDUSDConfiguration {
         get { appRenderer.commandQueue }
     }
     @nonobjc
-    fileprivate final var renderer: _Proto_LowLevelRenderer_v1 {
-        get { appRenderer.renderer }
-    }
-    @nonobjc
-    fileprivate final var resourceContext: _Proto_LowLevelResourceContext_v1 {
-        get { appRenderer.resourceContext }
-    }
-    @nonobjc
-    fileprivate final var materialCompiler: _Proto_LowLevelMaterialCompiler_v1 {
+    fileprivate final var renderer: _Proto_LowLevelRenderContext_v1 {
         get {
+            // FIXME: https://bugs.webkit.org/show_bug.cgi?id=305857
             // swift-format-ignore: NeverForceUnwrap
-            appRenderer.materialCompiler!
+            appRenderer.renderContext!
+        }
+    }
+    @nonobjc
+    fileprivate final var renderWorkload: _Proto_LowLevelCameraRenderWorkload_v1 {
+        get {
+            // FIXME: https://bugs.webkit.org/show_bug.cgi?id=305857
+            // swift-format-ignore: NeverForceUnwrap
+            appRenderer.renderWorkload!
+        }
+    }
+    @nonobjc
+    fileprivate final var renderContext: _Proto_LowLevelRenderContext_v1 {
+        get {
+            // FIXME: https://bugs.webkit.org/show_bug.cgi?id=305857
+            // swift-format-ignore: NeverForceUnwrap
+            appRenderer.renderContext!
         }
     }
     @nonobjc
@@ -331,6 +358,7 @@ extension DDUSDConfiguration {
     @nonobjc
     fileprivate final var renderTarget: _Proto_LowLevelRenderTarget_v1.Descriptor {
         get {
+            // FIXME: https://bugs.webkit.org/show_bug.cgi?id=305857
             // swift-format-ignore: NeverForceUnwrap
             renderTargetWrapper.descriptor!
         }
@@ -343,7 +371,7 @@ extension DDUSDConfiguration {
         self.renderTargetWrapper.descriptor = renderTarget
         self.device = device
         do {
-            self.appRenderer = try Renderer(device: device, renderTargetDescriptor: .texture(color: .bgra8Unorm, sampleCount: 4))
+            self.appRenderer = try Renderer(device: device)
         } catch {
             fatalError("Exception creating renderer \(error)")
         }
@@ -352,7 +380,7 @@ extension DDUSDConfiguration {
     @objc(createMaterialCompiler:)
     func createMaterialCompiler() async {
         do {
-            try await self.appRenderer.createMaterialCompiler()
+            try await self.appRenderer.createMaterialCompiler(renderTargetDescriptor: .texture(color: .bgra8Unorm, sampleCount: 4))
         } catch {
             fatalError("Exception creating renderer \(error)")
         }
@@ -372,17 +400,21 @@ extension DDBridgeReceiver {
             deformers.append(skinningDeformer)
         }
 
+        // FIXME: https://bugs.webkit.org/show_bug.cgi?id=305857
         // swift-format-ignore: NeverForceUnwrap
         let meshResource = meshResources[identifier]!
 
         var inputMeshDescription: _Proto_LowLevelDeformationDescription_v1.MeshDescription?
         if self.meshResourceToDeformationContext[identifier] == nil {
+            // FIXME: https://bugs.webkit.org/show_bug.cgi?id=305857
             // swift-format-ignore: NeverForceUnwrap
             let vertexPositionsBuffer = meshResource.readVertices(at: 1, using: commandBuffer)!
+            // FIXME: https://bugs.webkit.org/show_bug.cgi?id=305857
             // swift-format-ignore: NeverForceUnwrap
             let inputPositionsBuffer = device.makeBuffer(length: vertexPositionsBuffer.length, options: .storageModeShared)!
 
             // Copy data from vertexPositionsBuffer to inputPositionsBuffer
+            // FIXME: https://bugs.webkit.org/show_bug.cgi?id=305857
             // swift-format-ignore: NeverForceUnwrap
             let blitEncoder = commandBuffer.makeBlitCommandEncoder()!
             blitEncoder.copy(
@@ -394,6 +426,7 @@ extension DDBridgeReceiver {
             )
             blitEncoder.endEncoding()
 
+            // FIXME: https://bugs.webkit.org/show_bug.cgi?id=305857
             // swift-format-ignore: NeverForceUnwrap
             let inputPositions = _Proto_LowLevelDeformationDescription_v1.Buffer.make(
                 inputPositionsBuffer,
@@ -405,6 +438,7 @@ extension DDBridgeReceiver {
                 _Proto_LowLevelDeformationDescription_v1.SemanticBuffer(.position, inputPositions)
             ])
         } else {
+            // FIXME: https://bugs.webkit.org/show_bug.cgi?id=305857
             // swift-format-ignore: NeverForceUnwrap
             inputMeshDescription = self.meshResourceToDeformationContext[identifier]!.description.input
         }
@@ -414,8 +448,10 @@ extension DDBridgeReceiver {
             return
         }
 
+        // FIXME: https://bugs.webkit.org/show_bug.cgi?id=305857
         // swift-format-ignore: NeverForceUnwrap
         let outputPositionsBuffer = meshResource.replaceVertices(at: 1, using: commandBuffer)!
+        // FIXME: https://bugs.webkit.org/show_bug.cgi?id=305857
         // swift-format-ignore: NeverForceUnwrap
         let outputPositions = _Proto_LowLevelDeformationDescription_v1.Buffer.make(
             outputPositionsBuffer,
@@ -441,6 +477,7 @@ extension DDBridgeReceiver {
             return
         }
 
+        // FIXME: https://bugs.webkit.org/show_bug.cgi?id=305857
         // swift-format-ignore: NeverForceUnwrap
         guard let deformation = try? self.deformationSystem.make(description: deformationDescription).get() else {
             logError("deformationSystem.make failed unexpectedly")
@@ -455,72 +492,35 @@ extension DDBridgeReceiver {
     }
 }
 
-func modelTransformToCameraTransform(_ modelTransform: simd_float4x4, _ distance: Float) -> CameraTransform {
-    let inverted = modelTransform.inverse
-
-    // Extract the upper-left 3x3 (rotation + scale)
-    let col0 = simd_float3(inverted.columns.0.x, inverted.columns.0.y, inverted.columns.0.z)
-    let col1 = simd_float3(inverted.columns.1.x, inverted.columns.1.y, inverted.columns.1.z)
-    let col2 = simd_float3(inverted.columns.2.x, inverted.columns.2.y, inverted.columns.2.z)
-
-    // Extract uniform scale
-    let scale = length(col0)
-
-    // Normalize rotation matrix (remove scale)
-    let rotationMatrix = simd_float3x3(
-        col0 / scale,
-        col1 / scale,
-        col2 / scale
-    )
-
-    // Convert to quaternion
-    let rotation = simd_quatf(rotationMatrix)
-
-    // Extract model center position
-    let modelCenter = simd_float3(
-        modelTransform.columns.3.x,
-        modelTransform.columns.3.y,
-        modelTransform.columns.3.z
-    )
-
-    // Calculate camera position: move back from model center along camera's forward direction
-    // Camera forward is typically -Z in camera space, which is the negative of the third column
-    let cameraForward = -normalize(col2 / scale)
-    let translation = modelCenter + cameraForward * distance * scale
-
-    return CameraTransform(
-        rotation: rotation,
-        translation: translation,
-        scale: simd_make_float3(1, 1, 1)
-    )
-}
-
 @objc
 @implementation
 extension DDBridgeReceiver {
     @nonobjc
     fileprivate let device: MTLDevice
     @nonobjc
+    fileprivate let textureProcessingContext: _Proto_LowLevelTextureProcessingContext_v1
+    @nonobjc
     fileprivate let commandQueue: MTLCommandQueue
 
     @nonobjc
-    fileprivate let resourceContext: _Proto_LowLevelResourceContext_v1
+    fileprivate let renderContext: _Proto_LowLevelRenderContext_v1
     @nonobjc
-    fileprivate let renderer: _Proto_LowLevelRenderer_v1
+    fileprivate let renderWorkload: _Proto_LowLevelCameraRenderWorkload_v1
     @nonobjc
     fileprivate let appRenderer: Renderer
     @nonobjc
-    fileprivate let materialCompiler: _Proto_LowLevelMaterialCompiler_v1
-    @nonobjc
     fileprivate let lightingFunction: _Proto_LowLevelMaterialResource_v1.LightingFunction
     @nonobjc
-    fileprivate var lightingArgumentBuffer: _Proto_LowLevelArgumentBuffer_v1?
+    fileprivate let lightingArguments: _Proto_LowLevelArgumentTable_v1
+    @nonobjc
+    fileprivate var lightingArgumentBuffer: _Proto_LowLevelArgumentTable_v1?
 
     @nonobjc
     private let renderTargetWrapper = RenderTargetWrapper()
     @nonobjc
     private final var renderTarget: _Proto_LowLevelRenderTarget_v1.Descriptor {
         get {
+            // FIXME: https://bugs.webkit.org/show_bug.cgi?id=305857
             // swift-format-ignore: NeverForceUnwrap
             renderTargetWrapper.descriptor!
         }
@@ -555,8 +555,8 @@ extension DDBridgeReceiver {
 
     struct Material {
         let resource: _Proto_LowLevelMaterialResource_v1
-        let geometryArguments: _Proto_LowLevelArgumentBuffer_v1?
-        let surfaceArguments: _Proto_LowLevelArgumentBuffer_v1?
+        let geometryArguments: _Proto_LowLevelArgumentTable_v1?
+        let surfaceArguments: _Proto_LowLevelArgumentTable_v1?
     }
     @nonobjc
     fileprivate var materialsAndParams: [_Proto_ResourceId: Material] = [:]
@@ -579,29 +579,27 @@ extension DDBridgeReceiver {
         diffuseAsset: DDBridgeImageAsset,
         specularAsset: DDBridgeImageAsset
     ) throws {
-        self.materialCompiler = configuration.materialCompiler
-        self.resourceContext = configuration.resourceContext
-        self.renderer = configuration.renderer
+        self.renderContext = configuration.renderContext
+        self.renderWorkload = configuration.renderWorkload
         self.appRenderer = configuration.appRenderer
         self.device = configuration.device
+        self.textureProcessingContext = _Proto_LowLevelTextureProcessingContext_v1(device: configuration.device)
         self.commandQueue = configuration.commandQueue
         self.deformationSystem = try _Proto_LowLevelDeformationSystem_v1.make(configuration.device, configuration.commandQueue).get()
+        self.renderTargetWrapper.descriptor = configuration.renderTargetWrapper.descriptor
         modelTransform = matrix_identity_float4x4
         modelDistance = 1.0
         self.meshInstancePlainArray = []
-        self.meshInstances = _Proto_LowLevelMeshInstanceArray_v1(
-            renderTarget: configuration.renderTarget,
-            resourceContext: configuration.resourceContext,
-            count: 16
-        )
-        let lightingFunction = materialCompiler.makePhysicallyBasedLightingFunction()
+        let meshInstances = try configuration.renderContext.makeMeshInstanceArray(renderTargets: [configuration.renderTarget], count: 16)
+        let lightingFunction = configuration.renderContext.makePhysicallyBasedLightingFunction()
         guard
             let diffuseTexture = makeTextureFromImageAsset(
                 diffuseAsset,
                 device: device,
-                resourceContext: resourceContext,
+                renderContext: renderContext,
                 commandQueue: configuration.commandQueue,
                 generateMips: true,
+                overridePixelFormat: false,
                 swizzle: .init(red: .red, green: .red, blue: .red, alpha: .one)
             )
         else {
@@ -611,40 +609,34 @@ extension DDBridgeReceiver {
             let specularTexture = makeTextureFromImageAsset(
                 specularAsset,
                 device: device,
-                resourceContext: resourceContext,
+                renderContext: renderContext,
                 commandQueue: configuration.commandQueue,
                 generateMips: true,
+                overridePixelFormat: false,
                 swizzle: .init(red: .red, green: .red, blue: .red, alpha: .one)
             )
         else {
             fatalError("Could not create specularTexture")
         }
+        self.meshInstances = meshInstances
         self.lightingFunction = lightingFunction
-        self.renderTargetWrapper.descriptor = configuration.renderTarget
-        do {
-            // swift-format-ignore: NeverForceUnwrap
-            let lightingFunctionDescriptor = lightingFunction.argumentBufferDescriptor!
-            // swift-format-ignore: NeverForceUnwrap
-            let lightingFunctionTable = lightingFunctionDescriptor.table!
-            let lightingArgumentTable = try self.resourceContext.makeArgumentTable(
-                descriptor: lightingFunctionTable,
-                buffers: [],
-                textures: [
-                    diffuseTexture, specularTexture,
-                ]
-            )
-            let lightingArgumentBuffer = try self.renderer.makeArgumentBuffer(for: lightingArgumentTable, function: lightingFunction)
-
-            self.lightingArgumentBuffer = lightingArgumentBuffer
-        } catch {
-            fatalError("EXCEPTION \(error)")
+        guard let lightingFunctionArgumentTableDescriptor = lightingFunction.argumentTableDescriptor else {
+            fatalError("Could not create lighting function")
         }
+        self.lightingArguments = try configuration.renderContext.makeArgumentTable(
+            descriptor: lightingFunctionArgumentTableDescriptor,
+            buffers: [],
+            textures: [
+                diffuseTexture, specularTexture,
+            ]
+        )
     }
 
     @objc(renderWithTexture:)
     func render(with texture: MTLTexture) {
         for (identifier, meshes) in meshToMeshInstances {
             let originalTransforms = meshTransforms[identifier]
+            // FIXME: https://bugs.webkit.org/show_bug.cgi?id=305857
             // swift-format-ignore: NeverForceUnwrap
             let angle: Float = 0.707
             let rotationY90 = simd_float4x4(
@@ -655,6 +647,7 @@ extension DDBridgeReceiver {
             )
 
             for (index, meshInstance) in meshes.enumerated() {
+                // FIXME: https://bugs.webkit.org/show_bug.cgi?id=305857
                 // swift-format-ignore: NeverForceUnwrap
                 let computedTransform = modelTransform * rotationY90 * originalTransforms![index]
                 meshInstance.setTransform(.single(computedTransform))
@@ -663,6 +656,7 @@ extension DDBridgeReceiver {
 
         // animate
         if !meshResourceToDeformationContext.isEmpty {
+            // FIXME: https://bugs.webkit.org/show_bug.cgi?id=305857
             // swift-format-ignore: NeverForceUnwrap
             let commandBuffer = self.commandQueue.makeCommandBuffer()!
 
@@ -670,6 +664,7 @@ extension DDBridgeReceiver {
                 deformationContext.deformation.execute(deformation: deformationContext.description, commandBuffer: commandBuffer) {
                     (commandBuffer: any MTLCommandBuffer) in
                 }
+                // FIXME: https://bugs.webkit.org/show_bug.cgi?id=305857
                 // swift-format-ignore: NeverForceUnwrap
                 meshResourceToDeformationContext[identifier]!.dirty = false
             }
@@ -720,9 +715,10 @@ extension DDBridgeReceiver {
         if let textureResource = makeTextureFromImageAsset(
             asset,
             device: device,
-            resourceContext: resourceContext,
+            renderContext: renderContext,
             commandQueue: commandQueue,
-            generateMips: true
+            generateMips: true,
+            overridePixelFormat: true
         ) {
             textureResources[textureHash] = textureResource
         }
@@ -735,32 +731,27 @@ extension DDBridgeReceiver {
             let identifier = data.identifier
             logInfo("updateMaterial \(identifier)")
             let materialSourceArchive = data.materialGraph
-            let shaderGraphFunctions = try await materialCompiler.makeShaderGraphFunctions(materialSourceArchive)
-
+            let shaderGraphFunctions = try await renderContext.makeShaderGraphFunctions(materialSourceArchive)
             let geometryArguments = try makeParameters(
                 for: shaderGraphFunctions.geometryModifier,
-                resourceContext: resourceContext,
-                renderer: renderer,
+                renderContext: renderContext,
                 textureResources: textureResources
             )
             let surfaceArguments = try makeParameters(
                 for: shaderGraphFunctions.surfaceShader,
-                resourceContext: resourceContext,
-                renderer: renderer,
+                renderContext: renderContext,
                 textureResources: textureResources
             )
 
-            let geometryModifier = shaderGraphFunctions.geometryModifier ?? materialCompiler.makeDefaultGeometryModifier()
+            let geometryModifier = shaderGraphFunctions.geometryModifier ?? renderContext.makeDefaultGeometryModifier()
             let surfaceShader = shaderGraphFunctions.surfaceShader
-            let materialResource = try await materialCompiler.makeMaterialResource(
+            let materialResource = try await renderContext.makeMaterialResource(
                 descriptor: .init(
-                    geometryModifier: geometryModifier,
-                    surfaceShader: surfaceShader,
-                    lightingFunction: lightingFunction
+                    geometry: geometryModifier,
+                    surface: surfaceShader,
+                    lighting: lightingFunction
                 )
             )
-
-            logInfo("inserting \(identifier) into materialsAndParams")
             materialsAndParams[identifier] = .init(
                 resource: materialResource,
                 geometryArguments: geometryArguments,
@@ -783,7 +774,7 @@ extension DDBridgeReceiver {
             if data.updateType == .initial || data.descriptor != nil {
                 let meshDescriptor = data.descriptor!
                 let descriptor = _Proto_LowLevelMeshResource_v1.Descriptor.fromLlmDescriptor(meshDescriptor)
-                meshResource = try resourceContext.makeMeshResource(descriptor: descriptor)
+                meshResource = try renderContext.makeMeshResource(descriptor: descriptor)
                 meshResource.replaceData(indexData: data.indexData, vertexData: data.vertexData)
                 meshResources[identifier] = meshResource
             } else {
@@ -798,6 +789,7 @@ extension DDBridgeReceiver {
             }
 
             if let deformationData = data.deformationData {
+                // FIXME: https://bugs.webkit.org/show_bug.cgi?id=305857
                 // swift-format-ignore: NeverForceUnwrap
                 let commandBuffer = self.commandQueue.makeCommandBuffer()!
                 // TODO: delta update
@@ -815,14 +807,18 @@ extension DDBridgeReceiver {
                     for (partIndex, _) in data.parts.enumerated() {
                         let materialIdentifier = data.materialPrims[partIndex]
                         guard let material = materialsAndParams[materialIdentifier] else {
-                            fatalError("Material \(materialIdentifier) could not be found")
+                            fatalError("Failed to get material instance \(materialIdentifier)")
                         }
 
-                        let pipeline = try await materialCompiler.makeRenderPipelineState(
-                            descriptor: .descriptor(mesh: meshResource.descriptor, material: material.resource, renderTarget: renderTarget)
+                        let pipeline = try await renderContext.makeRenderPipelineState(
+                            descriptor: .descriptor(
+                                mesh: meshResource.descriptor,
+                                material: material.resource,
+                                renderTargets: [renderTarget]
+                            )
                         )
 
-                        let meshPart = try resourceContext.makeMeshPart(
+                        let meshPart = try renderContext.makeMeshPart(
                             resource: meshResource,
                             indexOffset: data.parts[partIndex].indexOffset,
                             indexCount: data.parts[partIndex].indexCount,
@@ -833,27 +829,28 @@ extension DDBridgeReceiver {
                         )
 
                         for instanceTransform in data.instanceTransforms {
-                            let meshInstance = try _Proto_LowLevelMeshInstance_v1(
+                            let meshInstance = try renderContext.makeMeshInstance(
                                 meshPart: meshPart,
                                 pipeline: pipeline,
                                 geometryArguments: material.geometryArguments,
                                 surfaceArguments: material.surfaceArguments,
-                                lightingArguments: lightingArgumentBuffer,
+                                lightingArguments: lightingArguments,
                                 transform: .single(instanceTransform),
                                 category: .opaque
                             )
 
+                            // FIXME: https://bugs.webkit.org/show_bug.cgi?id=305857
                             // swift-format-ignore: NeverForceUnwrap
                             meshToMeshInstances[identifier]!.append(meshInstance)
+                            // FIXME: https://bugs.webkit.org/show_bug.cgi?id=305857
                             // swift-format-ignore: NeverForceUnwrap
                             meshTransforms[identifier]!.append(instanceTransform)
 
                             let meshInstanceIndex = meshInstancePlainArray.count
                             meshInstancePlainArray.append(meshInstance)
                             if meshInstances.count < meshInstancePlainArray.count {
-                                let meshInstances = _Proto_LowLevelMeshInstanceArray_v1(
-                                    renderTarget: renderTarget,
-                                    resourceContext: resourceContext,
+                                let meshInstances = try renderContext.makeMeshInstanceArray(
+                                    renderTargets: [renderTarget],
                                     count: meshInstances.count * 2
                                 )
                                 for index in meshInstancePlainArray.indices {
@@ -868,13 +865,15 @@ extension DDBridgeReceiver {
                 } else {
                     // Update transforms otherwise
 
+                    // FIXME: https://bugs.webkit.org/show_bug.cgi?id=305857
                     // swift-format-ignore: NeverForceUnwrap
-                    let partCount = meshToMeshInstances[identifier]!.count / data.instanceTransformsCount
+                    let partCount = meshToMeshInstances[identifier]!.count / data.instanceTransforms.count
                     for (instanceIndex, instanceTransform) in data.instanceTransforms.enumerated() {
                         for partIndex in 0..<partCount {
+                            // FIXME: https://bugs.webkit.org/show_bug.cgi?id=305857
                             // swift-format-ignore: NeverForceUnwrap
                             let meshInstance = meshToMeshInstances[identifier]![instanceIndex * data.parts.count + partIndex]
-                            meshInstance.setTransform(.single(instanceTransform))
+                            // FIXME: https://bugs.webkit.org/show_bug.cgi?id=305857
                             // swift-format-ignore: NeverForceUnwrap
                             meshTransforms[identifier]![instanceIndex * data.parts.count + partIndex] = instanceTransform
                         }
@@ -905,6 +904,65 @@ extension DDBridgeReceiver {
     func setPlaying(_ play: Bool) {
         // resourceContext.setEnableModelRotation(play)
     }
+
+    @objc
+    func setEnvironmentMap(_ imageAsset: DDBridgeImageAsset) {
+        do {
+            guard let mtlTextureEquirectangular = makeMTLTextureFromImageAsset(imageAsset, device: device, generateMips: true) else {
+                fatalError("Could not make metal texture from environment asset data")
+            }
+
+            let cubeMTLTextureDescriptor = try self.textureProcessingContext.createCubeDescriptor(
+                fromEquirectangular: mtlTextureEquirectangular
+            )
+            // FIXME: https://bugs.webkit.org/show_bug.cgi?id=305857
+            // swift-format-ignore: NeverForceUnwrap
+            let cubeMTLTexture = self.device.makeTexture(descriptor: cubeMTLTextureDescriptor)!
+
+            let diffuseMTLTextureDescriptor = try self.textureProcessingContext.createImageBasedLightDiffuseDescriptor(
+                fromCube: cubeMTLTexture
+            )
+            let diffuseTextureDescriptor = _Proto_LowLevelTextureResource_v1.Descriptor.from(diffuseMTLTextureDescriptor)
+            let diffuseTexture = try self.renderContext.makeTextureResource(descriptor: diffuseTextureDescriptor)
+
+            let specularMTLTextureDescriptor = try self.textureProcessingContext.createImageBasedLightSpecularDescriptor(
+                fromCube: cubeMTLTexture
+            )
+            let specularTextureDescriptor = _Proto_LowLevelTextureResource_v1.Descriptor.from(specularMTLTextureDescriptor)
+            let specularTexture = try self.renderContext.makeTextureResource(descriptor: specularTextureDescriptor)
+
+            // FIXME: https://bugs.webkit.org/show_bug.cgi?id=305857
+            // swift-format-ignore: NeverForceUnwrap
+            let commandBuffer = self.commandQueue.makeCommandBuffer()!
+
+            try self.textureProcessingContext.generateCube(
+                using: commandBuffer,
+                fromEquirectangular: mtlTextureEquirectangular,
+                into: cubeMTLTexture
+            )
+
+            let diffuseMTLTexture = diffuseTexture.replace(using: commandBuffer)
+            let specularMTLTexture = specularTexture.replace(using: commandBuffer)
+
+            try self.textureProcessingContext.generateImageBasedLightDiffuse(
+                using: commandBuffer,
+                fromSkyboxCube: cubeMTLTexture,
+                into: diffuseMTLTexture
+            )
+            try self.textureProcessingContext.generateImageBasedLightSpecular(
+                using: commandBuffer,
+                fromSkyboxCube: cubeMTLTexture,
+                into: specularMTLTexture
+            )
+
+            try self.lightingArguments.setTexture(at: 0, diffuseTexture)
+            try self.lightingArguments.setTexture(at: 1, specularTexture)
+
+            commandBuffer.commit()
+        } catch {
+            fatalError(error.localizedDescription)
+        }
+    }
 }
 
 private func webPartsFromParts(_ parts: [LowLevelMesh.Part]) -> [DDBridgeMeshPart] {
@@ -929,6 +987,7 @@ private func convert(_ m: _Proto_DataUpdateType_v1) -> DDBridgeDataUpdateType {
 
 private func webUpdateTextureRequestFromUpdateTextureRequest(_ request: _Proto_TextureDataUpdate_v1) -> DDBridgeUpdateTexture {
     // FIXME: remove placeholder code
+    // FIXME: https://bugs.webkit.org/show_bug.cgi?id=305857
     // swift-format-ignore: NeverForceUnwrap
     let descriptor = request.descriptor!
     let data = request.data
@@ -1129,6 +1188,7 @@ extension DDBridgeModelLoader {
 
 extension DDBridgeSkinningData {
     fileprivate func makeDeformerDescription(device: MTLDevice) -> _Proto_LowLevelDeformerDescription_v1 {
+        // FIXME: https://bugs.webkit.org/show_bug.cgi?id=305857
         // swift-format-ignore: NeverForceUnwrap
         let jointTransformsBuffer = device.makeBuffer(
             bytes: self.jointTransforms,
@@ -1136,6 +1196,7 @@ extension DDBridgeSkinningData {
             options: .storageModeShared
         )!
 
+        // FIXME: https://bugs.webkit.org/show_bug.cgi?id=305857
         // swift-format-ignore: NeverForceUnwrap
         let jointTransformsDescription = _Proto_LowLevelDeformationDescription_v1.Buffer.make(
             jointTransformsBuffer,
@@ -1144,6 +1205,7 @@ extension DDBridgeSkinningData {
             elementType: .float4x4
         )!
 
+        // FIXME: https://bugs.webkit.org/show_bug.cgi?id=305857
         // swift-format-ignore: NeverForceUnwrap
         let inverseBindPosesBuffer = device.makeBuffer(
             bytes: self.inverseBindPoses,
@@ -1151,6 +1213,7 @@ extension DDBridgeSkinningData {
             options: .storageModeShared
         )!
 
+        // FIXME: https://bugs.webkit.org/show_bug.cgi?id=305857
         // swift-format-ignore: NeverForceUnwrap
         let inverseBindPosesDescription = _Proto_LowLevelDeformationDescription_v1.Buffer.make(
             inverseBindPosesBuffer,
@@ -1159,12 +1222,14 @@ extension DDBridgeSkinningData {
             elementType: .float4x4
         )!
 
+        // FIXME: https://bugs.webkit.org/show_bug.cgi?id=305857
         // swift-format-ignore: NeverForceUnwrap
         let jointIndicesBuffer = device.makeBuffer(
             bytes: self.influenceJointIndices,
             length: self.influenceJointIndices.count * MemoryLayout<UInt32>.size,
             options: .storageModeShared
         )!
+        // FIXME: https://bugs.webkit.org/show_bug.cgi?id=305857
         // swift-format-ignore: NeverForceUnwrap
         let jointIndicesDescription = _Proto_LowLevelDeformationDescription_v1.Buffer.make(
             jointIndicesBuffer,
@@ -1173,12 +1238,14 @@ extension DDBridgeSkinningData {
             elementType: .uint
         )!
 
+        // FIXME: https://bugs.webkit.org/show_bug.cgi?id=305857
         // swift-format-ignore: NeverForceUnwrap
         let influenceWeightsBuffer = device.makeBuffer(
             bytes: self.influenceWeights,
             length: self.influenceWeights.count * MemoryLayout<Float>.size,
             options: .storageModeShared
         )!
+        // FIXME: https://bugs.webkit.org/show_bug.cgi?id=305857
         // swift-format-ignore: NeverForceUnwrap
         let influenceWeightsDescription = _Proto_LowLevelDeformationDescription_v1.Buffer.make(
             influenceWeightsBuffer,
@@ -1248,6 +1315,10 @@ extension DDBridgeReceiver {
 
     @objc
     func setPlaying(_ play: Bool) {
+    }
+
+    @objc
+    func setEnvironmentMap(_ imageAsset: DDBridgeImageAsset) {
     }
 }
 

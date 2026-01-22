@@ -220,6 +220,14 @@ void RemoteDDMeshProxy::play(bool playing)
 #endif
 }
 
+void RemoteDDMeshProxy::setEnvironmentMap(const WebCore::DDModel::DDImageAsset& imageAsset)
+{
+#if ENABLE(GPU_PROCESS_MODEL)
+    auto sendResult = send(Messages::RemoteDDMesh::SetEnvironmentMap(imageAsset));
+    UNUSED_PARAM(sendResult);
+#endif
+}
+
 std::optional<WebCore::DDModel::DDFloat4x4> RemoteDDMeshProxy::entityTransform() const
 {
     return m_transform;
@@ -300,7 +308,7 @@ void RemoteDDMeshProxy::setStageMode(WebCore::StageModeOperation stageMode)
     if (auto existingTransform = entityTransform())
         result = *existingTransform;
 
-    float scale = m_cameraDistance / (simd_length(extents) * .5f);
+    float scale = (2.f * m_cameraDistance) / std::max(simd_length(extents.xy), simd_length(extents.yz));
     result.column0 = scale * simd_normalize(result.column0);
     result.column1 = scale * simd_normalize(result.column1);
     result.column2 = scale * simd_normalize(result.column2);
