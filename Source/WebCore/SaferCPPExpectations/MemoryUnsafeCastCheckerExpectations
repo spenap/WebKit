@@ -9,7 +9,6 @@ dom/NodeRareData.h
 domjit/DOMJITHelpers.h
 domjit/JSDocumentDOMJIT.cpp
 domjit/JSNodeDOMJIT.cpp
-html/InputType.cpp
 [ iOS ] platform/cocoa/WebAVPlayerLayerView.mm
 [ iOS ] platform/ios/VideoPresentationInterfaceAVKitLegacy.mm
 [ iOS ] platform/ios/VideoPresentationInterfaceIOS.mm
