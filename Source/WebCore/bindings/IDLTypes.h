@@ -273,7 +273,7 @@ template<typename T> struct IDLCallbackFunction : IDLWrapper<T> {
 
 template<typename T> struct IDLDictionary : IDLType<T> {
     using ParameterType = const T&;
-    using NullableParameterType = const T&;
+    using NullableParameterType = const std::optional<T>&;
 };
 
 template<typename T> struct IDLEnumeration : IDLType<T> { };

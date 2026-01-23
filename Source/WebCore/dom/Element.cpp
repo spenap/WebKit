@@ -1198,7 +1198,7 @@ static std::optional<std::pair<SingleThreadWeakPtr<RenderElement>, LayoutRect>> 
     return std::pair<SingleThreadWeakPtr<RenderElement>, LayoutRect> { renderListBox.get(), itemLocalRect };
 }
 
-void Element::scrollIntoView(std::optional<Variant<bool, ScrollIntoViewOptions>>&& arg)
+void Element::scrollIntoView(Variant<bool, ScrollIntoViewOptions>&& arg)
 {
     Ref document = this->document();
     document->updateContentRelevancyForScrollIfNeeded(*this);
@@ -1223,14 +1223,17 @@ void Element::scrollIntoView(std::optional<Variant<bool, ScrollIntoViewOptions>>
         absoluteBounds = renderer->absoluteAnchorRectWithScrollMargin(&insideFixed).marginRect;
     }
 
-    ScrollIntoViewOptions options;
-    if (arg) {
-        auto value = arg.value();
-        if (std::holds_alternative<ScrollIntoViewOptions>(value))
-            options = std::get<ScrollIntoViewOptions>(value);
-        else if (!std::get<bool>(value))
-            options.blockPosition = ScrollLogicalPosition::End;
-    }
+    auto options = WTF::switchOn(arg,
+        [&](bool boolArg) -> ScrollIntoViewOptions {
+            ScrollIntoViewOptions options;
+            if (!boolArg)
+                options.blockPosition = ScrollLogicalPosition::End;
+            return options;
+        },
+        [](ScrollIntoViewOptions options) -> ScrollIntoViewOptions {
+            return options;
+        }
+    );
 
     auto writingMode = renderer->writingMode();
     auto alignX = toScrollAlignmentForInlineDirection(options.inlinePosition, writingMode);
@@ -6125,30 +6128,26 @@ RefPtr<Element> Element::findAnchorElementForLink(String& outAnchorName)
     return nullptr;
 }
 
-ExceptionOr<Ref<WebAnimation>> Element::animate(JSC::JSGlobalObject& lexicalGlobalObject, JSC::Strong<JSC::JSObject>&& keyframes, std::optional<Variant<double, KeyframeAnimationOptions>>&& options)
+ExceptionOr<Ref<WebAnimation>> Element::animate(JSC::JSGlobalObject& lexicalGlobalObject, JSC::Strong<JSC::JSObject>&& keyframes, Variant<double, KeyframeAnimationOptions>&& options)
 {
     String id = emptyString();
     std::optional<RefPtr<AnimationTimeline>> timeline;
     Variant<FramesPerSecond, AnimationFrameRatePreset> frameRate = AnimationFrameRatePreset::Auto;
-    std::optional<Variant<double, KeyframeEffectOptions>> keyframeEffectOptions;
     TimelineRangeValue animationRangeStart;
     TimelineRangeValue animationRangeEnd;
-    if (options) {
-        auto optionsValue = options.value();
-        Variant<double, KeyframeEffectOptions> keyframeEffectOptionsVariant;
-        if (std::holds_alternative<double>(optionsValue))
-            keyframeEffectOptionsVariant = std::get<double>(optionsValue);
-        else {
-            auto keyframeEffectOptions = std::get<KeyframeAnimationOptions>(optionsValue);
-            id = keyframeEffectOptions.id;
-            frameRate = keyframeEffectOptions.frameRate;
-            timeline = keyframeEffectOptions.timeline;
-            animationRangeStart = keyframeEffectOptions.rangeStart;
-            animationRangeEnd = keyframeEffectOptions.rangeEnd;
-            keyframeEffectOptionsVariant = WTF::move(keyframeEffectOptions);
+    auto keyframeEffectOptions = WTF::switchOn(options,
+        [](double value) -> Variant<double, KeyframeEffectOptions> {
+            return value;
+        },
+        [&](const KeyframeAnimationOptions& options) -> Variant<double, KeyframeEffectOptions> {
+            id = options.id;
+            frameRate = options.frameRate;
+            timeline = options.timeline;
+            animationRangeStart = options.rangeStart;
+            animationRangeEnd = options.rangeEnd;
+            return options;
         }
-        keyframeEffectOptions = keyframeEffectOptionsVariant;
-    }
+    );
 
     Ref document = this->document();
     auto keyframeEffectResult = KeyframeEffect::create(lexicalGlobalObject, document, this, WTF::move(keyframes), WTF::move(keyframeEffectOptions));

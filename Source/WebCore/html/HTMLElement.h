@@ -156,7 +156,7 @@ public:
     ExceptionOr<void> showPopoverInternal(HTMLElement* = nullptr);
     ExceptionOr<void> hidePopover();
     ExceptionOr<void> hidePopoverInternal(FocusPreviousElement, FireEvents);
-    ExceptionOr<bool> togglePopover(std::optional<Variant<WebCore::HTMLElement::TogglePopoverOptions, bool>>);
+    ExceptionOr<bool> togglePopover(Variant<WebCore::HTMLElement::TogglePopoverOptions, bool>);
 
     const AtomString& popover() const;
     void setPopover(const AtomString& value);

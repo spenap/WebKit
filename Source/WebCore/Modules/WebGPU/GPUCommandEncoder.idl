@@ -37,7 +37,7 @@ typedef (sequence<GPUIntegerCoordinate> or GPUExtent3DDict) GPUExtent3D;
     SecureContext
 ] interface GPUCommandEncoder {
     GPURenderPassEncoder beginRenderPass(GPURenderPassDescriptor descriptor);
-    GPUComputePassEncoder beginComputePass(optional GPUComputePassDescriptor descriptor);
+    GPUComputePassEncoder beginComputePass(optional GPUComputePassDescriptor descriptor = {});
 
     undefined copyBufferToBuffer(
         GPUBuffer source,
@@ -78,7 +78,7 @@ typedef (sequence<GPUIntegerCoordinate> or GPUExtent3DDict) GPUExtent3D;
         GPUBuffer destination,
         GPUSize64 destinationOffset);
 
-    GPUCommandBuffer finish(optional GPUCommandBufferDescriptor descriptor);
+    GPUCommandBuffer finish(optional GPUCommandBufferDescriptor descriptor = {});
 };
 GPUCommandEncoder includes GPUObjectBase;
 GPUCommandEncoder includes GPUCommandsMixin;

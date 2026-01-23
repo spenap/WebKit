@@ -1596,20 +1596,18 @@ static ExceptionOr<Ref<Element>> createHTMLElementWithNameValidation(Document& d
     return Ref<Element> { createUpgradeCandidateElement(document, registry, name) };
 }
 
-ExceptionOr<Ref<Element>> Document::createElementForBindings(const AtomString& name, std::optional<Variant<String, ElementCreationOptions>>&& argument)
+ExceptionOr<Ref<Element>> Document::createElementForBindings(const AtomString& name, Variant<String, ElementCreationOptions>&& argument)
 {
     Ref document = *this;
     RefPtr<CustomElementRegistry> registry;
     bool shouldUseNullRegistry = usesNullCustomElementRegistry();
-    if (argument) [[unlikely]] {
-        if (auto* options = std::get_if<ElementCreationOptions>(&*argument)) {
-            auto optionalRegistry = options->customElementRegistry;
-            if (optionalRegistry) {
-                registry = *optionalRegistry;
-                shouldUseNullRegistry = !registry;
-                if (registry && !registry->isScoped() && registry != document->customElementRegistry())
-                    return Exception { ExceptionCode::NotSupportedError };
-            }
+    if (auto* options = std::get_if<ElementCreationOptions>(&argument)) {
+        auto optionalRegistry = options->customElementRegistry;
+        if (optionalRegistry) [[unlikely]] {
+            registry = *optionalRegistry;
+            shouldUseNullRegistry = !registry;
+            if (registry && !registry->isScoped() && registry != document->customElementRegistry())
+                return Exception { ExceptionCode::NotSupportedError };
         }
     }
 
@@ -2025,20 +2023,18 @@ void Document::setActiveCustomElementRegistry(CustomElementRegistry* registry)
     m_activeCustomElementRegistry = registry;
 }
 
-ExceptionOr<Ref<Element>> Document::createElementNS(const AtomString& namespaceURI, const AtomString& qualifiedName, std::optional<Variant<String, ElementCreationOptions>>&& argument)
+ExceptionOr<Ref<Element>> Document::createElementNS(const AtomString& namespaceURI, const AtomString& qualifiedName, Variant<String, ElementCreationOptions>&& argument)
 {
     Ref document = *this;
     RefPtr<CustomElementRegistry> registry;
     bool shouldUseNullRegistry = usesNullCustomElementRegistry();
-    if (argument) [[unlikely]] {
-        if (auto* options = std::get_if<ElementCreationOptions>(&*argument)) {
-            auto optionalRegistry = options->customElementRegistry;
-            if (optionalRegistry) {
-                registry = *optionalRegistry;
-                shouldUseNullRegistry = !registry;
-                if (registry && !registry->isScoped() && registry != document->customElementRegistry())
-                    return Exception { ExceptionCode::NotSupportedError };
-            }
+    if (auto* options = std::get_if<ElementCreationOptions>(&argument)) {
+        auto optionalRegistry = options->customElementRegistry;
+        if (optionalRegistry) [[unlikely]] {
+            registry = *optionalRegistry;
+            shouldUseNullRegistry = !registry;
+            if (registry && !registry->isScoped() && registry != document->customElementRegistry())
+                return Exception { ExceptionCode::NotSupportedError };
         }
     }
 
@@ -12091,16 +12087,17 @@ RefPtr<ViewTransition> Document::startViewTransition(StartViewTransitionCallback
     RefPtr<ViewTransitionUpdateCallback> updateCallback = nullptr;
     Vector<AtomString> activeTypes { };
 
-    if (callbackOptions) {
-        WTF::switchOn(*callbackOptions, [&](RefPtr<JSViewTransitionUpdateCallback>& callback) {
+    WTF::switchOn(callbackOptions,
+        [&](RefPtr<JSViewTransitionUpdateCallback>& callback) {
             updateCallback = WTF::move(callback);
-        }, [&](StartViewTransitionOptions& options) {
+        },
+        [&](StartViewTransitionOptions& options) {
             updateCallback = WTF::move(options.update);
 
             if (options.types)
                 activeTypes = WTF::move(*options.types);
-        });
-    }
+        }
+    );
 
     Ref viewTransition = ViewTransition::createSamePage(*this, WTF::move(updateCallback), WTF::move(activeTypes));
 

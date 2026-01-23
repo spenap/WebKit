@@ -1275,22 +1275,20 @@ ExceptionOr<void> HTMLElement::hidePopover()
     return hidePopoverInternal(FocusPreviousElement::Yes, FireEvents::Yes);
 }
 
-ExceptionOr<bool> HTMLElement::togglePopover(std::optional<Variant<WebCore::HTMLElement::TogglePopoverOptions, bool>> options)
+ExceptionOr<bool> HTMLElement::togglePopover(Variant<WebCore::HTMLElement::TogglePopoverOptions, bool> options)
 {
     std::optional<bool> force;
     HTMLElement* invoker = nullptr;
 
-    if (options.has_value()) {
-        WTF::switchOn(options.value(),
-            [&](TogglePopoverOptions options) {
-                force = options.force;
-                invoker = options.source.get();
-            },
-            [&](bool value) {
-                force = value;
-            }
-        );
-    }
+    WTF::switchOn(options,
+        [&](TogglePopoverOptions options) {
+            force = options.force;
+            invoker = options.source.get();
+        },
+        [&](bool value) {
+            force = value;
+        }
+    );
 
     if (isPopoverShowing() && !force.value_or(false)) {
         auto returnValue = hidePopover();

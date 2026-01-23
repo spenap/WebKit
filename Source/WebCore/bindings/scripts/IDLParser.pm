@@ -70,7 +70,7 @@ struct( IDLInterface => {
     isMixin => '$', # Used for mixin interfaces
     isPartial => '$', # Used for partial interfaces
     iterable => '$', # Used for iterable interfaces, of type 'IDLIterable'
-    asyncIterable => '$', # Used for asycn iterable interfaces, of type 'IDLAsyncIterable'
+    asyncIterable => '$', # Used for async iterable interfaces, of type 'IDLAsyncIterable'
     mapLike => '$', # Used for mapLike interfaces, of type 'IDLMapLike'
     setLike => '$', # Used for setLike interfaces, of type 'IDLSetLike'
     extendedAttributes => '%',
@@ -1460,10 +1460,9 @@ sub parseDefaultValue
         return "[]";
     }
     if ($next->value() eq "{") {
-        # Accept {} but just ignore it.
         $self->assertTokenValue($self->getToken(), "{", __LINE__);
         $self->assertTokenValue($self->getToken(), "}", __LINE__);
-        return undef;
+        return "{}";
     }
     $self->assertUnexpectedToken($next->value(), __LINE__);
 }
