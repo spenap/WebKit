@@ -14078,13 +14078,13 @@ inline static NSString *extendSelectionCommand(UITextLayoutDirection direction)
     // Store this completion handler so that it can be called after the execution of the next
     // call to replace the text and eventually use this completion handler to pass the
     // text indicator to UIKit.
-    _page->storeDestinationCompletionHandlerForAnimationID(*animationUUID, [protectedSelf = retainPtr(self), completionHandler = makeBlockPtr(completionHandler)] (auto&& textIndicatorData) {
-        if (!textIndicatorData) {
+    _page->storeDestinationCompletionHandlerForAnimationID(*animationUUID, [protectedSelf = retainPtr(self), completionHandler = makeBlockPtr(completionHandler)](RefPtr<WebCore::TextIndicator>&& textIndicator) {
+        if (!textIndicator) {
             completionHandler(nil);
             return;
         }
 
-        RetainPtr targetedPreview = [protectedSelf _createTargetedPreviewFromTextIndicator:WebCore::TextIndicator::create(*textIndicatorData) previewContainer:[protectedSelf containerForContextMenuHintPreviews]];
+        RetainPtr targetedPreview = [protectedSelf _createTargetedPreviewFromTextIndicator:WTF::move(textIndicator) previewContainer:[protectedSelf containerForContextMenuHintPreviews]];
         completionHandler(targetedPreview.get());
     });
 
