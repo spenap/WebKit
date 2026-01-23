@@ -32,6 +32,7 @@
 #include "SandboxExtension.h"
 #include <JavaScriptCore/InspectorFrontendChannel.h>
 #include <WebCore/BoxExtents.h>
+#include <WebCore/CornerRadii.h>
 #include <WebCore/DictionaryPopupInfo.h>
 #include <WebCore/DisabledAdaptations.h>
 #include <WebCore/DragActions.h>
@@ -608,6 +609,10 @@ public:
 #if ENABLE(ASYNC_SCROLLING)
     WebCore::ScrollingCoordinator* scrollingCoordinator() const;
     RefPtr<WebCore::ScrollingCoordinator> protectedScrollingCoordinator() const;
+#endif
+
+#if HAVE(NSVIEW_CORNER_CONFIGURATION)
+    const WebCore::CornerRadii& scrollbarAvoidanceCornerRadii() const { return m_scrollbarAvoidanceCornerRadii; }
 #endif
 
     WebPageGroupProxy* pageGroup() const { return m_pageGroup.get(); }
@@ -2322,6 +2327,10 @@ private:
     void setObscuredContentInsetsFenced(const WebCore::FloatBoxExtent&, const WTF::MachSendRight&);
 #endif
 
+#if HAVE(NSVIEW_CORNER_CONFIGURATION)
+    void setScrollbarAvoidanceCornerRadii(WebCore::CornerRadii&&);
+#endif
+
     void viewWillStartLiveResize();
     void viewWillEndLiveResize();
 
@@ -2763,6 +2772,10 @@ private:
     WebCore::FloatPoint m_accessibilityPosition;
 
     RetainPtr<WKAccessibilityWebPageObject> m_mockAccessibilityElement;
+#endif
+
+#if HAVE(NSVIEW_CORNER_CONFIGURATION)
+    WebCore::CornerRadii m_scrollbarAvoidanceCornerRadii;
 #endif
 
 #if ENABLE(PLATFORM_DRIVEN_TEXT_CHECKING)
