@@ -2743,8 +2743,6 @@ webkit.org/b/235885 webrtc/peer-connection-remote-audio-mute2.html [ Crash Pass 
 webkit.org/b/235885 webrtc/peer-connection-track-end.html [ Failure ]
 webkit.org/b/235885 webrtc/video-disabled-black.html [ Crash Pass ]
 webkit.org/b/235885 webrtc/video-maxFramerate.html [ Failure ]
-webkit.org/b/235885 webrtc/video-mute.html [ Skip ]
-webkit.org/b/235885 webrtc/video-mute-vp8.html [ Skip ]
 webkit.org/b/235885 webrtc/video-replace-muted-track.html [ Skip ]
 # webkit.org/b/235885 webrtc/video-stats.html [ Failure ]
 webkit.org/b/303673 webrtc/video-stats.html [ Timeout ]
