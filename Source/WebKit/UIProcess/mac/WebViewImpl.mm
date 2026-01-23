@@ -1435,6 +1435,11 @@ RetainPtr<NSWindow> WebViewImpl::protectedWindow()
     return window();
 }
 
+NSInteger WebViewImpl::windowNumber()
+{
+    return [protectedWindow() windowNumber];
+}
+
 void WebViewImpl::handleProcessSwapOrExit()
 {
     dismissContentRelativeChildWindowsWithAnimation(true);

@@ -241,6 +241,7 @@ public:
 
     NSWindow *window();
     RetainPtr<NSWindow> protectedWindow();
+    NSInteger windowNumber();
 
     WebPageProxy& page() { return m_page.get(); }
 
