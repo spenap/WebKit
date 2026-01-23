@@ -25,6 +25,8 @@
 
 #pragma once
 
+#if !__has_feature(modules) || (defined(WK_SUPPORTS_SWIFT_OBJCXX_INTEROP) && WK_SUPPORTS_SWIFT_OBJCXX_INTEROP)
+
 #include <WebCore/NotificationPayload.h>
 #include <optional>
 #include <wtf/URL.h>
@@ -56,3 +58,5 @@ struct WebPushMessage {
 };
 
 } // namespace WebKit
+
+#endif // !__has_feature(modules) || (defined(WK_SUPPORTS_SWIFT_OBJCXX_INTEROP) && WK_SUPPORTS_SWIFT_OBJCXX_INTEROP)
