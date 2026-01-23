@@ -578,7 +578,6 @@ wktr/notify-done-moment-dump-as-text-onload-async.html [ Failure ]
 ###################
 # Tests that Image fail #
 ###################
-Regressions: Unexpected image-only failures (12)
 fast/dom/Range/getBoundingClientRect-on-range-ending-at-beginning-of-element.html [ ImageOnlyFailure ]
 fast/history/visited-href-mutation.html [ ImageOnlyFailure ]
 fast/history/visited-link-background-color.html [ ImageOnlyFailure ]
