@@ -1696,6 +1696,40 @@ TEST(SiteIsolation, CrossOriginOpenerPolicy)
     [webView waitForNextPresentationUpdate];
 }
 
+TEST(SiteIsolation, CrossOriginPopupWithCOOPValueSameOrigin)
+{
+    HTTPServer server({
+        { "/example"_s, { "<script>w = window.open('https://webkit.org/webkit')</script>"_s } },
+        { "/webkit"_s, { { { "Content-Type"_s, "text/html"_s }, { "cross-origin-opener-policy"_s, "same-origin"_s } }, "hi"_s } },
+    }, HTTPServer::Protocol::HttpsProxy);
+
+    auto [opener, opened] = openerAndOpenedViews(server);
+    EXPECT_NE([opener.webView _webProcessIdentifier], [opened.webView _webProcessIdentifier]);
+
+    [opened.webView evaluateJavaScript:@"alert(!!window.opener)" completionHandler:nil];
+    EXPECT_WK_STREQ([opened.uiDelegate waitForAlert], "false");
+
+    [opener.webView evaluateJavaScript:@"alert(w.closed)" completionHandler:nil];
+    EXPECT_WK_STREQ([opener.uiDelegate waitForAlert], "true");
+}
+
+TEST(SiteIsolation, CrossOriginPopupWithOpenerCOOPValueSameOrigin)
+{
+    HTTPServer server({
+        { "/example"_s, { { { "Content-Type"_s, "text/html"_s }, { "cross-origin-opener-Policy"_s, "same-origin"_s } }, "<script>w = window.open('https://webkit.org/webkit')</script>"_s } },
+        { "/webkit"_s, { "hi"_s } },
+    }, HTTPServer::Protocol::HttpsProxy);
+
+    auto [opener, opened] = openerAndOpenedViews(server);
+    EXPECT_NE([opener.webView _webProcessIdentifier], [opened.webView _webProcessIdentifier]);
+
+    [opened.webView evaluateJavaScript:@"alert(!!window.opener)" completionHandler:nil];
+    EXPECT_WK_STREQ([opened.uiDelegate waitForAlert], "false");
+
+    [opener.webView evaluateJavaScript:@"alert(w.closed)" completionHandler:nil];
+    EXPECT_WK_STREQ([opener.uiDelegate waitForAlert], "true");
+}
+
 static void testCrossOriginOpenerPolicyMainFrame(bool useSharedProcess)
 {
     HTTPServer server({

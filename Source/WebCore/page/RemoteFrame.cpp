@@ -189,6 +189,11 @@ SecurityOrigin* RemoteFrame::frameDocumentSecurityOrigin() const
     return frameTreeSyncData().frameDocumentSecurityOrigin.get();
 }
 
+std::optional<DocumentSecurityPolicy> RemoteFrame::frameDocumentSecurityPolicy() const
+{
+    return frameTreeSyncData().frameDocumentSecurityPolicy;
+}
+
 String RemoteFrame::frameURLProtocol() const
 {
     return frameTreeSyncData().frameURLProtocol;

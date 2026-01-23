@@ -1130,8 +1130,8 @@ SecurityOrigin& Document::topOrigin() const
     if (isTopDocument())
         return securityOrigin();
 
-    if (RefPtr page = this->page())
-        return page->mainFrameOrigin();
+    if (RefPtr frame = this->frame())
+        return frame->topOrigin();
 
     return SecurityOrigin::opaqueOrigin();
 }

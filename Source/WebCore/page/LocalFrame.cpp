@@ -46,6 +46,7 @@
 #include "DocumentLoader.h"
 #include "DocumentQuirks.h"
 #include "DocumentResourceLoader.h"
+#include "DocumentSecurityPolicy.h"
 #include "DocumentSyncClient.h"
 #include "DocumentType.h"
 #include "DocumentView.h"
@@ -1666,6 +1667,15 @@ SecurityOrigin* LocalFrame::frameDocumentSecurityOrigin() const
         return &document->securityOrigin();
 
     return nullptr;
+}
+
+std::optional<DocumentSecurityPolicy> LocalFrame::frameDocumentSecurityPolicy() const
+{
+    RefPtr document = this->document();
+    if (!document)
+        return std::nullopt;
+
+    return DocumentSecurityPolicy { document->crossOriginEmbedderPolicy(), document->crossOriginOpenerPolicy() };
 }
 
 Ref<FrameInspectorController> LocalFrame::protectedInspectorController() const

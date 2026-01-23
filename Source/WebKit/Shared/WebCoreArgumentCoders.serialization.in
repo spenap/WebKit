@@ -9087,6 +9087,11 @@ enum class WebCore::ShouldGoToHistoryItem : uint8_t {
     ItemUnknown
 };
 
+struct WebCore::DocumentSecurityPolicy {
+    WebCore::CrossOriginEmbedderPolicy crossOriginEmbedderPolicy;
+    WebCore::CrossOriginOpenerPolicy crossOriginOpenerPolicy;
+};
+
 header: <WebCore/ProcessSwapDisposition.h>
 enum class WebCore::ProcessSwapDisposition : uint8_t {
     None,

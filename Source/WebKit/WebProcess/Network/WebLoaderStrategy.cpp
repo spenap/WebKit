@@ -555,8 +555,19 @@ void WebLoaderStrategy::scheduleLoadFromNetworkProcess(ResourceLoader& resourceL
     loadParameters.shouldRestrictHTTPResponseAccess = shouldPerformSecurityChecks();
 
     loadParameters.isMainFrameNavigation = isMainFrameNavigation;
-    if (loadParameters.isMainFrameNavigation && document)
-        loadParameters.sourceCrossOriginOpenerPolicy = document->crossOriginOpenerPolicy();
+    if (loadParameters.isMainFrameNavigation && document) {
+        // Fall back to use opener's cross-origin opener policy like in Document::initSecurityContext.
+        RefPtr webFrame = WebFrame::webFrame(frame->frameID());
+        RefPtr coreFrame = webFrame ? webFrame->coreFrame() : nullptr;
+        RefPtr openerFrame = coreFrame ? coreFrame->opener() : nullptr;
+        RefPtr openerDocumentSecurityOrigin = openerFrame ? openerFrame->frameDocumentSecurityOrigin() : nullptr;
+        bool openerDocumentIsSameOriginAsTopDocument = openerDocumentSecurityOrigin ? openerDocumentSecurityOrigin->isSameOriginAs(openerFrame->protectedTopOrigin()) : false;
+        auto openerDocumentSecurityPolicy = openerFrame ? openerFrame->frameDocumentSecurityPolicy() : std::nullopt;
+        if (!document->haveInitializedSecurityOrigin() && openerDocumentSecurityPolicy && openerDocumentIsSameOriginAsTopDocument)
+            loadParameters.sourceCrossOriginOpenerPolicy = openerDocumentSecurityPolicy->crossOriginOpenerPolicy;
+        else
+            loadParameters.sourceCrossOriginOpenerPolicy = document->crossOriginOpenerPolicy();
+    }
 
     if (resourceLoader.frame()
         && resourceLoader.options().mode == FetchOptions::Mode::Navigate

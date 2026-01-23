@@ -1347,6 +1347,7 @@ set(WebCore_PRIVATE_FRAMEWORK_HEADERS
     dom/DeviceOrientationData.h
     dom/DeviceOrientationOrMotionPermissionState.h
     dom/Document.h
+    dom/DocumentSecurityPolicy.h
     dom/DocumentClasses.h
     dom/DocumentEnums.h
     dom/DocumentEventLoop.h
