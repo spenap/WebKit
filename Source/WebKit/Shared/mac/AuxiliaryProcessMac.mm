@@ -685,9 +685,7 @@ static void populateSandboxInitializationParameters(SandboxInitializationParamet
     auto homeDirectory = getHomeDirectory();
     
     sandboxParameters.addPathParameter("HOME_DIR"_s, homeDirectory.utf8().data());
-    String path = FileSystem::pathByAppendingComponent(homeDirectory, "Library"_s);
-    sandboxParameters.addPathParameter("HOME_LIBRARY_DIR"_s, FileSystem::fileSystemRepresentation(path).data());
-    path = FileSystem::pathByAppendingComponent(path, "/Preferences"_s);
+    String path = FileSystem::pathByAppendingComponents(homeDirectory, std::initializer_list<StringView>({ "Library"_s, "Preferences"_s }));
     sandboxParameters.addPathParameter("HOME_LIBRARY_PREFERENCES_DIR"_s, FileSystem::fileSystemRepresentation(path).data());
 
 #if CPU(X86_64)
