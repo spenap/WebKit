@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2025 Apple Inc. All rights reserved.
+# Copyright (C) 2018-2026 Apple Inc. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -4868,6 +4868,7 @@ class TestDownloadBuiltProduct(BuildStepMixinAdditions, unittest.TestCase):
         self.setProperty('configuration', 'release')
         self.setProperty('architecture', 'x86_64')
         self.setProperty('change_id', '1234')
+        self.assertTrue(DownloadBuiltProduct.haltOnFailure)
         self.expectRemoteCommands(
             ExpectShell(workdir='wkdir',
                         log_environ=False,
@@ -4908,6 +4909,14 @@ class TestDownloadBuiltProduct(BuildStepMixinAdditions, unittest.TestCase):
         self.expect_outcome(result=SKIPPED)
         with current_hostname('test-ews-deployment.igalia.com'):
             return self.run_step()
+
+    def test_halt_on_failure_with_suffix(self):
+        step = DownloadBuiltProduct(suffix=SUFFIX_WITHOUT_CHANGE)
+        self.assertFalse(step.haltOnFailure)
+
+    def test_step_name_with_suffix(self):
+        step = DownloadBuiltProduct(suffix=SUFFIX_WITHOUT_CHANGE)
+        self.assertEqual(step.name, 'download-built-product' + SUFFIX_WITHOUT_CHANGE)
 
 
 class TestDownloadBuiltProductFromMaster(BuildStepMixinAdditions, unittest.TestCase):
@@ -10186,6 +10195,115 @@ class TestDisplaySaferCPPResults(BuildStepMixinAdditions, unittest.TestCase):
         self.assertEqual([LeaveComment(), SetBuildSummary()], next_steps)
 
 
+class TestCheckParentBuildStatus(BuildStepMixinAdditions, unittest.TestCase):
+    def setUp(self):
+        self.longMessage = True
+        return self.setup_test_build_step()
+
+    def tearDown(self):
+        return self.tear_down_test_build_step()
+
+    def test_no_parent_build_info(self):
+        self.setup_step(CheckParentBuildStatus())
+        self.expect_outcome(result=FAILURE, state_string='No parent build information available')
+        return self.run_step()
+
+    def test_missing_parent_buildnumber(self):
+        self.setup_step(CheckParentBuildStatus())
+        self.setProperty('parent_builderid', 1)
+        self.expect_outcome(result=FAILURE, state_string='No parent build information available')
+        return self.run_step()
+
+    def test_missing_parent_builderid(self):
+        self.setup_step(CheckParentBuildStatus())
+        self.setProperty('parent_buildnumber', 100)
+        self.expect_outcome(result=FAILURE, state_string='No parent build information available')
+        return self.run_step()
+
+    def test_invalid_parent_builderid(self):
+        self.setup_step(CheckParentBuildStatus())
+        self.setProperty('parent_buildnumber', 100)
+        self.setProperty('parent_builderid', 'invalid')
+        self.expect_outcome(result=FAILURE, state_string='Invalid parent build information')
+        return self.run_step()
+
+    def test_after_waiting_default(self):
+        step = CheckParentBuildStatus()
+        self.assertFalse(step.after_waiting)
+
+    def test_after_waiting_true(self):
+        step = CheckParentBuildStatus(after_waiting=True)
+        self.assertTrue(step.after_waiting)
+
+    def test_wait_duration_constant(self):
+        self.assertEqual(CheckParentBuildStatus.WAIT_DURATION_SECONDS, 300)
+
+    def test_flunk_on_failure_false(self):
+        step = CheckParentBuildStatus()
+        self.assertFalse(step.flunkOnFailure)
+        self.assertFalse(step.haltOnFailure)
+
+    def test_parent_build_ongoing_returns_success(self):
+        self.setup_step(CheckParentBuildStatus())
+        self.setProperty('parent_buildnumber', 100)
+        self.setProperty('parent_builderid', 1)
+
+        original_get = self.master.data.get
+
+        def mock_data_get(path):
+            if path == ('builders', 1, 'builds', 100):
+                return defer.succeed({'results': None})
+            return original_get(path)
+
+        self.patch(self.master.data, 'get', mock_data_get)
+
+        next_steps = []
+        self.patch(self.build, 'addStepsAfterCurrentStep', lambda s: next_steps.extend(s))
+
+        self.expect_outcome(result=SUCCESS, state_string='Parent build is still in progress, waiting to re-check')
+        rc = self.run_step()
+
+        def check_steps(result):
+            self.assertEqual(len(next_steps), 2)
+            self.assertIsInstance(next_steps[0], WaitForDuration)
+            self.assertEqual(next_steps[0].duration, CheckParentBuildStatus.WAIT_DURATION_SECONDS)
+            self.assertIsInstance(next_steps[1], CheckParentBuildStatus)
+            self.assertTrue(next_steps[1].after_waiting)
+            return result
+
+        rc.addCallback(check_steps)
+        return rc
+
+    def test_parent_build_success_after_waiting_returns_success(self):
+        self.setup_step(CheckParentBuildStatus(after_waiting=True))
+        self.setProperty('parent_buildnumber', 100)
+        self.setProperty('parent_builderid', 1)
+
+        original_get = self.master.data.get
+
+        def mock_data_get(path):
+            if path == ('builders', 1, 'builds', 100):
+                return defer.succeed({'results': SUCCESS})
+            return original_get(path)
+
+        self.patch(self.master.data, 'get', mock_data_get)
+
+        next_steps = []
+        self.patch(self.build, 'addStepsAfterCurrentStep', lambda s: next_steps.extend(s))
+
+        self.expect_outcome(result=SUCCESS, state_string='Parent build succeeded, downloading built product')
+        rc = self.run_step()
+
+        def check_steps(result):
+            self.assertEqual(len(next_steps), 1)
+            self.assertIsInstance(next_steps[0], DownloadBuiltProduct)
+            self.assertEqual(next_steps[0].suffix, SUFFIX_WITHOUT_CHANGE)
+            return result
+
+        rc.addCallback(check_steps)
+        return rc
+
+
 class TestTrigger(BuildStepMixinAdditions, unittest.TestCase):
     def setUp(self):
         self.longMessage = True
@@ -10206,6 +10324,8 @@ class TestTrigger(BuildStepMixinAdditions, unittest.TestCase):
         self.assertIn('os_version_builder', props)
         self.assertIn('xcode_version_builder', props)
         self.assertIn('ews_revision', props)
+        self.assertIn('parent_buildnumber', props)
+        self.assertIn('parent_builderid', props)
         self.assertNotIn('github.number', props)
         self.assertNotIn('github.head.sha', props)
         self.assertNotIn('repository', props)
