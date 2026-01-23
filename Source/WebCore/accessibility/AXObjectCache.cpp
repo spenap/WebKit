@@ -5036,14 +5036,10 @@ void AXObjectCache::performDeferredCacheUpdate(ForceLayout forceLayout)
             // Re-generate the subtree rooted at the webarea.
             if (RefPtr webArea = rootWebArea()) {
                 AXLOG("Regenerating isolated tree from AXObjectCache::performDeferredCacheUpdate().");
-#if ENABLE(INCLUDE_IGNORED_IN_CORE_AX_TREE)
                 // m_deferredRegenerateIsolatedTree is only set when we change the active modal, which effects the ignored
-                // status of every object on the page. With ENABLE(INCLUDE_IGNORED_IN_CORE_AX_TREE), this means we only have
-                // to re-compute is-ignored for every object, rather than re-compute all objects entirely as when this flag is off.
+                // status of every object on the page. This means we only have to re-compute is-ignored for every object,
+                // rather than re-compute all objects entirely.
                 tree->updatePropertiesForSelfAndDescendants(*webArea, { AXProperty::IsIgnored });
-#else
-                tree->generateSubtree(*webArea);
-#endif // ENABLE(INCLUDE_IGNORED_IN_CORE_AX_TREE)
 
                 // In some cases, the ID of the focus after a dialog pops up doesn't match the ID in the last focus change notification, creating a mismatch between the isolated tree cached focused object ID and the actual focused object ID.
                 // For this reason, reset the focused object ID.
