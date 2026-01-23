@@ -63,5 +63,5 @@ typedef (ReadableStreamDefaultReader or ReadableStreamBYOBReader) ReadableStream
     [CallWith=CurrentGlobalObject] ReadableStream pipeThrough(ReadableWritablePair transform, optional StreamPipeOptions options = {});
     [CallWith=CurrentGlobalObject] sequence<ReadableStream> tee();
 
-    [EnabledBySetting=ReadableStreamIterableEnabled] async iterable<any>(optional ReadableStreamIteratorOptions options = {});
+    [EnabledBySetting=ReadableStreamIterableEnabled] async_iterable<any>(optional ReadableStreamIteratorOptions options = {});
 };
