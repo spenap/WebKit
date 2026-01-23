@@ -41,7 +41,7 @@ LLVM_DIR = 'llvm-project'
 SWIFT_DIR = 'swift-project/swift'
 
 # Workaround for https://github.com/buildbot/buildbot/issues/4669
-FakeBuild.addStepsAfterLastStep = lambda FakeBuild, step_factories: None
+FakeBuild.addStepsAfterCurrentStep = lambda FakeBuild, step_factories: None
 FakeBuild._builderid = 1
 
 
