@@ -10501,7 +10501,7 @@ static inline JSC::EncodedJSValue jsTestObjPrototypeFunction_classMethodWithEnfo
     UNUSED_PARAM(callFrame);
     SUPPRESS_UNCOUNTED_LOCAL auto& impl = castedThis->wrapped();
     EnsureStillAliveScope argument0 = callFrame->argument(0);
-    auto objArgsLongConversionResult = convert<IDLEnforceRangeAdaptor<IDLLong>>(*lexicalGlobalObject, argument0.value());
+    auto objArgsLongConversionResult = convertOptionalWithDefault<IDLEnforceRangeAdaptor<IDLLong>>(*lexicalGlobalObject, argument0.value(), [&]() -> ConversionResult<IDLEnforceRangeAdaptor<IDLLong>> { return Converter<IDLEnforceRangeAdaptor<IDLLong>>::ReturnType { 0 }; });
     if (objArgsLongConversionResult.hasException(throwScope)) [[unlikely]]
        return encodedJSValue();
     RELEASE_AND_RETURN(throwScope, JSValue::encode(toJS<IDLUndefined>(*lexicalGlobalObject, throwScope, [&]() -> decltype(auto) { return impl.classMethodWithEnforceRangeOnOptional(objArgsLongConversionResult.releaseReturnValue()); })));

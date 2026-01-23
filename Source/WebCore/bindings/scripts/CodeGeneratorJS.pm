@@ -7000,7 +7000,7 @@ sub WillConvertUndefinedToDefaultParameterValue
     my ($parameterType, $defaultValue) = @_;
 
     my $automaticallyGeneratedDefaultValue = $automaticallyGeneratedDefaultValues{$parameterType->name};
-    return 1 if defined $automaticallyGeneratedDefaultValue && $automaticallyGeneratedDefaultValue eq $defaultValue;
+    return 1 if defined $automaticallyGeneratedDefaultValue && $automaticallyGeneratedDefaultValue eq $defaultValue && !$parameterType->extendedAttributes->{EnforceRange};
 
     return 1 if $defaultValue eq "null" && $codeGenerator->IsWrapperType($parameterType);
     return 1 if $defaultValue eq "[]" && $codeGenerator->IsDictionaryType($parameterType);
