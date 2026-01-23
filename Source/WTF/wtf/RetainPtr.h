@@ -187,7 +187,7 @@ template<typename T> [[nodiscard]] RetainPtr<RetainPtrType<T>> retainPtr(T);
 
 template<typename T> inline RetainPtr<T>::~RetainPtr()
 {
-    if (auto ptr = std::exchange(m_ptr, nullptr))
+    SUPPRESS_UNRETAINED_LOCAL if (auto ptr = std::exchange(m_ptr, nullptr))
         releaseFoundationPtr(ptr);
 }
 
