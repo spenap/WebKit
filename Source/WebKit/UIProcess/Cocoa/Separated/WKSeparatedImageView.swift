@@ -31,11 +31,11 @@ internal import WebKit_Internal
 @implementation
 extension WKSeparatedImageView {
     @nonobjc
-    var viewMode: ViewMode
+    fileprivate var viewMode: ViewMode
     @nonobjc
-    var cachedViewModeInfo: (NSString, ViewMode)?
+    fileprivate var cachedViewModeInfo: (NSString, ViewMode)?
     @nonobjc
-    var desiredViewingModeSpatial: Bool = true {
+    fileprivate var desiredViewingModeSpatial: Bool = true {
         didSet {
             #if canImport(RealityFoundation, _version: 387)
             self.portalEntity?.components[ImagePresentationComponent.self]?.desiredViewingMode =
