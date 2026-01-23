@@ -2886,9 +2886,6 @@ imported/w3c/web-platform-tests/webrtc/RTCRtpReceiver-video-jitterBufferTarget-s
 # Also skipped on mac, timing out because relying on MediaStream::onactive event which is not exposed.
 webkit.org/b/151344 fast/mediastream/MediaStream-add-ended-tracks.html [ Skip ]
 
-# webrtcbin doesn't emit "outbound-rtp" stats until it's in connected state
-webkit.org/b/280117 webrtc/audio-muted-stats.html [ Failure ]
-
 # webrtcbin sets the transceiver name as track id on SSRC lines.
 fast/mediastream/RTCPeerConnection-inspect-offer.html [ Failure ]
 
