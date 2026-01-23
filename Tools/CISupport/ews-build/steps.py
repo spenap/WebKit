@@ -5330,20 +5330,21 @@ class AnalyzeLayoutTestsResultsRedTree(AnalyzeLayoutTestsResults):
 
         # The checks below need to be after the timeout ones (above) because when a timeout is trigerred no results will be generated for the step.
         # The step with_change_repeat_failures generated no list of failures or flakies, which should only happen when the return code of the step is SUCESS or WARNINGS.
-        if not with_change_repeat_failures_results_nonflaky_failures and not with_change_repeat_failures_results_flakies:
-            with_change_repeat_failures_retcode = self.getProperty('with_change_repeat_failures_retcode', FAILURE)
-            if with_change_repeat_failures_retcode not in [SUCCESS, WARNINGS]:
+        with_change_repeat_failures_retcode = self.getProperty('with_change_repeat_failures_retcode', FAILURE)
+        if with_change_repeat_failures_retcode not in [SUCCESS, WARNINGS]:
+            if not with_change_repeat_failures_results_nonflaky_failures and not with_change_repeat_failures_results_flakies:
                 return defer.returnValue(self.report_infrastructure_issue_and_maybe_retry_build('The step "layout-tests-repeat-failures" failed to generate any list of failures or flakies and returned an error code.'))
 
-        # Check the same for the step without_change_repeat_failures
-        if not without_change_repeat_failures_results_nonflaky_failures and not without_change_repeat_failures_results_flakies:
+            # Check the same for the step without_change_repeat_failures but only if with_change_repeat_failures also returned an error code.
             without_change_repeat_failures_retcode = self.getProperty('without_change_repeat_failures_retcode', FAILURE)
             if without_change_repeat_failures_retcode not in [SUCCESS, WARNINGS]:
-                return defer.returnValue(self.report_infrastructure_issue_and_maybe_retry_build('The step "layout-tests-repeat-failures-without-change" failed to generate any list of failures or flakies and returned an error code.'))
+                if not without_change_repeat_failures_results_nonflaky_failures and not without_change_repeat_failures_results_flakies:
+                    return defer.returnValue(self.report_infrastructure_issue_and_maybe_retry_build('The step "layout-tests-repeat-failures-without-change" failed to generate any list of failures or flakies and returned an error code.'))
 
         # Warn EWS bot watchers about flakies so they can garden those. Include the step where the flaky was found in the e-mail to know if it was found with change or without it.
         # Due to the way this class works most of the flakies are filtered on the step with change even when those were pre-existent issues (so this is also useful for bot watchers).
         all_flaky_failures = first_run_flakies.union(with_change_repeat_failures_results_flakies).union(without_change_repeat_failures_results_flakies)
+        all_flaky_failures.update(first_run_failures - with_change_repeat_failures_results_nonflaky_failures)
         flaky_steps_dict = {}
         for flaky_failure in all_flaky_failures:
             step_names = []
