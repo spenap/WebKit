@@ -639,17 +639,6 @@ static String getUserDirectorySuffix(const AuxiliaryProcessInitializationParamet
     return makeString([[NSBundle mainBundle] bundleIdentifier], '+', clientIdentifier);
 }
 
-static StringView parseOSVersion(StringView osSystemMarketingVersion)
-{
-    auto firstDotIndex = osSystemMarketingVersion.find('.');
-    if (firstDotIndex == notFound)
-        return { };
-    auto secondDotIndex = osSystemMarketingVersion.find('.', firstDotIndex + 1);
-    if (secondDotIndex == notFound)
-        return osSystemMarketingVersion;
-    return osSystemMarketingVersion.left(secondDotIndex);
-}
-
 static String getHomeDirectory()
 {
     // According to the man page for getpwuid_r, we should use sysconf(_SC_GETPW_R_SIZE_MAX) to determine the size of the buffer.
@@ -675,14 +664,6 @@ static void closeOpenDirectoryConnections()
 static void populateSandboxInitializationParameters(SandboxInitializationParameters& sandboxParameters)
 {
     RELEASE_ASSERT(!sandboxParameters.userDirectorySuffix().isNull());
-
-    String osSystemMarketingVersion = systemMarketingVersion();
-    auto osVersion = parseOSVersion(osSystemMarketingVersion);
-    if (osVersion.isNull()) {
-        WTFLogAlways("%s: Couldn't find OS Version\n", getprogname());
-        exitProcess(EX_NOPERM);
-    }
-    sandboxParameters.addParameter("_OS_VERSION"_s, osVersion.utf8());
 
     // Use private temporary and cache directories.
     setenv("DIRHELPER_USER_DIR_SUFFIX", FileSystem::fileSystemRepresentation(sandboxParameters.userDirectorySuffix()).data(), 1);
