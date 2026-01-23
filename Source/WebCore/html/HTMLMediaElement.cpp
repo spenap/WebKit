@@ -7240,6 +7240,11 @@ bool HTMLMediaElement::isWirelessPlaybackTargetDisabled() const
     return m_wirelessPlaybackTargetDisabled;
 }
 
+MediaPlaybackTargetType HTMLMediaElement::playbackTargetType() const
+{
+    return protectedMediaSession()->playbackTargetType();
+}
+
 #endif // ENABLE(WIRELESS_PLAYBACK_TARGET)
 
 void HTMLMediaElement::dispatchEvent(Event& event)
