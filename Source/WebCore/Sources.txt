@@ -4399,7 +4399,7 @@ JSIDBVersionChangeEvent.cpp
 JSIIRFilterNode.cpp
 JSIIRFilterOptions.cpp
 JSIPAddressSpace.cpp
-JSIdentityCredentialProtocol.cpp
+JSDigitalCredentialPresentationProtocol.cpp
 JSIdleDeadline.cpp
 JSIdleRequestCallback.cpp
 JSIdleRequestOptions.cpp

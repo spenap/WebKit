@@ -6411,11 +6411,11 @@ struct WebCore::DigitalCredentialsRequestData {
 };
 
 struct WebCore::DigitalCredentialsResponseData {
-    WebCore::IdentityCredentialProtocol protocol;
+    WebCore::DigitalCredentialPresentationProtocol protocol;
     String responseDataJSON;
 };
 
-[Nested] enum class WebCore::IdentityCredentialProtocol : uint8_t {
+[Nested] enum class WebCore::DigitalCredentialPresentationProtocol : uint8_t {
     OrgIsoMdoc
 };
 

@@ -27,7 +27,7 @@
 
 namespace WebCore {
 
-enum class IdentityCredentialProtocol : uint8_t {
+enum class DigitalCredentialPresentationProtocol : uint8_t {
     OrgIsoMdoc,
 };
 

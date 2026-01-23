@@ -494,10 +494,10 @@ set(WebCore_PRIVATE_FRAMEWORK_HEADERS
     Modules/identity/CredentialRequestCoordinatorClient.h
     Modules/identity/DigitalCredential.h
     Modules/identity/DigitalCredentialGetRequest.h
+    Modules/identity/DigitalCredentialPresentationProtocol.h
     Modules/identity/DigitalCredentialRequestOptions.h
     Modules/identity/DigitalCredentialsRequestData.h
     Modules/identity/DigitalCredentialsResponseData.h
-    Modules/identity/IdentityCredentialProtocol.h
 
     Modules/identity/dummy/DummyCredentialRequestCoordinatorClient.h
 
