@@ -409,16 +409,20 @@ std::pair<UsedInlineSizes, UsedBlockSizes> GridLayout::layoutGridItems(const Pla
 
     auto& formattingContext = this->formattingContext();
     auto& integrationUtils = formattingContext.integrationUtils();
+
+    CheckedRef formattingContextRootStyle = formattingContext.root().style();
+    auto columnsGap = GridLayoutUtils::computeGapValue(formattingContextRootStyle->columnGap());
+    auto rowsGap = GridLayoutUtils::computeGapValue(formattingContextRootStyle->rowGap());
+
     for (auto& gridItem : placedGridItems) {
         auto& gridItemBoxGeometry = formattingContext.geometryForGridItem(gridItem.layoutBox());
-        CheckedRef formattingContextRootStyle = formattingContext.root().style();
 
-        auto columnsGap = GridLayoutUtils::computeGapValue(formattingContextRootStyle->columnGap());
-        auto usedInlineSizeForGridItem = GridLayoutUtils::usedInlineSizeForGridItem(gridItem, gridItemBoxGeometry.horizontalBorderAndPadding(), usedTrackSizes.columnSizes, columnsGap);
+        auto columnsSize = GridLayoutUtils::gridAreaDimensionSize(gridItem.columnStartLine(), gridItem.columnEndLine(), usedTrackSizes.columnSizes, columnsGap);
+        auto usedInlineSizeForGridItem = GridLayoutUtils::usedInlineSizeForGridItem(gridItem, gridItemBoxGeometry.horizontalBorderAndPadding(), columnsSize);
         usedInlineSizes.append(usedInlineSizeForGridItem);
 
-        auto rowsGap = GridLayoutUtils::computeGapValue(formattingContextRootStyle->rowGap());
-        auto usedBlockSizeForGridItem = GridLayoutUtils::usedBlockSizeForGridItem(gridItem, gridItemBoxGeometry.verticalBorderAndPadding(), usedTrackSizes.rowSizes, rowsGap);
+        auto rowsSize = GridLayoutUtils::gridAreaDimensionSize(gridItem.rowStartLine(), gridItem.rowEndLine(), usedTrackSizes.rowSizes, rowsGap);
+        auto usedBlockSizeForGridItem = GridLayoutUtils::usedBlockSizeForGridItem(gridItem, gridItemBoxGeometry.verticalBorderAndPadding(), rowsSize);
         usedBlockSizes.append(usedBlockSizeForGridItem);
 
         auto& layoutBox = gridItem.layoutBox();
