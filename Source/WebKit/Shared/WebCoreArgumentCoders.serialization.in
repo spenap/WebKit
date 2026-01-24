@@ -4477,9 +4477,12 @@ struct WebCore::BackgroundFetchRecordInformation {
     String referrer;
 };
 
-struct WebCore::BackgroundFetchOptions {
-    Vector<WebCore::ImageResource> icons;
+struct WebCore::BackgroundFetchUIOptions {
+    std::optional<Vector<WebCore::ImageResource>> icons;
     String title;
+};
+
+struct WebCore::BackgroundFetchOptions : WebCore::BackgroundFetchUIOptions {
     uint64_t downloadTotal;
 };
 

@@ -2816,14 +2816,14 @@ sub GenerateDictionaryChecks
     $result .= "      0\n";
     foreach my $member (@{$dictionary->members}) {
         my $conditional = $member->extendedAttributes->{Conditional};
-        my $name = $member->name;
 
         if ($conditional) {
             my $conditionalString = $codeGenerator->GenerateConditionalStringFromAttributeValue($conditional);
             $result .= "#if ${conditionalString}\n";
         }
 
-        $result .= "    , offsetof(${className}, ${name})\n";
+        my $implementationName = $member->extendedAttributes->{ImplementedAs} || $member->name;
+        $result .= "    , offsetof(${className}, ${implementationName})\n";
 
         if ($conditional) {
             $result .= "#endif\n" ;

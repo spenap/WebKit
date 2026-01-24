@@ -79,7 +79,7 @@ static_assert(IsIncreasing<
     , offsetof(DictionaryImplName, partialCallbackMember)
 #endif
 #if ENABLE(Conditional13) || ENABLE(Conditional14)
-    , offsetof(DictionaryImplName, partialUnsignedLongMemberWithImplementedAs)
+    , offsetof(DictionaryImplName, partialUnsignedLongMember)
 #endif
 #if ENABLE(Conditional13) || ENABLE(Conditional14)
     , offsetof(DictionaryImplName, partialBooleanMemberWithIgnoredConditional)

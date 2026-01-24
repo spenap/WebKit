@@ -37,9 +37,7 @@
     [CustomGetter] readonly attribute FrozenArray<MessagePort> ports;
 };
 
-[
-    LegacyNativeDictionaryRequiredInterfaceNullability,
-] dictionary ExtendableMessageEventInit : ExtendableEventInit {
+dictionary ExtendableMessageEventInit : ExtendableEventInit {
     any data = null;
     USVString origin = "";
     DOMString lastEventId = "";

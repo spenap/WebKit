@@ -55,7 +55,6 @@
 
 [
     Conditional=NOTIFICATION_EVENT,
-    LegacyNativeDictionaryRequiredInterfaceNullability,
 ] dictionary GetNotificationOptions {
     DOMString tag = "";
 };

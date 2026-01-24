@@ -36,8 +36,6 @@
     [EnabledForWorld=allowNodeSerialization] WebKitSerializedNode serializeNode(Node node, optional WebKitSerializedNodeInit init = {});
 };
 
-[
-    LegacyNativeDictionaryRequiredInterfaceNullability,
-] dictionary WebKitSerializedNodeInit {
-    boolean deep;
+dictionary WebKitSerializedNodeInit {
+    boolean deep = false;
 };
