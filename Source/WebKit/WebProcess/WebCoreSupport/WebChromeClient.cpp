@@ -1069,16 +1069,6 @@ bool WebChromeClient::shouldNotifyOnFormChanges()
     return page && page->injectedBundleFormClient().shouldNotifyOnFormChanges(page.get());
 }
 
-bool WebChromeClient::selectItemWritingDirectionIsNatural()
-{
-    return false;
-}
-
-bool WebChromeClient::selectItemAlignmentFollowsMenuWritingDirection()
-{
-    return true;
-}
-
 RefPtr<PopupMenu> WebChromeClient::createPopupMenu(PopupMenuClient& client) const
 {
     RefPtr page = m_page.get();

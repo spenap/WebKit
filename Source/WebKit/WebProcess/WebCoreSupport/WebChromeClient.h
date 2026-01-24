@@ -231,8 +231,6 @@ private:
     void didAssociateFormControls(const Vector<Ref<WebCore::Element>>&, WebCore::LocalFrame&) final;
     bool shouldNotifyOnFormChanges() final;
 
-    bool selectItemWritingDirectionIsNatural() final;
-    bool selectItemAlignmentFollowsMenuWritingDirection() final;
     RefPtr<WebCore::PopupMenu> createPopupMenu(WebCore::PopupMenuClient&) const final;
     RefPtr<WebCore::SearchPopupMenu> createSearchPopupMenu(WebCore::PopupMenuClient&) const final;
 
