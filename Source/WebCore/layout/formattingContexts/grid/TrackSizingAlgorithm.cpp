@@ -98,15 +98,15 @@ static void sizeTracksToFitNonSpanningItems(UnsizedTracks& unsizedTracks, const 
     // For each track with an intrinsic track sizing function and not a flexible sizing function, consider the items in it with a span of 1:
     for (auto trackIndex : tracksWithIntrinsicSizingFunction(unsizedTracks)) {
         auto& track = unsizedTracks[trackIndex];
-        auto singleSpanningItems = singleSpanningItemsWithinTrack(trackIndex, gridItemSpanList);
+        auto singleSpanningItemsIndexes = singleSpanningItemsWithinTrack(trackIndex, gridItemSpanList);
 
         auto& minimumTrackSizingFunction = track.trackSizingFunction.min;
         track.baseSize = WTF::switchOn(minimumTrackSizingFunction,
             [&](const CSS::Keyword::MinContent&) -> LayoutUnit {
                 // If the track has a min-content min track sizing function, set its base size
                 // to the maximum of the items’ min-content contributions, floored at zero.
-                auto itemContributions = minContentContributions(gridItems, singleSpanningItems, integrationUtils);
-                ASSERT(itemContributions.size() == singleSpanningItems.size());
+                auto itemContributions = minContentContributions(gridItems, singleSpanningItemsIndexes, integrationUtils);
+                ASSERT(itemContributions.size() == singleSpanningItemsIndexes.size());
                 if (itemContributions.isEmpty())
                     return { };
                 return std::max({ }, std::ranges::max(itemContributions));
@@ -130,8 +130,8 @@ static void sizeTracksToFitNonSpanningItems(UnsizedTracks& unsizedTracks, const 
             [&](const CSS::Keyword::MinContent&) -> LayoutUnit {
                 // If the track has a min-content max track sizing function, set its growth
                 // limit to the maximum of the items’ min-content contributions.
-                auto itemContributions = minContentContributions(gridItems, singleSpanningItems, integrationUtils);
-                ASSERT(itemContributions.size() == singleSpanningItems.size());
+                auto itemContributions = minContentContributions(gridItems, singleSpanningItemsIndexes, integrationUtils);
+                ASSERT(itemContributions.size() == singleSpanningItemsIndexes.size());
                 if (itemContributions.isEmpty())
                     return { };
                 return std::ranges::max(itemContributions);
