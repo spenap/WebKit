@@ -981,6 +981,8 @@ enum ContentsFormat {
     undefined startTrackingRenderingUpdates();
     unsigned long renderingUpdateCount();
 
+    double? timeToNextRenderingUpdate();
+
     attribute CompositingPolicy? compositingPolicyOverride;
 
     undefined updateLayoutAndStyleForAllFrames();
