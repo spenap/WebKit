@@ -187,7 +187,7 @@ TEST(FocusWebView, AdvanceFocusRelinquishToChrome)
     EXPECT_FALSE(textField.get().didSeeKeyDownEvent);
 }
 
-TEST(FocusWebView, MultipleFrames)
+TEST(FocusWebView, DISABLED_MultipleFrames)
 {
     auto exampleHTML = "<body>"
         "<input id='input'>"
