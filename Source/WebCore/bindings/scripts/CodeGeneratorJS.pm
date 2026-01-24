@@ -7219,6 +7219,12 @@ sub GenerateCallbackFunctionHeader
 
     push(@headerContent, "} // namespace WebCore\n");
 
+    my $name = $callbackFunction->type->name;
+    my $className = GetCallbackClassName($name);
+    push(@headerContent, "\nSPECIALIZE_TYPE_TRAITS_BEGIN(WebCore::${className})\n");
+    push(@headerContent, "    static bool isType(const WebCore::${name}& callback) { return callback.is${className}(); }\n");
+    push(@headerContent, "SPECIALIZE_TYPE_TRAITS_END()\n");
+
     my $conditionalString = $codeGenerator->GenerateConditionalString($callbackFunction);
     push(@headerContent, "\n#endif // ${conditionalString}\n") if $conditionalString;
 }
@@ -7262,6 +7268,12 @@ sub GenerateCallbackInterfaceHeader
 
     push(@headerContent, "} // namespace WebCore\n");
 
+    my $name = $callbackInterface->type->name;
+    my $className = GetCallbackClassName($name);
+    push(@headerContent, "\nSPECIALIZE_TYPE_TRAITS_BEGIN(WebCore::${className})\n");
+    push(@headerContent, "    static bool isType(const WebCore::${name}& callback) { return callback.is${className}(); }\n");
+    push(@headerContent, "SPECIALIZE_TYPE_TRAITS_END()\n");
+
     my $conditionalString = $codeGenerator->GenerateConditionalString($callbackInterface);
     push(@headerContent, "\n#endif // ${conditionalString}\n") if $conditionalString;
 }
@@ -7304,6 +7316,7 @@ sub GenerateCallbackHeaderContent
     $includesRef->{"IDLTypes.h"} = 1;
     $includesRef->{"JSCallbackData.h"} = 1;
     $includesRef->{"<wtf/Forward.h>"} = 1;
+    $includesRef->{"<wtf/TypeCasts.h>"} = 1;
     $includesRef->{"${name}.h"} = 1;
 
     my $exportMacro = GetExportMacroForJSClass($interfaceOrCallback);
@@ -7368,6 +7381,7 @@ sub GenerateCallbackHeaderContent
     push(@$contentRef, "    ${className}(JSC::JSObject*, JSDOMGlobalObject*);\n\n");
 
     push(@$contentRef, "    bool hasCallback() const final { return m_data && m_data->callback(); }\n\n");
+    push(@$contentRef, "    bool is${className}() const final { return true; }\n\n");
 
     if (!$generateIsReachable) {
         push(@$contentRef, "    void visitJSFunction(JSC::AbstractSlotVisitor&) override;\n\n");
@@ -7622,9 +7636,9 @@ sub GenerateCallbackImplementationContent
 
     push(@$contentRef, "JSC::JSValue toJS(${name}& impl)\n");
     push(@$contentRef, "{\n");
-    push(@$contentRef, "    if (!static_cast<${className}&>(impl).callbackData())\n");
-    push(@$contentRef, "        return jsNull();\n\n");
-    push(@$contentRef, "    return static_cast<${className}&>(impl).callbackData()->callback();\n");
+    push(@$contentRef, "    if (auto* callbackData = downcast<${className}>(impl).callbackData())\n");
+    push(@$contentRef, "        return callbackData->callback();\n");
+    push(@$contentRef, "    return jsNull();\n\n");
     push(@$contentRef, "}\n\n");
 
     push(@$contentRef, "ScriptExecutionContext* ${className}::scriptExecutionContext() const\n");
