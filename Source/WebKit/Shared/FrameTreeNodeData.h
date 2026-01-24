@@ -25,8 +25,6 @@
 
 #pragma once
 
-#if !__has_feature(modules) || (defined(WK_SUPPORTS_SWIFT_OBJCXX_INTEROP) && WK_SUPPORTS_SWIFT_OBJCXX_INTEROP)
-
 #include "FrameInfoData.h"
 
 namespace WebKit {
@@ -37,5 +35,3 @@ struct FrameTreeNodeData {
 };
 
 }
-
-#endif // !__has_feature(modules) || (defined(WK_SUPPORTS_SWIFT_OBJCXX_INTEROP) && WK_SUPPORTS_SWIFT_OBJCXX_INTEROP)

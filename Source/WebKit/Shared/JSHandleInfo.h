@@ -25,8 +25,6 @@
 
 #pragma once
 
-#if !__has_feature(modules) || (defined(WK_SUPPORTS_SWIFT_OBJCXX_INTEROP) && WK_SUPPORTS_SWIFT_OBJCXX_INTEROP)
-
 #include "FrameInfoData.h"
 #include <WebCore/ProcessQualified.h>
 
@@ -53,5 +51,3 @@ struct JSHandleInfo {
 };
 
 }
-
-#endif // !__has_feature(modules) || (defined(WK_SUPPORTS_SWIFT_OBJCXX_INTEROP) && WK_SUPPORTS_SWIFT_OBJCXX_INTEROP)

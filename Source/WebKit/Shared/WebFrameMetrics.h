@@ -25,8 +25,6 @@
 
 #pragma once
 
-#if !__has_feature(modules) || (defined(WK_SUPPORTS_SWIFT_OBJCXX_INTEROP) && WK_SUPPORTS_SWIFT_OBJCXX_INTEROP)
-
 #include <WebCore/IntSize.h>
 
 namespace WebKit {
@@ -44,5 +42,3 @@ struct WebFrameMetrics {
 };
 
 } // namespace WebKit
-
-#endif // !__has_feature(modules) || (defined(WK_SUPPORTS_SWIFT_OBJCXX_INTEROP) && WK_SUPPORTS_SWIFT_OBJCXX_INTEROP)
