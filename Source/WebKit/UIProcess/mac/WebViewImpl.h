@@ -25,6 +25,8 @@
 
 #pragma once
 
+#if !__has_feature(modules) || (defined(WK_SUPPORTS_SWIFT_OBJCXX_INTEROP) && WK_SUPPORTS_SWIFT_OBJCXX_INTEROP)
+
 #include <wtf/Platform.h>
 
 #if PLATFORM(MAC)
@@ -1129,3 +1131,5 @@ ALLOW_DEPRECATED_DECLARATIONS_END
 } // namespace WebKit
 
 #endif // PLATFORM(MAC)
+
+#endif // !__has_feature(modules) || (defined(WK_SUPPORTS_SWIFT_OBJCXX_INTEROP) && WK_SUPPORTS_SWIFT_OBJCXX_INTEROP)
