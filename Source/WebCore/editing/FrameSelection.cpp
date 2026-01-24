@@ -236,7 +236,7 @@ FrameSelection::~FrameSelection() = default;
 
 Element* FrameSelection::rootEditableElementOrDocumentElement() const
 {
-    Element* selectionRoot = m_selection.rootEditableElement();
+    SUPPRESS_UNCOUNTED_LOCAL auto* selectionRoot = m_selection.rootEditableElement();
     return selectionRoot ? selectionRoot : m_document->documentElement();
 }
 
@@ -2317,7 +2317,7 @@ static Vector<Style::PseudoClassChangeInvalidation> invalidateFocusedElementAndS
     Vector<Style::PseudoClassChangeInvalidation> invalidations;
     for (RefPtr element = focusedElement; element; element = element->shadowHost()) {
         invalidations.append({ *element, { { CSSSelector::PseudoClass::Focus, activeAndFocused }, { CSSSelector::PseudoClass::FocusVisible, activeAndFocused } } });
-        for (auto& lineage : lineageOfType<Element>(*element))
+        for (Ref lineage : lineageOfType<Element>(*element))
             invalidations.append({ lineage, CSSSelector::PseudoClass::FocusWithin, activeAndFocused });
     }
     return invalidations;
@@ -2475,10 +2475,10 @@ void FrameSelection::updateCaretVisibility(ShouldUpdateAppearance doAppearanceUp
 // Frame and FrameView, a <frame>, <iframe>, or <object>.
 static bool isFrameElement(const Node& node)
 {
-    auto* renderer = dynamicDowncast<RenderWidget>(node.renderer());
+    RefPtr renderer = dynamicDowncast<RenderWidget>(node.renderer());
     if (!renderer)
         return false;
-    auto* widget = renderer->widget();
+    RefPtr widget = renderer->widget();
     return widget && widget->isLocalFrameView();
 }
 
@@ -2633,8 +2633,8 @@ static RefPtr<HTMLFormElement> scanForForm(Element* start)
 
 static ValidatedFormListedElement* findFormControlElementAncestor(Element& element)
 {
-    for (auto& ancestor : lineageOfType<Element>(element)) {
-        if (auto* formControlAncestor = ancestor.asValidatedFormListedElement())
+    for (Ref ancestor : lineageOfType<Element>(element)) {
+        if (auto* formControlAncestor = ancestor->asValidatedFormListedElement())
             return formControlAncestor;
     }
     return nullptr;

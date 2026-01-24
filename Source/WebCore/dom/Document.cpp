@@ -570,14 +570,14 @@ static bool canAccessAncestor(const SecurityOrigin& activeSecurityOrigin, Frame*
         if (!ancestorDocument)
             return true;
 
-        const SecurityOrigin& ancestorSecurityOrigin = ancestorDocument->securityOrigin();
+        Ref ancestorSecurityOrigin = ancestorDocument->securityOrigin();
         if (activeSecurityOrigin.isSameOriginDomain(ancestorSecurityOrigin))
             return true;
 
         // Allow file URL descendant navigation even when allowFileAccessFromFileURLs is false.
         // FIXME: It's a bit strange to special-case local origins here. Should we be doing
         // something more general instead?
-        if (isLocalActiveOrigin && ancestorSecurityOrigin.isLocal())
+        if (isLocalActiveOrigin && ancestorSecurityOrigin->isLocal())
             return true;
     }
 
@@ -617,7 +617,7 @@ const Logger& Document::sharedLogger()
 
 void Document::configureSharedLogger()
 {
-    auto logger = staticSharedLogger();
+    RefPtr logger = staticSharedLogger();
     if (!logger)
         return;
 
@@ -2311,7 +2311,7 @@ String Document::suggestedMIMEType() const
         return textXMLContentTypeAtom();
     if (isHTMLDocument())
         return textHTMLContentTypeAtom();
-    if (DocumentLoader* loader = this->loader())
+    if (RefPtr loader = this->loader())
         return loader->responseMIMEType();
     return String();
 }
@@ -3696,7 +3696,7 @@ void Document::willBeRemovedFromFrame()
 #if ENABLE(POINTER_LOCK)
         page->pointerLockController().documentDetached(*this);
 #endif
-        if (auto* imageOverlayController = page->imageOverlayControllerIfExists())
+        if (RefPtr imageOverlayController = page->imageOverlayControllerIfExists())
             imageOverlayController->documentDetached(*this);
         if (auto* validationMessageClient = page->validationMessageClient())
             validationMessageClient->documentDetached(*this);
@@ -4272,7 +4272,7 @@ ExceptionOr<void> Document::setBodyOrFrameset(RefPtr<HTMLElement>&& newBody)
 
 Location* Document::location() const
 {
-    auto* window = this->window();
+    RefPtr window = this->window();
     return window ? &window->location() : nullptr;
 }
 
@@ -6061,8 +6061,8 @@ void Document::scheduleToAdjustValidationMessagePosition(ValidationMessage& vali
 
 void Document::adjustValidationMessagePositions()
 {
-    for (auto& message : std::exchange(m_validationMessagesToPosition, { }))
-        message.adjustBubblePosition();
+    for (Ref message : std::exchange(m_validationMessagesToPosition, { }))
+        message->adjustBubblePosition();
 }
 
 void Document::addAudioProducer(MediaProducer& audioProducer)
@@ -6119,8 +6119,8 @@ void Document::updateIsPlayingMedia()
 {
     ASSERT(!m_audioProducers.hasNullReferences());
     MediaProducerMediaStateFlags state;
-    for (auto& audioProducer : m_audioProducers)
-        state.add(audioProducer.mediaState());
+    for (Ref audioProducer : m_audioProducers)
+        state.add(audioProducer->mediaState());
 
 #if ENABLE(MEDIA_STREAM)
     state.add(computeCaptureState());
@@ -6163,8 +6163,8 @@ void Document::updateIsPlayingMedia()
 
 void Document::visibilityAdjustmentStateDidChange()
 {
-    for (auto& audioProducer : m_audioProducers)
-        audioProducer.visibilityAdjustmentStateDidChange();
+    for (Ref audioProducer : m_audioProducers)
+        audioProducer->visibilityAdjustmentStateDidChange();
 }
 
 #if PLATFORM(IOS_FAMILY)
@@ -6283,8 +6283,8 @@ void Document::voiceActivityDetected()
 
 void Document::pageMutedStateDidChange()
 {
-    for (auto& audioProducer : m_audioProducers)
-        audioProducer.pageMutedStateDidChange();
+    for (Ref audioProducer : m_audioProducers)
+        audioProducer->pageMutedStateDidChange();
 
 #if ENABLE(MEDIA_STREAM)
     updateCaptureAccordingToMutedState();
@@ -6908,9 +6908,9 @@ void Document::nodeChildrenWillBeRemoved(ContainerNode& container)
     for (auto& range : m_ranges)
         Ref { range.get() }->nodeChildrenWillBeRemoved(container);
 
-    for (auto& it : m_nodeIterators) {
+    for (Ref it : m_nodeIterators) {
         for (RefPtr n = container.firstChild(); n; n = n->nextSibling())
-            it.nodeWillBeRemoved(*n);
+            it->nodeWillBeRemoved(*n);
     }
 
     if (RefPtr frame = this->frame()) {
@@ -8141,7 +8141,7 @@ Document* Document::parentDocument() const
 {
     if (!m_frame)
         return nullptr;
-    auto* parent = dynamicDowncast<LocalFrame>(m_frame->tree().parent());
+    RefPtr parent = dynamicDowncast<LocalFrame>(m_frame->tree().parent());
     if (!parent)
         return nullptr;
     return parent->document();
@@ -8176,7 +8176,7 @@ RefPtr<Document> Document::sameOriginTopLevelTraversable() const
         return nullptr;
 
     RefPtr<Frame> topLevelAncestorFrame = m_frame;
-    for (Frame* parent = topLevelAncestorFrame->tree().parent(); parent; parent = parent->tree().parent())
+    for (RefPtr<Frame> parent = topLevelAncestorFrame->tree().parent(); parent; parent = parent->tree().parent())
         topLevelAncestorFrame = parent;
 
     RefPtr localTopAncestor = dynamicDowncast<LocalFrame>(topLevelAncestorFrame);
@@ -8682,8 +8682,8 @@ bool Document::isSecureContext() const
     if (page() && page()->isServiceWorkerPage())
         return true;
 
-    for (auto* frame = m_frame->tree().parent(); frame; frame = frame->tree().parent()) {
-        auto* localFrame = dynamicDowncast<LocalFrame>(frame);
+    for (RefPtr frame = m_frame->tree().parent(); frame; frame = frame->tree().parent()) {
+        RefPtr localFrame = dynamicDowncast<LocalFrame>(frame);
         if (!localFrame)
             continue;
         Ref<Document> ancestorDocument = *localFrame->document();
@@ -11616,7 +11616,7 @@ HTMLVideoElement* Document::pictureInPictureElement() const
         if (!JSDOMWindowBase)
             return m_pictureInPictureElement.get();
 
-        auto* currentEvent = JSDOMWindowBase->currentEvent();
+        RefPtr currentEvent = JSDOMWindowBase->currentEvent();
 
         if (currentEvent && currentEvent->type() == eventNames().fullscreenchangeEvent)
             return nullptr;

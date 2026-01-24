@@ -73,6 +73,7 @@
 #import "RenderText.h"
 #import "StyleExtractor.h"
 #import "StyleProperties.h"
+#import "StylePropertiesInlines.h"
 #import "StyledElement.h"
 #import "TextIterator.h"
 #import "VisibleSelection.h"
@@ -296,13 +297,13 @@ AttributedString HTMLConverter::convert()
     if (m_start > m_end)
         return { };
 
-    Node* commonAncestorContainer = _caches->cacheAncestorsOfStartToBeConverted(m_start, m_end);
+    RefPtr commonAncestorContainer = _caches->cacheAncestorsOfStartToBeConverted(m_start, m_end);
     ASSERT(commonAncestorContainer);
 
     m_dataSource = commonAncestorContainer->document().frame()->loader().documentLoader();
 
-    Document& document = commonAncestorContainer->document();
-    if (auto* body = document.bodyOrFrameset()) {
+    RefPtr document = commonAncestorContainer->document();
+    if (RefPtr body = document->bodyOrFrameset()) {
         if (auto backgroundColor = _colorForElement(*body, CSSPropertyBackgroundColor))
             [_documentAttrs setObject:backgroundColor.get() forKey:NSBackgroundColorDocumentAttribute];
     }
@@ -465,7 +466,7 @@ RefPtr<CSSValue> HTMLConverterCaches::inlineStylePropertyForElement(Element& ele
     if (!styledElement)
         return nullptr;
 
-    const auto* properties = styledElement->inlineStyle();
+    RefPtr properties = styledElement->inlineStyle();
     if (!properties)
         return nullptr;
     return properties->getPropertyCSSValue(propertyId);
@@ -842,7 +843,7 @@ Color HTMLConverterCaches::colorPropertyValueForNode(Node& node, CSSPropertyID p
         break;
     case CSSPropertyBackgroundColor:
         if (!elementHasOwnBackgroundColor(*element)) {
-            if (auto* parentElement = node.parentElement()) {
+            if (RefPtr parentElement = node.parentElement()) {
                 if (!elementHasOwnBackgroundColor(*parentElement))
                     inherit = true;
             }
@@ -1111,7 +1112,7 @@ NSDictionary* HTMLConverter::attributesForElement(Element& element)
 
 RetainPtr<NSDictionary> HTMLConverter::aggregatedAttributesForAncestors(CharacterData& node)
 {
-    Node* ancestor = node.parentInComposedTree();
+    RefPtr ancestor = node.parentInComposedTree();
     while (ancestor && !is<Element>(*ancestor))
         ancestor = ancestor->parentInComposedTree();
     if (!ancestor)
@@ -1128,7 +1129,7 @@ RetainPtr<NSDictionary> HTMLConverter::aggregatedAttributesForElementAndItsAnces
     NSDictionary* attributesForCurrentElement = attributesForElement(element);
     ASSERT(attributesForCurrentElement);
 
-    Node* ancestor = element.parentInComposedTree();
+    RefPtr ancestor = element.parentInComposedTree();
     while (ancestor && !is<Element>(*ancestor))
         ancestor = ancestor->parentInComposedTree();
 
@@ -1248,8 +1249,8 @@ BOOL HTMLConverter::_addAttachmentForElement(Element& element, NSURL *url, BOOL 
     BOOL retval = NO;
     BOOL notFound = NO;
     RetainPtr<NSFileWrapper> fileWrapper;
-    auto* frame = element.document().frame();
-    DocumentLoader *dataSource = frame->loader().frameHasLoaded() ? frame->loader().documentLoader() : 0;
+    RefPtr frame = element.document().frame();
+    RefPtr dataSource = frame->loader().frameHasLoaded() ? frame->loader().documentLoader() : 0;
     BOOL ignoreOrientation = YES;
 
     if ([url isFileURL]) {
@@ -1601,7 +1602,7 @@ void HTMLConverter::_processHeadElement(Element& element)
 {
     // FIXME: Should gather data from other sources e.g. Word, but for that we would need to be able to get comments from DOM
 
-    for (HTMLMetaElement* child = Traversal<HTMLMetaElement>::firstChild(element); child; child = Traversal<HTMLMetaElement>::nextSibling(*child)) {
+    for (RefPtr child = Traversal<HTMLMetaElement>::firstChild(element); child; child = Traversal<HTMLMetaElement>::nextSibling(*child)) {
         RetainPtr name = child->name().createNSString();
         RetainPtr content = child->content().createNSString();
         if (name && content)
@@ -2000,7 +2001,7 @@ void HTMLConverter::_exitElement(Element& element, NSInteger depth, NSUInteger s
     range = NSMakeRange(startIndex, [_attrStr length] - startIndex);
     if (displayValue == "table"_s && [_textTables count] > 0) {
         NSTextTable *key = [_textTables lastObject];
-        Element* footer = m_textTableFooters.get((__bridge CFTypeRef)key);
+        RefPtr footer = m_textTableFooters.get((__bridge CFTypeRef)key);
         while ([_textTables count] < [_textBlocks count] + 1)
             [_textBlocks removeLastObject];
         if (footer) {
@@ -2208,7 +2209,7 @@ void HTMLConverter::_traverseNode(Node& node, unsigned depth, bool embedded)
     }
 
     if (node.isDocumentNode() || node.isDocumentFragment()) {
-        Node* child = node.firstChild();
+        RefPtr child = node.firstChild();
         ASSERT(child == firstChildInComposedTreeIgnoringUserAgentShadow(node));
         for (NSUInteger i = 0; child; i++) {
             if (isStart && i == startOffset)
@@ -2226,10 +2227,10 @@ void HTMLConverter::_traverseNode(Node& node, unsigned depth, bool embedded)
         if (_enterElement(*element, embedded)) {
             NSUInteger startIndex = [_attrStr length];
             if (_processElement(*element, depth)) {
-                if (auto* shadowRoot = shadowRootIgnoringUserAgentShadow(*element)) // Traverse through shadow root to detect start and end.
+                if (RefPtr shadowRoot = shadowRootIgnoringUserAgentShadow(*element)) // Traverse through shadow root to detect start and end.
                     _traverseNode(*shadowRoot, depth + 1, embedded);
                 else {
-                    auto* child = firstChildInComposedTreeIgnoringUserAgentShadow(node);
+                    RefPtr child = firstChildInComposedTreeIgnoringUserAgentShadow(node);
                     for (NSUInteger i = 0; child; i++) {
                         if (isStart && i == startOffset)
                             _domRangeStartIndex = [_attrStr length];
@@ -2276,7 +2277,7 @@ void HTMLConverter::_traverseFooterNode(Element& element, unsigned depth)
     if (_enterElement(element, YES)) {
         NSUInteger startIndex = [_attrStr length];
         if (_processElement(element, depth)) {
-            auto* child = firstChildInComposedTreeIgnoringUserAgentShadow(element);
+            RefPtr child = firstChildInComposedTreeIgnoringUserAgentShadow(element);
             for (NSUInteger i = 0; child; i++) {
                 if (isStart && i == startOffset)
                     _domRangeStartIndex = [_attrStr length];
@@ -2306,8 +2307,8 @@ void HTMLConverter::_adjustTrailingNewline()
 
 Node* HTMLConverterCaches::cacheAncestorsOfStartToBeConverted(const Position& start, const Position& end)
 {
-    auto commonAncestor = commonInclusiveAncestor(start, end);
-    Node* ancestor = start.containerNode();
+    RefPtr commonAncestor = commonInclusiveAncestor(start, end);
+    RefPtr ancestor = start.containerNode();
 
     while (ancestor) {
         m_ancestorsUnderCommonAncestor.add(*ancestor);
@@ -2316,7 +2317,7 @@ Node* HTMLConverterCaches::cacheAncestorsOfStartToBeConverted(const Position& st
         ancestor = ancestor->parentInComposedTree();
     }
 
-    return commonAncestor;
+    return commonAncestor.unsafeGet();
 }
 
 namespace WebCore {

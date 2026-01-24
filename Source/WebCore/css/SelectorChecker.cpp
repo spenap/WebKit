@@ -68,7 +68,7 @@ static bool matchesActiveViewTransitionTypePseudoClass(const Element& element, c
     if (&element != element.document().documentElement())
         return false;
 
-    if (const auto* viewTransition = element.document().activeViewTransition()) {
+    if (const RefPtr viewTransition = element.document().activeViewTransition()) {
         const auto& activeTypes = viewTransition->types();
 
         for (const auto& type : types) {

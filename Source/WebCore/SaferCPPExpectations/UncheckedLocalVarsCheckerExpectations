@@ -12,7 +12,6 @@ dom/TreeScope.cpp
 [ Mac ] editing/AlternativeTextController.cpp
 editing/ApplyBlockElementCommand.cpp
 editing/BreakBlockquoteCommand.cpp
-editing/ChangeListTypeCommand.cpp
 editing/DictationCommand.cpp
 editing/Editing.cpp
 editing/Editor.cpp
@@ -32,22 +31,14 @@ editing/cocoa/WebContentReaderCocoa.mm
 [ Mac ] editing/mac/EditorMac.mm
 [ Mac ] editing/mac/FrameSelectionMac.mm
 editing/markup.cpp
-html/CachedHTMLCollectionInlines.h
-html/CollectionTraversalInlines.h
 [ iOS ] html/HTMLAnchorElement.cpp
-html/HTMLDocument.cpp
-html/HTMLFormElement.cpp
 [ iOS ] html/HTMLImageLoader.cpp
 html/HTMLInputElement.cpp
 html/HTMLStyleElement.cpp
 html/HTMLTextFormControlElement.cpp
-html/MediaElementSession.cpp
-html/ModelDocument.cpp
-html/ValidatedFormListedElement.cpp
 html/ValidationMessage.cpp
 html/canvas/CanvasRenderingContext2D.cpp
 html/canvas/CanvasRenderingContext2DBase.cpp
-html/parser/HTMLConstructionSite.cpp
 inspector/InspectorAuditAccessibilityObject.cpp
 inspector/InspectorCanvas.cpp
 inspector/InspectorCanvasCallTracer.cpp

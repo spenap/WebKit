@@ -53,62 +53,16 @@ bindings/js/JSWindowProxy.cpp
 bindings/js/ScriptCachedFrameData.cpp
 bindings/js/ScriptModuleLoader.cpp
 bindings/js/StructuredClone.cpp
-contentextensions/ContentExtensionsBackend.cpp
-css/CSSCounterStyleDescriptors.cpp
-css/CSSFontFace.cpp
-css/CSSStyleSheet.cpp
-css/CSSValueList.cpp
-css/DeprecatedCSSOMPrimitiveValue.cpp
-css/ImmutableStyleProperties.cpp
 css/SelectorChecker.cpp
 css/ShorthandSerializer.cpp
-css/StyleProperties.cpp
-css/StyleRuleImport.cpp
-css/typedom/ComputedStylePropertyMapReadOnly.cpp
-css/values/CSSValueAggregates.h
-cssjit/SelectorCompiler.cpp
-dom/Document.cpp
-dom/Element.cpp
-dom/EventPath.cpp
-dom/MouseRelatedEvent.cpp
 dom/Node.cpp
 dom/Position.cpp
-dom/QualifiedNameCache.cpp
-dom/ShadowRoot.cpp
-dom/SimulatedClick.cpp
 dom/SpaceSplitString.cpp
-dom/StyledElement.cpp
 dom/TreeScope.cpp
-editing/ChangeListTypeCommand.cpp
-editing/Editing.cpp
-editing/Editor.cpp
-editing/FrameSelection.cpp
-editing/MarkupAccumulator.cpp
-editing/cocoa/DataDetection.mm
-editing/cocoa/NodeHTMLConverter.mm
 [ iOS ] editing/ios/DictationCommandIOS.cpp
 [ iOS ] editing/ios/EditorIOS.mm
-[ Mac ] editing/mac/FrameSelectionMac.mm
-html/CachedHTMLCollectionInlines.h
-html/CollectionTraversalInlines.h
 [ iOS ] html/HTMLAnchorElement.cpp
-html/HTMLDocument.cpp
-html/HTMLFormElement.cpp
 [ iOS ] html/HTMLImageLoader.cpp
-html/HTMLInputElement.cpp
-html/HTMLMediaElement.cpp
-html/HTMLTableElement.cpp
-html/ImageBitmap.cpp
-html/LazyLoadFrameObserver.cpp
-html/LazyLoadImageObserver.cpp
-html/MediaElementSession.cpp
-html/ModelDocument.cpp
-html/OffscreenCanvas.cpp
-html/ValidatedFormListedElement.cpp
-html/canvas/CanvasRenderingContext2DBase.cpp
-html/canvas/OffscreenCanvasRenderingContext2D.cpp
-html/parser/HTMLConstructionSite.cpp
-html/track/TextTrack.cpp
 inspector/InspectorAuditAccessibilityObject.cpp
 inspector/InspectorAuditResourcesObject.cpp
 inspector/InspectorCanvas.cpp
