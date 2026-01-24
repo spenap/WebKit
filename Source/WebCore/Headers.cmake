@@ -2299,6 +2299,7 @@ set(WebCore_PRIVATE_FRAMEWORK_HEADERS
     platform/Decimal.h
     platform/DeferrableTask.h
     platform/DragData.h
+    platform/DragEventTargetData.h
     platform/DragImage.h
     platform/DragItem.h
     platform/EventTrackingRegions.h

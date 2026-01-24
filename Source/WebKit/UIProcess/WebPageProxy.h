@@ -182,6 +182,7 @@ enum class DataOwnerType : uint8_t;
 enum class DeviceOrientationOrMotionPermissionState : uint8_t;
 enum class DiagnosticLoggingDomain : uint8_t;
 enum class DragControllerAction : uint8_t;
+enum class DragEventHandled : bool;
 enum class DragHandlingMethod : uint8_t;
 enum class DragOperation : uint8_t;
 enum class DragSourceAction : uint8_t;
@@ -560,6 +561,7 @@ struct AppPrivacyReportTestingData;
 struct DataDetectionResult;
 struct DocumentEditingContext;
 struct DocumentEditingContextRequest;
+struct DragEventForwardingData;
 struct DynamicViewportSizeUpdate;
 struct EditingRange;
 struct EditorState;
@@ -1721,6 +1723,7 @@ public:
     void dragCancelled();
     void setDragCaretRect(const WebCore::IntRect&);
 #if PLATFORM(COCOA)
+    void propagateDragAndDrop(DragEventForwardingData&&, const String&, WebCore::DragData&&);
     void startDrag(const WebCore::DragItem&, WebCore::ShareableBitmapHandle&& dragImageHandle, const std::optional<WebCore::NodeIdentifier>&);
     void setPromisedDataForImage(IPC::Connection&, const String& pasteboardName, WebCore::SharedMemoryHandle&& imageHandle, const String& filename, const String& extension,
         const String& title, const String& url, const String& visibleURL, WebCore::SharedMemoryHandle&& archiveHandle, const String& originIdentifier);

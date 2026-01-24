@@ -76,6 +76,7 @@
 #include "DownloadManager.h"
 #include "DownloadProxy.h"
 #include "DragControllerAction.h"
+#include "DragEventForwardingData.h"
 #include "DrawingAreaMessages.h"
 #include "DrawingAreaProxy.h"
 #include "DrawingAreaProxyMessages.h"
@@ -126,6 +127,7 @@
 #include "RemoteWebTouchEvent.h"
 #include "RestrictedOpenerType.h"
 #include "RunJavaScriptParameters.h"
+#include "SandboxExtension.h"
 #include "SharedBufferReference.h"
 #include "SpeechRecognitionPermissionManager.h"
 #include "SpeechRecognitionRemoteRealtimeMediaSource.h"
@@ -230,6 +232,7 @@
 #include <WebCore/DigitalCredentialsResponseData.h>
 #include <WebCore/DragController.h>
 #include <WebCore/DragData.h>
+#include <WebCore/DragEventTargetData.h>
 #include <WebCore/ElementContext.h>
 #include <WebCore/EventHandler.h>
 #include <WebCore/EventNames.h>
@@ -240,6 +243,7 @@
 #include <WebCore/FocusDirection.h>
 #include <WebCore/FocusOptions.h>
 #include <WebCore/FontAttributeChanges.h>
+#include <WebCore/FrameIdentifier.h>
 #include <WebCore/FrameLoader.h>
 #include <WebCore/FrameLoaderClient.h>
 #include <WebCore/GlobalFrameIdentifier.h>
@@ -3852,6 +3856,28 @@ void WebPageProxy::dragExited(DragData& dragData)
     performDragControllerAction(DragControllerAction::Exited, dragData);
 }
 
+#if PLATFORM(COCOA)
+void WebPageProxy::propagateDragAndDrop(DragEventForwardingData&& forwardingData, const String& dragStorageName, DragData&& dragData)
+{
+    grantAccessToCurrentPasteboardData(dragStorageName, [weakThis = WeakPtr { *this }, &forwardingData, dragStorageName, dragData = WTF::move(dragData)] () mutable {
+        RefPtr protectedThis = weakThis.get();
+        if (!protectedThis)
+            return;
+
+        DragData dragDataCopy(dragData);
+
+        protectedThis->sendWithAsyncReplyToProcessContainingFrame(forwardingData.targetFrameID, Messages::WebPage::PerformDragOperation(forwardingData.targetFrameID, WTF::move(dragData), WTF::move(forwardingData.sandboxExtensionHandle), WTF::move(forwardingData.sandboxExtensionsForUpload)), [protectedThis, frameID = forwardingData.targetFrameID, dragDataCopy = WTF::move(dragDataCopy), dragStorageName] (DragOperationResult dragOperationResult) mutable {
+            WTF::switchOn(dragOperationResult, [&](bool handled) {
+                protectedThis->protectedPageClient()->didPerformDragOperation(handled);
+            }, [&](DragEventForwardingData& forwardingData) mutable {
+                if (forwardingData.targetFrameID != frameID)
+                    protectedThis->propagateDragAndDrop(WTF::move(forwardingData), dragStorageName, WTF::move(dragDataCopy));
+            });
+        });
+    }, forwardingData.targetFrameID);
+}
+#endif
+
 void WebPageProxy::performDragOperation(DragData& dragData, const String& dragStorageName, SandboxExtension::Handle&& sandboxExtensionHandle, Vector<SandboxExtension::Handle>&& sandboxExtensionsForUpload)
 {
     if (!hasRunningProcess())
@@ -3866,16 +3892,31 @@ void WebPageProxy::performDragOperation(DragData& dragData, const String& dragSt
 
     performDragControllerAction(DragControllerAction::PerformDragOperation, dragData);
 #elif PLATFORM(COCOA)
-    grantAccessToCurrentPasteboardData(dragStorageName, [this, protectedThis = Ref { *this }, dragStorageName, dragData = WTF::move(dragData), sandboxExtensionHandle = WTF::move(sandboxExtensionHandle), sandboxExtensionsForUpload = WTF::move(sandboxExtensionsForUpload)] () mutable {
-        sendWithAsyncReply(Messages::WebPage::PerformDragOperation(dragData, WTF::move(sandboxExtensionHandle), WTF::move(sandboxExtensionsForUpload)), [this, protectedThis = Ref { *this }] (bool handled) {
-            if (RefPtr pageClient = this->pageClient())
-                pageClient->didPerformDragOperation(handled);
+    grantAccessToCurrentPasteboardData(dragStorageName, [weakThis = WeakPtr { *this }, dragStorageName, dragData = WTF::move(dragData), sandboxExtensionHandle = WTF::move(sandboxExtensionHandle), sandboxExtensionsForUpload = WTF::move(sandboxExtensionsForUpload)] () mutable {
+        RefPtr protectedThis = weakThis.get();
+        if (!protectedThis)
+            return;
+
+        if (!protectedThis->m_mainFrame)
+            return;
+
+        DragData dragDataCopy(dragData);
+
+        protectedThis->sendWithAsyncReplyToProcessContainingFrame(protectedThis->m_mainFrame->frameID(), Messages::WebPage::PerformDragOperation(protectedThis->m_mainFrame->frameID(), WTF::move(dragData), WTF::move(sandboxExtensionHandle), WTF::move(sandboxExtensionsForUpload)), [protectedThis, frameID = protectedThis->m_mainFrame->frameID(), dragDataCopy = WTF::move(dragDataCopy), dragStorageName] (DragOperationResult dragOperationResult) mutable {
+            WTF::switchOn(dragOperationResult, [&](bool handled) {
+                protectedThis->protectedPageClient()->didPerformDragOperation(handled);
+            }, [&](DragEventForwardingData& forwardingData) {
+                if (forwardingData.targetFrameID != frameID)
+                    protectedThis->propagateDragAndDrop(WTF::move(forwardingData), dragStorageName, WTF::move(dragDataCopy));
+            });
         });
     });
 #else
-    sendWithAsyncReply(Messages::WebPage::PerformDragOperation(dragData, WTF::move(sandboxExtensionHandle), WTF::move(sandboxExtensionsForUpload)), [this, protectedThis = Ref { *this }] (bool handled) {
-        if (RefPtr pageClient = this->pageClient())
-            pageClient->didPerformDragOperation(handled);
+    if (!m_mainFrame)
+        return;
+
+    sendWithAsyncReplyToProcessContainingFrame(m_mainFrame->frameID(), Messages::WebPage::PerformDragOperation(m_mainFrame->frameID(), WTF::move(dragData), WTF::move(sandboxExtensionHandle), WTF::move(sandboxExtensionsForUpload)), [protectedThis = Ref { *this }, frameID = m_mainFrame->frameID()] (DragOperationResult dragOperationResult) mutable {
+        protectedThis->protectedPageClient()->didPerformDragOperation(std::holds_alternative<bool>(dragOperationResult) ? std::get<bool>(dragOperationResult) : false);
     });
 #endif
 }

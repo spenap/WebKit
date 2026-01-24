@@ -1577,6 +1577,7 @@
 		6BE969CD1E54E054008B7483 /* ResourceLoadStatisticsClassifier.h in Headers */ = {isa = PBXBuildFile; fileRef = 6BE969CC1E54E054008B7483 /* ResourceLoadStatisticsClassifier.h */; };
 		6D4DF20C2D824242001F964C /* ScreenTimeWebsiteDataSupport.h in Headers */ = {isa = PBXBuildFile; fileRef = 6D77DBC22D80D3D6008ED0DD /* ScreenTimeWebsiteDataSupport.h */; };
 		6D9A666E2A27FAE300BD68A0 /* WebTouchEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F4001002527D73C00E91DA7 /* WebTouchEvent.h */; };
+		6DA3A7A22F1AED65000F548A /* DragEventForwardingData.h in Headers */ = {isa = PBXBuildFile; fileRef = 6DA3A7A12F1AEC87000F548A /* DragEventForwardingData.h */; };
 		6EE849C81368D9390038D481 /* WKInspectorPrivateMac.h in Headers */ = {isa = PBXBuildFile; fileRef = 6EE849C61368D92D0038D481 /* WKInspectorPrivateMac.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		7114EA442EBCB3FD00190912 /* RemoteAnimationUtilities.h in Headers */ = {isa = PBXBuildFile; fileRef = 7114EA422EBCB35600190912 /* RemoteAnimationUtilities.h */; };
 		711725A9228D564300018514 /* WebsiteLegacyOverflowScrollingTouchPolicy.h in Headers */ = {isa = PBXBuildFile; fileRef = 711725A8228D563A00018514 /* WebsiteLegacyOverflowScrollingTouchPolicy.h */; };
@@ -6752,6 +6753,8 @@
 		6D77DBC22D80D3D6008ED0DD /* ScreenTimeWebsiteDataSupport.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ScreenTimeWebsiteDataSupport.h; sourceTree = "<group>"; };
 		6D77DBC32D80D3EC008ED0DD /* ScreenTimeWebsiteDataSupport.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ScreenTimeWebsiteDataSupport.mm; sourceTree = "<group>"; };
 		6D8A91A511F0EFD100DD01FE /* com.apple.WebProcess.sb.in */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = com.apple.WebProcess.sb.in; path = WebProcess/com.apple.WebProcess.sb.in; sourceTree = "<group>"; };
+		6DA3A7A12F1AEC87000F548A /* DragEventForwardingData.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DragEventForwardingData.h; sourceTree = "<group>"; };
+		6DA3A7A42F1AEF7D000F548A /* DragEventForwardingData.serialization.in */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DragEventForwardingData.serialization.in; sourceTree = "<group>"; };
 		6EE849C61368D92D0038D481 /* WKInspectorPrivateMac.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = WKInspectorPrivateMac.h; path = mac/WKInspectorPrivateMac.h; sourceTree = "<group>"; };
 		7114EA422EBCB35600190912 /* RemoteAnimationUtilities.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RemoteAnimationUtilities.h; sourceTree = "<group>"; };
 		7114EA432EBCB35600190912 /* RemoteAnimationUtilities.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RemoteAnimationUtilities.cpp; sourceTree = "<group>"; };
@@ -10060,6 +10063,8 @@
 				F488B9142AD09C9C00792C16 /* DocumentEditingContext.serialization.in */,
 				C517388012DF8F4F00EE3F47 /* DragControllerAction.h */,
 				2D9BECF62B30936400D0AE99 /* DragControllerAction.serialization.in */,
+				6DA3A7A12F1AEC87000F548A /* DragEventForwardingData.h */,
+				6DA3A7A42F1AEF7D000F548A /* DragEventForwardingData.serialization.in */,
 				0FB659221208B4DB0044816C /* DrawingAreaInfo.h */,
 				F4C8A13A2AC6289900B94BA6 /* DrawingAreaInfo.serialization.in */,
 				2D9CD5EE21FA75EE0029ACFA /* EditingRange.cpp */,
@@ -17881,6 +17886,7 @@
 				1AB7D61A1288B9D900CFD08C /* DownloadProxyMessages.h in Headers */,
 				C517388112DF8F4F00EE3F47 /* DragControllerAction.h in Headers */,
 				F496A4311F58A272004C1757 /* DragDropInteractionState.h in Headers */,
+				6DA3A7A22F1AED65000F548A /* DragEventForwardingData.h in Headers */,
 				BC8452A81162C80900CAB9B5 /* DrawingArea.h in Headers */,
 				0FB659231208B4DB0044816C /* DrawingAreaInfo.h in Headers */,
 				1A64229A12DD029200CAAE2C /* DrawingAreaMessages.h in Headers */,

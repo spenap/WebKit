@@ -695,6 +695,7 @@ SERIALIZATION_DESCRIPTION_FILES = \
 	Shared/DebuggableInfoData.serialization.in \
 	Shared/DocumentEditingContext.serialization.in \
 	Shared/DragControllerAction.serialization.in \
+	Shared/DragEventForwardingData.serialization.in \
 	Shared/DrawingAreaInfo.serialization.in \
 	Shared/EditingRange.serialization.in \
 	Shared/EditorState.serialization.in \
