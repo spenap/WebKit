@@ -507,9 +507,11 @@ void WebLoaderStrategy::scheduleLoadFromNetworkProcess(ResourceLoader& resourceL
 
     if (document) {
         loadParameters.frameURL = document->url();
+#if ENABLE(CONTENT_EXTENSIONS) || (ENABLE(CONTENT_FILTERING) && HAVE(WEBCONTENTRESTRICTIONS))
+    if (RefPtr page = document->page())
+        loadParameters.mainDocumentURL = page->mainFrameURL();
+#endif
 #if ENABLE(CONTENT_EXTENSIONS)
-        if (RefPtr page = document->page())
-            loadParameters.mainDocumentURL = page->mainFrameURL();
         // FIXME: Instead of passing userContentControllerIdentifier, the NetworkProcess should be able to get it using webPageId.
         if (RefPtr webPage = webFrame ? webFrame->page() : nullptr)
             loadParameters.userContentControllerIdentifier = webPage->userContentControllerIdentifier();
@@ -952,9 +954,11 @@ void WebLoaderStrategy::startPingLoad(LocalFrame& frame, ResourceRequest& reques
 #endif
 
     loadParameters.frameURL = document->url();
-#if ENABLE(CONTENT_EXTENSIONS)
+#if ENABLE(CONTENT_EXTENSIONS) || (ENABLE(CONTENT_FILTERING) && HAVE(WEBCONTENTRESTRICTIONS))
     if (RefPtr page = document->page())
         loadParameters.mainDocumentURL = page->mainFrameURL();
+#endif
+#if ENABLE(CONTENT_EXTENSIONS)
     // FIXME: Instead of passing userContentControllerIdentifier, we should just pass webPageId to NetworkProcess.
     loadParameters.userContentControllerIdentifier = webPage->userContentControllerIdentifier();
 #endif
