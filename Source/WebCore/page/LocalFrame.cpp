@@ -1653,7 +1653,7 @@ void LocalFrame::showMemoryMonitorError()
 bool LocalFrame::frameCanCreatePaymentSession() const
 {
 #if ENABLE(APPLE_PAY)
-    if (auto* documentLoader = loader().activeDocumentLoader())
+    if (RefPtr documentLoader = loader().activeDocumentLoader())
         return PaymentSession::isSecureForSession(documentLoader->response().url(), documentLoader->response().certificateInfo());
     return false;
 #else

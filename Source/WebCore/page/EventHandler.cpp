@@ -1550,7 +1550,7 @@ RefPtr<Frame> EventHandler::subframeForTargetNode(Node* node)
     if (!renderWidget)
         return nullptr;
 
-    auto* frameView = dynamicDowncast<FrameView>(renderWidget->widget());
+    RefPtr frameView = dynamicDowncast<FrameView>(renderWidget->widget());
     if (!frameView)
         return nullptr;
 
@@ -1682,7 +1682,7 @@ std::optional<Cursor> EventHandler::selectCursor(const HitTestResult& result, bo
         return std::nullopt;
 
     auto renderer = node->renderer();
-    if (auto element = dynamicDowncast<Element>(*node); element && result.pseudoElementIdentifier()) {
+    if (RefPtr element = dynamicDowncast<Element>(*node); element && result.pseudoElementIdentifier()) {
         auto* pseudoElementRenderer = Styleable(*element, result.pseudoElementIdentifier()).renderer();
         renderer = pseudoElementRenderer ? pseudoElementRenderer : renderer;
     }
@@ -1742,15 +1742,15 @@ std::optional<Cursor> EventHandler::selectCursor(const HitTestResult& result, bo
             if (!visibleContentRect.contains(cursorRect))
                 continue;
 
-            Image* image = cachedImage->imageForRenderer(renderer);
+            RefPtr image = cachedImage->imageForRenderer(renderer);
 #if ENABLE(MOUSE_CURSOR_SCALE)
             // Ensure no overflow possible in calculations above.
             if (scale < minimumCursorScale)
                 continue;
-            return Cursor(image, hotSpot, scale);
+            return Cursor(image.get(), hotSpot, scale);
 #else
             ASSERT(scale == 1);
-            return Cursor(image, hotSpot);
+            return Cursor(image.get(), hotSpot);
 #endif // ENABLE(MOUSE_CURSOR_SCALE)
         }
     }
@@ -2051,9 +2051,9 @@ HandleUserInputEventResult EventHandler::handleMousePressEvent(const PlatformMou
     m_mousePressNode = mouseEvent.targetNode();
     frame->protectedDocument()->setFocusNavigationStartingNode(mouseEvent.protectedTargetNode().get());
 
-    Scrollbar* scrollbar = scrollbarForMouseEvent(mouseEvent, frame->view());
-    updateLastScrollbarUnderMouse(scrollbar, SetOrClearLastScrollbar::Set);
-    bool passedToScrollbar = scrollbar && passMousePressEventToScrollbar(mouseEvent, scrollbar);
+    RefPtr scrollbar = scrollbarForMouseEvent(mouseEvent, frame->view());
+    updateLastScrollbarUnderMouse(scrollbar.get(), SetOrClearLastScrollbar::Set);
+    bool passedToScrollbar = scrollbar && passMousePressEventToScrollbar(mouseEvent, scrollbar.get());
 
     if (!passedToScrollbar) {
         auto subframe = subframeForHitTestResult(mouseEvent);
@@ -2105,12 +2105,13 @@ HandleUserInputEventResult EventHandler::handleMousePressEvent(const PlatformMou
         return false;
     }
 
-    RenderLayer* layer = m_clickNode->renderer() ? m_clickNode->renderer()->enclosingLayer() : nullptr;
     auto localPoint = roundedIntPoint(mouseEvent.hitTestResult().localPoint());
-    if (layer && layer->isPointInResizeControl(localPoint)) {
+    if (CheckedPtr layer = m_clickNode->renderer() ? m_clickNode->renderer()->enclosingLayer() : nullptr; layer && layer->isPointInResizeControl(localPoint)) {
         layer->setInResizeMode(true);
         m_resizeLayer = *layer;
         m_offsetFromResizeCorner = layer->offsetFromResizeCorner(localPoint);
+        layer = nullptr;
+
         dispatchMouseEvent(eventNames().mousedownEvent, mouseEvent.protectedTargetNode().get(), m_clickCount, platformMouseEvent, FireMouseOverOut::Yes);
         return true;
     }
@@ -2193,7 +2194,7 @@ bool EventHandler::handleMouseDoubleClickEvent(const PlatformMouseEvent& platfor
 
 ScrollableArea* EventHandler::enclosingScrollableArea(Node* node) const
 {
-    for (auto ancestor = node; ancestor; ancestor = ancestor->parentOrShadowHostNode()) {
+    for (RefPtr ancestor = node; ancestor; ancestor = ancestor->parentOrShadowHostNode()) {
         if (is<HTMLIFrameElement>(*ancestor))
             return nullptr;
 
@@ -2219,11 +2220,11 @@ ScrollableArea* EventHandler::enclosingScrollableArea(Node* node) const
             }
         }
 
-        auto* layer = renderer->enclosingLayer();
+        CheckedPtr layer = renderer->enclosingLayer();
         if (!layer)
             return nullptr;
 
-        if (auto* scrollableLayer = layer->enclosingScrollableLayer(IncludeSelfOrNot::IncludeSelf, CrossFrameBoundaries::No)) {
+        if (CheckedPtr scrollableLayer = layer->enclosingScrollableLayer(IncludeSelfOrNot::IncludeSelf, CrossFrameBoundaries::No)) {
             if (!scrollableLayer->isRenderViewLayer())
                 return scrollableLayer->scrollableArea();
         }
@@ -2452,7 +2453,7 @@ static RefPtr<Node> targetNodeForClickEvent(Node* mousePressNode, Node* mouseRel
             return commonAncestor;
     }
 
-    auto mouseReleaseShadowHost = mouseReleaseNode->shadowHost();
+    RefPtr mouseReleaseShadowHost = mouseReleaseNode->shadowHost();
     if (mouseReleaseShadowHost && mouseReleaseShadowHost == mousePressNode->shadowHost()) {
         // We want to dispatch the click to the shadow tree host element to give listeners the illusion that the
         // shadow tree is a single element. For example, we want to give the illusion that <input type="range">
@@ -2970,7 +2971,7 @@ RefPtr<Element> EventHandler::textRecognitionCandidateElement() const
         return nullptr;
 
     if (candidateElement->document().settings().textRecognitionInVideosEnabled()) {
-        if (auto video = dynamicDowncast<HTMLVideoElement>(*candidateElement); video && video->paused())
+        if (RefPtr video = dynamicDowncast<HTMLVideoElement>(*candidateElement); video && video->paused())
             return candidateElement;
     }
 
@@ -2992,7 +2993,7 @@ static RefPtr<Element> getElementOrAncestorElementForNode(Node* targetNode)
             targetElement = asElement;
             break;
         }
-        targetNode = targetNode->parentInComposedTree();
+        SUPPRESS_UNCOUNTED_LOCAL targetNode = targetNode->parentInComposedTree();
     }
 
     return targetElement;
@@ -3044,10 +3045,10 @@ void EventHandler::updateMouseEventTargetNode(const AtomString& eventType, Node*
             bool hasCapturingMouseLeaveListener = hierarchyHasCapturingEventListeners(m_lastElementUnderMouse, eventNames.pointerleaveEvent, eventNames.mouseleaveEvent);
 
             Vector<Ref<Element>, 32> leftElementsChain;
-            for (Element* element = m_lastElementUnderMouse; element; element = element->parentElementInComposedTree())
+            for (RefPtr element = m_lastElementUnderMouse; element; element = element->parentElementInComposedTree())
                 leftElementsChain.append(*element);
             Vector<WeakPtr<Element, WeakPtrImplWithEventTargetData>, 32> elementsUnderMouse;
-            for (Element* element = m_elementUnderMouse; element; element = element->parentElementInComposedTree())
+            for (RefPtr element = m_elementUnderMouse; element; element = element->parentElementInComposedTree())
                 elementsUnderMouse.append(element);
 
             Vector enteredElementsChain = elementsUnderMouse;
@@ -3112,7 +3113,7 @@ void EventHandler::clearElementUnderMouse()
     if (!page)
         return;
 
-    auto* imageOverlayController = page->imageOverlayControllerIfExists();
+    RefPtr imageOverlayController = page->imageOverlayControllerIfExists();
     if (!imageOverlayController)
         return;
 
@@ -3818,7 +3819,7 @@ bool EventHandler::sendContextMenuEvent(const PlatformMouseEvent& event)
 
 #if ENABLE(POINTER_LOCK)
     // Context menus should not be handled while pointer is locked.
-    if (auto* page = frame->page(); !page || page->pointerLockController().isLocked())
+    if (RefPtr page = frame->page(); !page || page->pointerLockController().isLocked())
         return false;
 #endif
 
@@ -4845,7 +4846,7 @@ bool EventHandler::handleTextInputEvent(const String& text, Event* underlyingEve
 
     Ref frame = m_frame.get();
 
-    EventTarget* target;
+    RefPtr<EventTarget> target;
     if (underlyingEvent)
         target = underlyingEvent->target();
     else

@@ -232,7 +232,7 @@ FloatRect ScrollView::exposedContentRect() const
         return platformExposedContentRect();
 #endif
     
-    const ScrollView* parent = this->parent();
+    RefPtr parent = this->parent();
     if (!parent)
         return m_delegatedScrollingGeometry ? m_delegatedScrollingGeometry->exposedContentRect : FloatRect();
 
@@ -1006,7 +1006,7 @@ FloatRect ScrollView::contentsToView(FloatRect rect) const
 
 IntPoint ScrollView::contentsToContainingViewContents(const IntPoint& point) const
 {
-    if (const ScrollView* parentScrollView = parent()) {
+    if (const RefPtr parentScrollView = parent()) {
         IntPoint pointInContainingView = convertToContainingView(contentsToView(point));
         return parentScrollView->viewToContents(pointInContainingView);
     }
@@ -1016,7 +1016,7 @@ IntPoint ScrollView::contentsToContainingViewContents(const IntPoint& point) con
 
 IntRect ScrollView::contentsToContainingViewContents(IntRect rect) const
 {
-    if (const ScrollView* parentScrollView = parent()) {
+    if (const RefPtr parentScrollView = parent()) {
         IntRect rectInContainingView = convertToContainingView(contentsToView(rect));
         return parentScrollView->viewToContents(rectInContainingView);
     }
@@ -1433,11 +1433,11 @@ void ScrollView::paintScrollbars(GraphicsContext& context, const IntRect& rect)
 
 void ScrollView::paintPanScrollIcon(GraphicsContext& context)
 {
-    static Image& panScrollIcon = ImageAdapter::loadPlatformResource("panIcon").leakRef();
+    static NeverDestroyed<Ref<Image>> panScrollIcon = ImageAdapter::loadPlatformResource("panIcon");
     IntPoint iconGCPoint = m_panScrollIconPoint;
     if (parent())
         iconGCPoint = parent()->windowToContents(iconGCPoint);
-    context.drawImage(panScrollIcon, iconGCPoint);
+    context.drawImage(panScrollIcon.get(), iconGCPoint);
 }
 
 void ScrollView::paint(GraphicsContext& context, const IntRect& rect, SecurityOriginPaintPolicy securityOriginPaintPolicy, RegionContext* regionContext)

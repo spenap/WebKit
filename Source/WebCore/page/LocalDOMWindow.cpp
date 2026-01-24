@@ -671,8 +671,8 @@ ExceptionOr<Ref<NodeList>> LocalDOMWindow::collectMatchingElementsInFlatTree(Nod
     SelectorQuery& query = queryOrException.releaseReturnValue();
 
     Vector<Ref<Element>> result;
-    for (auto& node : composedTreeDescendants(*scopeContainer)) {
-        if (RefPtr element = dynamicDowncast<Element>(node); element && query.matches(*element) && !element->isInUserAgentShadowTree())
+    for (Ref node : composedTreeDescendants(*scopeContainer)) {
+        if (RefPtr element = dynamicDowncast<Element>(node.ptr()); element && query.matches(*element) && !element->isInUserAgentShadowTree())
             result.append(element.releaseNonNull());
     }
 
@@ -691,8 +691,8 @@ ExceptionOr<RefPtr<Element>> LocalDOMWindow::matchingElementInFlatTree(Node& sco
 
     SelectorQuery& query = queryOrException.releaseReturnValue();
 
-    for (auto& node : composedTreeDescendants(*scopeContainer)) {
-        if (RefPtr element = dynamicDowncast<Element>(node); element && query.matches(*element) && !element->isInUserAgentShadowTree())
+    for (Ref node : composedTreeDescendants(*scopeContainer)) {
+        if (RefPtr element = dynamicDowncast<Element>(node.ptr()); element && query.matches(*element) && !element->isInUserAgentShadowTree())
             return element;
     }
 
@@ -2584,7 +2584,7 @@ EventTimingInteractionID LocalDOMWindow::computeInteractionID(Event& event, Even
     case EventType::click: {
         auto clickEvent = downcast<MouseEvent>(&event);
         if (clickEvent->isSimulated()) {
-            if (auto* keyboardEvent = dynamicDowncast<KeyboardEvent>(clickEvent->underlyingEvent())) {
+            if (RefPtr keyboardEvent = dynamicDowncast<KeyboardEvent>(clickEvent->underlyingEvent())) {
                 if (keyboardEvent->interactionID().isUnassigned())
                     keyboardEvent->setInteractionID(generateInteractionID());
 
@@ -3003,7 +3003,7 @@ void LocalDOMWindow::showModalDialog(const String& urlString, const String& dial
         return;
 
     RefPtr frame = localFrame();
-    auto* page = frame->page();
+    RefPtr page = frame->page();
     if (!page)
         return;
 
@@ -3084,8 +3084,8 @@ PushManager& LocalDOMWindow::pushManager()
 
 static URL toScope(LocalDOMWindow& window)
 {
-    if (auto* frame = window.localFrame()) {
-        if (auto* document = frame->document())
+    if (RefPtr frame = window.localFrame()) {
+        if (RefPtr document = frame->document())
             return URL { document->url().protocolHostAndPort() };
     }
 
