@@ -594,7 +594,7 @@ public:
     RefPtr<Element> findFocusDelegate(FocusTrigger = FocusTrigger::Other);
     RefPtr<Element> findAutofocusDelegate(FocusTrigger = FocusTrigger::Other);
 
-    static AXTextStateChangeIntent defaultFocusTextStateChangeIntent() { return AXTextStateChangeIntent(AXTextStateChangeTypeSelectionMove, AXTextSelection { AXTextSelectionDirectionDiscontiguous, AXTextSelectionGranularityUnknown, true }); }
+    static AXTextStateChangeIntent defaultFocusTextStateChangeIntent() { return AXTextStateChangeIntent(AXTextStateChangeType::SelectionMove, AXTextSelection { AXTextSelectionDirection::Discontiguous, AXTextSelectionGranularity::Unknown, true }); }
     virtual void focus(const FocusOptions& = { });
     virtual void focusForBindings(FocusOptions&&);
     void findTargetAndUpdateFocusAppearance(SelectionRestorationMode, SelectionRevealMode = SelectionRevealMode::Reveal);
