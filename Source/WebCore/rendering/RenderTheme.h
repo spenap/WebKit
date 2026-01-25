@@ -245,7 +245,6 @@ public:
     virtual void setColorWellSwatchBackground(HTMLElement&, Color);
 
     // Functions for <select> elements.
-    virtual bool delegatesMenuListRendering() const { return false; }
     virtual bool popsMenuByArrowKeys() const { return false; }
     virtual bool popsMenuBySpaceOrReturn() const { return false; }
 
