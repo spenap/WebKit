@@ -976,6 +976,11 @@ static void addBrowsingContextControllerMethodStubsIfNeeded()
     [self _invalidateResizeAssertions];
 #endif
 
+#if ENABLE(SYSTEM_TEXT_EXTRACTION)
+    if (_textExtractionIdentifier)
+        [self _removeTextExtractionAnnotation];
+#endif
+
     [super dealloc];
 }
 
@@ -7352,6 +7357,17 @@ static OptionSet<WebCore::DataDetectorType> coreDataDetectorTypes(_WKTextExtract
     });
 #endif // USE(APPLE_INTERNAL_SDK) || (!PLATFORM(WATCHOS) && !PLATFORM(APPLETV))
 }
+
+#if ENABLE(SYSTEM_TEXT_EXTRACTION)
+
+- (NSUUID *)_textExtractionIdentifier
+{
+    if (!_textExtractionIdentifier)
+        _textExtractionIdentifier = WTF::UUID::createVersion4Weak();
+    return _textExtractionIdentifier->createNSUUID().autorelease();
+}
+
+#endif
 
 #if ENABLE(TEXT_EXTRACTION_FILTER)
 

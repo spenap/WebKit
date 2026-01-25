@@ -520,6 +520,10 @@ struct PerWebProcessState {
     HashMap<unsigned /* string hash */, TextValidationMapValue> _textValidationCache;
 #endif
     RefPtr<WebKit::TextExtractionURLCache> _textExtractionURLCache;
+
+#if ENABLE(SYSTEM_TEXT_EXTRACTION)
+    std::optional<WTF::UUID> _textExtractionIdentifier;
+#endif
 }
 
 - (BOOL)_isValid;
@@ -698,7 +702,20 @@ WebCore::CocoaColor *sampledFixedPositionContentColor(const WebCore::FixedContai
 
 @class WKTextExtractionItem;
 
+#if ENABLE(SYSTEM_TEXT_EXTRACTION)
+
+@interface WKWebView (SystemTextExtraction)
+- (void)_addTextExtractionAnnotation;
+- (void)_removeTextExtractionAnnotation;
+@end
+
+#endif
+
 @interface WKWebView (NonCpp)
+
+#if ENABLE(SYSTEM_TEXT_EXTRACTION)
+@property (nonatomic, readonly, copy) NSUUID *_textExtractionIdentifier;
+#endif
 
 #if PLATFORM(MAC)
 @property (nonatomic, setter=_setAlwaysBounceVertical:) BOOL _alwaysBounceVertical;
