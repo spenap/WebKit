@@ -75,7 +75,7 @@
 
 #if ENABLE(FORM_CONTROL_REFRESH)
 #include "PathCG.h"
-#include "RenderThemeCocoa.h"
+#include "RenderTheme.h"
 #endif
 
 namespace WebCore {

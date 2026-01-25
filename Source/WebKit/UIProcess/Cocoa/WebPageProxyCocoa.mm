@@ -89,6 +89,7 @@
 #import <WebCore/PlaybackSessionInterfaceAVKitLegacy.h>
 #import <WebCore/PlaybackSessionInterfaceMac.h>
 #import <WebCore/PlaybackSessionInterfaceTVOS.h>
+#import <WebCore/RenderTheme.h>
 #import <WebCore/RunLoopObserver.h>
 #import <WebCore/SearchPopupMenuCocoa.h>
 #import <WebCore/SleepDisabler.h>
@@ -124,10 +125,7 @@ SOFT_LINK_CLASS_OPTIONAL(Synapse, SYNotesActivationObserver)
 #endif
 
 #if PLATFORM(IOS_FAMILY)
-#import <WebCore/RenderThemeIOS.h>
 #import "UIKitSPI.h"
-#else
-#import <WebCore/RenderThemeMac.h>
 #endif
 
 #if HAVE(SCREEN_CAPTURE_KIT)

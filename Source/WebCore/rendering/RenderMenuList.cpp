@@ -62,7 +62,6 @@
 
 #if PLATFORM(IOS_FAMILY)
 #include "LocalizedStrings.h"
-#include "RenderThemeIOS.h"
 #endif
 
 namespace WebCore {

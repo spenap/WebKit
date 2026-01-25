@@ -395,7 +395,6 @@
 
 #if PLATFORM(IOS_FAMILY)
 #include "MediaSessionHelperIOS.h"
-#include "RenderThemeIOS.h"
 #endif
 
 #if PLATFORM(COCOA)
