@@ -2903,7 +2903,7 @@ static bool scrollViewCanScroll(UIScrollView *scrollView)
         !![_contentView sizeChangedSinceLastVisibleContentRectUpdate],
         !!_allowsViewportShrinkToFit,
         scrollViewCanScroll([self _scroller]),
-        _needsScrollend,
+        !!_needsScrollend,
         velocityData,
         downcast<WebKit::RemoteLayerTreeDrawingAreaProxy>(*drawingArea).lastCommittedMainFrameLayerTreeTransactionID()
     } };
