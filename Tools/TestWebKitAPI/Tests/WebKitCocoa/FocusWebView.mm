@@ -44,15 +44,15 @@
 - (void)_setKeyWindow:(NSWindow *)newKeyWindow;
 @end
 
-@interface TestNSTextView : NSTextView
+@interface TestTextView : NSTextView
 #else
-@interface TestNSTextView : UITextView
+@interface TestTextView : UITextView
 #endif
 @property (readonly) BOOL didBecomeFirstResponder;
 @property (readonly) BOOL didSeeKeyDownEvent;
 @end
 
-@implementation TestNSTextView {
+@implementation TestTextView {
     BOOL _isBecomingFirstResponder;
 }
 
@@ -144,7 +144,7 @@ TEST(FocusWebView, AdvanceFocusRelinquishToChrome)
 #endif
     NSRect textFieldFrame = NSMakeRect(0, 400, 400, 100);
 
-    __block RetainPtr textField = adoptNS([[TestNSTextView alloc] initWithFrame:textFieldFrame]);
+    __block RetainPtr textField = adoptNS([[TestTextView alloc] initWithFrame:textFieldFrame]);
     textField.get().editable = YES;
     textField.get().selectable = YES;
 #if PLATFORM(MAC)
@@ -324,7 +324,7 @@ void CrossOriginIframeRelinquishToChromeTests::runTest()
     NSRect newWindowFrame = NSMakeRect(0, 0, 400, 500);
 #endif
     NSRect textFieldFrame = NSMakeRect(0, 400, 400, 100);
-    RetainPtr textField = adoptNS([[TestNSTextView alloc] initWithFrame:textFieldFrame]);
+    RetainPtr textField = adoptNS([[TestTextView alloc] initWithFrame:textFieldFrame]);
     [textField setEditable:YES];
     [textField setSelectable:YES];
 
