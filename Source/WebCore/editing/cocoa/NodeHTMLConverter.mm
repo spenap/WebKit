@@ -55,6 +55,7 @@
 #import "HTMLConverter.h"
 #import "HTMLElement.h"
 #import "HTMLFrameElement.h"
+#import "HTMLHeadingElement.h"
 #import "HTMLIFrameElement.h"
 #import "HTMLImageElement.h"
 #import "HTMLInputElement.h"
@@ -1031,18 +1032,8 @@ NSDictionary *HTMLConverter::computedAttributesForElement(Element& element)
         Element& coreBlockElement = *blockElement;
         RetainPtr<NSMutableParagraphStyle> paragraphStyle = adoptNS([defaultParagraphStyle() mutableCopy]);
         unsigned heading = 0;
-        if (coreBlockElement.hasTagName(h1Tag))
-            heading = 1;
-        else if (coreBlockElement.hasTagName(h2Tag))
-            heading = 2;
-        else if (coreBlockElement.hasTagName(h3Tag))
-            heading = 3;
-        else if (coreBlockElement.hasTagName(h4Tag))
-            heading = 4;
-        else if (coreBlockElement.hasTagName(h5Tag))
-            heading = 5;
-        else if (coreBlockElement.hasTagName(h6Tag))
-            heading = 6;
+        if (RefPtr headingElement = dynamicDowncast<HTMLHeadingElement>(coreBlockElement))
+            heading = headingElement->level();
         else if (coreBlockElement.hasTagName(blockquoteTag) && _topPresentationIntent)
             [attrs setObject:_topPresentationIntent.get() forKey:NSPresentationIntentAttributeName];
         bool isParagraph = coreBlockElement.hasTagName(pTag) || coreBlockElement.hasTagName(liTag) || heading || coreBlockElement.hasTagName(blockquoteTag);
