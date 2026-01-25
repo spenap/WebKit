@@ -97,6 +97,7 @@ enum class TapHandlingResult : uint8_t;
 - (void)_willInvokeUIScrollViewDelegateCallback;
 - (void)_didInvokeUIScrollViewDelegateCallback;
 
+- (std::optional<WebKit::VisibleContentRectUpdateInfo>)_createVisibleContentRectUpdate;
 - (void)_scheduleVisibleContentRectUpdate;
 - (void)_scheduleForcedVisibleContentRectUpdate;
 

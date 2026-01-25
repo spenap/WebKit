@@ -30,6 +30,7 @@
 #if !__has_feature(modules)
 
 #import "PDFPluginIdentifier.h"
+#import "VisibleContentRectUpdateInfo.h"
 #import <WebCore/CocoaView.h>
 #import <WebCore/CocoaWritingToolsTypes.h>
 #import <WebCore/ColorCocoa.h>
@@ -69,6 +70,7 @@
 #import <WebCore/FloatRect.h>
 #import <WebCore/IntDegrees.h>
 #import <WebCore/PlatformLayerIdentifier.h>
+#import <WebCore/VelocityData.h>
 #import <WebCore/ViewportArguments.h>
 #endif
 
@@ -469,6 +471,8 @@ struct PerWebProcessState {
 
     RetainPtr<NSArray<NSNumber *>> _scrollViewDefaultAllowedTouchTypes;
     std::unique_ptr<WebKit::PointerTouchCompatibilitySimulator> _pointerTouchCompatibilitySimulator;
+
+    WebCore::HistoricalVelocityData _historicalKinematicData;
 #endif // PLATFORM(IOS_FAMILY)
 
 #if PLATFORM(VISION)
