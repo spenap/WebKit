@@ -1248,7 +1248,7 @@ sub GeneratePut
     }
     
     if ($namedSetterOperation) {
-        # FIMXE: We need a more comprehensive story for Symbols.
+        # FIXME: We need a more comprehensive story for Symbols.
         push(@$outputArray, "    if (!propertyName.isSymbol()) {\n");
         
         my $additionalIndent = "";
@@ -1491,7 +1491,7 @@ sub GenerateDefineOwnProperty
     # 2. If O supports named properties, O does not implement an interface with the [Global]
     #    extended attribute and P is not an unforgeable property name of O, then:
     if ($namedGetterOperation && !IsGlobalInterface($interface)) {
-        # FIMXE: We need a more comprehensive story for Symbols.
+        # FIXME: We need a more comprehensive story for Symbols.
         push(@$outputArray, "    if (!propertyName.isSymbol()) {\n");
         
         my $additionalIndent = "";
