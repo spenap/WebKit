@@ -336,7 +336,7 @@ void WebFrameProxy::didCommitLoad(const String& contentType, const WebCore::Cert
     m_documentSecurityPolicy = WTF::move(documentSecurityPolicy);
 
     RefPtr webPage = page();
-    if (webPage && webPage->protectedPreferences()->siteIsolationEnabled())
+    if (webPage && protect(webPage->preferences())->siteIsolationEnabled())
         broadcastFrameTreeSyncData(calculateFrameTreeSyncData());
 }
 
@@ -435,7 +435,7 @@ bool WebFrameProxy::didHandleContentFilterUnblockNavigation(const ResourceReques
     ASSERT(page);
 
 #if HAVE(WEBCONTENTRESTRICTIONS_PATH_SPI)
-    m_contentFilterUnblockHandler.setConfigurationPath(page->protectedWebsiteDataStore()->configuration().webContentRestrictionsConfigurationFile());
+    m_contentFilterUnblockHandler.setConfigurationPath(protect(page->websiteDataStore())->configuration().webContentRestrictionsConfigurationFile());
 #endif
 
 #if HAVE(WEBCONTENTRESTRICTIONS)
@@ -447,7 +447,7 @@ bool WebFrameProxy::didHandleContentFilterUnblockNavigation(const ResourceReques
                 m_contentFilterUnblockHandler.configurationPath()
 #endif
             };
-            page->protectedWebsiteDataStore()->protectedNetworkProcess()->allowEvaluatedURL(parameters, [page](bool unblocked) {
+            protect(page->websiteDataStore())->protectedNetworkProcess()->allowEvaluatedURL(parameters, [page](bool unblocked) {
                 if (unblocked)
                     page->reload({ });
             });
@@ -538,8 +538,8 @@ void WebFrameProxy::prepareForProvisionalLoadInProcess(WebProcessProxy& process,
     CommitTiming commitTiming = effectiveOrigin ? CommitTiming::Immediately : CommitTiming::WaitForLoad;
 
     m_provisionalFrame = nullptr;
-    m_provisionalFrame = adoptRef(*new ProvisionalFrameProxy(*this, group.ensureProcessForSite(site, mainFrameSite, process, page->protectedPreferences()), commitTiming));
-    page->protectedWebsiteDataStore()->protectedNetworkProcess()->addAllowedFirstPartyForCookies(process, mainFrameDomain, LoadedWebArchive::No, [pageID = page->webPageIDInProcess(process), completionHandler = WTF::move(completionHandler)] mutable {
+    m_provisionalFrame = adoptRef(*new ProvisionalFrameProxy(*this, group.ensureProcessForSite(site, mainFrameSite, process, protect(page->preferences())), commitTiming));
+    protect(page->websiteDataStore())->protectedNetworkProcess()->addAllowedFirstPartyForCookies(process, mainFrameDomain, LoadedWebArchive::No, [pageID = page->webPageIDInProcess(process), completionHandler = WTF::move(completionHandler)] mutable {
         completionHandler(pageID);
     });
 }
@@ -597,7 +597,7 @@ void WebFrameProxy::getFrameTree(CompletionHandler<void(std::optional<FrameTreeN
     });
 
     RefPtr page = this->page();
-    bool isSiteIsolationEnabled = page && page->protectedPreferences()->siteIsolationEnabled();
+    bool isSiteIsolationEnabled = page && protect(page->preferences())->siteIsolationEnabled();
     size_t index = 0;
     for (Ref childFrame : m_childFrames) {
         childFrame->getFrameTree([aggregator, index = index++, frameID = this->frameID(), isSiteIsolationEnabled] (std::optional<FrameTreeNodeData>&& data) {
@@ -691,7 +691,7 @@ void WebFrameProxy::broadcastFrameTreeSyncData(Ref<FrameTreeSyncData>&& data)
     if (!webPage)
         return;
 
-    RELEASE_ASSERT(webPage->protectedPreferences()->siteIsolationEnabled());
+    RELEASE_ASSERT(protect(webPage->preferences())->siteIsolationEnabled());
 
     webPage->forEachWebContentProcess([&](auto& webProcess, auto pageID) {
         webProcess.send(Messages::WebPage::AllFrameTreeSyncDataChangedInAnotherProcess(m_frameID, data), pageID);
@@ -750,7 +750,7 @@ auto WebFrameProxy::traverseNext(CanWrap canWrap) const -> TraversalResult
 
     if (canWrap == CanWrap::Yes) {
         if (RefPtr page = m_page.get())
-            return { page->protectedMainFrame(), DidWrap::Yes };
+            return { protect(page->mainFrame()), DidWrap::Yes };
 
     }
     return { };
@@ -836,7 +836,7 @@ void WebFrameProxy::updateOpener(std::optional<WebCore::FrameIdentifier> newOpen
     m_opener = WebFrameProxy::webFrame(newOpener);
 
     RefPtr webPage = page();
-    if (!m_opener && webPage && !webPage->protectedPreferences()->siteIsolationEnabled())
+    if (!m_opener && webPage && !protect(webPage->preferences())->siteIsolationEnabled())
         m_disownedOpener = previousOpener.get();
 }
 

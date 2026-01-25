@@ -715,19 +715,15 @@ public:
     PAL::SessionID sessionID() const;
 
     WebFrameProxy* mainFrame() const { return m_mainFrame.get(); }
-    RefPtr<WebFrameProxy> protectedMainFrame() const;
     WebFrameProxy* focusedFrame() const { return m_focusedFrame.get(); }
-    RefPtr<WebFrameProxy> protectedFocusedFrame() const;
     WebFrameProxy* focusedOrMainFrame() const { return m_focusedFrame ? m_focusedFrame.get() : m_mainFrame.get(); }
 
     DrawingAreaProxy* drawingArea() const { return m_drawingArea.get(); }
-    RefPtr<DrawingAreaProxy> protectedDrawingArea() const;
     DrawingAreaProxy* provisionalDrawingArea() const;
 
     WebNavigationState& navigationState() { return m_navigationState; }
 
     WebsiteDataStore& websiteDataStore() { return m_websiteDataStore; }
-    Ref<WebsiteDataStore> protectedWebsiteDataStore() const;
 
     std::optional<SharedPreferencesForWebProcess> sharedPreferencesForWebProcess(IPC::Connection&) const;
 
@@ -770,7 +766,6 @@ public:
     bool isSuspended() const { return m_isSuspended; }
 
     WebInspectorUIProxy* inspector() const;
-    RefPtr<WebInspectorUIProxy> protectedInspector() const;
 
     GeolocationPermissionRequestManagerProxy& geolocationPermissionRequestManager();
     Ref<GeolocationPermissionRequestManagerProxy> protectedGeolocationPermissionRequestManager();
@@ -1054,7 +1049,6 @@ public:
     void restoreSelectionInFocusedEditableElement();
 
     PageClient* pageClient() const;
-    RefPtr<PageClient> protectedPageClient() const;
 
     void setViewNeedsDisplay(const WebCore::Region&);
     void requestScroll(const WebCore::FloatPoint& scrollPosition, const WebCore::IntPoint& scrollOrigin, WebCore::ScrollIsAnimated);
@@ -1799,7 +1793,6 @@ public:
     Ref<WebProcessProxy> ensureProtectedRunningProcess();
     WebProcessProxy& siteIsolatedProcess() const { return m_legacyMainFrameProcess; }
     WebProcessProxy& legacyMainFrameProcess() const { return m_legacyMainFrameProcess; }
-    Ref<WebProcessProxy> protectedLegacyMainFrameProcess() const;
     ProcessID legacyMainFrameProcessID() const;
 
     ProcessID gpuProcessID() const;
@@ -1810,7 +1803,6 @@ public:
 
     const WebPreferences& preferences() const { return m_preferences; }
     WebPreferences& preferences() { return m_preferences; }
-    Ref<WebPreferences> protectedPreferences() const;
 
     void setPreferences(WebPreferences&);
 

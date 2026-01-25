@@ -634,7 +634,7 @@ static void addBrowsingContextControllerMethodStubsIfNeeded()
     ALLOW_DEPRECATED_DECLARATIONS_END
 
     // FIXME: This copy is probably not necessary.
-    Ref pageConfiguration = Ref { *_configuration->_pageConfiguration }->copy();
+    Ref pageConfiguration = protect(*_configuration->_pageConfiguration)->copy();
     [self _setupPageConfiguration:pageConfiguration withPool:processPool.get()];
 
     _usePlatformFindUI = YES;
@@ -658,7 +658,7 @@ static void addBrowsingContextControllerMethodStubsIfNeeded()
     _dragInteractionPolicy = _WKDragInteractionPolicyDefault;
 
     _contentView = adoptNS([[WKContentView alloc] initWithFrame:self.bounds processPool:processPool.get() configuration:pageConfiguration.copyRef() webView:self]);
-    lazyInitialize(_page, Ref { *[_contentView page] });
+    lazyInitialize(_page, protect(*[_contentView page]));
 
     [self _setupScrollAndContentViews];
     if (!self.opaque || !pageConfiguration->drawsBackground())
@@ -678,7 +678,7 @@ static void addBrowsingContextControllerMethodStubsIfNeeded()
 
 #if PLATFORM(MAC)
     lazyInitialize(_impl, makeUnique<WebKit::WebViewImpl>(self, processPool.get(), pageConfiguration.copyRef()));
-    lazyInitialize(_page, Ref { _impl->page() });
+    lazyInitialize(_page, protect(_impl->page()));
 
     _impl->setAutomaticallyAdjustsContentInsets(true);
 
@@ -752,7 +752,7 @@ static void addBrowsingContextControllerMethodStubsIfNeeded()
         pageConfiguration->setWebExtensionController(&controller.get()._webExtensionController);
 
     if (RetainPtr<WKWebExtensionController> controller = _configuration.get()._weakWebExtensionController)
-        pageConfiguration->setWeakWebExtensionController(Ref { controller.get()._webExtensionController }.ptr());
+        pageConfiguration->setWeakWebExtensionController(protect(controller.get()._webExtensionController).ptr());
 #endif
 
     RetainPtr groupIdentifier = [_configuration _groupIdentifier];
@@ -1145,7 +1145,7 @@ static void addBrowsingContextControllerMethodStubsIfNeeded()
 - (WKNavigation *)goToBackForwardListItem:(WKBackForwardListItem *)item
 {
     THROW_IF_SUSPENDED;
-    return wrapper(_page->goToBackForwardItem(Ref { item._item })).autorelease();
+    return wrapper(_page->goToBackForwardItem(protect(item._item))).autorelease();
 }
 
 - (NSString *)title
@@ -1537,7 +1537,7 @@ static WKMediaPlaybackState toWKMediaPlaybackState(WebKit::MediaPlaybackState me
         WTF::move(argumentsMap),
         forceUserGesture ? WebCore::ForceUserGesture::Yes : WebCore::ForceUserGesture::No,
         removeTransientActivation
-    }, frameID, Ref { *world->_contentWorld }, !!handler, [handler] (auto&& result) {
+    }, frameID, protect(*world->_contentWorld), !!handler, [handler] (auto&& result) {
         if (!handler)
             return;
 
@@ -1644,7 +1644,7 @@ static WKMediaPlaybackState toWKMediaPlaybackState(WebKit::MediaPlaybackState me
         return;
     }
 
-    _page->callAfterNextPresentationUpdate([callSnapshotRect = WTF::move(callSnapshotRect), handler, page = Ref { *_page }] () mutable {
+    _page->callAfterNextPresentationUpdate([callSnapshotRect = WTF::move(callSnapshotRect), handler, page = protect(*_page)] () mutable {
 
         if (!page->hasRunningProcess()) {
             tracePoint(TakeSnapshotEnd, snapshotFailedTraceValue);
@@ -2226,7 +2226,7 @@ inline OptionSet<WebKit::FindOptions> toFindOptions(WKFindConfiguration *configu
     if (highlight.text)
         text = highlight.text.value().createNSString();
 
-    RetainPtr wkHighlight = adoptNS([[_WKAppHighlight alloc] initWithHighlight:Ref { highlight.highlight }->makeContiguous()->createNSData().get() text:text.get() image:nil]);
+    RetainPtr wkHighlight = adoptNS([[_WKAppHighlight alloc] initWithHighlight:protect(highlight.highlight)->makeContiguous()->createNSData().get() text:text.get() image:nil]);
 
     if ([delegate respondsToSelector:@selector(_webView:storeAppHighlight:inNewGroup:requestOriginatedInApp:)])
         [delegate _webView:self storeAppHighlight:wkHighlight.get() inNewGroup:highlight.isNewGroup == WebCore::CreateNewGroupForHighlight::Yes requestOriginatedInApp:highlight.requestOriginatedInApp == WebCore::HighlightRequestOriginatedInApp::Yes];
@@ -3308,7 +3308,7 @@ WebCore::CocoaColor *sampledFixedPositionContentColor(const WebCore::FixedContai
 
 - (void)_updateFixedColorExtensionViews
 {
-    if (!_page || !_page->protectedPreferences()->contentInsetBackgroundFillEnabled())
+    if (!_page || !protect(_page->preferences())->contentInsetBackgroundFillEnabled())
         return;
 
     RetainPtr parentView = [self _containerForFixedColorExtension];
@@ -3378,7 +3378,7 @@ WebCore::CocoaColor *sampledFixedPositionContentColor(const WebCore::FixedContai
 
 - (void)_updateFixedColorExtensionViewFrames
 {
-    if (!_page || !_page->protectedPreferences()->contentInsetBackgroundFillEnabled())
+    if (!_page || !protect(_page->preferences())->contentInsetBackgroundFillEnabled())
         return;
 
     RetainPtr parentView = [self _containerForFixedColorExtension];
@@ -3921,7 +3921,7 @@ FOR_EACH_PRIVATE_WKCONTENTVIEW_ACTION(FORWARD_ACTION_TO_WKCONTENTVIEW)
 
 - (void)_frames:(void (^)(_WKFrameTreeNode *))completionHandler
 {
-    _page->getAllFrames([completionHandler = makeBlockPtr(completionHandler), page = Ref { *_page.get() }] (std::optional<WebKit::FrameTreeNodeData>&& data) {
+    _page->getAllFrames([completionHandler = makeBlockPtr(completionHandler), page = protect(*_page.get())] (std::optional<WebKit::FrameTreeNodeData>&& data) {
         if (!data)
             return completionHandler(nil);
         completionHandler(wrapper(API::FrameTreeNode::create(WTF::move(*data), page.get())).get());
@@ -3930,7 +3930,7 @@ FOR_EACH_PRIVATE_WKCONTENTVIEW_ACTION(FORWARD_ACTION_TO_WKCONTENTVIEW)
 
 - (void)_frameTrees:(void (^)(NSSet<_WKFrameTreeNode *> *))completionHandler
 {
-    _page->getAllFrameTrees([completionHandler = makeBlockPtr(completionHandler), page = Ref { *_page.get() }] (Vector<WebKit::FrameTreeNodeData>&& vector) {
+    _page->getAllFrameTrees([completionHandler = makeBlockPtr(completionHandler), page = protect(*_page.get())] (Vector<WebKit::FrameTreeNodeData>&& vector) {
         auto set = adoptNS([[NSMutableSet alloc] initWithCapacity:vector.size()]);
         for (auto& data : vector)
             [set addObject:wrapper(API::FrameTreeNode::create(WTF::move(data), page.get())).get()];
@@ -4220,7 +4220,7 @@ static RetainPtr<NSArray> wkTextManipulationErrors(NSArray<_WKTextManipulationIt
 #if ENABLE(IMAGE_ANALYSIS)
     THROW_IF_SUSPENDED;
 
-    if (!_page || !_page->protectedPreferences()->visualTranslationEnabled() || !WebKit::languageIdentifierSupportsLiveText(sourceLanguageIdentifier))
+    if (!_page || !protect(_page->preferences())->visualTranslationEnabled() || !WebKit::languageIdentifierSupportsLiveText(sourceLanguageIdentifier))
         return;
 
     _page->startVisualTranslation(sourceLanguageIdentifier, targetLanguageIdentifier);
@@ -4662,7 +4662,7 @@ static void convertAndAddHighlight(Vector<Ref<WebCore::SharedMemory>>& buffers, 
 
 - (void)_requestTargetedElementInfo:(_WKTargetedElementRequest *)request completionHandler:(void(^)(NSArray<_WKTargetedElementInfo *> *))completion
 {
-    _page->requestTargetedElement(Ref { *request->_request }, [completion = makeBlockPtr(completion)](auto& elements) {
+    _page->requestTargetedElement(protect(*request->_request), [completion = makeBlockPtr(completion)](auto& elements) {
         completion(createNSArray(elements, [](auto& element) {
             return wrapper(element);
         }).get());
@@ -5003,7 +5003,7 @@ static void convertAndAddHighlight(Vector<Ref<WebCore::SharedMemory>>& buffers, 
 
 - (BOOL)_webProcessIsResponsive
 {
-    return _page->protectedLegacyMainFrameProcess()->isResponsive();
+    return protect(_page->legacyMainFrameProcess())->isResponsive();
 }
 
 - (void)_killWebContentProcess
@@ -5012,7 +5012,7 @@ static void convertAndAddHighlight(Vector<Ref<WebCore::SharedMemory>>& buffers, 
     if (![self _isValid])
         return;
 
-    _page->protectedLegacyMainFrameProcess()->terminate();
+    protect(_page->legacyMainFrameProcess())->terminate();
 }
 
 - (WKNavigation *)_reloadWithoutContentBlockers
@@ -5342,7 +5342,7 @@ static void convertAndAddHighlight(Vector<Ref<WebCore::SharedMemory>>& buffers, 
         [NSException raise:NSInvalidArgumentException format:@"Updating WKWebsiteDataStore is only supported during decidePolicyForNavigationAction."];
     if (webpagePreferences._userContentController)
         [NSException raise:NSInvalidArgumentException format:@"Updating WKUserContentController is only supported during decidePolicyForNavigationAction."];
-    _page->updateWebsitePolicies(Ref { *webpagePreferences->_websitePolicies });
+    _page->updateWebsitePolicies(protect(*webpagePreferences->_websitePolicies));
 }
 
 - (BOOL)_allowsRemoteInspection
@@ -5438,7 +5438,7 @@ static inline OptionSet<WebCore::LayoutMilestone> layoutMilestones(_WKRenderingP
 - (void)_saveResources:(NSURL *)directory suggestedFileName:(NSString *)name completionHandler:(void (^)(NSError *error))completionHandler
 {
     THROW_IF_SUSPENDED;
-    _page->saveResources(_page->protectedMainFrame().get(), { }, directory.path, name, [completionHandler = makeBlockPtr(completionHandler)](auto result) mutable {
+    _page->saveResources(protect(_page->mainFrame()), { }, directory.path, name, [completionHandler = makeBlockPtr(completionHandler)](auto result) mutable {
         if (!result)
             return completionHandler(adoptNS([[NSError alloc] initWithDomain:WKErrorDomain code:WKErrorUnknown userInfo:@{ NSLocalizedDescriptionKey: WebCore::errorDescription(result.error()).createNSString().get() }]).get());
 
@@ -5467,7 +5467,7 @@ static inline OptionSet<WebCore::LayoutMilestone> layoutMilestones(_WKRenderingP
         markupExclusionRules.append(WebCore::MarkupExclusionRule { AtomString { rule.elementLocalName }, WTF::move(attibutes) });
     }
 
-    _page->saveResources(_page->protectedMainFrame().get(), WTF::move(markupExclusionRules), configuration.directory.path, configuration.suggestedFileName, [completionHandler = makeBlockPtr(completionHandler)](auto result) mutable {
+    _page->saveResources(protect(_page->mainFrame()), WTF::move(markupExclusionRules), configuration.directory.path, configuration.suggestedFileName, [completionHandler = makeBlockPtr(completionHandler)](auto result) mutable {
         if (!result)
             return completionHandler(adoptNS([[NSError alloc] initWithDomain:WKErrorDomain code:WKErrorUnknown userInfo:@{ NSLocalizedDescriptionKey: WebCore::errorDescription(result.error()).createNSString().get() }]).get());
 
@@ -5478,7 +5478,7 @@ static inline OptionSet<WebCore::LayoutMilestone> layoutMilestones(_WKRenderingP
 - (void)_getMainResourceDataWithCompletionHandler:(void (^)(NSData *, NSError *))completionHandler
 {
     THROW_IF_SUSPENDED;
-    _page->getMainResourceDataOfFrame(_page->protectedMainFrame().get(), [completionHandler = makeBlockPtr(completionHandler)](API::Data* data) {
+    _page->getMainResourceDataOfFrame(protect(_page->mainFrame()), [completionHandler = makeBlockPtr(completionHandler)](API::Data* data) {
         completionHandler(protectedWrapper(data).get(), nil);
     });
 }
@@ -5842,12 +5842,12 @@ static inline OptionSet<WebKit::FindOptions> toFindOptions(_WKFindOptions wkFind
     THROW_IF_SUSPENDED;
     if (!item)
         return;
-    _page->recordNavigationSnapshot(Ref { item._item });
+    _page->recordNavigationSnapshot(protect(item._item));
 }
 
 - (void)_serviceWorkersEnabled:(void(^)(BOOL))completionHandler
 {
-    auto enabled = Ref { *[_configuration preferences]->_preferences }->serviceWorkersEnabled();
+    auto enabled = protect(*[_configuration preferences]->_preferences)->serviceWorkersEnabled();
     completionHandler(enabled);
 }
 
@@ -6396,7 +6396,7 @@ static Vector<Ref<API::TargetedElementInfo>> elementsFromWKElements(NSArray<_WKT
     Vector<Ref<API::TargetedElementInfo>> elements;
     elements.reserveInitialCapacity(wkElements.count);
     for (_WKTargetedElementInfo *element in wkElements)
-        elements.append(Ref { *element->_info });
+        elements.append(protect(*element->_info));
     return elements;
 }
 
@@ -6534,7 +6534,7 @@ static Vector<Ref<API::TargetedElementInfo>> elementsFromWKElements(NSArray<_WKT
     if (!_page || !_page->hasRunningProcess())
         return _WKWebProcessStateNotRunning;
 
-    switch (_page->protectedLegacyMainFrameProcess()->throttleStateForStatistics()) {
+    switch (protect(_page->legacyMainFrameProcess())->throttleStateForStatistics()) {
     case WebKit::ProcessThrottleState::Foreground:
         return _WKWebProcessStateForeground;
     case WebKit::ProcessThrottleState::Background:
@@ -6740,7 +6740,7 @@ static RetainPtr<_WKTextExtractionResult> createEmptyTextExtractionResult()
 {
     UniqueRef assertionScope = _page->createTextExtractionAssertionScope();
 #if USE(APPLE_INTERNAL_SDK) || (!PLATFORM(WATCHOS) && !PLATFORM(APPLETV))
-    if (_page->protectedPreferences()->textExtractionFilterEnabled() && (configuration.filterOptions & _WKTextExtractionFilterRules)) {
+    if (protect(_page->preferences())->textExtractionFilterEnabled() && (configuration.filterOptions & _WKTextExtractionFilterRules)) {
         _page->hasTextExtractionFilterRules([assertionScope = WTF::move(assertionScope), configuration = RetainPtr { configuration }, completionHandler = makeBlockPtr(completionHandler), weakSelf = WeakObjCPtr { self }](bool hasRules) mutable {
             RetainPtr strongSelf = weakSelf.get();
             if (!strongSelf)
@@ -6767,7 +6767,7 @@ static RetainPtr<_WKTextExtractionResult> createEmptyTextExtractionResult()
 
 - (void)_extractDebugTextWithConfigurationWithoutUpdatingFilterRules:(_WKTextExtractionConfiguration *)configuration assertionScope:(UniqueRef<WebKit::TextExtractionAssertionScope>&&)assertionScope completionHandler:(void(^)(_WKTextExtractionResult *))completionHandler
 {
-    bool allowFiltering = _page->protectedPreferences()->textExtractionFilterEnabled();
+    bool allowFiltering = protect(_page->preferences())->textExtractionFilterEnabled();
     bool filterUsingClassifier = allowFiltering && configuration.filterOptions & _WKTextExtractionFilterClassifier;
     bool filterHiddenText = allowFiltering && configuration.filterOptions & _WKTextExtractionFilterTextRecognition;
     bool filterUsingRules = allowFiltering && configuration.filterOptions & _WKTextExtractionFilterRules;
@@ -7027,7 +7027,7 @@ static RetainPtr<_WKTextExtractionResult> createEmptyTextExtractionResult()
         return completionHandler(adoptNS([[_WKTextExtractionInteractionResult alloc] initWithErrorDescription:@"Web view is invalid"]).get());
 
     RefPtr page = _page;
-    if (!page->protectedPreferences()->textExtractionEnabled())
+    if (!protect(page->preferences())->textExtractionEnabled())
         return completionHandler(adoptNS([[_WKTextExtractionInteractionResult alloc] initWithErrorDescription:@"Text extraction is unavailable"]).get());
 
     auto [targetFrame, interaction] = [self _convertToWebCoreInteraction:wkInteraction];
@@ -7316,7 +7316,7 @@ static OptionSet<WebCore::DataDetectorType> coreDataDetectorTypes(_WKTextExtract
         return completionHandler(nil, [NSError errorWithDomain:WKErrorDomain code:WKErrorWebViewInvalidated userInfo:nil]);
 
     RefPtr page = _page;
-    if (!page->protectedPreferences()->textExtractionEnabled())
+    if (!protect(page->preferences())->textExtractionEnabled())
         return completionHandler(nil, [NSError errorWithDomain:WKErrorDomain code:WKErrorUnknown userInfo:nil]);
 
     auto [targetFrame, interaction] = [self _convertToWebCoreInteraction:wkInteraction];
@@ -7343,7 +7343,7 @@ static OptionSet<WebCore::DataDetectorType> coreDataDetectorTypes(_WKTextExtract
         });
 
         RefPtr page = weakPage.get();
-        if (!page || !page->protectedPreferences()->textExtractionFilterEnabled())
+        if (!page || !protect(page->preferences())->textExtractionFilterEnabled())
             return;
 
 #if ENABLE(TEXT_EXTRACTION_FILTER)

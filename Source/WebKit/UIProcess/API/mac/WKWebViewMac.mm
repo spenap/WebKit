@@ -168,7 +168,7 @@ static WebCore::FloatBoxExtent coreBoxExtentsFromEdgeInsets(NSEdgeInsets insets)
     if (!page)
         return NO;
 
-    if (!page->protectedLegacyMainFrameProcess()->isResponsive())
+    if (!protect(page->legacyMainFrameProcess())->isResponsive())
         return NO;
 
     if (page->isSuspended())
