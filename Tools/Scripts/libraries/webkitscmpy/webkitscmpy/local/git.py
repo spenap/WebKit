@@ -1440,21 +1440,84 @@ class Git(Scm):
         return output.stdout.rstrip().splitlines()
 
     def remote_for(self, argument):
-        candidates = list(self.source_remotes())
-        while candidates:
-            if argument not in self.branches_for(remote=candidates[-1]):
-                candidates.remove(candidates[-1])
-                continue
-            up_to_date = list(self.branches_for(hash='{}/{}'.format(candidates[-1], argument), remote=None).keys())
-            for candidate in candidates:
-                if candidate in up_to_date:
-                    return candidate
-            candidates.remove(candidates[-1])
+        impersonal_candidates = [f'refs/remotes/{remote}/{argument}' for remote in self.source_remotes()]
+        all_candidates = [f'refs/remotes/{remote}/{argument}' for remote in self.source_remotes(personal=True)]
+        assert all_candidates[: len(impersonal_candidates)] == impersonal_candidates
+        personal_candidates = all_candidates[len(impersonal_candidates):]
 
-        for remote in self.source_remotes(personal=True)[len(self.source_remotes()):]:
-            if argument in self.branches_for(remote=remote):
-                return remote
-        return None
+        proc = run(
+            [self.executable(), 'for-each-ref', '--format', '%(objectname) %(refname)', *all_candidates],
+            cwd=self.root_path,
+            capture_output=True,
+            encoding='utf-8',
+            check=True,
+        )
+
+        if not proc.stdout:
+            return None
+
+        refs = dict(reversed(line.split(' ', 1)) for line in proc.stdout.rstrip('\n').split('\n'))
+
+        # Find the first and last items in impersonal_candidates which exist.
+        first_ref = None
+        last_ref = None
+        for candidate in impersonal_candidates:
+            if candidate not in refs:
+                continue
+
+            if first_ref is None:
+                first_ref = candidate
+
+            last_ref = candidate
+
+        assert (first_ref is None) == (last_ref is None)
+
+        if last_ref is not None:
+            # For last_ref to be non-None, we have something in impersonal_candidates.
+            # We want to find the first extant candidate in the sequence which is
+            # up-to-date with the last extant candidate in the sequence.
+
+            if refs[first_ref] == refs[last_ref]:
+                # If we have the same object for the first and last refs, then we don't
+                # need to run anything with --contains.
+                selected_ref = first_ref
+            else:
+                proc = run(
+                    [
+                        self.executable(),
+                        'for-each-ref',
+                        '--format', '%(refname)',
+                        '--contains', last_ref,
+                        *impersonal_candidates,
+                    ],
+                    cwd=self.root_path,
+                    capture_output=True,
+                    encoding='utf-8',
+                    check=True,
+                )
+
+                if not proc.stdout:
+                    # Because last_ref is in impersonal_candidates, we should have got
+                    # at least last_ref back.
+                    assert last_ref in impersonal_candidates
+                    raise ValueError('Unexpected git behavior.')
+
+                up_to_date_refs = set(proc.stdout.rstrip('\n').split('\n'))
+
+                if len(up_to_date_refs) == 1:
+                    selected_ref = next(iter(up_to_date_refs))
+                else:
+                    selected_ref = next(iter(ref for ref in impersonal_candidates if ref in up_to_date_refs))
+        else:
+            # None of the impersonal_candidates exist, so return the first
+            # personal_candidate, if any, which does.
+            try:
+                selected_ref = next(iter(ref for ref in personal_candidates if ref in refs))
+            except StopIteration:
+                return None
+
+        _, _, remote, _ = selected_ref.split('/', maxsplit=3)
+        return remote
 
     def merge_base(self, ref_a, ref_b, include_log=True, include_identifier=True):
         a = self.find(ref_a, include_log=False, include_identifier=False)
