@@ -188,7 +188,7 @@ static void resolveIntrinsicTrackSizes(UnsizedTracks& unsizedTracks, const Place
 }
 
 // https://drafts.csswg.org/css-grid-1/#algo-track-sizing
-TrackSizes TrackSizingAlgorithm::sizeTracks(const PlacedGridItems& gridItems, const PlacedGridItemSpanList& gridItemSpanList, const TrackSizingFunctionsList& trackSizingFunctions, std::optional<LayoutUnit> availableSpace, const IntegrationUtils& integrationUtils)
+TrackSizes TrackSizingAlgorithm::sizeTracks(const PlacedGridItems& gridItems, const PlacedGridItemSpanList& gridItemSpanList, const TrackSizingFunctionsList& trackSizingFunctions, std::optional<LayoutUnit> availableSpace, const GridItemSizingFunctions&, const IntegrationUtils& integrationUtils)
 {
     ASSERT(gridItems.size() == gridItemSpanList.size());
 
