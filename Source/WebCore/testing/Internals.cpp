@@ -4865,6 +4865,20 @@ ExceptionOr<void> Internals::setPrimaryAudioTrackLanguageOverride(const String& 
     return { };
 }
 
+ExceptionOr<void> Internals::setPreferredAudioCharacteristicsForTesting(const Vector<String>& characteristics)
+{
+    Document* document = contextDocument();
+    if (!document || !document->page())
+        return Exception { ExceptionCode::InvalidAccessError };
+
+#if ENABLE(VIDEO)
+    document->page()->group().ensureCaptionPreferences().setPreferredAudioCharacteristicsForTesting(characteristics);
+#else
+    UNUSED_PARAM(characteristics);
+#endif
+    return { };
+}
+
 ExceptionOr<void> Internals::setCaptionDisplayMode(const String& mode)
 {
     Document* document = contextDocument();

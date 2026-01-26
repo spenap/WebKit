@@ -857,6 +857,7 @@ public:
     ExceptionOr<String> captionsStyleSheetOverride();
     ExceptionOr<void> setCaptionsStyleSheetOverride(const String&);
     ExceptionOr<void> setPrimaryAudioTrackLanguageOverride(const String&);
+    ExceptionOr<void> setPreferredAudioCharacteristicsForTesting(const Vector<String>&);
     ExceptionOr<void> setCaptionDisplayMode(const String&);
     String captionDisplayMode() const;
 #if ENABLE(VIDEO)
