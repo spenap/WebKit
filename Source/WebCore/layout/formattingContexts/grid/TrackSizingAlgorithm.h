@@ -57,7 +57,7 @@ private:
     static FlexTracks collectFlexTracks(const UnsizedTracks&);
     static bool hasFlexTracks(const UnsizedTracks&);
     static double flexFactorSum(const FlexTracks&);
-    static std::optional<LayoutUnit> leftoverSpace(std::optional<LayoutUnit> availableSpace, const UnsizedTracks&);
+    static LayoutUnit findSizeOfFr(const UnsizedTracks&, LayoutUnit spaceToFill);
 };
 
 } // namespace WebCore
