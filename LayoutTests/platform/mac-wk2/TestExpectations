@@ -2448,3 +2448,5 @@ webkit.org/b/305958 imported/w3c/web-platform-tests/media-source/mediasource-cha
 webkit.org/b/305959 fast/text/FontFaceSet-status-after-style-update.html [ Pass Failure ]
 
 webkit.org/b/306047 accessibility/mac/replaced-element-text-selection.html [ Pass Failure ]
+
+webkit.org/b/306278 [ arm64 ] media/media-source/media-managedmse-resume-after-remove.html [ Pass Failure ]
