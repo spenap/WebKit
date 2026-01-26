@@ -2004,7 +2004,6 @@
 		E3369129296EEBFE00324FD7 /* WasmOperationsInlines.h in Headers */ = {isa = PBXBuildFile; fileRef = E3369128296EEBFE00324FD7 /* WasmOperationsInlines.h */; };
 		E337B967224324EA0093A820 /* WasmCapabilities.h in Headers */ = {isa = PBXBuildFile; fileRef = E337B966224324E50093A820 /* WasmCapabilities.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		E3380F5A2F271A400097D76C /* Binja.h in Headers */ = {isa = PBXBuildFile; fileRef = E3380F562F271A400097D76C /* Binja.h */; };
-		E3380F5B2F271A400097D76C /* Binja.c in Sources */ = {isa = PBXBuildFile; fileRef = E3380F572F271A400097D76C /* Binja.c */; };
 		E338C4A92E7B23D500C039A5 /* WasmInstanceAnchor.h in Headers */ = {isa = PBXBuildFile; fileRef = E338C4A62E7B23D500C039A5 /* WasmInstanceAnchor.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		E339700523210E0B00B0AE21 /* JSInternalFieldObjectImplInlines.h in Headers */ = {isa = PBXBuildFile; fileRef = E339700423210E0A00B0AE21 /* JSInternalFieldObjectImplInlines.h */; };
 		E33A94962255323000D42B06 /* RandomizingFuzzerAgent.h in Headers */ = {isa = PBXBuildFile; fileRef = E33A94942255322900D42B06 /* RandomizingFuzzerAgent.h */; };
@@ -2078,6 +2077,7 @@
 		E392E6F824D25FA600B20767 /* B3BottomTupleValue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E392E6F624D25FA600B20767 /* B3BottomTupleValue.cpp */; };
 		E392E6F924D25FA900B20767 /* B3BottomTupleValue.h in Headers */ = {isa = PBXBuildFile; fileRef = E392E6F724D25FA600B20767 /* B3BottomTupleValue.h */; };
 		E393ADD81FE702D00022D681 /* WeakMapImplInlines.h in Headers */ = {isa = PBXBuildFile; fileRef = E393ADD71FE702CC0022D681 /* WeakMapImplInlines.h */; };
+		E39440542F276A4A0055F0DB /* Binja.c in Sources */ = {isa = PBXBuildFile; fileRef = E3380F572F271A400097D76C /* Binja.c */; };
 		E3952C182F1DDF5700F5BEE8 /* B3WasmStructGetValue.h in Headers */ = {isa = PBXBuildFile; fileRef = E3952C122F1DDF5700F5BEE8 /* B3WasmStructGetValue.h */; };
 		E3952C192F1DDF5700F5BEE8 /* B3WasmStructNewValue.h in Headers */ = {isa = PBXBuildFile; fileRef = E3952C142F1DDF5700F5BEE8 /* B3WasmStructNewValue.h */; };
 		E3952C1A2F1DDF5700F5BEE8 /* B3WasmStructFieldValue.h in Headers */ = {isa = PBXBuildFile; fileRef = E3952C102F1DDF5700F5BEE8 /* B3WasmStructFieldValue.h */; };
@@ -13612,6 +13612,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E39440542F276A4A0055F0DB /* Binja.c in Sources */,
 				5333BBDC2110F7D9007618EC /* DFGSpeculativeJIT.cpp in Sources */,
 				5333BBDB2110F7D2007618EC /* DFGSpeculativeJIT32_64.cpp in Sources */,
 				5333BBDD2110F7E1007618EC /* DFGSpeculativeJIT64.cpp in Sources */,
@@ -13840,7 +13841,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E3380F5B2F271A400097D76C /* Binja.c in Sources */,
 				44F93E0E2AE71FBD00FFA37C /* JavaScriptCoreFramework.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
