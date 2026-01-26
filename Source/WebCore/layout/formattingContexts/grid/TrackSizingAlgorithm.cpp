@@ -161,6 +161,12 @@ static Vector<LayoutUnit> minContentContributions(const PlacedGridItems&, const 
     return { { } };
 }
 
+static Vector<LayoutUnit> maxContentContributions(const PlacedGridItems&, const GridItemIndexes&, const IntegrationUtils&)
+{
+    ASSERT_NOT_IMPLEMENTED_YET();
+    return { { } };
+}
+
 static void sizeTracksToFitNonSpanningItems(UnsizedTracks& unsizedTracks, const PlacedGridItems& gridItems, const PlacedGridItemSpanList& gridItemSpanList,
     const IntegrationUtils& integrationUtils)
 {
@@ -181,8 +187,13 @@ static void sizeTracksToFitNonSpanningItems(UnsizedTracks& unsizedTracks, const 
                 return std::max({ }, std::ranges::max(itemContributions));
             },
             [&](const CSS::Keyword::MaxContent&) -> LayoutUnit {
-                ASSERT_NOT_IMPLEMENTED_YET();
-                return { };
+                // If the track has a max-content min track sizing function, set its base
+                // size to the maximum of the items’ max-content contributions, floored at zero.
+                auto itemContributions = maxContentContributions(gridItems, singleSpanningItemsIndexes, integrationUtils);
+                ASSERT(itemContributions.size() == singleSpanningItemsIndexes.size());
+                if (itemContributions.isEmpty())
+                    return { };
+                return std::max({ }, std::ranges::max(itemContributions));
             },
             [&](const CSS::Keyword::Auto&) -> LayoutUnit {
                 ASSERT_NOT_IMPLEMENTED_YET();
@@ -206,8 +217,22 @@ static void sizeTracksToFitNonSpanningItems(UnsizedTracks& unsizedTracks, const 
                 return std::ranges::max(itemContributions);
             },
             [&](const CSS::Keyword::MaxContent&) -> LayoutUnit {
-                ASSERT_NOT_IMPLEMENTED_YET();
-                return { };
+                // If the track has a max-content max track sizing function, set its growth
+                // limit to the maximum of the items’ max-content contributions.
+                auto itemContributions = maxContentContributions(gridItems, singleSpanningItemsIndexes, integrationUtils);
+                auto maximumMaxContentContribution = itemContributions.isEmpty() ? 0_lu : std::ranges::max(itemContributions);
+
+                auto hasFitContentMaximum = [] {
+                    ASSERT_NOT_IMPLEMENTED_YET();
+                    return false;
+                };
+                // For fit-content() maximums, furthermore clamp this growth limit by the
+                // fit-content() argument.
+                if (hasFitContentMaximum())  {
+                    ASSERT_NOT_IMPLEMENTED_YET();
+                    return { };
+                }
+                return maximumMaxContentContribution;
             },
             [&](const CSS::Keyword::Auto&) -> LayoutUnit {
                 ASSERT_NOT_IMPLEMENTED_YET();
