@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 Apple Inc. All rights reserved.
+ * Copyright (C) 2025 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,18 +26,14 @@
 #if ENABLE(GPU_PROCESS) && ENABLE(VIDEO)
 
 [
-    ExceptionForEnabledBy,
-    DispatchedFrom=WebContent,
-    DispatchedTo=GPU
+    DispatchedFrom=GPU,
+    DispatchedTo=WebContent
 ]
-messages -> RemoteMediaResourceManager {
-    ResponseReceived(WebKit::RemoteMediaResourceIdentifier identifier, WebCore::ResourceResponse response, bool didPassAccessControlCheck) -> (enum:bool WebCore::ShouldContinuePolicyCheck shouldContinue)
-    RedirectReceived(WebKit::RemoteMediaResourceIdentifier identifier, WebCore::ResourceRequest request, WebCore::ResourceResponse response) -> (WebCore::ResourceRequest returnRequest)
-    DataSent(WebKit::RemoteMediaResourceIdentifier identifier, uint64_t bytesSent, uint64_t totalBytesToBeSent)
-    DataReceived(WebKit::RemoteMediaResourceIdentifier identifier, IPC::SharedBufferReference data) -> (std::optional<WebCore::SharedMemory::Handle> remoteData)
-    AccessControlCheckFailed(WebKit::RemoteMediaResourceIdentifier identifier, WebCore::ResourceError error)
-    LoadFailed(WebKit::RemoteMediaResourceIdentifier identifier, WebCore::ResourceError error)
-    LoadFinished(WebKit::RemoteMediaResourceIdentifier identifier, WebCore::NetworkLoadMetrics metrics)
+messages -> RemoteMediaResourceLoaderProxy {
+    RequestResource(WebKit::RemoteMediaResourceIdentifier remoteMediaResourceIdentifier, WebCore::ResourceRequest request, unsigned options)
+    RemoveResource(WebKit::RemoteMediaResourceIdentifier remoteMediaResourceIdentifier) -> () Async
+    SendH2Ping(URL url) -> (Expected<Seconds, WebCore::ResourceError> result)
 }
 
 #endif
+

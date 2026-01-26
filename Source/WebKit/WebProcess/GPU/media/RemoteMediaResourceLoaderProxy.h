@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 Apple Inc. All rights reserved.
+ * Copyright (C) 2025 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,15 +27,15 @@
 
 #if ENABLE(GPU_PROCESS) && ENABLE(VIDEO)
 
-#include "Connection.h"
 #include "RemoteMediaResourceIdentifier.h"
+#include "RemoteMediaResourceLoaderIdentifier.h"
 #include "WorkQueueMessageReceiver.h"
-#include <WebCore/PolicyChecker.h>
+#include <WebCore/PlatformMediaResourceLoader.h>
 #include <WebCore/SharedMemory.h>
-#include <wtf/HashMap.h>
-#include <wtf/Lock.h>
+#include <wtf/Expected.h>
 #include <wtf/TZoneMalloc.h>
-#include <wtf/WeakPtr.h>
+#include <wtf/ThreadSafeRefCounted.h>
+#include <wtf/WorkQueue.h>
 
 namespace IPC {
 class Connection;
@@ -44,49 +44,55 @@ class SharedBufferReference;
 }
 
 namespace WebCore {
-class NetworkLoadMetrics;
+class ResourceError;
 class ResourceRequest;
 }
 
 namespace WebKit {
 
-class RemoteMediaResource;
-
-class RemoteMediaResourceManager
+class RemoteMediaResourceLoaderProxy final
     : public IPC::WorkQueueMessageReceiver<WTF::DestructionThread::Any> {
-    WTF_MAKE_TZONE_ALLOCATED(RemoteMediaResourceManager);
+    WTF_MAKE_TZONE_ALLOCATED(RemoteMediaResourceLoaderProxy);
 public:
-    static Ref<RemoteMediaResourceManager> create() { return adoptRef(*new RemoteMediaResourceManager()); }
-    ~RemoteMediaResourceManager();
+    static Ref<RemoteMediaResourceLoaderProxy> create(Ref<IPC::Connection>&&, WebCore::PlatformMediaResourceLoader&, RemoteMediaResourceLoaderIdentifier);
+    virtual ~RemoteMediaResourceLoaderProxy();
 
-    void ref() const final { IPC::WorkQueueMessageReceiver<WTF::DestructionThread::Any>::ref(); }
-    void deref() const final { IPC::WorkQueueMessageReceiver<WTF::DestructionThread::Any>::deref(); }
+    static Ref<WorkQueue> defaultQueue()
+    {
+        // FIXME: Move this object and MediaResourceLoader off the main thread
+        return WorkQueue::mainSingleton();
+    }
 
-    void initializeConnection(IPC::Connection*);
-    void stopListeningForIPC();
-
-    void addMediaResource(RemoteMediaResourceIdentifier, RemoteMediaResource&);
-    void removeMediaResource(RemoteMediaResourceIdentifier);
+    // Disambiguate ref/deref:
+    void ref() const final { return IPC::WorkQueueMessageReceiver<WTF::DestructionThread::Any>::ref(); }
+    void deref() const final { return IPC::WorkQueueMessageReceiver<WTF::DestructionThread::Any>::deref(); }
 
     // IPC::Connection::WorkQueueMessageReceiver.
     void didReceiveMessage(IPC::Connection&, IPC::Decoder&) final;
 
-private:
-    RemoteMediaResourceManager();
+    // Messages from RemoteMediaResourceLoader:
+    void requestResource(RemoteMediaResourceIdentifier, WebCore::ResourceRequest&&, WebCore::PlatformMediaResourceLoader::LoadOptions);
+    void removeResource(RemoteMediaResourceIdentifier, CompletionHandler<void()>&&);
+    void sendH2Ping(const URL&, CompletionHandler<void(Expected<WTF::Seconds, WebCore::ResourceError>&&)>&&);
+
+    // Messages to RemoteMediaResourceLoader:
     void responseReceived(RemoteMediaResourceIdentifier, const WebCore::ResourceResponse&, bool, CompletionHandler<void(WebCore::ShouldContinuePolicyCheck)>&&);
     void redirectReceived(RemoteMediaResourceIdentifier, WebCore::ResourceRequest&&, const WebCore::ResourceResponse&, CompletionHandler<void(WebCore::ResourceRequest&&)>&&);
     void dataSent(RemoteMediaResourceIdentifier, uint64_t, uint64_t);
-    void dataReceived(RemoteMediaResourceIdentifier, IPC::SharedBufferReference&&, CompletionHandler<void(std::optional<WebCore::SharedMemory::Handle>&&)>&&);
+    void dataReceived(RemoteMediaResourceIdentifier, const WebCore::SharedBuffer&);
     void accessControlCheckFailed(RemoteMediaResourceIdentifier, const WebCore::ResourceError&);
     void loadFailed(RemoteMediaResourceIdentifier, const WebCore::ResourceError&);
     void loadFinished(RemoteMediaResourceIdentifier, const WebCore::NetworkLoadMetrics&);
 
-    RefPtr<RemoteMediaResource> resourceForId(RemoteMediaResourceIdentifier);
+private:
+    RemoteMediaResourceLoaderProxy(Ref<IPC::Connection>&&, WebCore::PlatformMediaResourceLoader&, RemoteMediaResourceLoaderIdentifier);
 
-    Lock m_lock;
-    HashMap<RemoteMediaResourceIdentifier, ThreadSafeWeakPtr<RemoteMediaResource>> m_remoteMediaResources WTF_GUARDED_BY_LOCK(m_lock);
+    void initializeConnection();
 
-    RefPtr<IPC::Connection> m_connection;
+    const Ref<IPC::Connection> m_connection;
+    const Ref<WebCore::PlatformMediaResourceLoader> m_platformLoader;
+    RemoteMediaResourceLoaderIdentifier m_identifier;
+    HashMap<RemoteMediaResourceIdentifier, RefPtr<WebCore::PlatformMediaResource>> m_mediaResources;
 };
 
 } // namespace WebKit
