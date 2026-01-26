@@ -3319,7 +3319,7 @@ bool MediaPlayerPrivateAVFoundationObjC::isCurrentPlaybackTargetWireless() const
 {
     bool wirelessTarget = false;
 
-#if !PLATFORM(IOS_FAMILY) || HAVE(AVROUTING_FRAMEWORK)
+#if !PLATFORM(IOS_FAMILY) || ENABLE(WIRELESS_PLAYBACK_MEDIA_PLAYER)
     if (RefPtr playbackTarget = m_playbackTarget) {
         if (playbackTarget->type() == MediaPlaybackTarget::Type::WirelessPlayback)
             wirelessTarget = m_avPlayer && m_avPlayer.get().externalPlaybackActive;
@@ -3427,7 +3427,7 @@ String MediaPlayerPrivateAVFoundationObjC::wirelessPlaybackTargetName() const
 
     String wirelessTargetName;
 
-#if !PLATFORM(IOS_FAMILY) || HAVE(AVROUTING_FRAMEWORK)
+#if !PLATFORM(IOS_FAMILY) || ENABLE(WIRELESS_PLAYBACK_MEDIA_PLAYER)
     if (RefPtr playbackTarget = m_playbackTarget) {
 #if HAVE(MEDIAEXPERIENCE_AVSYSTEMCONTROLLER)
         if (playbackTarget->type() == MediaPlaybackTarget::Type::AVOutputContext)
@@ -3476,7 +3476,7 @@ OptionSet<MediaPlaybackTargetType> MediaPlayerPrivateAVFoundationObjC::playbackT
 
 void MediaPlayerPrivateAVFoundationObjC::setWirelessPlaybackTarget(Ref<MediaPlaybackTarget>&& target)
 {
-#if !PLATFORM(IOS_FAMILY) || HAVE(AVROUTING_FRAMEWORK)
+#if !PLATFORM(IOS_FAMILY) || ENABLE(WIRELESS_PLAYBACK_MEDIA_PLAYER)
     m_playbackTarget = target.copyRef();
 
 #if !PLATFORM(IOS_FAMILY)
@@ -3489,12 +3489,12 @@ void MediaPlayerPrivateAVFoundationObjC::setWirelessPlaybackTarget(Ref<MediaPlay
         setShouldPlayToPlaybackTarget(false);
 #else
     UNUSED_PARAM(target);
-#endif // !PLATFORM(IOS_FAMILY) || HAVE(AVROUTING_FRAMEWORK)
+#endif // !PLATFORM(IOS_FAMILY) || ENABLE(WIRELESS_PLAYBACK_MEDIA_PLAYER)
 }
 
 void MediaPlayerPrivateAVFoundationObjC::setShouldPlayToPlaybackTarget(bool shouldPlay)
 {
-#if !PLATFORM(IOS_FAMILY) || HAVE(AVROUTING_FRAMEWORK)
+#if !PLATFORM(IOS_FAMILY) || ENABLE(WIRELESS_PLAYBACK_MEDIA_PLAYER)
     if (m_shouldPlayToPlaybackTarget == shouldPlay)
         return;
 
@@ -3533,7 +3533,7 @@ void MediaPlayerPrivateAVFoundationObjC::setShouldPlayToPlaybackTarget(bool shou
     }
 #else
     UNUSED_PARAM(shouldPlay);
-#endif // !PLATFORM(IOS_FAMILY) || HAVE(AVROUTING_FRAMEWORK)
+#endif // !PLATFORM(IOS_FAMILY) || ENABLE(WIRELESS_PLAYBACK_MEDIA_PLAYER)
 }
 
 void MediaPlayerPrivateAVFoundationObjC::updateDisableExternalPlayback()
