@@ -3591,7 +3591,7 @@ auto ByteCodeParser::handleIntrinsicCall(Node* callee, Operand resultOperand, Ca
             
         case IsFinalTierIntrinsic: {
             insertChecks();
-            setResult(jsConstant(jsBoolean(Options::useFTLJIT() ? m_graph.m_plan.isFTL() : true)));
+            setResult(jsConstant(jsBoolean(!Options::useFTLJIT() || m_graph.m_plan.isFTL())));
             return CallOptimizationResult::Inlined;
         }
             
