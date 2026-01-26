@@ -8087,6 +8087,16 @@ TextExtractionFilterEnabled:
       "ENABLE(TEXT_EXTRACTION_FILTER)": true
       default: false
 
+TextInputClientSelectionUpdatesEnabled:
+  type: bool
+  status: embedder
+  webcoreBinding: none
+  condition: PLATFORM(MAC)
+  exposed: [ WebKit ]
+  defaultValue:
+    WebKit:
+      default: WebKit::defaultTextInputClientSelectionUpdatesEnabled()
+
 TextInteractionEnabled:
   type: bool
   status: embedder
