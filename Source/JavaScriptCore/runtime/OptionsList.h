@@ -191,6 +191,7 @@ bool hasCapacityToUseLargeGigacage();
     v(Bool, reportTotalPhaseTimes, false, Normal, "This prints phase times at the end of running script inside jsc.cpp"_s) \
     v(Bool, reportParseTimes, false, Normal, "dumps JS function signature and the time it took to parse"_s) \
     v(Bool, reportBytecodeCompileTimes, false, Normal, "dumps JS function signature and the time it took to bytecode compile"_s) \
+    v(Bool, reportBytecodeCacheDecodeTimes, false, Normal, "dumps the time it took to decode bytecode from the disk cache"_s) \
     v(Bool, countParseTimes, false, Normal, "counts parse times"_s) \
     v(Bool, verboseExitProfile, false, Normal, nullptr) \
     v(Bool, verboseCFA, false, Normal, nullptr) \
