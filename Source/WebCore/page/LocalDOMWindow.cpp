@@ -2320,7 +2320,7 @@ void LocalDOMWindow::resetAllGeolocationPermission()
 
 bool LocalDOMWindow::removeEventListener(const AtomString& eventType, EventListener& listener, const EventListenerOptions& options)
 {
-    if (!EventTarget::removeEventListener(eventType, listener, options.capture))
+    if (!EventTarget::removeEventListener(eventType, listener, options))
         return false;
 
     RefPtr document = this->document();

@@ -7024,6 +7024,11 @@ sub IsDictionaryLiteralDefaultValueValid
         return $hasDictionaryMember;
     }
 
+    # FIXME: The WebIDL spec does not actually allow `{}` to be used for records, but WebGPU currently depends on it.
+    if ($codeGenerator->IsRecordType($type)) {
+        return 1;
+    }
+
     return 0;
 }
 
@@ -7033,7 +7038,6 @@ sub IsArrayLiteralDefaultValueValid
 
     return $codeGenerator->IsSequenceOrFrozenArrayType($type);
 }
-
 
 sub GenerateArgumentConversions
 {
@@ -7057,10 +7061,10 @@ sub GenerateArgumentConversions
                 $argument->default("null") if $type->isNullable;
             } else {
                 if ($argument->default eq "{}" and !IsDictionaryLiteralDefaultValueValid($type)) {
-                    assert("Default value '{}' is only supported by dictionary and union types containing a dictionary");
+                    assert("Default value '{}' is only supported by dictionary types, union types containing a dictionary (and record types as a non-standard extension)");
                 }
                 if ($argument->default eq "[]" and !IsArrayLiteralDefaultValueValid($type)) {
-                    assert("Default value '[]' is only supported by sequence and frozen array types");
+                    assert("Default value '[]' is only supported by sequence types and frozen array types");
                 }
             }
         }

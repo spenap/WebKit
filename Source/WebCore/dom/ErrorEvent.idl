@@ -29,6 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://html.spec.whatwg.org/multipage/webappapis.html#errorevent
 [
     Exposed=*,
     JSCustomMarkFunction,
@@ -42,6 +43,7 @@
     [CallWith=CurrentGlobalObject] readonly attribute any error;
 };
 
+// https://html.spec.whatwg.org/multipage/webappapis.html#erroreventinit
 [
     LegacyNativeDictionaryRequiredInterfaceNullability,
 ] dictionary ErrorEventInit : EventInit {

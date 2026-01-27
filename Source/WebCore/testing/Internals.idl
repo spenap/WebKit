@@ -372,12 +372,12 @@ enum AV1ConfigurationRange {
 ] dictionary WebDriverCookieData {
     DOMString name;
     DOMString value;
-    DOMString path;
+    DOMString path = "/";
     DOMString domain;
-    boolean secure;
-    boolean httpOnly;
-    double? expiry;
-    DOMString sameSite;
+    boolean secure = false;
+    boolean httpOnly = false;
+    double expiry;
+    DOMString sameSite = "none";
 };
 
 [

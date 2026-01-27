@@ -37,7 +37,7 @@ using PipelineConstantValue = double; // May represent WGSL’s bool, f32, i32, 
 
 struct ProgrammableStage {
     WeakRef<ShaderModule> module;
-    std::optional<String> entryPoint;
+    String entryPoint;
     Vector<KeyValuePair<String, PipelineConstantValue>> constants;
 
     Ref<ShaderModule> protectedModule() const { return module.get(); }

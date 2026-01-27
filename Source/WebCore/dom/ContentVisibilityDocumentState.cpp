@@ -169,9 +169,11 @@ bool ContentVisibilityDocumentState::checkRelevancyOfContentVisibilityElement(El
     updateAnimations(target, wasSkippedContent, isSkippedContent);
     target.queueTaskKeepingThisNodeAlive(TaskSource::DOMManipulation, [&, isSkippedContent] {
         if (target.isConnected()) {
-            ContentVisibilityAutoStateChangeEvent::Init init;
-            init.skipped = isSkippedContent == IsSkippedContent::Yes;
-            target.dispatchEvent(ContentVisibilityAutoStateChangeEvent::create(eventNames().contentvisibilityautostatechangeEvent, init));
+            ContentVisibilityAutoStateChangeEvent::Init init {
+                { false, false, false },
+                isSkippedContent == IsSkippedContent::Yes
+            };
+            target.dispatchEvent(ContentVisibilityAutoStateChangeEvent::create(eventNames().contentvisibilityautostatechangeEvent, WTF::move(init)));
         }
     });
     return true;
