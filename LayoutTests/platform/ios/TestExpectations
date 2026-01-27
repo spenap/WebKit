@@ -8453,3 +8453,6 @@ webkit.org/b/305605 media/volume-sleep-disable.html [ Failure ]
 
 imported/w3c/web-platform-tests/uievents/mouse/layer-coords-transform.html [ Skip ]
 imported/w3c/web-platform-tests/uievents/mouse/mouse_boundary_events_on_image_map.html [ Skip ]
+
+webkit.org/b/306360 http/tests/download/sandboxed-iframe-download-not-allowed.html [ Pass Failure ]
+
