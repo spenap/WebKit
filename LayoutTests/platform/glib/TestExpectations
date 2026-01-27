@@ -2874,7 +2874,7 @@ imported/w3c/web-platform-tests/webrtc/RTCRtpReceiver-video-jitterBufferTarget-s
 imported/w3c/web-platform-tests/webrtc/RTCRtpSender-encode-same-track-twice.https.html [ Pass ]
 imported/w3c/web-platform-tests/webrtc/RTCRtpSender-getCapabilities.html [ Pass ]
 imported/w3c/web-platform-tests/webrtc/RTCRtpSender-getParameters.html [ Failure ]
-imported/w3c/web-platform-tests/webrtc/RTCRtpSender-getStats.https.html [ Failure ]
+imported/w3c/web-platform-tests/webrtc/RTCRtpSender-getStats.https.html [ Failure Pass ]
 imported/w3c/web-platform-tests/webrtc/RTCRtpSender-replaceTrack.https.html [ Pass ]
 imported/w3c/web-platform-tests/webrtc/RTCRtpSender-setParameters-keyFrame.html [ Pass ]
 imported/w3c/web-platform-tests/webrtc/RTCRtpSender-setStreams.https.html [ Skip ] # Timeout
@@ -4470,7 +4470,7 @@ imported/w3c/web-platform-tests/css/css-view-transitions/fragmented-at-start-ign
 imported/w3c/web-platform-tests/css/css-view-transitions/fractional-translation-from-transform.html [ Pass ImageOnlyFailure ]
 imported/w3c/web-platform-tests/css/css-view-transitions/massive-element-left-of-viewport-partially-onscreen-new.html [ Pass ImageOnlyFailure ]
 imported/w3c/web-platform-tests/css/css-view-transitions/massive-element-left-of-viewport-partially-onscreen-old.html [ Pass ImageOnlyFailure ]
-imported/w3c/web-platform-tests/css/css-view-transitions/pseudo-with-classes-mismatch-ident.html [ ImageOnlyFailure ]
+imported/w3c/web-platform-tests/css/css-view-transitions/pseudo-with-classes-mismatch-ident.html [ ImageOnlyFailure Pass ]
 imported/w3c/web-platform-tests/css/css-view-transitions/pseudo-with-classes-mismatch-partial.html [ ImageOnlyFailure Pass ]
 imported/w3c/web-platform-tests/css/css-view-transitions/pseudo-with-classes-mismatch-wildcard.html [ ImageOnlyFailure Pass ]
 imported/w3c/web-platform-tests/css/css-view-transitions/pseudo-with-classes-old-with-class-new-without.html [ ImageOnlyFailure Pass ]
@@ -5075,6 +5075,13 @@ webkit.org/b/305538 fast/images/async-image-multiple-clients-repaint.html [ Pass
 webkit.org/b/306256 editing/selection/modify-up-on-rtl-wrapping-text.html [ Failure ]
 
 webkit.org/b/306265 imported/w3c/web-platform-tests/html/semantics/embedded-content/media-elements/video_loop_base.html [ Pass Failure ]
+
+webkit.org/b/306340 fast/css/vertical-align-rem-on-root.html [ Pass Timeout ]
+webkit.org/b/306341 fast/scrolling/rtl-scrollbars-sticky-document-2.html [ Pass ImageOnlyFailure ]
+webkit.org/b/306342 http/wpt/service-workers/fetch-service-worker-navigation-preload.https.html [ Pass Failure Timeout ]
+webkit.org/b/306342 http/wpt/service-workers/service-worker-crashing-while-fetching.https.html [ Pass Failure Timeout ]
+webkit.org/b/306345 imported/w3c/web-platform-tests/html/semantics/embedded-content/media-elements/track/track-element/track-remove-by-setting-innerHTML.html [ Pass Failure ]
+webkit.org/b/306347 imported/w3c/web-platform-tests/WebCryptoAPI/wrapKey_unwrapKey/wrapKey_unwrapKey.https.any.html [ Pass Failure ]
 
 # End: Common failures between GTK and WPE.
 
