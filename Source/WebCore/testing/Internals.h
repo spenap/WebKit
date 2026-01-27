@@ -1218,6 +1218,7 @@ public:
         bool haveEverRegisteredAsNowPlayingApplication;
     };
     ExceptionOr<NowPlayingState> nowPlayingState() const;
+    ExceptionOr<double> nowPlayingUpdateInterval() const;
     void setNowPlayingUpdateInterval(double);
 
     struct MediaUsageState {

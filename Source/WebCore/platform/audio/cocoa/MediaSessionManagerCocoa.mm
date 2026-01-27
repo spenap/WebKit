@@ -504,6 +504,8 @@ void MediaSessionManagerCocoa::updateActiveNowPlayingSession(RefPtr<PlatformMedi
     if (activeSessionChanged) {
         if (RefPtr page = Page::fromPageIdentifier(pageIdentifier()))
             page->hasActiveNowPlayingSessionChanged();
+
+        adjustNowPlayingUpdateInterval();
     }
 }
 
@@ -584,10 +586,46 @@ bool MediaSessionManagerCocoa::shouldUpdateNowPlaying(const NowPlayingInfo& nowP
     return false;
 }
 
+void MediaSessionManagerCocoa::adjustNowPlayingUpdateInterval()
+{
+    RefPtr session = nowPlayingEligibleSession().get();
+    if (!session)
+        return;
+
+    auto interval = [&] {
+        constexpr Seconds defaultNowPlayingUpdateInterval = 5_s;
+
+        auto nowPlayingInfo = session->nowPlayingInfo();
+        if (!nowPlayingInfo)
+            return defaultNowPlayingUpdateInterval;
+
+        auto duration = nowPlayingInfo->duration;
+        if (!duration || !std::isfinite(duration) || std::isnan(duration))
+            return defaultNowPlayingUpdateInterval;
+
+        Seconds minNowPlayingUpdateInterval = Seconds(duration / 4);
+        if (m_nowPlayingUpdateInterval > minNowPlayingUpdateInterval)
+            return minNowPlayingUpdateInterval;
+
+        return defaultNowPlayingUpdateInterval;
+    }();
+
+    if (interval != m_nowPlayingUpdateInterval) {
+        m_nowPlayingUpdateInterval = interval;
+        ALWAYS_LOG(LOGIDENTIFIER, m_nowPlayingUpdateInterval.value());
+    }
+}
+
 void MediaSessionManagerCocoa::setNowPlayingUpdateInterval(double interval)
 {
     ALWAYS_LOG(LOGIDENTIFIER, interval);
     m_nowPlayingUpdateInterval = Seconds(interval);
+    adjustNowPlayingUpdateInterval();
+}
+
+double MediaSessionManagerCocoa::nowPlayingUpdateInterval()
+{
+    return m_nowPlayingUpdateInterval.value();
 }
 
 void MediaSessionManagerCocoa::updateNowPlayingInfo()
@@ -624,6 +662,9 @@ void MediaSessionManagerCocoa::updateNowPlayingInfo()
         updateActiveNowPlayingSession(nullptr);
         return;
     }
+
+    if (!m_nowPlayingInfo)
+        adjustNowPlayingUpdateInterval();
 
     m_nowPlayingUpdateTimer.startOneShot(m_nowPlayingUpdateInterval);
 

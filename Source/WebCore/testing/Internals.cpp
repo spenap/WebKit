@@ -5515,6 +5515,15 @@ void Internals::setNowPlayingUpdateInterval(double interval)
         manager->setNowPlayingUpdateInterval(interval);
 }
 
+ExceptionOr<double> Internals::nowPlayingUpdateInterval() const
+{
+    RefPtr manager = sessionManager();
+    if (!manager)
+        return Exception { ExceptionCode::InvalidAccessError };
+
+    return manager->nowPlayingUpdateInterval();
+}
+
 
 #if ENABLE(VIDEO)
 RefPtr<HTMLMediaElement> Internals::bestMediaElementForRemoteControls(Internals::PlaybackControlsPurpose purpose)

@@ -9666,6 +9666,8 @@ void HTMLMediaElement::schedulePlaybackControlsManagerUpdate()
 {
     if (RefPtr<Page> page = document().page())
         page->schedulePlaybackControlsManagerUpdate();
+    if (RefPtr mediaSession = m_mediaSession; mediaSession && !document().activeDOMObjectsAreStopped())
+        mediaSession->clientCharacteristicsChanged(false);
 }
 
 void HTMLMediaElement::playbackControlsManagerBehaviorRestrictionsTimerFired()

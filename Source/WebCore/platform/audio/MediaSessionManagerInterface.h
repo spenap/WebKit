@@ -77,8 +77,9 @@ public:
     virtual bool shouldDeactivateAudioSession() { return m_shouldDeactivateAudioSession; };
 
     virtual void updateNowPlayingInfoIfNecessary();
-    virtual void updateNowPlayingInfo() { updateNowPlayingInfoIfNecessary(); }
-    virtual void setNowPlayingUpdateInterval(double) { };
+    virtual void updateNowPlayingInfo();
+    virtual void setNowPlayingUpdateInterval(double);
+    virtual double nowPlayingUpdateInterval();
     virtual void updateAudioSessionCategoryIfNecessary();
 
     virtual std::optional<NowPlayingInfo> nowPlayingInfo() const { return { }; }
