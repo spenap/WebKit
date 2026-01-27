@@ -802,7 +802,7 @@ static IterationStatus forEachCALayer(CALayer *layer, IterationStatus(^visitor)(
 {
     __block RetainPtr<CALayer> result;
     [self forEachCALayer:^(CALayer *layer) {
-        if (![layer.name isEqualToString:@"Gesture Swipe Snapshot Layer"])
+        if (![layer.name isEqualToString:layerName])
             return IterationStatus::Continue;
 
         result = layer;
