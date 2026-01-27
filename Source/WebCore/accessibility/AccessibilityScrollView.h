@@ -42,14 +42,17 @@ class ScrollView;
 struct InheritedFrameState {
     InheritedFrameState()
         : isAXHidden(false)
+        , isInert(false)
     { }
 
-    InheritedFrameState(bool isAXHidden)
+    InheritedFrameState(bool isAXHidden, bool isInert)
         : isAXHidden(isAXHidden)
+        , isInert(isInert)
     { }
 
     bool isAXHidden;
-    // FIXME: include inert and visibility state.
+    bool isInert;
+    // FIXME: include visibility state.
 };
 #endif
 
@@ -74,15 +77,18 @@ public:
     AccessibilityObject* crossFrameChildObject() const final;
 
     void setInheritedFrameState(InheritedFrameState state) { m_inheritedFrameState = state; }
+    const InheritedFrameState& inheritedFrameState() const { return m_inheritedFrameState; }
     bool isAXHidden() const final;
     bool isARIAHidden() const final;
     void updateHostedFrameInheritedState();
 
     // Returns true if the iframe element (or ancestors) cause the content to be hidden.
     // We can't use isIgnored() because FrameHost scroll views are always ignored (see computeIsIgnored).
-    // FIXME: This should also consider inert and visibility.
     bool isHostingFrameHidden() const { return isAXHidden(); }
-#endif
+    bool isHostingFrameInert() const;
+    bool isIgnoredFromHostingFrame() const { return isHostingFrameHidden() || isHostingFrameInert(); }
+    // FIXME: This should also consider visibility state for full site isolation support.
+#endif // ENABLE(ACCESSIBLITY_LOCAL_FRAME)
 
 private:
     explicit AccessibilityScrollView(AXID, ScrollView&, AXObjectCache&);
@@ -120,6 +126,7 @@ private:
     AccessibilityObject* parentObject() const final;
     RefPtr<AccessibilityObject> protectedHorizontalScrollbar() const { return m_horizontalScrollbar; }
     RefPtr<AccessibilityObject> protectedVerticalScrollbar() const { return m_verticalScrollbar; }
+    HTMLFrameOwnerElement* frameOwnerElement() const { return m_frameOwnerElement; }
     RefPtr<HTMLFrameOwnerElement> protectedFrameOwnerElement() const { return m_frameOwnerElement; }
 
     AccessibilityObject* firstChild() const final { return webAreaObject(); }

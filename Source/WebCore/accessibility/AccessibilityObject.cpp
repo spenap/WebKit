@@ -4020,6 +4020,19 @@ AccessibilityObjectInclusion AccessibilityObject::defaultObjectInclusion() const
 bool AccessibilityObject::isWithinHiddenWebArea() const
 {
     RefPtr webArea = this->containingWebArea();
+    if (!webArea)
+        return false;
+
+#if ENABLE_ACCESSIBILITY_LOCAL_FRAME
+    if (RefPtr parentScrollView = dynamicDowncast<AccessibilityScrollView>(webArea->parentObject())) {
+        if (parentScrollView->isHostingFrameInert()) {
+            // The frame that hosts this web area is inert, so this entire frame should be inert as well.
+            return true;
+        }
+    }
+#endif
+
+    // Fallback for same-process visibility/inert check.
     CheckedPtr renderView = webArea ? dynamicDowncast<RenderView>(webArea->renderer()) : nullptr;
     CheckedPtr frameRenderer = renderView ? renderView->frameView().frame().ownerRenderer() : nullptr;
     while (frameRenderer) {

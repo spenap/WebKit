@@ -6024,8 +6024,10 @@ void AXObjectCache::objectBecameIgnored(const AccessibilityObject& object)
         tree->objectBecameIgnored(object);
 #endif
 #if ENABLE(ACCESSIBILITY_LOCAL_FRAME)
-    if (RefPtr scrollView = dynamicDowncast<AccessibilityScrollView>(object); scrollView && scrollView->role() == AccessibilityRole::FrameHost)
-        const_cast<AccessibilityScrollView*>(scrollView.get())->updateHostedFrameInheritedState();
+    if (object.isFrame()) {
+        if (RefPtr scrollView = dynamicDowncast<AccessibilityScrollView>(object.parentObject()); scrollView && scrollView->role() == AccessibilityRole::FrameHost)
+            scrollView->updateHostedFrameInheritedState();
+    }
 #endif
 #if !ENABLE(ACCESSIBILITY_ISOLATED_TREE) && !ENABLE(ACCESSIBILITY_LOCAL_FRAME)
     UNUSED_PARAM(object);
@@ -6039,8 +6041,10 @@ void AXObjectCache::objectBecameUnignored(const AccessibilityObject& object)
         tree->objectBecameUnignored(object);
 #endif
 #if ENABLE(ACCESSIBILITY_LOCAL_FRAME)
-    if (RefPtr scrollView = dynamicDowncast<AccessibilityScrollView>(object); scrollView && scrollView->role() == AccessibilityRole::FrameHost)
-        const_cast<AccessibilityScrollView*>(scrollView.get())->updateHostedFrameInheritedState();
+    if (object.isFrame()) {
+        if (RefPtr scrollView = dynamicDowncast<AccessibilityScrollView>(object.parentObject()); scrollView && scrollView->role() == AccessibilityRole::FrameHost)
+            scrollView->updateHostedFrameInheritedState();
+    }
 #endif
 #if !ENABLE(ACCESSIBILITY_ISOLATED_TREE) && !ENABLE(ACCESSIBILITY_LOCAL_FRAME)
     UNUSED_PARAM(object);
