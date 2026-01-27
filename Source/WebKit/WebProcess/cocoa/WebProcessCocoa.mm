@@ -530,9 +530,13 @@ void WebProcess::platformInitializeWebProcess(WebProcessCreationParameters& para
     // App nap must be manually enabled when not running the NSApplication run loop.
     __CFRunLoopSetOptionsReason(__CFRunLoopOptionsEnableAppNap, CFSTR("Finished checkin as application - enable app nap"));
 
+#if ENABLE(INITIALIZE_NSAPPLICATION_ON_DEMAND)
+    _RegisterApplication(nullptr, nullptr);
+#else
     // Initialize the shared application so method calls using `NSApp` are not no-ops.
     [NSApplication sharedApplication];
-#endif
+#endif // ENABLE(INITIALIZE_NSAPPLICATION_ON_DEMAND)
+#endif // PLATFORM(MAC)
 
 #if !ENABLE(CFPREFS_DIRECT_MODE)
     WTF::listenForLanguageChangeNotifications();

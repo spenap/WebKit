@@ -1005,7 +1005,9 @@ bool WebPage::shouldAvoidComputingPostLayoutDataForEditorState() const
 
 void WebPage::setAccentColor(WebCore::Color color)
 {
-    [NSApp _setAccentColor:cocoaColorOrNil(color).get()];
+    if (!color.isValid())
+        return;
+    [NSApplication.sharedApplication _setAccentColor:cocoaColorOrNil(color).get()];
 }
 
 #if PLATFORM(MAC)
