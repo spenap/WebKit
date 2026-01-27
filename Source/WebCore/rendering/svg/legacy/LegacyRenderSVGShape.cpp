@@ -486,8 +486,10 @@ float LegacyRenderSVGShape::strokeWidthForMarkerUnits() const
 
 Path& LegacyRenderSVGShape::ensurePath()
 {
-    if (!hasPath())
+    if (!hasPath()) {
         m_path = createPath();
+        m_path->setNotTransient();
+    }
     return path();
 }
 
