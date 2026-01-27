@@ -59,10 +59,6 @@ WTF_IGNORE_WARNINGS_IN_THIRD_PARTY_CODE_BEGIN
 WTF_IGNORE_WARNINGS_IN_THIRD_PARTY_CODE_END
 #endif
 
-#if USE(COORDINATED_GRAPHICS)
-#include "CoordinatedPlatformLayerBufferVideo.h"
-#endif
-
 GST_DEBUG_CATEGORY(webkit_video_frame_debug);
 GST_DEBUG_CATEGORY_STATIC(GST_CAT_PERFORMANCE);
 #define GST_CAT_DEFAULT webkit_video_frame_debug

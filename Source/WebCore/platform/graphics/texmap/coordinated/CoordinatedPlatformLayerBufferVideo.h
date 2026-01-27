@@ -46,7 +46,7 @@ private:
     void paintToTextureMapper(TextureMapper&, const FloatRect&, const TransformationMatrix& modelViewMatrix = TransformationMatrix(), float opacity = 1.0) override;
 
     std::unique_ptr<CoordinatedPlatformLayerBuffer> createBufferIfNeeded(bool gstGLEnabled);
-#if USE(GBM)
+#if USE(GBM) && GST_CHECK_VERSION(1, 24, 0)
     std::unique_ptr<CoordinatedPlatformLayerBuffer> createBufferFromDMABufMemory();
 #endif
 #if USE(GSTREAMER_GL)

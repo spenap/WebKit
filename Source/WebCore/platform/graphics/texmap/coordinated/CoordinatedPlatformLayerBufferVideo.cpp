@@ -85,7 +85,7 @@ std::unique_ptr<CoordinatedPlatformLayerBuffer> CoordinatedPlatformLayerBufferVi
 std::unique_ptr<CoordinatedPlatformLayerBuffer> CoordinatedPlatformLayerBufferVideo::createBufferIfNeeded(bool gstGLEnabled)
 {
     auto buffer = gst_sample_get_buffer(m_videoFrame->sample());
-#if USE(GBM)
+#if USE(GBM) && GST_CHECK_VERSION(1, 24, 0)
     if (gst_is_dmabuf_memory(gst_buffer_peek_memory(buffer, 0)))
         return createBufferFromDMABufMemory();
 #endif
@@ -113,7 +113,7 @@ std::unique_ptr<CoordinatedPlatformLayerBuffer> CoordinatedPlatformLayerBufferVi
     return nullptr;
 }
 
-#if USE(GBM)
+#if USE(GBM) && GST_CHECK_VERSION(1, 24, 0)
 std::unique_ptr<CoordinatedPlatformLayerBuffer> CoordinatedPlatformLayerBufferVideo::createBufferFromDMABufMemory()
 {
     auto videoInfo = m_videoFrame->info();
@@ -124,7 +124,7 @@ std::unique_ptr<CoordinatedPlatformLayerBuffer> CoordinatedPlatformLayerBufferVi
     RELEASE_ASSERT(dmabuf);
     return CoordinatedPlatformLayerBufferDMABuf::create(dmabuf.releaseNonNull(), m_flags, nullptr);
 }
-#endif // USE(GBM)
+#endif // USE(GBM) && GST_CHECK_VERSION(1, 24, 0)
 
 #if USE(GSTREAMER_GL)
 std::unique_ptr<CoordinatedPlatformLayerBuffer> CoordinatedPlatformLayerBufferVideo::createBufferFromGLMemory()

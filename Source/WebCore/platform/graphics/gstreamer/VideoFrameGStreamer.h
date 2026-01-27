@@ -102,7 +102,7 @@ public:
     };
     MemoryType memoryType() const { return m_memoryType; }
 
-#if USE(GBM)
+#if USE(GBM) && GST_CHECK_VERSION(1, 24, 0)
     RefPtr<DMABufBuffer> getDMABuf();
 #endif
     const GstVideoInfo& info() const { return m_info.info; }
