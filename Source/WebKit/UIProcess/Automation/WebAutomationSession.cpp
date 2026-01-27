@@ -1959,7 +1959,7 @@ CommandResult<String /* authenticatorId */> WebAutomationSession::addVirtualAuth
     auto page = webPageProxyForHandle(browsingContextHandle);
     SYNC_FAIL_WITH_PREDEFINED_ERROR_IF(!page, WindowNotFound);
 
-    return protect(page->websiteDataStore())->protectedVirtualAuthenticatorManager()->createAuthenticator({
+    return protect(protect(page->websiteDataStore())->virtualAuthenticatorManager())->createAuthenticator({
         .protocol = protocol,
         .transport = toAuthenticatorTransport(parsedTransport.value()),
         .hasResidentKey = *hasResidentKey,
@@ -1978,7 +1978,7 @@ CommandResult<void> WebAutomationSession::removeVirtualAuthenticator(const Strin
     auto page = webPageProxyForHandle(browsingContextHandle);
     SYNC_FAIL_WITH_PREDEFINED_ERROR_IF(!page, WindowNotFound);
 
-    bool success = protect(page->websiteDataStore())->protectedVirtualAuthenticatorManager()->removeAuthenticator(authenticatorId);
+    bool success = protect(protect(page->websiteDataStore())->virtualAuthenticatorManager())->removeAuthenticator(authenticatorId);
     SYNC_FAIL_WITH_PREDEFINED_ERROR_AND_DETAILS_IF(!success, InvalidParameter, "No such authenticator exists."_s);
 
     return { };

@@ -56,7 +56,7 @@ void AuthenticationChallengeProxy::sendClientCertificateCredentialOverXpc(IPC::C
     xpc_dictionary_set_value(message.get(), ClientCertificateAuthentication::XPCCertificatesKey, certificateDataArray.get());
     xpc_dictionary_set_uint64(message.get(), ClientCertificateAuthentication::XPCPersistenceKey, static_cast<uint64_t>(nsCredential.get().persistence));
 
-    xpc_connection_send_message(connection.protectedXPCConnection().get(), message.get());
+    xpc_connection_send_message(protect(connection.xpcConnection()).get(), message.get());
 }
 
 } // namespace WebKit

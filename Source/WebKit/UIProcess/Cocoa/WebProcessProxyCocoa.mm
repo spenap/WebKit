@@ -262,7 +262,7 @@ std::optional<audit_token_t> WebProcessProxy::auditToken() const
     if (!hasConnection())
         return std::nullopt;
     
-    return protectedConnection()->getAuditToken();
+    return protect(connection())->getAuditToken();
 }
 
 std::optional<Vector<SandboxExtension::Handle>> WebProcessProxy::fontdMachExtensionHandles()
@@ -292,7 +292,7 @@ void WebProcessProxy::createLogStream(IPC::StreamServerConnectionHandle&& server
 void WebProcessProxy::createLogStream(LogStreamIdentifier identifier, CompletionHandler<void()>&& completionHandler)
 {
     MESSAGE_CHECK(!m_logStream.get());
-    Ref logStream = LogStream::create(*this, protectedConnection(), identifier);
+    Ref logStream = LogStream::create(*this, protect(connection()), identifier);
     addMessageReceiver(Messages::LogStream::messageReceiverName(), logStream->identifier(), logStream);
     m_logStream = WTF::move(logStream);
     completionHandler();
@@ -371,14 +371,14 @@ void WebProcessProxy::platformResumeProcess()
 {
     if (m_platformSuspendDidReleaseNearSuspendedAssertion) {
         m_platformSuspendDidReleaseNearSuspendedAssertion = false;
-        protectedThrottler()->setShouldTakeNearSuspendedAssertion(true);
+        protect(throttler())->setShouldTakeNearSuspendedAssertion(true);
     }
 }
 
 void WebProcessProxy::platformSuspendProcess()
 {
     m_platformSuspendDidReleaseNearSuspendedAssertion = throttler().isHoldingNearSuspendedAssertion();
-    protectedThrottler()->setShouldTakeNearSuspendedAssertion(false);
+    protect(throttler())->setShouldTakeNearSuspendedAssertion(false);
 }
 
 #if ENABLE(LOGD_BLOCKING_IN_WEBCONTENT)

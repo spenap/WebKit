@@ -117,7 +117,7 @@ void WebBackForwardList::addItem(Ref<WebBackForwardListItem>&& newItem)
 
         while (m_entries.size()) {
             Ref lastEntry = m_entries.last();
-            if (!lastEntry->isRemoteFrameNavigation() || lastEntry->protectedNavigatedFrameItem()->sharesAncestor(newItem->protectedNavigatedFrameItem()))
+            if (!lastEntry->isRemoteFrameNavigation() || protect(lastEntry->navigatedFrameItem())->sharesAncestor(protect(newItem->navigatedFrameItem())))
                 break;
             didRemoveItem(lastEntry);
             removedItems.append(WTF::move(lastEntry));
@@ -192,7 +192,7 @@ void WebBackForwardList::addChildItem(FrameIdentifier parentFrameID, Ref<FrameSt
     if (!currentItem)
         return;
 
-    RefPtr parentItem = currentItem->protectedMainFrameItem()->childItemForFrameID(parentFrameID);
+    RefPtr parentItem = protect(currentItem->mainFrameItem())->childItemForFrameID(parentFrameID);
     if (!parentItem)
         return;
 
@@ -741,7 +741,7 @@ void WebBackForwardList::backForwardAllItems(FrameIdentifier frameID, Completion
     for (Ref item : this->allItems()) {
         RefPtr<FrameState> frameState;
 
-        if (RefPtr frameItem = item->protectedMainFrameItem()->childItemForFrameID(frameID))
+        if (RefPtr frameItem = protect(item->mainFrameItem())->childItemForFrameID(frameID))
             frameState = frameItem->copyFrameStateWithChildren();
         else
             frameState = item->mainFrameState();
@@ -756,7 +756,7 @@ void WebBackForwardList::backForwardItemAtIndex(int32_t index, FrameIdentifier f
 {
     // FIXME: This should verify that the web process requesting the item hosts the specified frame.
     if (RefPtr item = itemAtIndex(index)) {
-        if (RefPtr frameItem = item->protectedMainFrameItem()->childItemForFrameID(frameID))
+        if (RefPtr frameItem = protect(item->mainFrameItem())->childItemForFrameID(frameID))
             return completionHandler(frameItem->copyFrameStateWithChildren());
         completionHandler(item->mainFrameState());
     } else

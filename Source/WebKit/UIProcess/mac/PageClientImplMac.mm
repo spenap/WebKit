@@ -641,7 +641,7 @@ void PageClientImpl::updateAcceleratedCompositingMode(const LayerTreeContext& la
 
 void PageClientImpl::setRemoteLayerTreeRootNode(RemoteLayerTreeNode* rootNode)
 {
-    checkedImpl()->setAcceleratedCompositingRootLayer(rootNode ? rootNode->protectedLayer().get() : nil);
+    checkedImpl()->setAcceleratedCompositingRootLayer(rootNode ? protect(rootNode->layer()).get() : nil);
 }
 
 CALayer *PageClientImpl::acceleratedCompositingRootLayer() const
@@ -829,7 +829,7 @@ bool PageClientImpl::isFullScreen()
     if (!impl->hasFullScreenWindowController())
         return false;
 
-    return impl->protectedFullScreenWindowController().get().isFullScreen;
+    return protect(impl->fullScreenWindowController()).get().isFullScreen;
 }
 
 void PageClientImpl::enterFullScreen(FloatSize, CompletionHandler<void(bool)>&& completionHandler)
@@ -1197,11 +1197,6 @@ void PageClientImpl::didChangeLocalInspectorAttachment()
 void PageClientImpl::showCaptionDisplaySettings(WebCore::HTMLMediaElementIdentifier identifier, const WebCore::ResolvedCaptionDisplaySettingsOptions& options, CompletionHandler<void(Expected<void, WebCore::ExceptionData>&&)>&& completionHandler)
 {
     checkedImpl()->showCaptionDisplaySettings(identifier, options, WTF::move(completionHandler));
-}
-
-RetainPtr<NSView> PageClient::protectedViewForPresentingRevealPopover() const
-{
-    return viewForPresentingRevealPopover();
 }
 
 } // namespace WebKit

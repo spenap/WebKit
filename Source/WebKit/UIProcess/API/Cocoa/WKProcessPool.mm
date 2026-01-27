@@ -256,7 +256,7 @@ ALLOW_DEPRECATED_IMPLEMENTATIONS_END
 
 - (id)_objectForBundleParameter:(NSString *)parameter
 {
-    return [protectedProcessPool(self)->protectedBundleParameters() objectForKey:parameter];
+    return [protect(protectedProcessPool(self)->bundleParameters()) objectForKey:parameter];
 }
 
 - (void)_setObject:(id <NSCopying, NSSecureCoding>)object forBundleParameter:(NSString *)parameter
@@ -679,7 +679,7 @@ ALLOW_DEPRECATED_IMPLEMENTATIONS_END
 
 - (WKNotificationManagerRef)_notificationManagerForTesting
 {
-    return WebKit::toAPI(protectedProcessPool(self)->protectedSupplement<WebKit::WebNotificationManagerProxy>().get());
+    return WebKit::toAPI(protect(protectedProcessPool(self)->supplement<WebKit::WebNotificationManagerProxy>()).get());
 }
 
 + (_WKProcessInfo *)_gpuProcessInfo

@@ -367,7 +367,7 @@ ALLOW_DEPRECATED_DECLARATIONS_END
 
 - (WKPreferences *)preferences
 {
-    return wrapper(self._protectedPageConfiguration->protectedPreferences().get());
+    return wrapper(protect(self._protectedPageConfiguration->preferences()).get());
 }
 
 - (void)setPreferences:(WKPreferences *)preferences
@@ -377,7 +377,7 @@ ALLOW_DEPRECATED_DECLARATIONS_END
 
 - (WKUserContentController *)userContentController
 {
-    return wrapper(self._protectedPageConfiguration->protectedUserContentController().get());
+    return wrapper(protect(self._protectedPageConfiguration->userContentController()).get());
 }
 
 - (void)setUserContentController:(WKUserContentController *)userContentController
@@ -404,7 +404,7 @@ ALLOW_DEPRECATED_DECLARATIONS_END
 - (WKWebExtensionController *)_strongWebExtensionController
 {
 #if ENABLE(WK_WEB_EXTENSIONS)
-    return wrapper(self._protectedPageConfiguration->protectedWebExtensionController().get());
+    return wrapper(protect(self._protectedPageConfiguration->webExtensionController()).get());
 #else
     return nil;
 #endif
@@ -413,7 +413,7 @@ ALLOW_DEPRECATED_DECLARATIONS_END
 - (WKWebExtensionController *)_weakWebExtensionController
 {
 #if ENABLE(WK_WEB_EXTENSIONS)
-    return wrapper(self._protectedPageConfiguration->protectedWeakWebExtensionController().get());
+    return wrapper(protect(self._protectedPageConfiguration->weakWebExtensionController()).get());
 #else
     return nil;
 #endif
@@ -520,7 +520,7 @@ ALLOW_DEPRECATED_DECLARATIONS_END
 
 - (WKWebpagePreferences *)defaultWebpagePreferences
 {
-    return wrapper(self._protectedPageConfiguration->protectedDefaultWebsitePolicies().get());
+    return wrapper(protect(self._protectedPageConfiguration->defaultWebsitePolicies()).get());
 }
 
 - (void)setDefaultWebpagePreferences:(WKWebpagePreferences *)defaultWebpagePreferences
@@ -554,7 +554,7 @@ static NSString *defaultApplicationNameForUserAgent()
 
 - (_WKVisitedLinkStore *)_visitedLinkStore
 {
-    return wrapper(self._protectedPageConfiguration->protectedVisitedLinkStore().get());
+    return wrapper(protect(self._protectedPageConfiguration->visitedLinkStore()).get());
 }
 
 - (void)_setVisitedLinkStore:(_WKVisitedLinkStore *)visitedLinkStore
@@ -1069,7 +1069,7 @@ static WebKit::AttributionOverrideTesting toAttributionOverrideTesting(_WKAttrib
 
 - (WKWebsiteDataStore *)_websiteDataStoreIfExists
 {
-    return wrapper(self._protectedPageConfiguration->protectedWebsiteDataStoreIfExists().get());
+    return wrapper(protect(self._protectedPageConfiguration->websiteDataStoreIfExists()).get());
 }
 
 - (NSArray<NSString *> *)_corsDisablingPatterns
@@ -1228,7 +1228,7 @@ static WebKit::AttributionOverrideTesting toAttributionOverrideTesting(_WKAttrib
 
 - (_WKApplicationManifest *)_applicationManifest
 {
-    return wrapper(self._protectedPageConfiguration->protectedApplicationManifest().get());
+    return wrapper(protect(self._protectedPageConfiguration->applicationManifest()).get());
 }
 
 - (void)_setApplicationManifest:(_WKApplicationManifest *)applicationManifest

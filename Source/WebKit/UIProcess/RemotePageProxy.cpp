@@ -220,11 +220,6 @@ void RemotePageProxy::didReceiveSyncMessage(IPC::Connection& connection, IPC::De
     }
 }
 
-RefPtr<WebPageProxy> RemotePageProxy::protectedPage() const
-{
-    return m_page.get();
-}
-
 WebPageProxy* RemotePageProxy::page() const
 {
     return m_page.get();

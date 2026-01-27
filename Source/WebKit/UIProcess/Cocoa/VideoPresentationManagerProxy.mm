@@ -1538,7 +1538,7 @@ void VideoPresentationManagerProxy::didCleanupFullscreen(PlaybackSessionContextI
         setVisibilityPropagationViewForLayerHostView(nil, layerHostView.get());
 #endif
 
-    [interface->protectedLayerHostView() removeFromSuperview];
+    [protect(interface->layerHostView()) removeFromSuperview];
     interface->removeCaptionsLayer();
     if (RetainPtr playerLayer = interface->playerLayer()) {
         // Return the video layer to the player layer
@@ -1547,7 +1547,7 @@ void VideoPresentationManagerProxy::didCleanupFullscreen(PlaybackSessionContextI
         [playerLayer layoutSublayers];
     } else {
         [CATransaction flush];
-        [interface->protectedLayerHostView() removeFromSuperview];
+        [protect(interface->layerHostView()) removeFromSuperview];
         interface->setLayerHostView(nullptr);
     }
 
