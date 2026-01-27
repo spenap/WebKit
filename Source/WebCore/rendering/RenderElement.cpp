@@ -51,6 +51,7 @@
 #include "LayoutElementBox.h"
 #include "LayoutIntegrationLineLayout.h"
 #include "LocalFrame.h"
+#include "LocalFrameViewLayoutContext.h"
 #include "Logging.h"
 #include "OutlinePainter.h"
 #include "Page.h"
@@ -2464,7 +2465,7 @@ void RenderElement::repaintOldAndNewPositionsForSVGRenderer() const
     // the old and the new repaint boundaries, if they differ -- instead of just the new boundaries.
     if (auto layer = useUpdateLayerPositionsLogic()) {
         (*layer.value()).setSelfAndDescendantsNeedPositionUpdate();
-        (*layer.value()).updateLayerPositionsAfterStyleChange();
+        view().layoutContext().markForUpdateLayerPositionsAfterSVGTransformChange();
         return;
     }
 
