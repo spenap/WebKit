@@ -26,11 +26,14 @@
 #import "config.h"
 #import "_WKJSHandleInternal.h"
 
+#import "FrameInfoData.h"
 #import "WKContentWorldInternal.h"
 #import "WKFrameInfoInternal.h"
+#import "WKRemoteObjectCoder.h"
 #import "WebFrameProxy.h"
 #import "WebPageProxy.h"
 #import <WebCore/WebCoreObjCExtras.h>
+#import <WebCore/WebKitJSHandle.h>
 #import <wtf/BlockPtr.h>
 
 @implementation _WKJSHandle
@@ -89,6 +92,114 @@
 - (API::Object&)_apiObject
 {
     return *_ref;
+}
+
+// NSSecureCoding implementation.
+// This is for injected bundle transition support only.
+// Do not include this in a public API version of WKJSHandle.
++ (BOOL)supportsSecureCoding
+{
+#if PLATFORM(MAC)
+    RELEASE_ASSERT(WTF::MacApplication::isSafari() || applicationBundleIdentifier() == "com.apple.WebKit.TestWebKitAPI"_s);
+#else
+    RELEASE_ASSERT(WTF::IOSApplication::isMobileSafari() || applicationBundleIdentifier() == "com.apple.WebKit.TestWebKitAPI"_s);
+#endif
+    return YES;
+}
+
+- (id)initWithCoder:(NSCoder *)decoder
+{
+    if (!(self = [super init]))
+        return nil;
+
+#if PLATFORM(MAC)
+    RELEASE_ASSERT(WTF::MacApplication::isSafari() || applicationBundleIdentifier() == "com.apple.WebKit.TestWebKitAPI"_s);
+#else
+    RELEASE_ASSERT(WTF::IOSApplication::isMobileSafari() || applicationBundleIdentifier() == "com.apple.WebKit.TestWebKitAPI"_s);
+#endif
+    RELEASE_ASSERT(!isInAuxiliaryProcess());
+    RELEASE_ASSERT([decoder isKindOfClass:WKRemoteObjectDecoder.class]);
+
+    RetainPtr identifierObject = dynamic_objc_cast<NSNumber>([decoder decodeObjectOfClass:NSNumber.class forKey:@"identifierObject"]);
+    if (!identifierObject) {
+        [self release];
+        return nil;
+    }
+    uint64_t rawIdentifierObject = identifierObject.get().unsignedLongLongValue;
+    if (!WebCore::WebProcessJSHandleIdentifier::isValidIdentifier(rawIdentifierObject)) {
+        [self release];
+        return nil;
+    }
+
+    RetainPtr identifierProcessIdentifier = dynamic_objc_cast<NSNumber>([decoder decodeObjectOfClass:NSNumber.class forKey:@"identifierProcessIdentifier"]);
+    if (!identifierProcessIdentifier) {
+        [self release];
+        return nil;
+    }
+    uint64_t rawIdentifierProcessIdentifier = identifierProcessIdentifier.get().unsignedLongLongValue;
+    if (!WebCore::ProcessIdentifier::isValidIdentifier(rawIdentifierProcessIdentifier)) {
+        [self release];
+        return nil;
+    }
+
+    RetainPtr worldIdentifierObject = dynamic_objc_cast<NSNumber>([decoder decodeObjectOfClass:NSNumber.class forKey:@"worldIdentifierObject"]);
+    if (!worldIdentifierObject) {
+        [self release];
+        return nil;
+    }
+    uint64_t rawWorldIdentifierObject = worldIdentifierObject.get().unsignedLongLongValue;
+    if (!WebKit::NonProcessQualifiedContentWorldIdentifier::isValidIdentifier(rawWorldIdentifierObject)) {
+        [self release];
+        return nil;
+    }
+
+    RetainPtr worldIdentifierProcessIdentifier = dynamic_objc_cast<NSNumber>([decoder decodeObjectOfClass:NSNumber.class forKey:@"worldIdentifierProcessIdentifier"]);
+    if (!worldIdentifierProcessIdentifier) {
+        [self release];
+        return nil;
+    }
+    uint64_t rawWorldIdentifierProcessIdentifier = worldIdentifierProcessIdentifier.get().unsignedLongLongValue;
+    if (!WebCore::ProcessIdentifier::isValidIdentifier(rawWorldIdentifierProcessIdentifier)) {
+        [self release];
+        return nil;
+    }
+
+    WebCore::JSHandleIdentifier identifier { WebCore::WebProcessJSHandleIdentifier(rawIdentifierObject), WebCore::ProcessIdentifier(rawIdentifierProcessIdentifier) };
+    WebKit::ContentWorldIdentifier worldIdentifier { WebKit::NonProcessQualifiedContentWorldIdentifier(rawWorldIdentifierObject), WebCore::ProcessIdentifier(rawWorldIdentifierProcessIdentifier) };
+
+    WebKit::JSHandleInfo info {
+        identifier,
+        worldIdentifier,
+        WebKit::legacyEmptyFrameInfo({ }),
+        std::nullopt
+    };
+
+    API::Object::constructInWrapper<API::JSHandle>(self, WTF::move(info));
+
+    return self;
+}
+
+- (void)encodeWithCoder:(NSCoder *)coder
+{
+#if PLATFORM(MAC)
+    RELEASE_ASSERT(WTF::MacApplication::isSafari() || applicationBundleIdentifier() == "com.apple.WebKit.TestWebKitAPI"_s);
+#else
+    RELEASE_ASSERT(WTF::IOSApplication::isMobileSafari() || applicationBundleIdentifier() == "com.apple.WebKit.TestWebKitAPI"_s);
+#endif
+    RELEASE_ASSERT(isInWebProcess());
+    RELEASE_ASSERT([coder isKindOfClass:WKRemoteObjectEncoder.class]);
+
+    const auto& info = _ref->info();
+    WebCore::WebKitJSHandle::jsHandleSentToAnotherProcess(info.identifier);
+
+    [coder encodeObject:@(info.identifier.object().toUInt64()) forKey:@"identifierObject"];
+    [coder encodeObject:@(info.identifier.processIdentifier().toUInt64()) forKey:@"identifierProcessIdentifier"];
+
+    [coder encodeObject:@(info.worldIdentifier.object().toUInt64()) forKey:@"worldIdentifierObject"];
+    [coder encodeObject:@(info.worldIdentifier.processIdentifier().toUInt64()) forKey:@"worldIdentifierProcessIdentifier"];
+
+    // Remaining information is currently not needed, and this is on its way to being removed so let's not add more here.
+    // This also avoids encoding any complex types.
 }
 
 @end

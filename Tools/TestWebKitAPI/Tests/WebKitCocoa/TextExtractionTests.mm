@@ -27,19 +27,25 @@
 
 #import "HTTPServer.h"
 #import "InstanceMethodSwizzler.h"
+#import "JSHandlePlugInProtocol.h"
 #import "PlatformUtilities.h"
 #import "SafeBrowsingSPI.h"
 #import "Test.h"
 #import "TestNavigationDelegate.h"
 #import "TestWKWebView.h"
 #import "Utilities.h"
+#import "WKWebViewConfigurationExtras.h"
 #import <WebKit/WKContentWorldPrivate.h>
 #import <WebKit/WKPreferencesPrivate.h>
 #import <WebKit/WKWebViewPrivate.h>
 #import <WebKit/_WKContentWorldConfiguration.h>
+#import <WebKit/_WKJSHandle.h>
+#import <WebKit/_WKRemoteObjectInterface.h>
+#import <WebKit/_WKRemoteObjectRegistry.h>
 #import <WebKit/_WKTextExtraction.h>
 #import <wtf/SoftLinking.h>
 #import <wtf/WorkQueue.h>
+#import <wtf/cocoa/TypeCastsCocoa.h>
 #import <wtf/text/MakeString.h>
 
 SOFT_LINK_PRIVATE_FRAMEWORK(SafariSafeBrowsing);
@@ -156,6 +162,16 @@ SOFT_LINK_CLASS(SafariSafeBrowsing, SSBLookupContext);
     return result.autorelease();
 }
 
+@end
+
+@interface JSHandleReceiver : NSObject<JSHandlePlugInProtocol>
+@property (nonatomic, copy) void (^dictionaryReceiver)(NSDictionary *);
+@end
+@implementation JSHandleReceiver
+- (void)receiveDictionaryFromWebProcess:(NSDictionary *)dictionary
+{
+    _dictionaryReceiver(dictionary);
+}
 @end
 
 namespace TestWebKitAPI {
@@ -727,6 +743,25 @@ TEST(TextExtractionTests, SubframeInteractions)
     RetainPtr clickCountPattern = [NSRegularExpression regularExpressionWithPattern:@"Click count: 1" options:0 error:nil];
     NSUInteger numberOfMatches = [clickCountPattern numberOfMatchesInString:debugTextAfterClicks.get() options:0 range:NSMakeRange(0, [debugTextAfterClicks length])];
     EXPECT_EQ(numberOfMatches, 2u);
+}
+
+TEST(TextExtractionTests, InjectedBundle)
+{
+    WKWebViewConfiguration *configuration = [WKWebViewConfiguration _test_configurationWithTestPlugInClassName:@"JSHandlePlugIn"];
+    RetainPtr webView = adoptNS([[TestWKWebView alloc] initWithFrame:CGRectMake(0, 0, 800, 600) configuration:configuration]);
+    RetainPtr receiver = adoptNS([JSHandleReceiver new]);
+    __block RetainPtr<_WKJSHandle> handle;
+    receiver.get().dictionaryReceiver = ^(NSDictionary *dictionary) {
+        handle = dynamic_objc_cast<_WKJSHandle>(dictionary[@"testkey"]);
+    };
+
+    _WKRemoteObjectInterface *interface = [_WKRemoteObjectInterface remoteObjectInterfaceWithProtocol:@protocol(JSHandlePlugInProtocol)];
+    [interface setClasses:[NSSet setWithObjects:NSDictionary.class, NSString.class, _WKJSHandle.class, nil] forSelector:@selector(receiveDictionaryFromWebProcess:) argumentIndex:0 ofReply:NO];
+    [[webView _remoteObjectRegistry] registerExportedObject:receiver.get() interface:interface];
+
+    [webView loadHTMLString:@"text outside <div id='testelement'> text inside </div>" baseURL:nil];
+    while (!handle)
+        Util::spinRunLoop();
 }
 
 } // namespace TestWebKitAPI

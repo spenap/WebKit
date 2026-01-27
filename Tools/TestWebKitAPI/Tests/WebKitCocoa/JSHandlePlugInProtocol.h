@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 Apple Inc. All rights reserved.
+ * Copyright (C) 2019 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,34 +23,10 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "APIJSHandle.h"
+#import <Foundation/Foundation.h>
 
-#include "WebProcessMessages.h"
-#include "WebProcessProxy.h"
-#include <wtf/RuntimeApplicationChecks.h>
+@protocol JSHandlePlugInProtocol <NSObject>
 
-namespace API {
+- (void)receiveDictionaryFromWebProcess:(NSDictionary *)dictionary;
 
-Ref<JSHandle> JSHandle::create(WebKit::JSHandleInfo&& info)
-{
-    return adoptRef(*new JSHandle(WTF::move(info)));
-}
-
-JSHandle::JSHandle(WebKit::JSHandleInfo&& info)
-    : m_info(WTF::move(info))
-{
-}
-
-JSHandle::~JSHandle()
-{
-    // FIXME: Remove this once _WKRemoteObjectRegistry is no longer needed to help Safari transition away from the injected bundle.
-    // Once that's gone, we should only be in the UI process.
-    if (isInWebProcess())
-        return;
-
-    if (RefPtr webProcess = WebKit::WebProcessProxy::processForIdentifier(m_info.identifier.processIdentifier()))
-        webProcess->send(Messages::WebProcess::JSHandleDestroyed(m_info.identifier), 0);
-}
-
-} // namespace API
+@end
