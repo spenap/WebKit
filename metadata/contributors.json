@@ -4478,6 +4478,16 @@
    },
    {
       "emails" : [
+         "johannes.odland@gmail.com",
+         "johannes@odland.dev"
+      ],
+      "name" : "Johannes Odland",
+      "nicks" : [
+         "johannesodland"
+      ]
+   },
+   {
+      "emails" : [
          "jam@chromium.org"
       ],
       "expertise" : "The Chromium Port, Plug-ins, Workers",
