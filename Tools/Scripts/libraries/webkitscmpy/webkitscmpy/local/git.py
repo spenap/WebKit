@@ -20,10 +20,9 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import calendar
+import json
 import logging
 import os
-import json
 import re
 import subprocess
 import sys
@@ -537,7 +536,6 @@ class Git(Scm):
 
     @decorators.Memoize()
     def source_remotes(self, cached=True, personal=False):
-        security_levels = {}
         config = self.config(cached=cached)
 
         all_remotes = {
@@ -549,37 +547,63 @@ class Git(Scm):
             and c != 'remote..url'
         }
 
-        for candidate in config.keys():
-            if not candidate.startswith('webkitscmpy.remotes') or not candidate.endswith('url'):
-                continue
-            candidate = candidate.split('.')[-2]
-            if candidate in all_remotes:
-                security_levels[candidate] = int(config.get('webkitscmpy.remotes.{}.security-level'.format(candidate), '0'))
-        candidates = [self.default_remote] if security_levels.get(self.default_remote, 0) == 0 else []
-        for _, candidate in sorted([(v, k) for k, v in security_levels.items()]):
-            if candidate not in candidates:
-                candidates.append(candidate)
+        security_levels = {
+            remote: int(config.get(f'webkitscmpy.remotes.{remote}.security-level') or 0)
+            for remote in all_remotes
+            if f'webkitscmpy.remotes.{remote}.url' in config
+        }
+        security_levels.setdefault(self.default_remote, 0)
 
-        personal_remotes = []
-        if personal:
-            for candidate in ['fork'] + ['{}-fork'.format(og) for og in candidates]:
-                if candidate in all_remotes:
-                    personal_remotes.append(candidate)
-            usernames = []
-            rmt = self.remote()
-            for candidate in all_remotes:
-                if not candidate or '-' in candidate:
-                    continue
-                if candidate in candidates or candidate in personal_remotes:
-                    continue
-                if isinstance(rmt, remote.GitHub) and candidate == rmt.credentials(required=False)[0]:
-                    continue
-                usernames.append(candidate)
-            for username in sorted(usernames):
-                for candidate in [username] + ['{}-{}'.format(username, og) for og in candidates]:
-                    if candidate in all_remotes:
-                        personal_remotes.append(candidate)
-        return candidates + personal_remotes
+        # Sorted by security level asc, default-remote-first, and remote name asc.
+        remotes = [
+            remote
+            for remote, _ in sorted(
+                security_levels.items(),
+                key=lambda i: (i[1], i[0] != self.default_remote, i[0]),
+            )
+        ]
+
+        if not personal:
+            # These are fairly self-evident from how we construct remotes above.
+            assert set(remotes) <= (all_remotes | {self.default_remote})
+            assert len(remotes) == len(set(remotes))
+            return remotes
+
+        # Save a copy of the already-found (impersonal) remotes sequence. Note we need
+        # to preserve the order to iterate over it below.
+        impersonal_remotes = remotes[:]
+
+        personal_remotes = all_remotes - security_levels.keys()
+
+        # Ordering matters here, so we can't just use sets.
+        candidates = ['fork', *(f'{remote}-fork' for remote in impersonal_remotes)]
+        remotes.extend(c for c in candidates if c in personal_remotes)
+
+        rmt = self.remote()
+        usernames = {
+            r
+            for r in personal_remotes
+            if r != 'fork'
+            and '-' not in r
+            and (not isinstance(rmt, remote.GitHub) or r != rmt.credentials(required=False)[0])
+        }
+
+        # Ensure we haven't found anything already in remotes.
+        assert usernames.isdisjoint(remotes)
+
+        for username in sorted(usernames):
+            # This follows from the definition of usernames.
+            assert username in personal_remotes
+            remotes.append(username)
+
+            # Ordering matters here, so we can't just use sets.
+            candidates = [f'{username}-{remote}' for remote in impersonal_remotes]
+            remotes.extend(c for c in candidates if c in personal_remotes)
+
+        # Ensure we don't have duplicates, and only return extant remotes.
+        assert set(remotes) <= (all_remotes | {self.default_remote})
+        assert len(remotes) == len(set(remotes))
+        return remotes
 
     def _commit_count(self, native_parameter):
         revision_count = run(
