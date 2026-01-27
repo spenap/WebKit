@@ -606,6 +606,7 @@ WASM_IPINT_EXTERN_CPP_DECL(table_size, int32_t tableIndex)
 // Wasm-GC
 WASM_IPINT_EXTERN_CPP_DECL(struct_new, uint32_t type, IPIntStackEntry* sp)
 {
+    WasmSlowPathWithoutCallFrameTracer tracer(instance->vm());
     WebAssemblyGCStructure* structure = instance->gcObjectStructure(type);
     JSValue result = Wasm::structNew(instance, structure, false, sp);
     if (result.isNull()) [[unlikely]]
@@ -615,6 +616,7 @@ WASM_IPINT_EXTERN_CPP_DECL(struct_new, uint32_t type, IPIntStackEntry* sp)
 
 WASM_IPINT_EXTERN_CPP_DECL(struct_new_default, uint32_t type)
 {
+    WasmSlowPathWithoutCallFrameTracer tracer(instance->vm());
     WebAssemblyGCStructure* structure = instance->gcObjectStructure(type);
     JSValue result = Wasm::structNew(instance, structure, true, nullptr);
     if (result.isNull()) [[unlikely]]
@@ -664,6 +666,7 @@ WASM_IPINT_EXTERN_CPP_DECL(struct_set, EncodedJSValue object, uint32_t fieldInde
 
 WASM_IPINT_EXTERN_CPP_DECL(array_new, uint32_t type, uint32_t size, IPIntStackEntry* defaultValue)
 {
+    WasmSlowPathWithoutCallFrameTracer tracer(instance->vm());
     WebAssemblyGCStructure* structure = instance->gcObjectStructure(type);
     const Wasm::TypeDefinition& arraySignature = structure->typeDefinition();
     Wasm::StorageType elementType = arraySignature.as<Wasm::ArrayType>()->elementType().type;
@@ -680,6 +683,7 @@ WASM_IPINT_EXTERN_CPP_DECL(array_new, uint32_t type, uint32_t size, IPIntStackEn
 
 WASM_IPINT_EXTERN_CPP_DECL(array_new_default, uint32_t type, uint32_t size)
 {
+    WasmSlowPathWithoutCallFrameTracer tracer(instance->vm());
     UNUSED_PARAM(instance);
     WebAssemblyGCStructure* structure = instance->gcObjectStructure(type);
     const Wasm::TypeDefinition& arraySignature = structure->typeDefinition();
@@ -703,6 +707,7 @@ WASM_IPINT_EXTERN_CPP_DECL(array_new_default, uint32_t type, uint32_t size)
 
 WASM_IPINT_EXTERN_CPP_DECL(array_new_fixed, uint32_t type, uint32_t size, IPIntStackEntry* arguments)
 {
+    WasmSlowPathWithoutCallFrameTracer tracer(instance->vm());
     WebAssemblyGCStructure* structure = instance->gcObjectStructure(type);
 
     JSValue result = Wasm::arrayNewFixed(instance, structure, size, arguments);
@@ -714,6 +719,7 @@ WASM_IPINT_EXTERN_CPP_DECL(array_new_fixed, uint32_t type, uint32_t size, IPIntS
 
 WASM_IPINT_EXTERN_CPP_DECL(array_new_data, IPInt::ArrayNewDataMetadata* metadata, uint32_t offset, uint32_t size)
 {
+    WasmSlowPathWithoutCallFrameTracer tracer(instance->vm());
     EncodedJSValue result = Wasm::arrayNewData(instance, metadata->type, metadata->dataSegmentIndex, size, offset);
     if (JSValue::decode(result).isNull()) [[unlikely]]
         IPINT_THROW(Wasm::ExceptionType::BadArrayNewInitData);
@@ -723,6 +729,7 @@ WASM_IPINT_EXTERN_CPP_DECL(array_new_data, IPInt::ArrayNewDataMetadata* metadata
 
 WASM_IPINT_EXTERN_CPP_DECL(array_new_elem, IPInt::ArrayNewElemMetadata* metadata, uint32_t offset, uint32_t size)
 {
+    WasmSlowPathWithoutCallFrameTracer tracer(instance->vm());
     EncodedJSValue result = Wasm::arrayNewElem(instance, metadata->type, metadata->elemSegmentIndex, size, offset);
     if (JSValue::decode(result).isNull()) [[unlikely]]
         IPINT_THROW(Wasm::ExceptionType::BadArrayNewInitElem);
