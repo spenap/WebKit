@@ -470,7 +470,12 @@ ALLOW_DEPRECATED_IMPLEMENTATIONS_END
 
 - (size_t)_webProcessCountIgnoringPrewarmed
 {
-    return [self _webProcessCount] - ([self _hasPrewarmedWebProcess] ? 1 : 0);
+    size_t count = 0;
+    for (auto process : _processPool->processes()) {
+        if (!process->isPrewarmed())
+            ++count;
+    }
+    return count;
 }
 
 - (size_t)_webProcessCountIgnoringPrewarmedAndCached
