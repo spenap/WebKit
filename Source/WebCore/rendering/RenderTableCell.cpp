@@ -593,6 +593,31 @@ auto RenderTableCell::localRectsForRepaint(RepaintOutlineBounds repaintOutlineBo
     return rects;
 }
 
+LayoutUnit RenderTableCell::containingBlockLogicalWidthForContent() const
+{
+    // For percentage padding/width resolution in table cells, we need to resolve
+    // against the sum of column widths plus interleaved border spacing (but not
+    // the leading/trailing border spacing).
+    CheckedPtr renderTable = table();
+    if (!renderTable)
+        return RenderBlockFlow::containingBlockLogicalWidthForContent();
+
+    // The table's columnPositions() array contains the cumulative positions of columns.
+    // The last element gives us the total width including all columns and interleaved spacing.
+    // We need to subtract the leading border spacing to get the correct basis.
+    auto& columnPositions = renderTable->columnPositions();
+    if (columnPositions.isEmpty())
+        return RenderBlockFlow::containingBlockLogicalWidthForContent();
+
+    LayoutUnit totalWidth = columnPositions.last();
+
+    // Subtract the leading border spacing
+    if (totalWidth > 0)
+        totalWidth -= renderTable->hBorderSpacing();
+
+    return totalWidth;
+}
+
 auto RenderTableCell::computeVisibleRectsInContainer(const RepaintRects& rects, const RenderLayerModelObject* container, VisibleRectContext context) const -> std::optional<RepaintRects>
 {
     if (container == this)
