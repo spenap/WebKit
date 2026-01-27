@@ -3019,7 +3019,7 @@ JSC_DEFINE_JIT_OPERATION(operationStringReplaceStringString, JSString*, (JSGloba
     auto replacement = replacementCell->value(globalObject);
     OPERATION_RETURN_IF_EXCEPTION(scope, nullptr);
 
-    OPERATION_RETURN(scope, (stringReplaceStringString<StringReplaceSubstitutions::Yes, StringReplaceUseTable::No, BoyerMooreHorspoolTable<uint8_t>>(globalObject, stringCell, string, search, replacement, nullptr)));
+    OPERATION_RETURN(scope, (stringReplaceStringString<StringReplaceSubstitutions::Yes, StringReplaceUseTable::No, BoyerMooreHorspoolTable<uint8_t>>(globalObject, stringCell, string, search, replacementCell, replacement, nullptr)));
 }
 
 JSC_DEFINE_JIT_OPERATION(operationStringReplaceStringStringWithoutSubstitution, JSString*, (JSGlobalObject* globalObject, JSString* stringCell, JSString* searchCell, JSString* replacementCell))
@@ -3042,7 +3042,7 @@ JSC_DEFINE_JIT_OPERATION(operationStringReplaceStringStringWithoutSubstitution, 
     auto replacement = replacementCell->value(globalObject);
     OPERATION_RETURN_IF_EXCEPTION(scope, nullptr);
 
-    OPERATION_RETURN(scope, (stringReplaceStringString<StringReplaceSubstitutions::No, StringReplaceUseTable::No, BoyerMooreHorspoolTable<uint8_t>>(globalObject, stringCell, string, search, replacement, nullptr)));
+    OPERATION_RETURN(scope, (stringReplaceStringString<StringReplaceSubstitutions::No, StringReplaceUseTable::No, BoyerMooreHorspoolTable<uint8_t>>(globalObject, stringCell, string, search, replacementCell, replacement, nullptr)));
 }
 
 JSC_DEFINE_JIT_OPERATION(operationStringReplaceStringEmptyString, JSString*, (JSGlobalObject* globalObject, JSString* stringCell, JSString* searchCell))
@@ -3094,7 +3094,7 @@ JSC_DEFINE_JIT_OPERATION(operationStringReplaceStringStringWithTable8, JSString*
     auto replacement = replacementCell->value(globalObject);
     OPERATION_RETURN_IF_EXCEPTION(scope, nullptr);
 
-    OPERATION_RETURN(scope, (stringReplaceStringString<StringReplaceSubstitutions::Yes, StringReplaceUseTable::Yes>(globalObject, stringCell, string, search, replacement, table)));
+    OPERATION_RETURN(scope, (stringReplaceStringString<StringReplaceSubstitutions::Yes, StringReplaceUseTable::Yes>(globalObject, stringCell, string, search, replacementCell, replacement, table)));
 }
 
 JSC_DEFINE_JIT_OPERATION(operationStringReplaceStringStringWithoutSubstitutionWithTable8, JSString*, (JSGlobalObject* globalObject, JSString* stringCell, JSString* searchCell, JSString* replacementCell, const BoyerMooreHorspoolTable<uint8_t>* table))
@@ -3113,7 +3113,7 @@ JSC_DEFINE_JIT_OPERATION(operationStringReplaceStringStringWithoutSubstitutionWi
     auto replacement = replacementCell->value(globalObject);
     OPERATION_RETURN_IF_EXCEPTION(scope, nullptr);
 
-    OPERATION_RETURN(scope, (stringReplaceStringString<StringReplaceSubstitutions::No, StringReplaceUseTable::Yes>(globalObject, stringCell, string, search, replacement, table)));
+    OPERATION_RETURN(scope, (stringReplaceStringString<StringReplaceSubstitutions::No, StringReplaceUseTable::Yes>(globalObject, stringCell, string, search, replacementCell, replacement, table)));
 }
 
 JSC_DEFINE_JIT_OPERATION(operationStringReplaceStringEmptyStringWithTable8, JSString*, (JSGlobalObject* globalObject, JSString* stringCell, JSString* searchCell, const BoyerMooreHorspoolTable<uint8_t>* table))
@@ -3175,7 +3175,7 @@ JSC_DEFINE_JIT_OPERATION(operationStringSubstr, JSCell*, (JSGlobalObject* global
     JITOperationPrologueCallFrameTracer tracer(vm, callFrame);
     auto scope = DECLARE_THROW_SCOPE(vm);
 
-    OPERATION_RETURN(scope, jsSubstring(vm, globalObject, jsCast<JSString*>(cell), from, span));
+    OPERATION_RETURN(scope, jsSubstring(globalObject, vm, jsCast<JSString*>(cell), from, span));
 }
 
 JSC_DEFINE_JIT_OPERATION(operationStringSlice, JSString*, (JSGlobalObject* globalObject, JSString* string, int32_t start))
