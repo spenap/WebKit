@@ -31,6 +31,7 @@
 
 WTF_ALLOW_UNSAFE_BUFFER_USAGE_BEGIN
 
+#include "ExecutionHandlerIdleStopTest.h"
 #include "ExecutionHandlerTest.h"
 #include "GDBPacketParserTest.h"
 #include "InitializeThreading.h"
@@ -310,14 +311,18 @@ static int runAllTests()
     dataLogLn("\n--- WASM Debugger Execution Handler Tests ---");
     int executionHandlerTestsFailed = testExecutionHandler();
 
+    dataLogLn("\n--- WASM Debugger Idle VM Stress Tests ---");
+    int idleStopTestsFailed = testExecutionHandlerIdleStop();
+
     dataLogLn("===============================================");
     dataLogLn("Combined Test Results:");
     dataLogLn("  VirtualAddress Tests - PASSED (assertion-based)");
     dataLogLn("  WASM Debug Info Tests - See detailed results above");
     dataLogLn("  WASM Debugger Stress Tests - See detailed results above");
-    dataLogLn("  Total Failures: ", testsFailed, " (VirtualAddress) + ", debugInfoTestsFailed, " (Debug Info) + ", executionHandlerTestsFailed, " (Stress) = ", testsFailed + debugInfoTestsFailed + executionHandlerTestsFailed);
+    dataLogLn("  WASM Debugger Idle VM Tests - See detailed results above");
+    dataLogLn("  Total Failures: ", testsFailed, " (VirtualAddress) + ", debugInfoTestsFailed, " (Debug Info) + ", executionHandlerTestsFailed, " (Stress) + ", idleStopTestsFailed, " (Idle VM) = ", testsFailed + debugInfoTestsFailed + executionHandlerTestsFailed + idleStopTestsFailed);
 
-    int totalFailures = testsFailed + debugInfoTestsFailed + executionHandlerTestsFailed;
+    int totalFailures = testsFailed + debugInfoTestsFailed + executionHandlerTestsFailed + idleStopTestsFailed;
     if (!totalFailures) {
         dataLogLn("All tests PASSED!");
         dataLogLn("WASM debugger infrastructure is working correctly");
