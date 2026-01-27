@@ -25,7 +25,7 @@
 
 #pragma once
 
-#include "CustomElementRegistry.h"
+#include <WebCore/CustomElementRegistry.h>
 
 #include <wtf/RefPtr.h>
 
