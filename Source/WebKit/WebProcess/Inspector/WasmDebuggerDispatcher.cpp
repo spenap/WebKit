@@ -25,7 +25,7 @@
 #include "config.h"
 #include "WasmDebuggerDispatcher.h"
 
-#if ENABLE(REMOTE_INSPECTOR) && ENABLE(WEBASSEMBLY)
+#if ENABLE(WEBASSEMBLY_DEBUGGER)
 
 #include "Connection.h"
 #include "Logging.h"

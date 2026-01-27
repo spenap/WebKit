@@ -28,7 +28,7 @@
 
 #include <wtf/DataLog.h>
 
-#if ENABLE(WEBASSEMBLY) && ENABLE(REMOTE_INSPECTOR)
+#if ENABLE(WEBASSEMBLY_DEBUGGER)
 
 #include "Completion.h"
 #include "ExecutionHandlerTestSupport.h"
@@ -443,11 +443,11 @@ UNUSED_FUNCTION static int runIdleVMStopStressTests()
 
 } // namespace ExecutionHandlerIdleStopTest
 
-#endif // ENABLE(WEBASSEMBLY) && ENABLE(REMOTE_INSPECTOR)
+#endif // ENABLE(WEBASSEMBLY_DEBUGGER)
 
 int testExecutionHandlerIdleStop()
 {
-#if ENABLE(WEBASSEMBLY) && ENABLE(REMOTE_INSPECTOR) && CPU(ARM64)
+#if ENABLE(WEBASSEMBLY_DEBUGGER) && CPU(ARM64)
     return ExecutionHandlerIdleStopTest::runIdleVMStopStressTests();
 #else
     dataLogLn("Idle VM Stress Tests SKIPPED (only supported on ARM64)");
