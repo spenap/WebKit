@@ -3376,6 +3376,7 @@ JSC_DEFINE_JIT_OPERATION(operationStringProtoFuncReplaceRegExpEmptyStr, JSCell*,
     auto scope = DECLARE_THROW_SCOPE(vm);
 
     auto source = thisValue->value(globalObject);
+    OPERATION_RETURN_IF_EXCEPTION(scope, nullptr);
     RegExp* regExp = searchValue->regExp();
     if (regExp->global()) {
         // ES5.1 15.5.4.10 step 8.a.
