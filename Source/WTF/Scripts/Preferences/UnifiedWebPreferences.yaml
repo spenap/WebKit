@@ -7093,16 +7093,18 @@ ServiceWorkerEntitlementDisabledForTesting:
 
 ServiceWorkerInstallEventEnabled:
   type: bool
-  status: testable
+  status: stable
   category: networking
   humanReadableName: "Service Worker Install Event"
   humanReadableDescription: "Enable Service Worker Install Event API"
   defaultValue:
     WebKit:
+      "PLATFORM(COCOA)" : true
       default: false
     WebKitLegacy:
       default: false
     WebCore:
+      "PLATFORM(COCOA)" : true
       default: false
   disableInLockdownMode: true
 
