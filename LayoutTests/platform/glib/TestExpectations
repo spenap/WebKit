@@ -1467,7 +1467,7 @@ webkit.org/b/296246 imported/w3c/web-platform-tests/event-timing/first-input-int
 webkit.org/b/296246 imported/w3c/web-platform-tests/event-timing/interaction-count-tap.html [ Skip ]
 webkit.org/b/296246 imported/w3c/web-platform-tests/event-timing/TapToStopFling.html [ Skip ]
 
-fast/events/domactivate-sets-underlying-click-event-as-handled.html [ Failure ]
+fast/events/domactivate-sets-underlying-click-event-as-handled.html [ Failure Pass ]
 
 #////////////////////////////////////////////////////////////////////////////////////////
 # End of Events-related bugs
@@ -4079,10 +4079,10 @@ webkit.org/b/145432 media/video-transformed-by-javascript.html [ Failure ]
 webkit.org/b/163523 media/track/track-manual-mode.html [ Failure ]
 webkit.org/b/163524 media/track/video-track-alternate-groups.html [ Failure ]
 webkit.org/b/198830 media/context-menu-actions.html [ Failure ]
-webkit.org/b/193638 media/video-webkit-playsinline.html [ Failure ]
+webkit.org/b/193638 media/video-webkit-playsinline.html [ Timeout Failure ]
 webkit.org/b/224067 media/media-source/media-source-timestampoffset-trim.html [ Failure ]
 webkit.org/b/254207 media/media-source/media-source-remove-readystate.html [ Pass Failure Timeout ]
-webkit.org/b/160119 media/video-object-fit-change.html [ Pass Crash ImageOnlyFailure ]
+webkit.org/b/160119 media/video-object-fit-change.html [ Pass Crash ImageOnlyFailure Timeout ]
 
 webkit.org/b/61487 http/tests/media/video-cross-site.html [ Failure Timeout ]
 
@@ -5122,6 +5122,20 @@ webkit.org/b/306458 imported/w3c/web-platform-tests/media-source/mediasource-con
 
 webkit.org/b/306463 imported/w3c/web-platform-tests/import-maps/bare-specifiers.sub.html [ Failure Pass ]
 webkit.org/b/306463 imported/w3c/web-platform-tests/import-maps/data-url-specifiers.sub.html [ Failure Pass ]
+
+webkit.org/b/306466 imported/w3c/web-platform-tests/mathml/presentation-markup/operators/operator-dictionary-arabic-002.html [ ImageOnlyFailure Pass ]
+
+webkit.org/b/306467 fast/speechsynthesis/speech-synthesis-speak.html [ Pass Failure ]
+
+webkit.org/b/306468 http/wpt/service-workers/fetch-service-worker-preload-cache.https.html [ Pass Failure ]
+webkit.org/b/306468 http/wpt/service-workers/fetch-service-worker-preload-changing-request.https.html [ Pass Failure ]
+webkit.org/b/306468 http/wpt/service-workers/fetch-service-worker-preload-download-through-direct-preload.https.html [ Pass Failure Timeout ]
+
+webkit.org/b/116277 media/video-buffered.html [ Pass Failure Timeout ]
+webkit.org/b/306471 media/video-poster-not-found.html [ Pass Timeout ]
+
+webkit.org/b/306472 fast/repaint/selection-gap-absolute-child.html [ Pass Failure ]
+webkit.org/b/306474 imported/w3c/web-platform-tests/fetch/range/sw-416.https.window.html [ Pass Failure ]
 
 # End: Common failures between GTK and WPE.
 
