@@ -145,7 +145,7 @@ void AuxiliaryProcess::didReceiveInvalidMessage(IPC::Connection&, IPC::MessageNa
 
 bool AuxiliaryProcess::parentProcessHasEntitlement(ASCIILiteral entitlement)
 {
-    return WTF::hasEntitlement(protectedParentProcessConnection()->protectedXPCConnection().get(), entitlement);
+    return WTF::hasEntitlement(protect(parentProcessConnection())->protectedXPCConnection().get(), entitlement);
 }
 
 void AuxiliaryProcess::platformStopRunLoop()

@@ -101,15 +101,10 @@ WebBackForwardListItem* WebBackForwardListFrameItem::backForwardListItem() const
     return m_backForwardListItem.get();
 }
 
-RefPtr<WebBackForwardListItem> WebBackForwardListFrameItem::protectedBackForwardListItem() const
-{
-    return m_backForwardListItem.get();
-}
-
 void WebBackForwardListFrameItem::setChild(Ref<FrameState>&& frameState)
 {
     ASSERT(m_backForwardListItem);
-    Ref childItem = WebBackForwardListFrameItem::create(*protectedBackForwardListItem(), this, WTF::move(frameState));
+    Ref childItem = WebBackForwardListFrameItem::create(*protect(backForwardListItem()), this, WTF::move(frameState));
     for (size_t i = 0; i < m_children.size(); i++) {
         if (m_children[i]->frameID() == childItem->m_frameState->frameID) {
             m_children[i] = WTF::move(childItem);
@@ -135,11 +130,6 @@ Ref<WebBackForwardListFrameItem> WebBackForwardListFrameItem::mainFrame()
     return mainFrame;
 }
 
-Ref<WebBackForwardListFrameItem> WebBackForwardListFrameItem::protectedMainFrame()
-{
-    return mainFrame();
-}
-
 void WebBackForwardListFrameItem::setWasRestoredFromSession()
 {
     m_frameState->wasRestoredFromSession = true;
@@ -155,7 +145,7 @@ void WebBackForwardListFrameItem::setFrameState(Ref<FrameState>&& frameState)
 
 Ref<FrameState> WebBackForwardListFrameItem::copyFrameStateWithChildren()
 {
-    Ref frameState = protectedFrameState()->copy();
+    Ref frameState = protect(this->frameState())->copy();
     ASSERT(frameState->children.isEmpty());
     for (auto& child : m_children)
         frameState->children.append(child->copyFrameStateWithChildren());

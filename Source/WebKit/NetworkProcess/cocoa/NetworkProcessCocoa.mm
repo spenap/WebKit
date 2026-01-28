@@ -116,7 +116,7 @@ void NetworkProcess::platformInitializeNetworkProcessCocoa(const NetworkProcessC
     [NSURLCache setSharedURLCache:urlCache.get()];
 
 #if ENABLE(CONTENT_FILTERING)
-    auto auditToken = protectedParentProcessConnection()->getAuditToken();
+    auto auditToken = protect(parentProcessConnection())->getAuditToken();
     ASSERT(auditToken);
     if (auditToken && [NEFilterSource respondsToSelector:@selector(setDelegation:)])
         [NEFilterSource setDelegation:&auditToken.value()];
@@ -139,10 +139,10 @@ void NetworkProcess::platformInitializeNetworkProcessCocoa(const NetworkProcessC
 #endif // ENABLE(DNS_SERVER_FOR_TESTING_IN_NETWORKING_PROCESS)
 
 #if ENABLE(INHERITANCE_OF_NETWORK_ACCESS_FROM_UI_PROCESS)
-    if (auto auditToken = protectedParentProcessConnection()->getAuditToken()) {
+    if (auto auditToken = protect(parentProcessConnection())->getAuditToken()) {
         bool isNetworkAccessBlockedInUIProcess = (1 == sandbox_check_by_audit_token(*auditToken, "network-outbound", SANDBOX_FILTER_PATH, "/private/var/run/mDNSResponder"));
 
-        auto xpcConnection = protectedParentProcessConnection()->xpcConnection();
+        auto xpcConnection = protect(parentProcessConnection())->xpcConnection();
         auto [signingIdentifier, isPlatformBinary] = codeSigningIdentifierAndPlatformBinaryStatus(xpcConnection);
         if (!isPlatformBinary && isNetworkAccessBlockedInUIProcess) {
             RELEASE_LOG(Process, "Setting sandbox state flag to block network access");

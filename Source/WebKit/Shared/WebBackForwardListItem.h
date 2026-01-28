@@ -84,17 +84,14 @@ public:
     void wasRemovedFromBackForwardList();
 
     WebBackForwardCacheEntry* backForwardCacheEntry() const { return m_backForwardCacheEntry.get(); }
-    RefPtr<WebBackForwardCacheEntry> protectedBackForwardCacheEntry() const;
 
     SuspendedPageProxy* suspendedPage() const;
 
     std::optional<WebCore::FrameIdentifier> navigatedFrameID() const { return m_navigatedFrameID; }
 
     WebBackForwardListFrameItem& navigatedFrameItem() const;
-    Ref<WebBackForwardListFrameItem> protectedNavigatedFrameItem() const;
 
     WebBackForwardListFrameItem& mainFrameItem() const;
-    Ref<WebBackForwardListFrameItem> protectedMainFrameItem() const;
 
     void setIsRemoteFrameNavigation(bool isRemoteFrameNavigation) { m_isRemoteFrameNavigation = isRemoteFrameNavigation; }
     bool isRemoteFrameNavigation() const { return m_isRemoteFrameNavigation; }

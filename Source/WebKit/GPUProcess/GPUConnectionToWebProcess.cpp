@@ -381,7 +381,7 @@ GPUConnectionToWebProcess::GPUConnectionToWebProcess(GPUProcess& gpuProcess, Web
 
     GPUProcessConnectionInfo info {
 #if HAVE(AUDIT_TOKEN)
-        .auditToken = gpuProcess.protectedParentProcessConnection()->getAuditToken(),
+        .auditToken = protect(gpuProcess.parentProcessConnection())->getAuditToken(),
 #endif
         .mediaCodecCapabilities = capabilities
     };
@@ -674,7 +674,7 @@ RemoteAudioSessionProxy& GPUConnectionToWebProcess::audioSessionProxy()
     if (!m_audioSessionProxy) {
         Ref audioSessionProxy = RemoteAudioSessionProxy::create(*this);
         m_audioSessionProxy = audioSessionProxy.ptr();
-        auto auditToken = gpuProcess().protectedParentProcessConnection()->getAuditToken();
+        auto auditToken = protect(gpuProcess().parentProcessConnection())->getAuditToken();
         m_gpuProcess->protectedAudioSessionManager()->addProxy(audioSessionProxy, auditToken);
     }
     return *m_audioSessionProxy;
@@ -1204,7 +1204,7 @@ void GPUConnectionToWebProcess::setOrientationForMediaCapture(IntDegrees orienta
 void GPUConnectionToWebProcess::startMonitoringCaptureDeviceRotation(WebCore::PageIdentifier pageIdentifier, const String& persistentId)
 {
 #if PLATFORM(COCOA)
-    gpuProcess().protectedParentProcessConnection()->send(Messages::GPUProcessProxy::StartMonitoringCaptureDeviceRotation(pageIdentifier, persistentId), 0);
+    protect(gpuProcess().parentProcessConnection())->send(Messages::GPUProcessProxy::StartMonitoringCaptureDeviceRotation(pageIdentifier, persistentId), 0);
 #else
     UNUSED_PARAM(pageIdentifier);
     UNUSED_PARAM(persistentId);
@@ -1214,7 +1214,7 @@ void GPUConnectionToWebProcess::startMonitoringCaptureDeviceRotation(WebCore::Pa
 void GPUConnectionToWebProcess::stopMonitoringCaptureDeviceRotation(WebCore::PageIdentifier pageIdentifier, const String& persistentId)
 {
 #if PLATFORM(COCOA)
-    gpuProcess().protectedParentProcessConnection()->send(Messages::GPUProcessProxy::StopMonitoringCaptureDeviceRotation(pageIdentifier, persistentId), 0);
+    protect(gpuProcess().parentProcessConnection())->send(Messages::GPUProcessProxy::StopMonitoringCaptureDeviceRotation(pageIdentifier, persistentId), 0);
 #else
     UNUSED_PARAM(pageIdentifier);
     UNUSED_PARAM(persistentId);
@@ -1333,7 +1333,7 @@ std::optional<audit_token_t> GPUConnectionToWebProcess::presentingApplicationAud
     if (iterator != m_presentingApplicationAuditTokens.end())
         return iterator->value.auditToken();
 
-    if (auto parentAuditToken = m_gpuProcess->protectedParentProcessConnection()->getAuditToken())
+    if (auto parentAuditToken = protect(m_gpuProcess->parentProcessConnection())->getAuditToken())
         return *parentAuditToken;
 
     return std::nullopt;
