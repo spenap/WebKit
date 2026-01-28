@@ -221,6 +221,15 @@ def _interpret_test_failures(failures):
     return test_dict
 
 
+def count_tests_with_report_result(tests_results, report_value):
+    count = 0
+    for test_key, test_val in tests_results.items():
+        if test_key == 'report' and test_val == report_value:
+            count += 1
+        elif isinstance(test_val, dict):
+            count += count_tests_with_report_result(test_val, report_value)
+    return count
+
 # These results must match ones in print_unexpected_results() in views/buildbot_results.py.
 def summarize_results(port_obj, expectations_by_type, initial_results, retry_results, enabled_pixel_tests_in_retry, include_passes=False, include_time_and_modifiers=False):
     """Returns a dictionary containing a summary of the test runs, with the following fields:
@@ -304,7 +313,6 @@ def summarize_results(port_obj, expectations_by_type, initial_results, retry_res
                 continue
         elif result_type == test_expectations.CRASH:
             if test_name in initial_results.unexpected_results_by_name:
-                num_regressions += 1
                 test_dict['report'] = 'REGRESSION'
         elif result_type == test_expectations.MISSING:
             if test_name in initial_results.unexpected_results_by_name:
@@ -312,7 +320,6 @@ def summarize_results(port_obj, expectations_by_type, initial_results, retry_res
                 test_dict['report'] = 'MISSING'
         elif test_name in initial_results.unexpected_results_by_name:
             if retry_results and test_name in retry_results.unexpected_results_by_name:
-                num_regressions += 1
                 test_dict['report'] = 'REGRESSION'
                 retry_result_type = retry_results.unexpected_results_by_name[test_name].type
                 if result_type != retry_result_type:
@@ -323,10 +330,8 @@ def summarize_results(port_obj, expectations_by_type, initial_results, retry_res
                 retry_result_name = keywords[retry_results.expected_results_by_name[test_name].type]
                 if retry_result_name not in actual:
                     actual.append(retry_result_name)
-                num_flaky += 1
                 test_dict['report'] = 'FLAKY'
             else:
-                num_regressions += 1
                 test_dict['report'] = 'REGRESSION'
 
         # If a test was run more than once on the initial_results (for example with --repeat-each),
@@ -335,7 +340,7 @@ def summarize_results(port_obj, expectations_by_type, initial_results, retry_res
             repeated_result_name = keywords[repeated_result]
             if repeated_result_name not in actual:
                 actual.append(repeated_result_name)
-                if test_name in initial_results.unexpected_results_by_name:
+                if repeated_result_name == "PASS" or test_name in initial_results.expected_results_by_name:
                     test_dict['report'] = 'FLAKY'
 
         test_dict['expected'] = expected
@@ -375,9 +380,9 @@ def summarize_results(port_obj, expectations_by_type, initial_results, retry_res
 
     results['tests'] = tests
     results['num_passes'] = num_passes
-    results['num_flaky'] = num_flaky
+    results['num_flaky'] = count_tests_with_report_result(tests, 'FLAKY')
     results['num_missing'] = num_missing
-    results['num_regressions'] = num_regressions
+    results['num_regressions'] = count_tests_with_report_result(tests, 'REGRESSION')
     results['uses_expectations_file'] = port_obj.uses_test_expectations_file()
     results['interrupted'] = initial_results.interrupted  # Does results.html have enough information to compute this itself? (by checking total number of results vs. total number of tests?)
     results['layout_tests_dir'] = port_obj.layout_tests_dir()
