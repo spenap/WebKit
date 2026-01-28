@@ -458,7 +458,8 @@
 #include "ModelPresentationManagerProxy.h"
 #endif
 
-#if ENABLE(SWIFT_DEMO_URI_SCHEME) || ENABLE(IPC_TESTING_SWIFT)
+// FIXME: https://bugs.webkit.org/show_bug.cgi?id=306415
+#if ENABLE(SWIFT_DEMO_URI_SCHEME) || ENABLE(IPC_TESTING_SWIFT) || ENABLE(BACK_FORWARD_LIST_SWIFT)
 #include "WebKit-Swift.h"
 #endif
 
