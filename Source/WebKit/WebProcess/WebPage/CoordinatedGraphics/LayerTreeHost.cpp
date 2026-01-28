@@ -164,6 +164,9 @@ void LayerTreeHost::scheduleRenderingUpdateRunLoopObserver()
     if (m_renderingUpdateRunLoopObserver->isScheduled())
         return;
 
+    if (m_isUpdatingRendering)
+        return;
+
     tracePoint(RenderingUpdateRunLoopObserverStart);
     m_renderingUpdateRunLoopObserver->schedule();
 
