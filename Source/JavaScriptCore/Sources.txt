@@ -1152,7 +1152,6 @@ wasm/WasmOMGIRGenerator.cpp
 wasm/WasmOMGIRGenerator32_64.cpp
 wasm/WasmBBQDisassembler.cpp
 wasm/WasmBBQJIT.cpp @no-unify
-wasm/WasmBBQJIT32_64.cpp @no-unify
 wasm/WasmBBQJIT64.cpp @no-unify
 wasm/WasmBBQPlan.cpp
 wasm/WasmBinding.cpp
