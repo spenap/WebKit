@@ -49,9 +49,6 @@ LayoutUnit usedInlineSizeForGridItem(const PlacedGridItem& placedGridItem, Layou
     ASSERT(inlineAxisSizes.minimumSize.isFixed() && (inlineAxisSizes.maximumSize.isFixed() || inlineAxisSizes.maximumSize.isNone()));
 
     auto& preferredSize = inlineAxisSizes.preferredSize;
-    if (auto fixedInlineSize = preferredSize.tryFixed())
-        return LayoutUnit { fixedInlineSize->resolveZoom(placedGridItem.usedZoom()) } + borderAndPadding;
-
     if (preferredSize.isAuto()) {
         // Grid item calculations for automatic sizes in a given dimensions vary by their
         // self-alignment values:
@@ -89,6 +86,9 @@ LayoutUnit usedInlineSizeForGridItem(const PlacedGridItem& placedGridItem, Layou
         return { };
     }
 
+    if (preferredSize.isFixed() || preferredSize.isPercent() || preferredSize.isCalculated())
+        return Style::evaluate<LayoutUnit>(preferredSize, columnsSize, placedGridItem.usedZoom()) + borderAndPadding;
+
     ASSERT_NOT_IMPLEMENTED_YET();
     return { };
 }
@@ -97,9 +97,6 @@ LayoutUnit usedBlockSizeForGridItem(const PlacedGridItem& placedGridItem, Layout
 {
     auto& blockAxisSizes = placedGridItem.blockAxisSizes();
     auto& preferredSize = blockAxisSizes.preferredSize;
-    if (auto fixedBlockSize = preferredSize.tryFixed())
-        return LayoutUnit { fixedBlockSize->resolveZoom(placedGridItem.usedZoom()) } + borderAndPadding;
-
     if (preferredSize.isAuto()) {
         // Grid item calculations for automatic sizes in a given dimensions vary by their
         // self-alignment values:
@@ -132,6 +129,9 @@ LayoutUnit usedBlockSizeForGridItem(const PlacedGridItem& placedGridItem, Layout
             return std::max(minimumSize, std::min(maximumSize(), stretchedBlockSize));
         }
     }
+
+    if (preferredSize.isFixed() || preferredSize.isPercent() || preferredSize.isCalculated())
+        return Style::evaluate<LayoutUnit>(preferredSize, rowsSize, placedGridItem.usedZoom()) + borderAndPadding;
 
     ASSERT_NOT_IMPLEMENTED_YET();
     return { };
