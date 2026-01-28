@@ -1,7 +1,8 @@
-<!DOCTYPE html><!-- webkit-test-runner [ ThreadedTimeBasedAnimationsEnabled=false ] -->
+<!DOCTYPE html><!-- webkit-test-runner [ ThreadedTimeBasedAnimationsEnabled=true ] -->
 <body>
-<script src="../resources/testharness.js"></script>
-<script src="../resources/testharnessreport.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="threaded-animations-utils.js"></script>
 <style>
 
 div {
@@ -22,13 +23,6 @@ const createDiv = test => {
     return document.body.appendChild(div);
 }
 
-const animationReadyToAnimateAccelerated = async animation => {
-    await animation.ready;
-    await new Promise(requestAnimationFrame);
-    await new Promise(requestAnimationFrame);
-    await new Promise(requestAnimationFrame);
-}
-
 const duration = 1000 * 1000; // 1000s.
 
 promise_test(async test => {
@@ -42,9 +36,9 @@ promise_test(async test => {
         { transform: "translateX(100px)" },
         { duration }
     );
-    await animationReadyToAnimateAccelerated(animation);
-    assert_equals(internals.acceleratedAnimationsForElement(target).length, 0);
-}, "Setting 'offset' on the underlying style prevents a 'transform' animation from being accelerated.");
+    await animationAcceleration(animation);
+    assert_equals(internals.acceleratedAnimationsForElement(target).length, 1);
+}, "Setting 'offset' on the underlying style should not prevent a 'transform' animation from being accelerated.");
 
 promise_test(async test => {
     const target = createDiv(test);
@@ -54,19 +48,19 @@ promise_test(async test => {
         { transform: "translateX(100px)" },
         { duration }
     );
-    await animationReadyToAnimateAccelerated(animation);
+    await animationAcceleration(animation);
     assert_equals(internals.acceleratedAnimationsForElement(target).length, 1);
 
     // Set offset on the underlying style.
     target.style.offset = "path('M10,10 H10')";
-    await animationReadyToAnimateAccelerated(animation);
-    assert_equals(internals.acceleratedAnimationsForElement(target).length, 0);
+    await animationAcceleration(animation);
+    assert_equals(internals.acceleratedAnimationsForElement(target).length, 1);
 
     // Remove offset on the underlying style.
     target.style.removeProperty("offset");
-    await animationReadyToAnimateAccelerated(animation);
+    await animationAcceleration(animation);
     assert_equals(internals.acceleratedAnimationsForElement(target).length, 1);
-}, "Toggling 'offset' dynamically on the underlying style toggles the ability for a 'transform' animation to be accelerated.");
+}, "Toggling 'offset' dynamically on the underlying style should not affect the ability for a 'transform' animation to be accelerated.");
 
 promise_test(async test => {
     const target = createDiv(test);
@@ -75,9 +69,9 @@ promise_test(async test => {
         { transform: "translateX(100px)", cssOffset: ["path('M10,10 H10')", "path('M10,10 H20')"] },
         { duration }
     );
-    await animationReadyToAnimateAccelerated(animation);
-    assert_equals(internals.acceleratedAnimationsForElement(target).length, 0);
-}, "Animating both 'offset' and 'transform' on the same animation prevents acceleration.");
+    await animationAcceleration(animation);
+    assert_equals(internals.acceleratedAnimationsForElement(target).length, 6);
+}, "Animating both 'offset' and 'transform' on the same animation should not prevent acceleration.");
 
 promise_test(async test => {
     const target = createDiv(test);
@@ -88,22 +82,22 @@ promise_test(async test => {
         { transform: "translateX(100px)" },
         { duration }
     ));
-    await Promise.all(animations.map(animation => animationReadyToAnimateAccelerated(animation)));
+    await Promise.all(animations.map(animation => animationAcceleration(animation)));
     assert_equals(internals.acceleratedAnimationsForElement(target).length, 1);
 
-    // Then, add an offset animation that prevents the whole stack from being accelerated.
+    // Then, add an offset animation.
     animations.push(target.animate(
         { cssOffset: ["path('M10,10 H10')", "path('M10,10 H20')"] },
         { duration }
     ));
-    await Promise.all(animations.map(animation => animationReadyToAnimateAccelerated(animation)));
-    assert_equals(internals.acceleratedAnimationsForElement(target).length, 0);
+    await Promise.all(animations.map(animation => animationAcceleration(animation)));
+    assert_equals(internals.acceleratedAnimationsForElement(target).length, 6);
 
-    // Canceling the offset animation will no longer prevent the stack from being accelerated. 
+    // Canceling the offset animation. 
     animations.at(-1).cancel();
-    await Promise.all(animations.map(animation => animationReadyToAnimateAccelerated(animation)));
+    await threadedAnimationsCommit();
     assert_equals(internals.acceleratedAnimationsForElement(target).length, 1);
-}, "Animating both 'offset' and 'transform' on different animations prevents acceleration.");
+}, "Animating both 'offset' and 'transform' on different animations should not prevent acceleration.");
 
 promise_test(async test => {
     const target = createDiv(test);
@@ -112,15 +106,15 @@ promise_test(async test => {
         { transform: "translateX(100px)" },
         { duration }
     );
-    await animationReadyToAnimateAccelerated(animation);
+    await animationAcceleration(animation);
     assert_equals(internals.acceleratedAnimationsForElement(target).length, 1);
 
     animation.effect.setKeyframes(
         { transform: "translateX(100px)", cssOffset: ["path('M10,10 H10')", "path('M10,10 H20')"] }
     );
-    await animationReadyToAnimateAccelerated(animation);
-    assert_equals(internals.acceleratedAnimationsForElement(target).length, 0);
-}, "Setting keyframes on an animation to include 'offset' on top of 'transform' prevents acceleration.");
+    await threadedAnimationsCommit();
+    assert_equals(internals.acceleratedAnimationsForElement(target).length, 6);
+}, "Setting keyframes on an animation to include 'offset' on top of 'transform' should not prevent acceleration.");
 
 </script>
 </body>
