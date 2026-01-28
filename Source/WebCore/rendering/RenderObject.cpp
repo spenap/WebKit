@@ -2143,7 +2143,7 @@ RenderObject::RenderObjectRareData::~RenderObjectRareData() = default;
 bool RenderObject::hasEmptyVisibleRectRespectingParentFrames() const
 {
     auto enclosingFrameRenderer = [] (const RenderObject& renderer) {
-        auto* ownerElement = renderer.document().ownerElement();
+        RefPtr ownerElement = renderer.document().ownerElement();
         return ownerElement ? ownerElement->renderer() : nullptr;
     };
 
@@ -2260,7 +2260,7 @@ static Vector<FloatRect> borderAndTextRects(const SimpleRange& range, Coordinate
     // Don't include elements at the end of the range that are only partially selected.
     // FIXME: What about the start of the range? The asymmetry here does not make sense. Seems likely this logic is not quite right in other respects, too.
     if (RefPtr lastNode = nodeAfter(range.end)) {
-        for (auto& ancestor : lineageOfType<Element>(*lastNode))
+        for (CheckedRef ancestor : lineageOfType<Element>(*lastNode))
             selectedElementsSet.remove(ancestor);
     }
 
@@ -2338,7 +2338,7 @@ ScrollAnchoringController* RenderObject::searchParentChainForScrollAnchoringCont
                 return controller;
         }
     }
-    for (auto* enclosingLayer = renderer.enclosingLayer(); enclosingLayer; enclosingLayer = enclosingLayer->parent()) {
+    for (CheckedPtr enclosingLayer = renderer.enclosingLayer(); enclosingLayer; enclosingLayer = enclosingLayer->parent()) {
         if (RenderLayerScrollableArea* scrollableArea = enclosingLayer->scrollableArea()) {
             auto controller = scrollableArea->scrollAnchoringController();
             if (controller && controller->anchorElement())

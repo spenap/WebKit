@@ -336,8 +336,8 @@ Style::Difference RenderElement::adjustStyleDifference(Style::Difference diff) c
     }
     
     if ((diff.contextSensitiveProperties & Style::DifferenceContextSensitiveProperty::Filter) && hasLayer()) {
-        auto& layer = *downcast<RenderLayerModelObject>(*this).layer();
-        if (!layer.isComposited() || layer.shouldPaintWithFilters())
+        CheckedRef layer = *downcast<RenderLayerModelObject>(*this).layer();
+        if (!layer->isComposited() || layer->shouldPaintWithFilters())
             diff.result = std::max(diff.result, Style::DifferenceResult::RepaintLayer);
         else
             diff.result = std::max(diff.result, Style::DifferenceResult::RecompositeLayer);
@@ -721,7 +721,7 @@ RenderPtr<RenderObject> RenderElement::detachRendererInternal(RenderObject& rend
 static RenderLayer* findNextLayer(const RenderElement& currRenderer, const RenderLayer& parentLayer, const RenderObject* siblingToTraverseFrom, bool checkParent = true)
 {
     // Step 1: If our layer is a child of the desired parent, then return our layer.
-    auto* ourLayer = currRenderer.hasLayer() ? downcast<RenderLayerModelObject>(currRenderer).layer() : nullptr;
+    SUPPRESS_UNCOUNTED_LOCAL auto* ourLayer = currRenderer.hasLayer() ? downcast<RenderLayerModelObject>(currRenderer).layer() : nullptr;
     if (ourLayer && ourLayer->parent() == &parentLayer)
         return ourLayer;
 
@@ -1739,7 +1739,7 @@ void RenderElement::notifyFinished(CachedResource& resource, const NetworkLoadMe
 
 bool RenderElement::allowsAnimation() const
 {
-    if (auto* imageElement = dynamicDowncast<HTMLImageElement>(element()))
+    if (RefPtr imageElement = dynamicDowncast<HTMLImageElement>(element()))
         return imageElement->allowsAnimation();
     return page().imageAnimationEnabled();
 }
@@ -1832,9 +1832,9 @@ std::unique_ptr<RenderStyle> RenderElement::getUncachedPseudoStyle(const Style::
         return nullptr;
 
     Ref element = *this->element();
-    auto& styleResolver = element->styleResolver();
+    Ref styleResolver = element->styleResolver();
 
-    auto resolvedStyle = styleResolver.styleForPseudoElement(element, pseudoElementRequest, { parentStyle });
+    auto resolvedStyle = styleResolver->styleForPseudoElement(element, pseudoElementRequest, { parentStyle });
     if (!resolvedStyle)
         return nullptr;
 
@@ -2297,7 +2297,7 @@ bool RenderElement::checkForRepaintDuringLayout() const
 
 ImageOrientation RenderElement::imageOrientation() const
 {
-    auto* imageElement = dynamicDowncast<HTMLImageElement>(element());
+    RefPtr imageElement = dynamicDowncast<HTMLImageElement>(element());
     return (imageElement && !imageElement->allowsOrientationOverride())
         ? ImageOrientation(ImageOrientation::Orientation::FromImage)
         : Style::toPlatform(style().imageOrientation());

@@ -463,7 +463,7 @@ bool RenderImage::isDimensionlessSVG() const
     auto* cachedImage = this->cachedImage();
     if (!cachedImage)
         return false;
-    auto* svgImage = dynamicDowncast<SVGImage>(cachedImage->image());
+    RefPtr svgImage = dynamicDowncast<SVGImage>(cachedImage->image());
     if (!svgImage)
         return false;
     RefPtr rootElement = svgImage->rootElement();
@@ -484,7 +484,7 @@ bool RenderImage::shouldRespectZeroIntrinsicWidth() const
     auto* cachedImage = this->cachedImage();
     if (!cachedImage)
         return false;
-    if (auto* svgImage = dynamicDowncast<SVGImage>(cachedImage->image())) {
+    if (RefPtr svgImage = dynamicDowncast<SVGImage>(cachedImage->image())) {
         if (auto rootElement = svgImage->rootElement())
             return rootElement->hasIntrinsicWidth();
     }
@@ -866,7 +866,7 @@ LayoutUnit RenderImage::minimumReplacedHeight() const
 
 RefPtr<HTMLMapElement> RenderImage::imageMap() const
 {
-    auto* imageElement = dynamicDowncast<HTMLImageElement>(element());
+    RefPtr imageElement = dynamicDowncast<HTMLImageElement>(element());
     return imageElement ? imageElement->associatedMapElement() : nullptr;
 }
 
@@ -899,9 +899,9 @@ void RenderImage::updateAltText()
     if (!element())
         return;
 
-    if (auto* input = dynamicDowncast<HTMLInputElement>(*element()))
+    if (RefPtr input = dynamicDowncast<HTMLInputElement>(*element()))
         m_altText = input->altText();
-    else if (auto* image = dynamicDowncast<HTMLImageElement>(*element()))
+    else if (RefPtr image = dynamicDowncast<HTMLImageElement>(*element()))
         m_altText = image->altText();
 
     if (m_altText.isNull()) {
@@ -976,7 +976,7 @@ bool RenderImage::shouldInvalidatePreferredWidths() const
 RenderBox* RenderImage::embeddedContentBox() const
 {
     if (auto* cachedImage = this->cachedImage()) {
-        if (auto* image = dynamicDowncast<SVGImage>(cachedImage->image()))
+        if (RefPtr image = dynamicDowncast<SVGImage>(cachedImage->image()))
             return image->embeddedContentBox();
     }
     return nullptr;

@@ -458,7 +458,7 @@ void RenderLayerScrollableArea::updateCompositingLayersAfterScroll()
     if (m_layer.compositor().hasContentCompositingLayers()) {
         // Our stacking container is guaranteed to contain all of our descendants that may need
         // repositioning, so update compositing layers from there.
-        if (RenderLayer* compositingAncestor = m_layer.stackingContext()->enclosingCompositingLayer()) {
+        if (CheckedPtr compositingAncestor = m_layer.stackingContext()->enclosingCompositingLayer()) {
             if (usesCompositedScrolling())
                 m_layer.compositor().updateCompositingLayers(CompositingUpdateType::OnCompositedScroll, compositingAncestor);
             else {
@@ -985,7 +985,7 @@ bool RenderLayerScrollableArea::isScrollableOrRubberbandable()
 
 bool RenderLayerScrollableArea::hasScrollableOrRubberbandableAncestor()
 {
-    for (auto* nextLayer = m_layer.enclosingContainingBlockLayer(CrossFrameBoundaries::Yes); nextLayer; nextLayer = nextLayer->enclosingContainingBlockLayer(CrossFrameBoundaries::Yes)) {
+    for (CheckedPtr nextLayer = m_layer.enclosingContainingBlockLayer(CrossFrameBoundaries::Yes); nextLayer; nextLayer = nextLayer->enclosingContainingBlockLayer(CrossFrameBoundaries::Yes)) {
         if (nextLayer->renderer().isScrollableOrRubberbandableBox())
             return true;
     }
@@ -1487,7 +1487,7 @@ void RenderLayerScrollableArea::paintOverflowControls(GraphicsContext& context, 
         if (!overflowControlsIntersectRect(localDamgeRect))
             return;
 
-        RenderLayer* paintingRoot = m_layer.enclosingCompositingLayer();
+        CheckedPtr paintingRoot = m_layer.enclosingCompositingLayer();
         if (!paintingRoot)
             paintingRoot = renderer.view().layer();
 
@@ -2017,7 +2017,7 @@ void RenderLayerScrollableArea::scrollByRecursively(const IntSize& delta, Scroll
         IntSize remainingScrollOffset = newScrollOffset - scrollOffset();
         if (!remainingScrollOffset.isZero() && renderer.parent()) {
             // FIXME: This skips scrollable frames.
-            if (auto* enclosingScrollableLayer = m_layer.enclosingScrollableLayer(IncludeSelfOrNot::ExcludeSelf, CrossFrameBoundaries::Yes)) {
+            if (CheckedPtr enclosingScrollableLayer = m_layer.enclosingScrollableLayer(IncludeSelfOrNot::ExcludeSelf, CrossFrameBoundaries::Yes)) {
                 if (CheckedPtr scrollableArea = enclosingScrollableLayer->scrollableArea())
                     scrollableArea->scrollByRecursively(remainingScrollOffset, scrolledArea);
             }

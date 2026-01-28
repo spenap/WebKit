@@ -1462,7 +1462,7 @@ void RenderBlock::paintSelection(PaintInfo& paintInfo, const LayoutPoint& paintO
 
         LayoutRect gapRectsBounds = selectionGaps(*this, paintOffset, LayoutSize(), lastTop, lastLeft, lastRight, cache, &paintInfo);
         if (!gapRectsBounds.isEmpty()) {
-            if (RenderLayer* layer = enclosingLayer()) {
+            if (CheckedPtr layer = enclosingLayer()) {
                 gapRectsBounds.moveBy(-paintOffset);
                 if (!hasLayer()) {
                     LayoutRect localBounds(gapRectsBounds);

@@ -433,7 +433,7 @@ void RenderMenuList::getItemBackgroundColor(unsigned listIndex, Color& itemBackg
         itemHasCustomBackgroundColor = false;
         return;
     }
-    HTMLElement* element = listItems[listIndex].get();
+    RefPtr element = listItems[listIndex].get();
 
     Color backgroundColor;
     if (auto* style = element->computedStyleForEditability())

@@ -127,10 +127,10 @@ void RenderTableCell::willBeRemovedFromTree()
 unsigned RenderTableCell::parseColSpanFromDOM() const
 {
     ASSERT(element());
-    if (auto* cell = dynamicDowncast<HTMLTableCellElement>(*element()))
+    if (RefPtr cell = dynamicDowncast<HTMLTableCellElement>(*element()))
         return std::min<unsigned>(cell->colSpan(), maxColumnIndex);
 #if ENABLE(MATHML)
-    auto* mathMLElement = dynamicDowncast<MathMLElement>(*element());
+    RefPtr mathMLElement = dynamicDowncast<MathMLElement>(*element());
     if (mathMLElement && mathMLElement->hasTagName(MathMLNames::mtdTag))
         return std::min<unsigned>(mathMLElement->colSpan(), maxColumnIndex);
 #endif
@@ -140,10 +140,10 @@ unsigned RenderTableCell::parseColSpanFromDOM() const
 unsigned RenderTableCell::parseRowSpanFromDOM() const
 {
     ASSERT(element());
-    if (auto* cell = dynamicDowncast<HTMLTableCellElement>(*element()))
+    if (RefPtr cell = dynamicDowncast<HTMLTableCellElement>(*element()))
         return std::min<unsigned>(cell->rowSpan(), maxRowIndex);
 #if ENABLE(MATHML)
-    auto* mathMLElement = dynamicDowncast<MathMLElement>(*element());
+    RefPtr mathMLElement = dynamicDowncast<MathMLElement>(*element());
     if (mathMLElement && mathMLElement->hasTagName(MathMLNames::mtdTag))
         return std::min<unsigned>(mathMLElement->rowSpan(), maxRowIndex);
 #endif
