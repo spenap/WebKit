@@ -251,9 +251,6 @@ struct _WebKitWebContextPrivate {
     bool clientsDetached;
 #if PLATFORM(GTK) && !USE(GTK4)
     bool psonEnabled;
-#if USE(CAIRO)
-    bool useSystemAppearanceForScrollbars;
-#endif
 #endif
 
 #if !ENABLE(2022_GLIB_API)
@@ -444,9 +441,6 @@ static void webkitWebContextConstructed(GObject* object)
     configuration->setUsesWebProcessCache(true);
 #if PLATFORM(GTK) && !USE(GTK4)
     configuration->setProcessSwapsOnNavigation(priv->psonEnabled);
-#if USE(CAIRO)
-    configuration->setUseSystemAppearanceForScrollbars(priv->useSystemAppearanceForScrollbars);
-#endif
 #else
     configuration->setProcessSwapsOnNavigation(true);
 #endif
@@ -1969,22 +1963,8 @@ void webkit_web_context_set_use_system_appearance_for_scrollbars(WebKitWebContex
 {
     g_return_if_fail(WEBKIT_IS_WEB_CONTEXT(context));
 
-#if USE(CAIRO)
-    if (context->priv->useSystemAppearanceForScrollbars == enabled)
-        return;
-
-    context->priv->useSystemAppearanceForScrollbars = enabled;
-    g_object_notify_by_pspec(G_OBJECT(context), sObjProperties[PROP_USE_SYSTEM_APPEARANCE_FOR_SCROLLBARS]);
-
-    if (!context->priv->processPool)
-        return;
-
-    context->priv->processPool->configuration().setUseSystemAppearanceForScrollbars(enabled);
-    context->priv->processPool->sendToAllProcesses(Messages::WebProcess::SetUseSystemAppearanceForScrollbars(enabled));
-#else
     if (enabled)
         g_warning("WebKitWebContext:use-system-appearance-for-scrollbars property is deprecated and does nothing");
-#endif
 }
 
 /**
@@ -2003,11 +1983,7 @@ gboolean webkit_web_context_get_use_system_appearance_for_scrollbars(WebKitWebCo
 {
     g_return_val_if_fail(WEBKIT_IS_WEB_CONTEXT(context), TRUE);
 
-#if USE(CAIRO)
-    return context->priv->useSystemAppearanceForScrollbars;
-#else
     return FALSE;
-#endif
 }
 #endif
 

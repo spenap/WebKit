@@ -37,6 +37,8 @@
 #include "VideoPixelFormat.h"
 #include <JavaScriptCore/JSCInlines.h>
 #include <JavaScriptCore/TypedArrayInlines.h>
+#include <skia/core/SkData.h>
+#include <skia/core/SkImage.h>
 
 #if USE(GBM) && GST_CHECK_VERSION(1, 24, 0)
 #include <drm_fourcc.h>
@@ -48,16 +50,9 @@
 #include <gst/gl/gl.h>
 #endif
 
-#if USE(CAIRO)
-#include <cairo.h>
-#elif USE(SKIA)
-#include <skia/core/SkData.h>
-#include <skia/core/SkImage.h>
-
 WTF_IGNORE_WARNINGS_IN_THIRD_PARTY_CODE_BEGIN
 #include <skia/core/SkPixmap.h>
 WTF_IGNORE_WARNINGS_IN_THIRD_PARTY_CODE_END
-#endif
 
 GST_DEBUG_CATEGORY(webkit_video_frame_debug);
 GST_DEBUG_CATEGORY_STATIC(GST_CAT_PERFORMANCE);
@@ -125,16 +120,6 @@ RefPtr<VideoFrame> VideoFrame::fromNativeImage(NativeImage& image)
     size_t offsets[GST_VIDEO_MAX_PLANES] = { 0, };
     int strides[GST_VIDEO_MAX_PLANES] = { 0, };
 
-#if USE(CAIRO)
-    auto surface = image.platformImage();
-    strides[0] = cairo_image_surface_get_stride(surface.get());
-    auto width = cairo_image_surface_get_width(surface.get());
-    auto height = cairo_image_surface_get_height(surface.get());
-    auto size = height * strides[0];
-    auto format = G_BYTE_ORDER == G_LITTLE_ENDIAN ? GST_VIDEO_FORMAT_BGRA : GST_VIDEO_FORMAT_ARGB;
-
-    auto buffer = adoptGRef(gst_buffer_new_wrapped_full(GST_MEMORY_FLAG_READONLY, cairo_image_surface_get_data(surface.get()), size, 0, size, cairo_surface_reference(surface.get()), reinterpret_cast<GDestroyNotify>(cairo_surface_destroy)));
-#elif USE(SKIA)
     auto platformImage = image.platformImage();
     const auto& imageInfo = platformImage->imageInfo();
     strides[0] = imageInfo.minRowBytes();
@@ -180,7 +165,6 @@ RefPtr<VideoFrame> VideoFrame::fromNativeImage(NativeImage& image)
     default:
         return nullptr;
     }
-#endif
 
     gst_buffer_add_video_meta_full(buffer.get(), GST_VIDEO_FRAME_FLAG_NONE, format, width, height, 1, offsets, strides);
 

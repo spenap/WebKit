@@ -1374,11 +1374,7 @@ static void webkit_settings_class_init(WebKitSettingsClass* klass)
             "enable-2d-canvas-acceleration",
             _("Enable 2D canvas acceleration"),
             _("Whether to enable 2D canvas acceleration"),
-#if USE(SKIA)
             FEATURE_DEFAULT(CanvasUsesAcceleratedDrawing),
-#else
-            FALSE,
-#endif
             readWriteConstructParamFlags);
 
     /**
@@ -3435,11 +3431,7 @@ gboolean webkit_settings_get_enable_2d_canvas_acceleration(WebKitSettings* setti
 {
     g_return_val_if_fail(WEBKIT_IS_SETTINGS(settings), FALSE);
 
-#if USE(SKIA)
     return settings->priv->preferences->canvasUsesAcceleratedDrawing();
-#else
-    return FALSE;
-#endif
 }
 
 /**
@@ -3455,7 +3447,6 @@ void webkit_settings_set_enable_2d_canvas_acceleration(WebKitSettings* settings,
 {
     g_return_if_fail(WEBKIT_IS_SETTINGS(settings));
 
-#if USE(SKIA)
     WebKitSettingsPrivate* priv = settings->priv;
     bool currentValue = priv->preferences->canvasUsesAcceleratedDrawing();
     if (currentValue == enabled)
@@ -3463,10 +3454,6 @@ void webkit_settings_set_enable_2d_canvas_acceleration(WebKitSettings* settings,
 
     priv->preferences->setCanvasUsesAcceleratedDrawing(enabled);
     g_object_notify_by_pspec(G_OBJECT(settings), sObjProperties[PROP_ENABLE_2D_CANVAS_ACCELERATION]);
-#else
-    if (enabled)
-        g_warning("2D canvas acceleration not supported, webkit_settings_set_enable_2d_canvas_acceleration does nothing");
-#endif
 }
 
 /**

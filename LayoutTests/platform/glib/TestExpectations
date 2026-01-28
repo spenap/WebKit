@@ -23,7 +23,6 @@
 #           The layout test runner evaluates the rules from top to bottom
 #           and it picks as the valid rule the last one matching.
 # * Accessibility
-# * Cairo
 # * Clipboard API
 # * Compositing
 # * Cookie
@@ -1092,15 +1091,6 @@ accessibility/contenteditable-spinbutton-uses-arrow-keys.html [ Skip ]
 
 #////////////////////////////////////////////////////////////////////////////////////////
 # End of Accessibility-related bugs
-#////////////////////////////////////////////////////////////////////////////////////////
-
-
-#////////////////////////////////////////////////////////////////////////////////////////
-# Cairo-related bugs
-#////////////////////////////////////////////////////////////////////////////////////////
-
-#////////////////////////////////////////////////////////////////////////////////////////
-# End of Cairo-related bugs
 #////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -4492,9 +4482,6 @@ imported/w3c/web-platform-tests/css/css-view-transitions/navigation/auto-name-fr
 imported/w3c/web-platform-tests/css/css-view-transitions/start-skip-start.html [ Pass Failure ]
 
 imported/w3c/web-platform-tests/svg/text/reftests/transform-dynamic-change.html [ ImageOnlyFailure ]
-
-# This test hits some infinite-loop condition inside Cairo
-fast/css/repeating-conic-gradient-small-range.html [ Skip ]
 
 # Kerning for SVG not working as expected.
 webkit.org/b/156148 fast/text/svg-font-face-with-kerning.html [ Failure ]

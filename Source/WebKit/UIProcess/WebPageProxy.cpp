@@ -355,16 +355,12 @@
 #include <WebCore/UTIUtilities.h>
 #endif
 
-#if PLATFORM(COCOA) || PLATFORM(GTK) || (PLATFORM(WPE) && USE(SKIA))
+#if PLATFORM(COCOA) || PLATFORM(GTK) || PLATFORM(WPE)
 #include "ViewSnapshotStore.h"
 #endif
 
 #if PLATFORM(GTK)
 #include <WebCore/SelectionData.h>
-#endif
-
-#if USE(CAIRO)
-#include <WebCore/CairoUtilities.h>
 #endif
 
 #if ENABLE(WIRELESS_PLAYBACK_TARGET) && !PLATFORM(IOS_FAMILY)
@@ -14157,7 +14153,7 @@ void WebPageProxy::setEditableElementIsFocused(bool editableElementIsFocused)
 
 #endif // PLATFORM(MAC)
 
-#if PLATFORM(COCOA) || PLATFORM(GTK) || (PLATFORM(WPE) && USE(SKIA))
+#if PLATFORM(COCOA) || PLATFORM(GTK) || PLATFORM(WPE)
 
 RefPtr<ViewSnapshot> WebPageProxy::takeViewSnapshot(std::optional<WebCore::IntRect>&& clipRect)
 {
@@ -14179,7 +14175,7 @@ RefPtr<ViewSnapshot> WebPageProxy::takeViewSnapshot(std::optional<WebCore::IntRe
 #endif
 }
 
-#endif // PLATFORM(COCOA) || PLATFORM(GTK) || (PLATFORM(WPE) && USE(SKIA))
+#endif // PLATFORM(COCOA) || PLATFORM(GTK) || PLATFORM(WPE)
 
 #if PLATFORM(GTK) || PLATFORM(WPE)
 

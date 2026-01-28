@@ -103,14 +103,12 @@
 #include <gtk/a11y/gtkatspi.h>
 #endif
 
-#if USE(SKIA)
 WTF_IGNORE_WARNINGS_IN_THIRD_PARTY_CODE_BEGIN
 IGNORE_CLANG_WARNINGS_BEGIN("cast-align")
 #include <skia/core/SkColorSpace.h>
 #include <skia/core/SkPixmap.h>
 IGNORE_CLANG_WARNINGS_END
 WTF_IGNORE_WARNINGS_IN_THIRD_PARTY_CODE_END
-#endif
 
 using namespace WebKit;
 using namespace WebCore;
@@ -3509,11 +3507,7 @@ RendererBufferDescription webkitWebViewBaseGetRendererBufferDescription(WebKitWe
     return webViewBase->priv->acceleratedBackingStore->bufferDescription();
 }
 
-#if USE(CAIRO)
-static cairo_surface_t* webkitWebViewBaseSnapshotFromWidget(GtkWidget* view)
-#elif USE(SKIA)
 static SkImage* webkitWebViewBaseSnapshotFromWidget(GtkWidget* view)
-#endif
 {
 #if USE(GTK4)
     int width = gtk_widget_get_width(view);
@@ -3541,33 +3535,14 @@ static SkImage* webkitWebViewBaseSnapshotFromWidget(GtkWidget* view)
     gtk_widget_draw(view, cr.get());
 #endif
 
-#if USE(CAIRO)
-    return surface.leakRef();
-#elif USE(SKIA)
     cairo_surface_flush(surface.get());
     auto imageInfo = SkImageInfo::MakeN32Premul(cairo_image_surface_get_width(surface.get()), cairo_image_surface_get_height(surface.get()), SkColorSpace::MakeSRGB());
     SkPixmap pixmap(imageInfo, cairo_image_surface_get_data(surface.get()), cairo_image_surface_get_stride(surface.get()));
     return SkImages::RasterFromPixmap(pixmap, [](const void*, void* context) {
         cairo_surface_destroy(static_cast<cairo_surface_t*>(context));
     }, surface.leakRef()).release();
-#endif
 }
 
-#if USE(CAIRO)
-cairo_surface_t* webkitWebViewBaseSnapshotForTesting(WebKitWebViewBase* webViewBase)
-{
-    auto* drawingArea = static_cast<DrawingAreaProxyCoordinatedGraphics*>(webViewBase->priv->pageProxy->drawingArea());
-    if (!drawingArea || !drawingArea->isInAcceleratedCompositingMode())
-        return webkitWebViewBaseSnapshotFromWidget(GTK_WIDGET(webViewBase));
-
-    if (auto image = webViewBase->priv->acceleratedBackingStore->bufferAsNativeImageForTesting()) {
-        if (RefPtr<cairo_surface_t> surface = image->platformImage())
-            return surface.leakRef();
-    }
-
-    return webkitWebViewBaseSnapshotFromWidget(GTK_WIDGET(webViewBase));
-}
-#elif USE(SKIA)
 SkImage* webkitWebViewBaseSnapshotForTesting(WebKitWebViewBase* webViewBase)
 {
     auto* drawingArea = static_cast<DrawingAreaProxyCoordinatedGraphics*>(webViewBase->priv->pageProxy->drawingArea());
@@ -3588,7 +3563,6 @@ SkImage* webkitWebViewBaseSnapshotForTesting(WebKitWebViewBase* webViewBase)
 
     return webkitWebViewBaseSnapshotFromWidget(GTK_WIDGET(webViewBase));
 }
-#endif
 
 #if USE(GTK4)
 static GRefPtr<GdkCursor> fallbackCursor()
@@ -3726,22 +3700,14 @@ void webkitWebViewBaseSetCursor(WebKitWebViewBase* webViewBase, const Cursor& cu
     auto& platformImage = nativeImage->platformImage();
 
 #if USE(GTK4)
-#if USE(CAIRO)
-    auto texture = cairoSurfaceToGdkTexture(platformImage.get());
-#elif USE(SKIA)
     auto texture = skiaImageToGdkTexture(*platformImage.get());
-#endif
     if (!texture)
         return;
 
     GRefPtr<GdkCursor> newCursor = adoptGRef(gdk_cursor_new_from_texture(texture.get(), effectiveHotSpot.x(), effectiveHotSpot.y(), fallbackCursor().get()));
     gtk_widget_set_cursor(GTK_WIDGET(webViewBase), newCursor.get());
 #else
-#if USE(CAIRO)
-    auto pixbuf = cairoSurfaceToGdkPixbuf(platformImage.get());
-#elif USE(SKIA)
     auto pixbuf = skiaImageToGdkPixbuf(*platformImage.get());
-#endif
     if (!pixbuf)
         return;
 

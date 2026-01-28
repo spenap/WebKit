@@ -70,10 +70,6 @@
 #define USE_GLIB 1
 #endif
 
-#if ((PLATFORM(GTK) || PLATFORM(WPE)) && !USE(SKIA))
-#define USE_FREETYPE 1
-#endif
-
 #if PLATFORM(GTK) || PLATFORM(WPE)
 #define USE_HARFBUZZ 1
 #define USE_FONT_VARIANT_VIA_FEATURES 1
