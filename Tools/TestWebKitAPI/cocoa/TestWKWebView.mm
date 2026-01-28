@@ -1220,6 +1220,20 @@ static UIWindowScene *windowScene()
     TestWebKitAPI::Util::run(&done);
 }
 
+- (void)setVisibility:(BOOL)isVisible
+{
+#if PLATFORM(MAC)
+    [self.window setIsVisible:isVisible];
+#else
+    [self.window setHidden:!isVisible];
+#endif
+
+    if (!isVisible)
+        [self.window resignKeyWindow];
+
+    [self waitUntilActivityStateUpdateDone];
+}
+
 - (void)forceLightMode
 {
 #if USE(APPKIT)

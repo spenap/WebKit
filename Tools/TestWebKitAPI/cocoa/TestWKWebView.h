@@ -210,6 +210,7 @@ class Color;
 - (Vector<WebCore::Color>)sampleColorsWithInterval:(unsigned)interval;
 - (RetainPtr<_WKFrameTreeNode>)frameTree;
 - (void)typeCharacter:(char)character;
+- (void)setVisibility:(BOOL)isVisible;
 @end
 
 #if PLATFORM(IOS_FAMILY)
