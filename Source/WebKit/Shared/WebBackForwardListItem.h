@@ -33,6 +33,7 @@
 #include <wtf/CheckedPtr.h>
 #include <wtf/Ref.h>
 #include <wtf/RetainReleaseSwift.h>
+#include <wtf/SwiftBridging.h>
 #include <wtf/WeakPtr.h>
 #include <wtf/text/WTFString.h>
 
@@ -83,15 +84,15 @@ public:
 
     void wasRemovedFromBackForwardList();
 
-    WebBackForwardCacheEntry* backForwardCacheEntry() const { return m_backForwardCacheEntry.get(); }
+    WebBackForwardCacheEntry* backForwardCacheEntry() const SWIFT_RETURNS_INDEPENDENT_VALUE { return m_backForwardCacheEntry.get(); }
 
-    SuspendedPageProxy* suspendedPage() const;
+    SuspendedPageProxy* suspendedPage() const SWIFT_RETURNS_INDEPENDENT_VALUE;
 
     std::optional<WebCore::FrameIdentifier> navigatedFrameID() const { return m_navigatedFrameID; }
 
-    WebBackForwardListFrameItem& navigatedFrameItem() const;
+    WebBackForwardListFrameItem& navigatedFrameItem() const SWIFT_RETURNS_INDEPENDENT_VALUE;
 
-    WebBackForwardListFrameItem& mainFrameItem() const;
+    WebBackForwardListFrameItem& mainFrameItem() const SWIFT_RETURNS_INDEPENDENT_VALUE;
 
     void setIsRemoteFrameNavigation(bool isRemoteFrameNavigation) { m_isRemoteFrameNavigation = isRemoteFrameNavigation; }
     bool isRemoteFrameNavigation() const { return m_isRemoteFrameNavigation; }
