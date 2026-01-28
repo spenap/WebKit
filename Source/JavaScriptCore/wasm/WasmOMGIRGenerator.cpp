@@ -100,8 +100,6 @@ void dumpProcedure(void* ptr)
     proc->dump(WTF::dataFile());
 }
 
-#if USE(JSVALUE64)
-
 namespace JSC { namespace Wasm {
 
 using namespace B3;
@@ -7004,5 +7002,4 @@ auto OMGIRGenerator::addI64TruncUF32(ExpressionType argVar, ExpressionType& resu
 
 WTF_ALLOW_UNSAFE_BUFFER_USAGE_END
 
-#endif // USE(JSVALUE64)
 #endif // ENABLE(WEBASSEMBLY_OMGJIT)
