@@ -3251,6 +3251,7 @@ private:
     bool m_statusBarIsVisible { true };
     bool m_menuBarIsVisible { true };
     bool m_toolbarsAreVisible { true };
+    bool m_backgroundTextExtractionEnabled { false };
 };
 
 #if !PLATFORM(IOS_FAMILY)

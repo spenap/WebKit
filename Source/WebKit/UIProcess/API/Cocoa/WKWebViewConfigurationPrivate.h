@@ -181,6 +181,10 @@ typedef NS_ENUM(NSUInteger, _WKContentSecurityPolicyModeForExtension) {
 @property (nonatomic, setter=_setCSSTransformStyleSeparatedEnabled:) BOOL _cssTransformStyleSeparatedEnabled WK_API_AVAILABLE(visionos(2.4));
 #endif
 
+#if TARGET_OS_IPHONE
+@property (nonatomic, setter=_setBackgroundTextExtractionEnabled:) BOOL _backgroundTextExtractionEnabled WK_API_AVAILABLE(ios(WK_IOS_TBA), visionos(WK_XROS_TBA));
+#endif
+
 @end
 
 #if TARGET_OS_IPHONE

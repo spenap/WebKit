@@ -4991,7 +4991,8 @@ void WebPage::applicationDidEnterBackground(bool isSuspendedUnderLock)
     [[NSNotificationCenter defaultCenter] postNotificationName:WebUIApplicationDidEnterBackgroundNotification object:nil userInfo:@{@"isSuspendedUnderLock": @(isSuspendedUnderLock)}];
 
     m_isSuspendedUnderLock = isSuspendedUnderLock;
-    freezeLayerTree(LayerTreeFreezeReason::BackgroundApplication);
+    if (!m_backgroundTextExtractionEnabled)
+        freezeLayerTree(LayerTreeFreezeReason::BackgroundApplication);
 
     // FIXME(224775): Move to WebProcess
     if (RefPtr manager = mediaSessionManagerIfExists())
@@ -5011,7 +5012,8 @@ void WebPage::applicationWillEnterForeground(bool isSuspendedUnderLock)
     m_isSuspendedUnderLock = false;
     cancelMarkLayersVolatile();
 
-    unfreezeLayerTree(LayerTreeFreezeReason::BackgroundApplication);
+    if (!m_backgroundTextExtractionEnabled)
+        unfreezeLayerTree(LayerTreeFreezeReason::BackgroundApplication);
 
     [[NSNotificationCenter defaultCenter] postNotificationName:WebUIApplicationWillEnterForegroundNotification object:nil userInfo:@{@"isSuspendedUnderLock": @(isSuspendedUnderLock)}];
 

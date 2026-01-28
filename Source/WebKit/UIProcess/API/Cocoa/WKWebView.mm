@@ -7089,7 +7089,13 @@ static RetainPtr<_WKTextExtractionResult> createEmptyTextExtractionResult()
     }
 #endif // PLATFORM(MAC)
 
-    targetFrame->handleTextExtractionInteraction(WTF::move(interaction), [weakSelf = WeakObjCPtr<WKWebView>(self), weakPage = WeakPtr { *page }, completionHandler = makeBlockPtr(WTF::move(completionHandler))](bool success, String&& description) mutable {
+    UniqueRef assertionScope = _page->createTextExtractionAssertionScope();
+    targetFrame->handleTextExtractionInteraction(WTF::move(interaction), [
+        weakSelf = WeakObjCPtr<WKWebView>(self),
+        weakPage = WeakPtr { *page },
+        assertionScope = WTF::move(assertionScope),
+        completionHandler = makeBlockPtr(WTF::move(completionHandler))
+    ](bool success, String&& description) mutable {
         RetainPtr<NSString> errorDescription;
         if (!success)
             errorDescription = description.createNSString();
@@ -7102,7 +7108,7 @@ static RetainPtr<_WKTextExtractionResult> createEmptyTextExtractionResult()
         if (!strongPage)
             return completionHandler(result.get());
 
-        Ref aggregator = EagerCallbackAggregator<void()>::create([completion = WTF::move(completionHandler), result] {
+        Ref aggregator = EagerCallbackAggregator<void()>::create([completion = WTF::move(completionHandler), assertionScope = WTF::move(assertionScope), result] mutable {
             completion(result.get());
         });
 

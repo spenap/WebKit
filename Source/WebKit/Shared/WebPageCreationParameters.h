@@ -191,6 +191,7 @@ struct WebPageCreationParameters {
     bool useDarkAppearance { false };
     bool useElevatedUserInterfaceLevel { false };
     bool allowPostingLegacySynchronousMessages { false };
+    bool backgroundTextExtractionEnabled { false };
 
 #if PLATFORM(MAC)
     std::optional<WebCore::DestinationColorSpace> colorSpace { };

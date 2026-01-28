@@ -28,6 +28,7 @@
 
 #import "APIPageConfiguration.h"
 #import "CSPExtensionUtilities.h"
+#import "DefaultWebBrowserChecks.h"
 #import "PlatformWritingToolsUtilities.h"
 #import "WKDataDetectorTypesInternal.h"
 #import "WKPreferencesInternal.h"
@@ -1568,6 +1569,24 @@ static WebKit::AttributionOverrideTesting toAttributionOverrideTesting(_WKAttrib
     return NO;
 #endif
 }
+
+#if PLATFORM(IOS_FAMILY)
+
+- (void)_setBackgroundTextExtractionEnabled:(BOOL)enabled
+{
+    if (enabled && !WebKit::isFullWebBrowserOrRunningTest()) {
+        [NSException raise:NSInvalidArgumentException format:@"%s is only available for web browsers", __PRETTY_FUNCTION__];
+        return;
+    }
+    _pageConfiguration->setBackgroundTextExtractionEnabled(enabled);
+}
+
+- (BOOL)_backgroundTextExtractionEnabled
+{
+    return _pageConfiguration->backgroundTextExtractionEnabled();
+}
+
+#endif // PLATFORM(IOS_FAMILY)
 
 #if PLATFORM(VISION)
 - (BOOL)_gamepadAccessRequiresExplicitConsent

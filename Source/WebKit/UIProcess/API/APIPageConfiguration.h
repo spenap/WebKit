@@ -466,6 +466,9 @@ public:
     void setContentSecurityPolicyModeForExtension(WebCore::ContentSecurityPolicyModeForExtension mode) { m_data.contentSecurityPolicyModeForExtension = mode; }
     WebCore::ContentSecurityPolicyModeForExtension contentSecurityPolicyModeForExtension() const { return m_data.contentSecurityPolicyModeForExtension; }
 
+    void setBackgroundTextExtractionEnabled(bool enabled) { m_data.backgroundTextExtractionEnabled = enabled; }
+    bool backgroundTextExtractionEnabled() const { return m_data.backgroundTextExtractionEnabled; }
+
 #if PLATFORM(VISION)
 
 #if ENABLE(GAMEPAD)
@@ -648,6 +651,7 @@ private:
         bool showsSystemScreenTimeBlockingView { true };
         bool shouldSendConsoleLogsToUIProcessForTesting { false };
         bool allowPostingLegacySynchronousMessages { false };
+        bool backgroundTextExtractionEnabled { false };
 
 #if PLATFORM(VISION)
 
