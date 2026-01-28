@@ -3348,6 +3348,45 @@ JSC_DEFINE_JIT_OPERATION(operationStringIndexOfWithIndexWithOneChar, UCPUStrictI
     OPERATION_RETURN(scope, toUCPUStrictInt32(result));
 }
 
+JSC_DEFINE_JIT_OPERATION(operationStringStartsWith, bool, (JSGlobalObject* globalObject, JSString* base, JSString* prefix))
+{
+    VM& vm = globalObject->vm();
+    CallFrame* callFrame = DECLARE_CALL_FRAME(vm);
+    JITOperationPrologueCallFrameTracer tracer(vm, callFrame);
+
+    auto scope = DECLARE_THROW_SCOPE(vm);
+
+    auto baseView = base->view(globalObject);
+    OPERATION_RETURN_IF_EXCEPTION(scope, false);
+
+    auto prefixView = prefix->view(globalObject);
+    OPERATION_RETURN_IF_EXCEPTION(scope, false);
+
+    OPERATION_RETURN(scope, baseView->startsWith(prefixView));
+}
+
+JSC_DEFINE_JIT_OPERATION(operationStringStartsWithWithIndex, bool, (JSGlobalObject* globalObject, JSString* base, JSString* prefix, int32_t position))
+{
+    VM& vm = globalObject->vm();
+    CallFrame* callFrame = DECLARE_CALL_FRAME(vm);
+    JITOperationPrologueCallFrameTracer tracer(vm, callFrame);
+
+    auto scope = DECLARE_THROW_SCOPE(vm);
+
+    auto baseView = base->view(globalObject);
+    OPERATION_RETURN_IF_EXCEPTION(scope, false);
+
+    auto prefixView = prefix->view(globalObject);
+    OPERATION_RETURN_IF_EXCEPTION(scope, false);
+
+    int32_t length = baseView->length();
+    unsigned start = 0;
+    if (position >= 0)
+        start = std::min<uint32_t>(position, length);
+
+    OPERATION_RETURN(scope, baseView->hasInfixStartingAt(prefixView, start));
+}
+
 JSC_DEFINE_JIT_OPERATION(operationStringProtoFuncReplaceGeneric, JSCell*, (JSGlobalObject* globalObject, EncodedJSValue thisValue, EncodedJSValue searchValue, EncodedJSValue replaceValue))
 {
     VM& vm = globalObject->vm();

@@ -176,6 +176,7 @@ inline CapabilityLevel canCompile(Node* node)
     case StringCodePointAt:
     case StringFromCharCode:
     case StringIndexOf:
+    case StringStartsWith:
     case AllocatePropertyStorage:
     case ReallocatePropertyStorage:
     case NukeStructureAndSetButterfly:

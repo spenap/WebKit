@@ -3152,6 +3152,11 @@ void SpeculativeJIT::compile(Node* node)
         break;
     }
 
+    case StringStartsWith: {
+        compileStringStartsWith(node);
+        break;
+    }
+
     case FunctionToString:
         compileFunctionToString(node);
         break;

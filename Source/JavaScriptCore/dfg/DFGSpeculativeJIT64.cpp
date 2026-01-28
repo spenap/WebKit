@@ -3782,6 +3782,11 @@ void SpeculativeJIT::compile(Node* node)
         break;
     }
 
+    case StringStartsWith: {
+        compileStringStartsWith(node);
+        break;
+    }
+
     case StringAt:
     case StringCharAt: {
         // Relies on StringCharAt and StringAt node having same basic layout as GetByVal

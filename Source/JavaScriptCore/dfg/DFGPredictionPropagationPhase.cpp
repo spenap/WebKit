@@ -1187,6 +1187,11 @@ private:
             break;
         }
 
+        case StringStartsWith: {
+            setPrediction(SpecBoolean);
+            break;
+        }
+
         case StringLocaleCompare: {
             setPrediction(SpecInt32Only);
             break;
