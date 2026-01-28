@@ -795,7 +795,7 @@ class TestRunEWSUnitTests(BuildStepMixinAdditions, unittest.TestCase):
             ExpectShell(workdir='build/Tools/CISupport',
                         timeout=120,
                         log_environ=False,
-                        command=['python3', 'runUnittests.py', 'ews-build', '--autoinstall'],
+                        command=['python3', './run-tests', 'ews-build'],
                         )
             .exit(0),
         )
@@ -808,7 +808,7 @@ class TestRunEWSUnitTests(BuildStepMixinAdditions, unittest.TestCase):
             ExpectShell(workdir='build/Tools/CISupport',
                         timeout=120,
                         log_environ=False,
-                        command=['python3', 'runUnittests.py', 'ews-build', '--autoinstall'],
+                        command=['python3', './run-tests', 'ews-build'],
                         )
             .log('stdio', stdout='Unhandled Error. Traceback (most recent call last): Keys in cmd missing from expectation: [logfiles.json]')
             .exit(2),
@@ -867,7 +867,7 @@ class TestRunBuildWebKitOrgUnitTests(BuildStepMixinAdditions, unittest.TestCase)
             ExpectShell(workdir='build/Tools/CISupport',
                         timeout=120,
                         log_environ=False,
-                        command=['python3', 'runUnittests.py', 'build-webkit-org', '--autoinstall'],
+                        command=['python3', './run-tests', 'build-webkit-org'],
                         )
             .exit(0),
         )
@@ -880,12 +880,48 @@ class TestRunBuildWebKitOrgUnitTests(BuildStepMixinAdditions, unittest.TestCase)
             ExpectShell(workdir='build/Tools/CISupport',
                         timeout=120,
                         log_environ=False,
-                        command=['python3', 'runUnittests.py', 'build-webkit-org', '--autoinstall'],
+                        command=['python3', './run-tests', 'build-webkit-org'],
                         )
             .log('stdio', stdout='Unhandled Error. Traceback (most recent call last): Keys in cmd missing from expectation: [logfiles.json]')
             .exit(2),
         )
         self.expect_outcome(result=FAILURE, state_string='Failed build.webkit.org unit tests')
+        return self.run_step()
+
+
+class TestRunSharedUnitTests(BuildStepMixinAdditions, unittest.TestCase):
+    def setUp(self):
+        self.longMessage = True
+        return self.setup_test_build_step()
+
+    def tearDown(self):
+        return self.tear_down_test_build_step()
+
+    def test_success(self):
+        self.setup_step(RunSharedUnitTests())
+        self.expectRemoteCommands(
+            ExpectShell(workdir='build/Tools/CISupport',
+                        timeout=120,
+                        log_environ=False,
+                        command=['python3', './run-tests', 'Shared'],
+                        )
+            .exit(0),
+        )
+        self.expect_outcome(result=SUCCESS, state_string='Passed Shared unit tests')
+        return self.run_step()
+
+    def test_failure(self):
+        self.setup_step(RunSharedUnitTests())
+        self.expectRemoteCommands(
+            ExpectShell(workdir='build/Tools/CISupport',
+                        timeout=120,
+                        log_environ=False,
+                        command=['python3', './run-tests', 'Shared'],
+                        )
+            .log('stdio', stdout='Unhandled Error. Traceback (most recent call last): Keys in cmd missing from expectation: [logfiles.json]')
+            .exit(2),
+        )
+        self.expect_outcome(result=FAILURE, state_string='Failed Shared unit tests')
         return self.run_step()
 
 

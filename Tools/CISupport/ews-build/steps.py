@@ -3084,7 +3084,7 @@ class ReRunWebKitPerlTests(RunWebKitPerlTests):
 class RunBuildWebKitOrgUnitTests(shell.ShellCommand):
     name = 'build-webkit-org-unit-tests'
     description = ['build-webkit-unit-tests running']
-    command = ['python3', 'runUnittests.py', 'build-webkit-org', '--autoinstall']
+    command = ['python3', './run-tests', 'build-webkit-org']
 
     def __init__(self, **kwargs):
         super().__init__(workdir='build/Tools/CISupport', timeout=2 * 60, logEnviron=False, **kwargs)
@@ -3098,7 +3098,7 @@ class RunBuildWebKitOrgUnitTests(shell.ShellCommand):
 class RunEWSUnitTests(shell.ShellCommand):
     name = 'ews-unit-tests'
     description = ['ews-unit-tests running']
-    command = ['python3', 'runUnittests.py', 'ews-build', '--autoinstall']
+    command = ['python3', './run-tests', 'ews-build']
 
     def __init__(self, **kwargs):
         super().__init__(workdir='build/Tools/CISupport', timeout=2 * 60, logEnviron=False, **kwargs)
@@ -3107,6 +3107,20 @@ class RunEWSUnitTests(shell.ShellCommand):
         if self.results == SUCCESS:
             return {'step': 'Passed EWS unit tests'}
         return {'step': 'Failed EWS unit tests'}
+
+
+class RunSharedUnitTests(shell.ShellCommand):
+    name = 'shared-unit-tests'
+    description = ['shared-unit-tests running']
+    command = ['python3', './run-tests', 'Shared']
+
+    def __init__(self, **kwargs):
+        super().__init__(workdir='build/Tools/CISupport', timeout=2 * 60, logEnviron=False, **kwargs)
+
+    def getResultSummary(self):
+        if self.results == SUCCESS:
+            return {'step': 'Passed Shared unit tests'}
+        return {'step': 'Failed Shared unit tests'}
 
 
 class RunBuildbotCheckConfig(shell.ShellCommand):
