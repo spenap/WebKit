@@ -1061,7 +1061,7 @@ void WebAutomationSessionProxy::getCookiesForFrame(WebCore::PageIdentifier pageI
     // This returns the same list of cookies as when evaluating `document.cookies` in JavaScript.
     Vector<WebCore::Cookie> foundCookies;
     if (!document->cookieURL().isEmpty())
-        page->protectedCorePage()->protectedCookieJar()->getRawCookies(*document, document->cookieURL(), foundCookies);
+        protect(page->corePage())->protectedCookieJar()->getRawCookies(*document, document->cookieURL(), foundCookies);
 
     completionHandler(std::nullopt, foundCookies);
 }
@@ -1084,7 +1084,7 @@ void WebAutomationSessionProxy::deleteCookie(WebCore::PageIdentifier pageID, std
         return;
     }
 
-    page->protectedCorePage()->protectedCookieJar()->deleteCookie(*document, document->cookieURL(), cookieName, [completionHandler = WTF::move(completionHandler)] () mutable {
+    protect(page->corePage())->protectedCookieJar()->deleteCookie(*document, document->cookieURL(), cookieName, [completionHandler = WTF::move(completionHandler)] () mutable {
         completionHandler(std::nullopt);
     });
 }

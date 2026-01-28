@@ -280,7 +280,7 @@ RefPtr<VideoFrame> AudioVideoRendererRemote::currentVideoFrame() const
         auto [result] = sendResult.takeReply();
         if (!result)
             return;
-        videoFrame = RemoteVideoFrameProxy::create(gpuProcessConnection->connection(), gpuProcessConnection->protectedVideoFrameObjectHeapProxy(), WTF::move(*result));
+        videoFrame = RemoteVideoFrameProxy::create(gpuProcessConnection->connection(), protect(gpuProcessConnection->videoFrameObjectHeapProxy()), WTF::move(*result));
     });
     return videoFrame;
 }
@@ -303,7 +303,7 @@ RefPtr<NativeImage> AudioVideoRendererRemote::currentNativeImage() const
         return nullptr;
     ASSERT(gpuProcessConnection);
 
-    return gpuProcessConnection->protectedVideoFrameObjectHeapProxy()->getNativeImage(*videoFrame);
+    return protect(gpuProcessConnection->videoFrameObjectHeapProxy())->getNativeImage(*videoFrame);
 #else
     ASSERT_NOT_REACHED();
     return nullptr;

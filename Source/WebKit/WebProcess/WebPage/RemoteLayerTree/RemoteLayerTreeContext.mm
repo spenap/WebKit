@@ -140,7 +140,7 @@ void RemoteLayerTreeContext::layerDidEnterContext(PlatformCALayerRemote& layer, 
         videoElement.naturalSize()
     };
 
-    protectedWebPage()->protectedVideoPresentationManager()->setupRemoteLayerHosting(videoElement);
+    protect(protectedWebPage()->videoPresentationManager())->setupRemoteLayerHosting(videoElement);
     m_videoLayers.add(layerID, videoElement.identifier());
 
     m_createdLayers.add(layerID, WTF::move(creationProperties));
@@ -170,7 +170,7 @@ void RemoteLayerTreeContext::layerWillLeaveContext(PlatformCALayerRemote& layer)
 #if HAVE(AVKIT)
     auto videoLayerIter = m_videoLayers.find(layerID);
     if (videoLayerIter != m_videoLayers.end()) {
-        protectedWebPage()->protectedVideoPresentationManager()->willRemoveLayerForID(videoLayerIter->value);
+        protect(protectedWebPage()->videoPresentationManager())->willRemoveLayerForID(videoLayerIter->value);
         m_videoLayers.remove(videoLayerIter);
     }
 #endif

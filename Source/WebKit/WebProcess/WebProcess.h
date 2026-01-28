@@ -284,7 +284,6 @@ public:
     void setTextCheckerState(OptionSet<TextCheckerState>);
 
     EventDispatcher& eventDispatcher() { return m_eventDispatcher; }
-    Ref<EventDispatcher> protectedEventDispatcher() { return m_eventDispatcher; }
     Ref<WebInspectorInterruptDispatcher> protectedWebInspectorInterruptDispatcher() { return m_webInspectorInterruptDispatcher; }
 #if ENABLE(WEBASSEMBLY_DEBUGGER)
     Ref<WasmDebuggerDispatcher> protectedWasmDebuggerDispatcher() { return m_wasmDebuggerDispatcher; }
@@ -297,9 +296,7 @@ public:
     NetworkProcessConnection* existingNetworkProcessConnection() { return m_networkProcessConnection.get(); }
     RefPtr<NetworkProcessConnection> protectedNetworkProcessConnection();
     WebLoaderStrategy& webLoaderStrategy();
-    Ref<WebLoaderStrategy> protectedWebLoaderStrategy();
     WebFileSystemStorageConnection& fileSystemStorageConnection();
-    Ref<WebFileSystemStorageConnection> protectedFileSystemStorageConnection();
 
     RefPtr<WebTransportSession> webTransportSession(WebTransportSessionIdentifier);
     void addWebTransportSession(WebTransportSessionIdentifier, WebTransportSession&);
@@ -326,18 +323,15 @@ public:
 
 #if PLATFORM(COCOA) && USE(LIBWEBRTC)
     LibWebRTCCodecs& libWebRTCCodecs();
-    Ref<LibWebRTCCodecs> protectedLibWebRTCCodecs();
 #endif
 #if ENABLE(MEDIA_STREAM) && PLATFORM(COCOA)
     AudioMediaStreamTrackRendererInternalUnitManager& audioMediaStreamTrackRendererInternalUnitManager();
 #endif
 #if ENABLE(LEGACY_ENCRYPTED_MEDIA)
     RemoteLegacyCDMFactory& legacyCDMFactory();
-    Ref<RemoteLegacyCDMFactory> protectedLegacyCDMFactory();
 #endif
 #if ENABLE(ENCRYPTED_MEDIA)
     RemoteCDMFactory& cdmFactory();
-    Ref<RemoteCDMFactory> protectedCDMFactory();
 #endif
     RemoteMediaEngineConfigurationFactory& mediaEngineConfigurationFactory();
 #endif // ENABLE(GPU_PROCESS)
@@ -350,7 +344,6 @@ public:
 
 #if USE(LIBWEBRTC)
     LibWebRTCNetwork& libWebRTCNetwork();
-    Ref<LibWebRTCNetwork> protectedLibWebRTCNetwork();
 #endif
 
     void setCacheModel(CacheModel);
@@ -418,15 +411,12 @@ public:
     WebBadgeClient& badgeClient() { return m_badgeClient.get(); }
 #if ENABLE(GPU_PROCESS) && ENABLE(VIDEO)
     RemoteMediaPlayerManager& remoteMediaPlayerManager() { return m_remoteMediaPlayerManager.get(); }
-    Ref<RemoteMediaPlayerManager> protectedRemoteMediaPlayerManager();
 #endif
 #if ENABLE(GPU_PROCESS) && HAVE(AVASSETREADER)
     RemoteImageDecoderAVFManager& remoteImageDecoderAVFManager() { return m_remoteImageDecoderAVFManager.get(); }
-    Ref<RemoteImageDecoderAVFManager> protectedRemoteImageDecoderAVFManager();
 #endif
     WebBroadcastChannelRegistry& broadcastChannelRegistry() { return m_broadcastChannelRegistry.get(); }
     WebCookieJar& cookieJar() { return m_cookieJar.get(); }
-    Ref<WebCookieJar> protectedCookieJar();
     WebSocketChannelManager& webSocketChannelManager() { return m_webSocketChannelManager; }
 
     Ref<WebNotificationManager> protectedNotificationManager();

@@ -127,15 +127,12 @@ public:
     ScopeExit<Function<void()>> makeInvalidator();
 
     WebPage* page() const;
-    RefPtr<WebPage> protectedPage() const;
 
     static WebFrame* webFrame(std::optional<WebCore::FrameIdentifier>);
     static RefPtr<WebFrame> fromCoreFrame(const WebCore::Frame&);
     WebCore::LocalFrame* coreLocalFrame() const;
-    RefPtr<WebCore::LocalFrame> protectedCoreLocalFrame() const;
     WebCore::RemoteFrame* coreRemoteFrame() const;
     WebCore::Frame* coreFrame() const;
-    RefPtr<WebCore::Frame> protectedCoreFrame() const;
 
     void createProvisionalFrame(ProvisionalFrameCreationParameters&&);
     void commitProvisionalFrame();
@@ -244,7 +241,6 @@ public:
 #endif
 
     WebLocalFrameLoaderClient* localFrameLoaderClient() const;
-    RefPtr<WebLocalFrameLoaderClient> protectedLocalFrameLoaderClient() const;
 
     WebRemoteFrameClient* remoteFrameClient() const;
     WebFrameLoaderClient* frameLoaderClient() const;

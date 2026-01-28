@@ -274,7 +274,7 @@ void InjectedBundle::setUserStyleSheetLocation(const String& location)
 void InjectedBundle::removeAllWebNotificationPermissions(WebPage* page)
 {
 #if ENABLE(NOTIFICATIONS)
-    page->protectedNotificationPermissionRequestManager()->removeAllPermissionsForTesting();
+    protect(page->notificationPermissionRequestManager())->removeAllPermissionsForTesting();
 #else
     UNUSED_PARAM(page);
 #endif

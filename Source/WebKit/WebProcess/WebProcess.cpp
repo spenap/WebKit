@@ -441,7 +441,7 @@ void WebProcess::initializeConnection(IPC::Connection* connection)
     connection->setShouldExitOnSyncMessageSendFailure(true);
 #endif
 
-    protectedEventDispatcher()->initializeConnection(*connection);
+    protect(eventDispatcher())->initializeConnection(*connection);
 #if PLATFORM(IOS_FAMILY)
     Ref { m_viewUpdateDispatcher }->initializeConnection(*connection);
 #endif // PLATFORM(IOS_FAMILY)
@@ -592,7 +592,7 @@ void WebProcess::initializeWebProcess(WebProcessCreationParameters&& parameters,
     for (auto& supplement : m_supplements.values())
         supplement->initialize(parameters);
 #if ENABLE(GPU_PROCESS) && ENABLE(VIDEO)
-    protectedRemoteMediaPlayerManager()->initialize(parameters);
+    protect(remoteMediaPlayerManager())->initialize(parameters);
 #endif
 
     setCacheModel(parameters.cacheModel);
@@ -836,13 +836,6 @@ void WebProcess::setHasSuspendedPageProxy(bool hasSuspendedPageProxy)
     ASSERT(m_hasSuspendedPageProxy != hasSuspendedPageProxy);
     m_hasSuspendedPageProxy = hasSuspendedPageProxy;
 }
-
-#if ENABLE(GPU_PROCESS) && HAVE(AVASSETREADER)
-Ref<RemoteImageDecoderAVFManager> WebProcess::protectedRemoteImageDecoderAVFManager()
-{
-    return m_remoteImageDecoderAVFManager;
-}
-#endif
 
 void WebProcess::setIsInProcessCache(bool isInProcessCache, CompletionHandler<void()>&& completionHandler)
 {
@@ -1513,19 +1506,9 @@ WebFileSystemStorageConnection& WebProcess::fileSystemStorageConnection()
     return *m_fileSystemStorageConnection;
 }
 
-Ref<WebFileSystemStorageConnection> WebProcess::protectedFileSystemStorageConnection()
-{
-    return fileSystemStorageConnection();
-}
-
 WebLoaderStrategy& WebProcess::webLoaderStrategy()
 {
     return m_webLoaderStrategy;
-}
-
-Ref<WebLoaderStrategy> WebProcess::protectedWebLoaderStrategy()
-{
-    return m_webLoaderStrategy.get();
 }
 
 #if ENABLE(GPU_PROCESS)
@@ -1590,11 +1573,6 @@ LibWebRTCCodecs& WebProcess::libWebRTCCodecs()
     if (!m_libWebRTCCodecs)
         m_libWebRTCCodecs = LibWebRTCCodecs::create();
     return *m_libWebRTCCodecs;
-}
-
-Ref<LibWebRTCCodecs> WebProcess::protectedLibWebRTCCodecs()
-{
-    return libWebRTCCodecs();
 }
 #endif
 
@@ -2230,11 +2208,6 @@ LibWebRTCNetwork& WebProcess::libWebRTCNetwork()
         lazyInitialize(m_libWebRTCNetwork, makeUniqueWithoutRefCountedCheck<LibWebRTCNetwork>(*this));
     return *m_libWebRTCNetwork;
 }
-
-Ref<LibWebRTCNetwork> WebProcess::protectedLibWebRTCNetwork()
-{
-    return libWebRTCNetwork();
-}
 #endif
 
 void WebProcess::establishRemoteWorkerContextConnectionToNetworkProcess(RemoteWorkerType workerType, PageGroupIdentifier pageGroupID, WebPageProxyIdentifier webPageProxyID, PageIdentifier pageID, const WebPreferencesStore& store, Site&& site, std::optional<ScriptExecutionContextIdentifier> serviceWorkerPageIdentifier, RemoteWorkerInitializationData&& initializationData, CompletionHandler<void()>&& completionHandler)
@@ -2407,7 +2380,7 @@ void WebProcess::setAppBadge(WebCore::Frame* frame, const WebCore::SecurityOrigi
 void WebProcess::displayDidRefresh(uint32_t displayID, const DisplayUpdate& displayUpdate)
 {
     ASSERT(RunLoop::isMain());
-    protectedEventDispatcher()->notifyScrollingTreesDisplayDidRefresh(displayID);
+    protect(eventDispatcher())->notifyScrollingTreesDisplayDidRefresh(displayID);
     DisplayRefreshMonitorManager::sharedManager().displayDidRefresh(displayID, displayUpdate);
 }
 #endif
@@ -2490,7 +2463,7 @@ void WebProcess::setUseGPUProcessForMedia(bool useGPUProcessForMedia)
     auto& cdmFactories = CDMFactory::registeredFactories();
     cdmFactories.clear();
     if (useGPUProcessForMedia)
-        protectedCDMFactory()->registerFactory(cdmFactories);
+        protect(cdmFactory())->registerFactory(cdmFactories);
     else
         CDMFactory::platformRegisterFactories(cdmFactories);
 #endif
@@ -2511,7 +2484,7 @@ void WebProcess::setUseGPUProcessForMedia(bool useGPUProcessForMedia)
 
 #if ENABLE(LEGACY_ENCRYPTED_MEDIA)
     if (useGPUProcessForMedia)
-        protectedLegacyCDMFactory()->registerFactory();
+        protect(legacyCDMFactory())->registerFactory();
     else
         LegacyCDM::resetFactories();
 #endif
@@ -2610,22 +2583,12 @@ RemoteLegacyCDMFactory& WebProcess::legacyCDMFactory()
 {
     return *supplement<RemoteLegacyCDMFactory>();
 }
-
-Ref<RemoteLegacyCDMFactory> WebProcess::protectedLegacyCDMFactory()
-{
-    return legacyCDMFactory();
-}
 #endif
 
 #if ENABLE(GPU_PROCESS) && ENABLE(ENCRYPTED_MEDIA)
 RemoteCDMFactory& WebProcess::cdmFactory()
 {
     return *supplement<RemoteCDMFactory>();
-}
-
-Ref<RemoteCDMFactory> WebProcess::protectedCDMFactory()
-{
-    return cdmFactory();
 }
 #endif
 
@@ -2711,18 +2674,6 @@ void WebProcess::enableMediaPlayback()
 #if ENABLE(ROUTING_ARBITRATION)
     lazyInitialize(m_routingArbitrator, makeUniqueWithoutRefCountedCheck<AudioSessionRoutingArbitrator>(*this));
 #endif
-}
-
-#if ENABLE(GPU_PROCESS) && ENABLE(VIDEO)
-Ref<RemoteMediaPlayerManager> WebProcess::protectedRemoteMediaPlayerManager()
-{
-    return m_remoteMediaPlayerManager;
-}
-#endif
-
-Ref<WebCookieJar> WebProcess::protectedCookieJar()
-{
-    return m_cookieJar;
 }
 
 #if ENABLE(CONTENT_EXTENSIONS)

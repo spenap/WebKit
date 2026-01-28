@@ -214,11 +214,6 @@ Page* PDFPluginBase::page() const
     return nullptr;
 }
 
-RefPtr<WebCore::GraphicsLayer> PDFPluginBase::protectedGraphicsLayer() const
-{
-    return graphicsLayer();
-}
-
 void PDFPluginBase::setView(PluginView& view)
 {
     ASSERT(!m_view);
@@ -293,7 +288,7 @@ void PDFPluginBase::notifySelectionChanged()
     if (!page)
         return;
 
-    page->didChangeSelection(*frame->protectedCoreLocalFrame());
+    page->didChangeSelection(*protect(frame->coreLocalFrame()));
 }
 
 NSData *PDFPluginBase::originalData() const
@@ -627,7 +622,7 @@ void PDFPluginBase::startByteRangeRequest(NetscapePlugInStreamLoaderClient& stre
     resourceRequest.setHTTPHeaderField(HTTPHeaderName::Range, makeString("bytes="_s, position, '-', position + count - 1));
     resourceRequest.setCachePolicy(ResourceRequestCachePolicy::DoNotUseAnyCache);
 
-    WebProcess::singleton().protectedWebLoaderStrategy()->schedulePluginStreamLoad(*coreFrame, streamLoaderClient, WTF::move(resourceRequest), [incrementalLoader = Ref { *m_incrementalLoader }, requestIdentifier] (RefPtr<NetscapePlugInStreamLoader>&& streamLoader) {
+    protect(WebProcess::singleton().webLoaderStrategy())->schedulePluginStreamLoad(*coreFrame, streamLoaderClient, WTF::move(resourceRequest), [incrementalLoader = Ref { *m_incrementalLoader }, requestIdentifier] (RefPtr<NetscapePlugInStreamLoader>&& streamLoader) {
         incrementalLoader->streamLoaderDidStart(requestIdentifier, WTF::move(streamLoader));
     });
 }
@@ -692,7 +687,7 @@ void PDFPluginBase::addArchiveResource()
 
     RetainPtr data = originalData();
     auto resource = ArchiveResource::create(SharedBuffer::create(data.get()), view->mainResourceURL(), "application/pdf"_s, String(), String(), synthesizedResponse);
-    view->protectedFrame()->protectedDocument()->protectedLoader()->addArchiveResource(resource.releaseNonNull());
+    protect(view->frame())->protectedDocument()->protectedLoader()->addArchiveResource(resource.releaseNonNull());
 }
 
 void PDFPluginBase::tryRunScriptsInPDFDocument()
@@ -1146,7 +1141,7 @@ void PDFPluginBase::wantsWheelEventsChanged()
 void PDFPluginBase::print()
 {
     if (RefPtr page = this->page())
-        page->chrome().print(*protectedFrame()->protectedCoreLocalFrame());
+        page->chrome().print(*protect(protectedFrame()->coreLocalFrame()));
 }
 
 std::optional<PageIdentifier> PDFPluginBase::pageIdentifier() const
@@ -1270,7 +1265,7 @@ void PDFPluginBase::updateHUDLocation()
 {
     if (!shouldShowHUD())
         return;
-    protectedFrame()->protectedPage()->updatePDFHUDLocation(*this, frameForHUDInRootViewCoordinates());
+    protect(protectedFrame()->page())->updatePDFHUDLocation(*this, frameForHUDInRootViewCoordinates());
 }
 
 IntRect PDFPluginBase::frameForHUDInRootViewCoordinates() const
@@ -1405,13 +1400,6 @@ void PDFPluginBase::navigateToURL(const URL& url, std::optional<PlatformMouseEve
 
     coreFrame->loader().changeLocation(url, emptyAtom(), coreEvent.get(), ReferrerPolicy::NoReferrer, ShouldOpenExternalURLsPolicy::ShouldAllow);
 }
-
-#if PLATFORM(MAC)
-RefPtr<PDFPluginAnnotation> PDFPluginBase::protectedActiveAnnotation() const
-{
-    return m_activeAnnotation;
-}
-#endif
 
 id PDFPluginBase::accessibilityAssociatedPluginParentForElement(Element* element) const
 {

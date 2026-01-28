@@ -238,7 +238,7 @@ id WebProcess::accessibilityFocusedUIElement()
             RefPtr page = WebProcess::singleton().focusedWebPage();
             if (!page || !page->accessibilityRemoteObject())
                 return nil;
-            return [page->protectedAccessibilityRemoteObject() accessibilityFocusedUIElement];
+            return [protect(page->accessibilityRemoteObject()) accessibilityFocusedUIElement];
         });
     };
 

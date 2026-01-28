@@ -265,7 +265,7 @@ void WebPage::performDictionaryLookupAtLocation(const FloatPoint& floatPoint)
     }
 #endif
     
-    RefPtr localMainFrame = protectedCorePage()->localMainFrame();
+    RefPtr localMainFrame = protect(corePage())->localMainFrame();
     if (!localMainFrame)
         return;
     // Find the frame the point is over.
@@ -543,7 +543,7 @@ void WebPage::resolveAccessibilityHitTestForTesting(WebCore::FrameIdentifier fra
     if (!webFrame)
         return completionHandler("NULL"_s);
 #if PLATFORM(MAC)
-    if (RetainPtr coreObject = [m_mockAccessibilityElement accessibilityRootObjectWrapper:webFrame->protectedCoreLocalFrame().get()]) {
+    if (RetainPtr coreObject = [m_mockAccessibilityElement accessibilityRootObjectWrapper:protect(webFrame->coreLocalFrame()).get()]) {
         if (RetainPtr hitTestResult = [coreObject accessibilityHitTest:point]) {
             ALLOW_DEPRECATED_DECLARATIONS_BEGIN
             completionHandler([hitTestResult accessibilityAttributeValue:@"AXInfoStringForTesting"]);
@@ -569,7 +569,7 @@ void WebPage::getAccessibilityWebProcessDebugInfo(CompletionHandler<void(WebCore
     isAXThreadInitialized = WebCore::AXObjectCache::isAXThreadInitialized();
 #endif
 
-    if (std::optional treeData = protectedCorePage()->accessibilityTreeData(IncludeDOMInfo::No)) {
+    if (std::optional treeData = protect(corePage())->accessibilityTreeData(IncludeDOMInfo::No)) {
         completionHandler({ WebCore::AXObjectCache::accessibilityEnabled(), isAXThreadInitialized, WTF::move(treeData->liveTree), WTF::move(treeData->isolatedTree), WTF::move(treeData->warnings), [m_mockAccessibilityElement remoteTokenHash], [accessibilityRemoteTokenData() hash] });
         return;
     }
@@ -597,7 +597,7 @@ WebPaymentCoordinator* WebPage::paymentCoordinator()
 
 void WebPage::getContentsAsAttributedString(CompletionHandler<void(const WebCore::AttributedString&)>&& completionHandler)
 {
-    RefPtr localFrame = protectedCorePage()->localMainFrame();
+    RefPtr localFrame = protect(corePage())->localMainFrame();
     completionHandler(localFrame ? attributedString(makeRangeSelectingNodeContents(*localFrame->protectedDocument()), IgnoreUserSelectNone::No) : AttributedString { });
 }
 
@@ -792,7 +792,7 @@ void WebPage::getPDFFirstPageSize(WebCore::FrameIdentifier frameID, CompletionHa
         return completionHandler({ });
 
 #if ENABLE(PDF_PLUGIN)
-    if (RefPtr pluginView = pluginViewForFrame(webFrame->protectedCoreLocalFrame().get()))
+    if (RefPtr pluginView = pluginViewForFrame(protect(webFrame->coreLocalFrame()).get()))
         return completionHandler(pluginView->pdfDocumentSizeForPrinting());
 #endif
 
@@ -1041,45 +1041,45 @@ void WebPage::setMediaEnvironment(const String& mediaEnvironment)
 #if ENABLE(WRITING_TOOLS)
 void WebPage::willBeginWritingToolsSession(const std::optional<WebCore::WritingTools::Session>& session, CompletionHandler<void(const Vector<WebCore::WritingTools::Context>&)>&& completionHandler)
 {
-    protectedCorePage()->willBeginWritingToolsSession(session, WTF::move(completionHandler));
+    protect(corePage())->willBeginWritingToolsSession(session, WTF::move(completionHandler));
 }
 
 void WebPage::didBeginWritingToolsSession(const WebCore::WritingTools::Session& session, const Vector<WebCore::WritingTools::Context>& contexts)
 {
-    protectedCorePage()->didBeginWritingToolsSession(session, contexts);
+    protect(corePage())->didBeginWritingToolsSession(session, contexts);
 }
 
 void WebPage::proofreadingSessionDidReceiveSuggestions(const WebCore::WritingTools::Session& session, const Vector<WebCore::WritingTools::TextSuggestion>& suggestions, const WebCore::CharacterRange& processedRange, const WebCore::WritingTools::Context& context, bool finished, CompletionHandler<void()>&& completionHandler)
 {
-    protectedCorePage()->proofreadingSessionDidReceiveSuggestions(session, suggestions, processedRange, context, finished);
+    protect(corePage())->proofreadingSessionDidReceiveSuggestions(session, suggestions, processedRange, context, finished);
     completionHandler();
 }
 
 void WebPage::proofreadingSessionDidUpdateStateForSuggestion(const WebCore::WritingTools::Session& session, WebCore::WritingTools::TextSuggestion::State state, const WebCore::WritingTools::TextSuggestion& suggestion, const WebCore::WritingTools::Context& context)
 {
-    protectedCorePage()->proofreadingSessionDidUpdateStateForSuggestion(session, state, suggestion, context);
+    protect(corePage())->proofreadingSessionDidUpdateStateForSuggestion(session, state, suggestion, context);
 }
 
 void WebPage::willEndWritingToolsSession(const WebCore::WritingTools::Session& session, bool accepted, CompletionHandler<void()>&& completionHandler)
 {
-    protectedCorePage()->willEndWritingToolsSession(session, accepted);
+    protect(corePage())->willEndWritingToolsSession(session, accepted);
     completionHandler();
 }
 
 void WebPage::didEndWritingToolsSession(const WebCore::WritingTools::Session& session, bool accepted)
 {
-    protectedCorePage()->didEndWritingToolsSession(session, accepted);
+    protect(corePage())->didEndWritingToolsSession(session, accepted);
 }
 
 void WebPage::compositionSessionDidReceiveTextWithReplacementRange(const WebCore::WritingTools::Session& session, const WebCore::AttributedString& attributedText, const WebCore::CharacterRange& range, const WebCore::WritingTools::Context& context, bool finished, CompletionHandler<void()>&& completionHandler)
 {
-    protectedCorePage()->compositionSessionDidReceiveTextWithReplacementRange(session, attributedText, range, context, finished);
+    protect(corePage())->compositionSessionDidReceiveTextWithReplacementRange(session, attributedText, range, context, finished);
     completionHandler();
 }
 
 void WebPage::writingToolsSessionDidReceiveAction(const WritingTools::Session& session, WebCore::WritingTools::Action action)
 {
-    protectedCorePage()->writingToolsSessionDidReceiveAction(session, action);
+    protect(corePage())->writingToolsSessionDidReceiveAction(session, action);
 }
 
 void WebPage::proofreadingSessionShowDetailsForSuggestionWithIDRelativeToRect(const WebCore::WritingTools::TextSuggestion::ID& replacementID, WebCore::IntRect rect)
@@ -1147,37 +1147,37 @@ void WebPage::updateUnderlyingTextVisibilityForTextAnimationID(const WTF::UUID& 
 
 void WebPage::proofreadingSessionSuggestionTextRectsInRootViewCoordinates(const WebCore::CharacterRange& enclosingRangeRelativeToSessionRange, CompletionHandler<void(Vector<FloatRect>&&)>&& completionHandler) const
 {
-    auto rects = protectedCorePage()->proofreadingSessionSuggestionTextRectsInRootViewCoordinates(enclosingRangeRelativeToSessionRange);
+    auto rects = protect(corePage())->proofreadingSessionSuggestionTextRectsInRootViewCoordinates(enclosingRangeRelativeToSessionRange);
     completionHandler(WTF::move(rects));
 }
 
 void WebPage::updateTextVisibilityForActiveWritingToolsSession(const WebCore::CharacterRange& rangeRelativeToSessionRange, bool visible, const WTF::UUID& identifier, CompletionHandler<void()>&& completionHandler)
 {
-    protectedCorePage()->updateTextVisibilityForActiveWritingToolsSession(rangeRelativeToSessionRange, visible, identifier);
+    protect(corePage())->updateTextVisibilityForActiveWritingToolsSession(rangeRelativeToSessionRange, visible, identifier);
     completionHandler();
 }
 
 void WebPage::textPreviewDataForActiveWritingToolsSession(const WebCore::CharacterRange& rangeRelativeToSessionRange, CompletionHandler<void(RefPtr<WebCore::TextIndicator>&&)>&& completionHandler)
 {
-    RefPtr textIndicator = protectedCorePage()->textPreviewDataForActiveWritingToolsSession(rangeRelativeToSessionRange);
+    RefPtr textIndicator = protect(corePage())->textPreviewDataForActiveWritingToolsSession(rangeRelativeToSessionRange);
     completionHandler(WTF::move(textIndicator));
 }
 
 void WebPage::decorateTextReplacementsForActiveWritingToolsSession(const WebCore::CharacterRange& rangeRelativeToSessionRange, CompletionHandler<void(void)>&& completionHandler)
 {
-    protectedCorePage()->decorateTextReplacementsForActiveWritingToolsSession(rangeRelativeToSessionRange);
+    protect(corePage())->decorateTextReplacementsForActiveWritingToolsSession(rangeRelativeToSessionRange);
     completionHandler();
 }
 
 void WebPage::setSelectionForActiveWritingToolsSession(const WebCore::CharacterRange& rangeRelativeToSessionRange, CompletionHandler<void(void)>&& completionHandler)
 {
-    protectedCorePage()->setSelectionForActiveWritingToolsSession(rangeRelativeToSessionRange);
+    protect(corePage())->setSelectionForActiveWritingToolsSession(rangeRelativeToSessionRange);
     completionHandler();
 }
 
 void WebPage::intelligenceTextAnimationsDidComplete()
 {
-    protectedCorePage()->intelligenceTextAnimationsDidComplete();
+    protect(corePage())->intelligenceTextAnimationsDidComplete();
 }
 
 void WebPage::didEndPartialIntelligenceTextAnimation()
@@ -1510,11 +1510,6 @@ bool WebPage::shouldFallbackToWebContentAXObjectForMainFramePlugin() const
 WKAccessibilityWebPageObject* WebPage::accessibilityRemoteObject()
 {
     return m_mockAccessibilityElement.get();
-}
-
-RetainPtr<WKAccessibilityWebPageObject> WebPage::protectedAccessibilityRemoteObject()
-{
-    return accessibilityRemoteObject();
 }
 
 RetainPtr<PDFDocument> WebPage::pdfDocumentForPrintingFrame(LocalFrame* coreFrame)
@@ -1979,7 +1974,7 @@ void WebPage::removeTextPlaceholder(const ElementContext& placeholder, Completio
 
 void WebPage::setObscuredContentInsetsFenced(const FloatBoxExtent& obscuredContentInsets, const WTF::MachSendRight& machSendRight)
 {
-    protectedDrawingArea()->addFence(machSendRight);
+    protect(drawingArea())->addFence(machSendRight);
     setObscuredContentInsets(obscuredContentInsets);
 }
 
@@ -2090,13 +2085,6 @@ bool WebPage::isSpeaking() const
     auto [result] = sendResult.takeReplyOr(false);
     return result;
 }
-
-#if ENABLE(WK_WEB_EXTENSIONS)
-RefPtr<WebExtensionControllerProxy> WebPage::protectedWebExtensionControllerProxy() const
-{
-    return webExtensionControllerProxy();
-}
-#endif
 
 } // namespace WebKit
 

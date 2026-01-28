@@ -211,12 +211,12 @@ static RetainPtr<NSArray> collectIcons(WebCore::LocalFrame* frame, OptionSet<Web
 
 - (NSArray *)appleTouchIconURLs
 {
-    return collectIcons(protectedFrame(self)->protectedCoreLocalFrame().get(), { WebCore::LinkIconType::TouchIcon, WebCore::LinkIconType::TouchPrecomposedIcon }).autorelease();
+    return collectIcons(protect(protectedFrame(self)->coreLocalFrame()).get(), { WebCore::LinkIconType::TouchIcon, WebCore::LinkIconType::TouchPrecomposedIcon }).autorelease();
 }
 
 - (NSArray *)faviconURLs
 {
-    return collectIcons(protectedFrame(self)->protectedCoreLocalFrame().get(), WebCore::LinkIconType::Favicon).autorelease();
+    return collectIcons(protect(protectedFrame(self)->coreLocalFrame()).get(), WebCore::LinkIconType::Favicon).autorelease();
 }
 
 - (WKWebProcessPlugInFrame *)_parentFrame
@@ -230,7 +230,7 @@ static RetainPtr<NSArray> collectIcons(WebCore::LocalFrame* frame, OptionSet<Web
     if (!frame->isMainFrame())
         return false;
 
-    return frame->protectedPage()->mainFrameHasCustomContentProvider();
+    return protect(frame->page())->mainFrameHasCustomContentProvider();
 }
 
 - (NSArray *)_certificateChain

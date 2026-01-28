@@ -57,7 +57,7 @@ Ref<RemoteWebInspectorUI> RemoteWebInspectorUI::create(WebPage& page)
 
 RemoteWebInspectorUI::RemoteWebInspectorUI(WebPage& page)
     : m_page(page)
-    , m_frontendAPIDispatcher(InspectorFrontendAPIDispatcher::create(*page.protectedCorePage()))
+    , m_frontendAPIDispatcher(InspectorFrontendAPIDispatcher::create(*protect(page.corePage())))
 {
 }
 
@@ -72,7 +72,7 @@ void RemoteWebInspectorUI::initialize(DebuggableInfoData&& debuggableInfo, const
     m_debuggableInfo = WTF::move(debuggableInfo);
     m_backendCommandsURL = backendCommandsURL;
 
-    protectedWebPage()->protectedCorePage()->inspectorController().setInspectorFrontendClient(this);
+    protect(protectedWebPage()->corePage())->inspectorController().setInspectorFrontendClient(this);
 
     m_frontendAPIDispatcher->reset();
     m_frontendAPIDispatcher->dispatchCommandWithResultAsync("setDockingUnavailable"_s, { JSON::Value::create(true) });
@@ -98,7 +98,7 @@ void RemoteWebInspectorUI::windowObjectCleared()
     if (RefPtr frontendHost = m_frontendHost)
         frontendHost->disconnectClient();
 
-    m_frontendHost = InspectorFrontendHost::create(this, protectedWebPage()->protectedCorePage().get());
+    m_frontendHost = InspectorFrontendHost::create(this, protect(protectedWebPage()->corePage()).get());
     RefPtr { m_frontendHost }->addSelfToGlobalObjectInWorld(mainThreadNormalWorldSingleton());
 }
 
@@ -173,7 +173,7 @@ void RemoteWebInspectorUI::bringToFront()
 
 void RemoteWebInspectorUI::closeWindow()
 {
-    protectedWebPage()->protectedCorePage()->inspectorController().setInspectorFrontendClient(nullptr);
+    protect(protectedWebPage()->corePage())->inspectorController().setInspectorFrontendClient(nullptr);
 
 #if ENABLE(INSPECTOR_EXTENSIONS)
     m_extensionController = nullptr;
@@ -286,7 +286,7 @@ bool RemoteWebInspectorUI::supportsDiagnosticLogging()
 
 void RemoteWebInspectorUI::logDiagnosticEvent(const String& eventName,  const DiagnosticLoggingClient::ValueDictionary& dictionary)
 {
-    protectedWebPage()->protectedCorePage()->checkedDiagnosticLoggingClient()->logDiagnosticMessageWithValueDictionary(eventName, "Remote Web Inspector Frontend Diagnostics"_s, dictionary, ShouldSample::No);
+    protect(protectedWebPage()->corePage())->checkedDiagnosticLoggingClient()->logDiagnosticMessageWithValueDictionary(eventName, "Remote Web Inspector Frontend Diagnostics"_s, dictionary, ShouldSample::No);
 }
 
 void RemoteWebInspectorUI::setDiagnosticLoggingAvailable(bool available)

@@ -59,7 +59,7 @@ void WebURLSchemeHandlerProxy::startNewTask(ResourceLoader& loader, WebFrame& we
     auto result = m_tasks.add(*loader.identifier(), task);
     ASSERT_UNUSED(result, result.isNewEntry);
 
-    WebProcess::singleton().protectedWebLoaderStrategy()->addURLSchemeTaskProxy(task);
+    protect(WebProcess::singleton().webLoaderStrategy())->addURLSchemeTaskProxy(task);
     task->startLoading();
 }
 
@@ -120,7 +120,7 @@ RefPtr<WebURLSchemeTaskProxy> WebURLSchemeHandlerProxy::removeTask(WebCore::Reso
     if (!task)
         return nullptr;
 
-    WebProcess::singleton().protectedWebLoaderStrategy()->removeURLSchemeTaskProxy(*task);
+    protect(WebProcess::singleton().webLoaderStrategy())->removeURLSchemeTaskProxy(*task);
 
     return task;
 }

@@ -599,7 +599,6 @@ public:
     static WebPage* fromCorePage(WebCore::Page&);
 
     WebCore::Page* corePage() const { return m_page.get(); }
-    RefPtr<WebCore::Page> protectedCorePage() const;
     WebCore::PageIdentifier identifier() const { return m_identifier; }
     inline StorageNamespaceIdentifier sessionStorageNamespaceIdentifier() const;
     PAL::SessionID sessionID() const;
@@ -610,11 +609,9 @@ public:
     inline WebCore::IntRect bounds() const;
 
     DrawingArea* drawingArea() const { return m_drawingArea.get(); }
-    RefPtr<DrawingArea> protectedDrawingArea() const;
 
 #if ENABLE(ASYNC_SCROLLING)
     WebCore::ScrollingCoordinator* scrollingCoordinator() const;
-    RefPtr<WebCore::ScrollingCoordinator> protectedScrollingCoordinator() const;
 #endif
 
 #if HAVE(NSVIEW_CORNER_CONFIGURATION)
@@ -675,7 +672,6 @@ public:
     enum class LazyCreationPolicy { UseExistingOnly, CreateIfNeeded };
 
     WebInspectorBackend* inspector(LazyCreationPolicy = LazyCreationPolicy::CreateIfNeeded);
-    RefPtr<WebInspectorBackend> protectedInspector();
     WebInspectorUI* inspectorUI();
     RemoteWebInspectorUI* remoteInspectorUI();
     bool isInspectorPage() { return !!m_inspectorUI || !!m_remoteInspectorUI; }
@@ -684,13 +680,11 @@ public:
 
 #if PLATFORM(IOS_FAMILY) || (PLATFORM(MAC) && ENABLE(VIDEO_PRESENTATION_MODE))
     PlaybackSessionManager& playbackSessionManager();
-    Ref<PlaybackSessionManager> protectedPlaybackSessionManager();
     void videoControlsManagerDidChange();
 #endif
 
 #if ENABLE(VIDEO_PRESENTATION_MODE)
     VideoPresentationManager& videoPresentationManager();
-    Ref<VideoPresentationManager> protectedVideoPresentationManager();
 
     void startPlayingPredominantVideo(CompletionHandler<void(bool)>&&);
 #endif
@@ -704,7 +698,6 @@ public:
 
 #if ENABLE(FULLSCREEN_API)
     WebFullScreenManager& fullScreenManager();
-    Ref<WebFullScreenManager> protectedFullscreenManager();
 
     enum class IsInFullscreenMode : bool { No, Yes };
     void isInFullscreenChanged(IsInFullscreenMode);
@@ -1209,13 +1202,11 @@ public:
     void swipeAnimationDidEnd();
 
     NotificationPermissionRequestManager* notificationPermissionRequestManager();
-    RefPtr<NotificationPermissionRequestManager> protectedNotificationPermissionRequestManager();
 
     void pageDidScroll();
 
 #if ENABLE(CONTEXT_MENUS)
     WebContextMenu& contextMenu();
-    Ref<WebContextMenu> protectedContextMenu();
     RefPtr<WebContextMenu> contextMenuAtPointInWindow(WebCore::FrameIdentifier, const WebCore::DoublePoint&);
 #endif
 
@@ -1272,7 +1263,6 @@ public:
     void registerUIProcessAccessibilityTokens(WebCore::AccessibilityRemoteToken elementToken, WebCore::AccessibilityRemoteToken windowToken);
     void registerRemoteFrameAccessibilityTokens(pid_t, WebCore::AccessibilityRemoteToken, WebCore::FrameIdentifier);
     WKAccessibilityWebPageObject* accessibilityRemoteObject();
-    RetainPtr<WKAccessibilityWebPageObject> protectedAccessibilityRemoteObject();
     WebCore::IntPoint accessibilityRemoteFrameOffset();
     void createMockAccessibilityElement(pid_t);
 #if ENABLE(ACCESSIBILITY_ISOLATED_TREE)
@@ -1765,7 +1755,6 @@ public:
 
 #if ENABLE(WK_WEB_EXTENSIONS) && PLATFORM(COCOA)
     WebExtensionControllerProxy* webExtensionControllerProxy() const { return m_webExtensionController.get(); }
-    RefPtr<WebExtensionControllerProxy> protectedWebExtensionControllerProxy() const;
 #endif
 
     WebCore::UserInterfaceLayoutDirection userInterfaceLayoutDirection() const { return m_userInterfaceLayoutDirection; }
