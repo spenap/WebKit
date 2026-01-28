@@ -5259,7 +5259,7 @@ MediaSourcePrefersDecompressionSession:
 
 MediaSourceUseRemoteAudioVideoRenderer:
   type: bool
-  status: testable
+  status: stable
   category: media
   humanReadableName: "MSE player uses GPU renderer"
   humanReadableDescription: "MSE player uses GPU renderer"
@@ -5268,9 +5268,9 @@ MediaSourceUseRemoteAudioVideoRenderer:
     WebKitLegacy:
       default: false
     WebKit:
-      default: false
+      default: true
     WebCore:
-      default: false
+      default: true
   sharedPreferenceForWebProcess: true
 
 MediaStreamTrackProcessingEnabled:
