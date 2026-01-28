@@ -765,6 +765,7 @@ public:
         PREFERRED_TYPE(bool) unsigned lastChildState : 1;
         PREFERRED_TYPE(bool) unsigned isLink : 1;
         PREFERRED_TYPE(PseudoElementType) unsigned pseudoElementType : PseudoElementTypeBits;
+        unsigned : 22; // Reserved for new pseudo elements
         unsigned pseudoBits : PublicPseudoIDBits;
         unsigned textDecorationLine : TextDecorationLineBits; // Text decorations defined *only* by this element. PREFERRED_TYPE elided to avoid header inclusion.
 
@@ -845,14 +846,16 @@ protected:
 
     const SVGData& svgData() const { return m_svgData; }
 
+    // Non-inherited and inherited flags
+    NonInheritedFlags m_nonInheritedFlags;
+    InheritedFlags m_inheritedFlags;
+
     // Non-inherited data
     DataRef<NonInheritedData> m_nonInheritedData;
-    NonInheritedFlags m_nonInheritedFlags;
 
     // Inherited data
     DataRef<InheritedRareData> m_inheritedRareData;
     DataRef<InheritedData> m_inheritedData;
-    InheritedFlags m_inheritedFlags;
 
     // Non-inherited and inherited data specialized to SVG
     DataRef<SVGData> m_svgData;
