@@ -71,9 +71,7 @@
 #include <wtf/RefPtr.h>
 #include <wtf/TZoneMallocInlines.h>
 #include <wtf/URLParser.h>
-#include <wtf/glib/GRefPtr.h>
 #include <wtf/glib/GSpanExtras.h>
-#include <wtf/glib/GUniquePtr.h>
 #include <wtf/glib/WTFGType.h>
 #include <wtf/text/CString.h>
 
@@ -1462,9 +1460,8 @@ static bool pathIsBlocked(const char* path)
         return true;
 
     GUniquePtr<char*> splitPath(g_strsplit(path, G_DIR_SEPARATOR_S, 3));
-    WTF_ALLOW_UNSAFE_BUFFER_USAGE_BEGIN // GTK/WPE Port
-    return blockedPrefixes.contains(splitPath.get()[1]);
-    WTF_ALLOW_UNSAFE_BUFFER_USAGE_END
+    auto pathElements = unsafeMakeSpan(splitPath.get(), g_strv_length(splitPath.get()));
+    return (pathElements.size() < 2) || blockedPrefixes.contains(pathElements[1]);
 }
 
 /**
