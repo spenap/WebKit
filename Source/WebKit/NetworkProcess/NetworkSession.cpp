@@ -638,7 +638,7 @@ RefPtr<NetworkResourceLoader> NetworkSession::CachedNetworkResourceLoader::takeL
 void NetworkSession::CachedNetworkResourceLoader::expirationTimerFired()
 {
     RefPtr loader = m_loader;
-    CheckedPtr session = loader->protectedConnectionToWebProcess()->networkSession();
+    CheckedPtr session = protect(loader->connectionToWebProcess())->networkSession();
     ASSERT(session);
     if (!session)
         return;
@@ -687,11 +687,6 @@ NetworkLoadScheduler& NetworkSession::networkLoadScheduler()
     if (!m_networkLoadScheduler)
         lazyInitialize(m_networkLoadScheduler, NetworkLoadScheduler::create());
     return *m_networkLoadScheduler;
-}
-
-Ref<NetworkLoadScheduler> NetworkSession::protectedNetworkLoadScheduler()
-{
-    return networkLoadScheduler();
 }
 
 String NetworkSession::attributedBundleIdentifierFromPageIdentifier(WebPageProxyIdentifier identifier) const
@@ -962,14 +957,9 @@ WebCore::ResourceMonitorThrottlerHolder& NetworkSession::resourceMonitorThrottle
     return *m_resourceMonitorThrottler;
 }
 
-Ref<WebCore::ResourceMonitorThrottlerHolder> NetworkSession::protectedResourceMonitorThrottler()
-{
-    return resourceMonitorThrottler();
-}
-
 void NetworkSession::clearResourceMonitorThrottlerData(CompletionHandler<void()>&& completionHandler)
 {
-    protectedResourceMonitorThrottler()->clearAllData(WTF::move(completionHandler));
+    protect(resourceMonitorThrottler())->clearAllData(WTF::move(completionHandler));
 }
 
 #endif

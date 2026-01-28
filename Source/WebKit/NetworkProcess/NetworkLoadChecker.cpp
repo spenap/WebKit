@@ -560,7 +560,7 @@ void NetworkLoadChecker::processContentRuleListsForLoad(ResourceRequest&& reques
         return;
     }
 
-    m_networkProcess->protectedNetworkContentRuleListManager()->contentExtensionsBackend(*m_userContentControllerIdentifier, [weakThis = WeakPtr { *this }, request = WTF::move(request), callback = WTF::move(callback)](auto& backend) mutable {
+    protect(m_networkProcess->networkContentRuleListManager())->contentExtensionsBackend(*m_userContentControllerIdentifier, [weakThis = WeakPtr { *this }, request = WTF::move(request), callback = WTF::move(callback)](auto& backend) mutable {
         RefPtr protectedThis = weakThis.get();
         if (!protectedThis) {
             callback(makeUnexpected(ResourceError { ResourceError::Type::Cancellation }));
@@ -579,11 +579,6 @@ void NetworkLoadChecker::storeRedirectionIfNeeded(const ResourceRequest& request
     if (!m_shouldCaptureExtraNetworkLoadMetrics)
         return;
     m_loadInformation.transactions.append(NetworkTransactionInformation { NetworkTransactionInformation::Type::Redirection, ResourceRequest { request }, ResourceResponse { response }, { } });
-}
-
-Ref<NetworkProcess> NetworkLoadChecker::protectedNetworkProcess()
-{
-    return m_networkProcess;
 }
 
 } // namespace WebKit

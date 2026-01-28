@@ -108,11 +108,6 @@ NetworkProcess& WebSWServerConnection::networkProcess()
     return m_networkConnectionToWebProcess->networkProcess();
 }
 
-Ref<NetworkProcess> WebSWServerConnection::protectedNetworkProcess()
-{
-    return networkProcess();
-}
-
 std::optional<SharedPreferencesForWebProcess> WebSWServerConnection::sharedPreferencesForWebProcess() const
 {
     if (!m_networkConnectionToWebProcess)
@@ -559,7 +554,7 @@ void WebSWServerConnection::registerServiceWorkerClientInternal(WebCore::ClientO
 
     if (contextConnection) {
         auto& connection = downcast<WebSWServerToContextConnection>(*contextConnection);
-        protect(protectedNetworkProcess()->parentProcessConnection())->send(Messages::NetworkProcessProxy::RegisterRemoteWorkerClientProcess { RemoteWorkerType::ServiceWorker, identifier(), connection.webProcessIdentifier() }, 0);
+        protect(protect(networkProcess())->parentProcessConnection())->send(Messages::NetworkProcessProxy::RegisterRemoteWorkerClientProcess { RemoteWorkerType::ServiceWorker, identifier(), connection.webProcessIdentifier() }, 0);
     }
 }
 
@@ -591,7 +586,7 @@ void WebSWServerConnection::unregisterServiceWorkerClient(const ScriptExecutionC
         if (!hasMatchingClient(potentiallyRemovedDomain)) {
             if (RefPtr contextConnection = server->contextConnectionForRegistrableDomain(potentiallyRemovedDomain)) {
                 auto& connection = downcast<WebSWServerToContextConnection>(*contextConnection);
-                protect(protectedNetworkProcess()->parentProcessConnection())->send(Messages::NetworkProcessProxy::UnregisterRemoteWorkerClientProcess { RemoteWorkerType::ServiceWorker, identifier(), connection.webProcessIdentifier() }, 0);
+                protect(protect(networkProcess())->parentProcessConnection())->send(Messages::NetworkProcessProxy::UnregisterRemoteWorkerClientProcess { RemoteWorkerType::ServiceWorker, identifier(), connection.webProcessIdentifier() }, 0);
             }
         }
     }
@@ -807,7 +802,7 @@ PAL::SessionID WebSWServerConnection::sessionID() const
 
 NetworkSession* WebSWServerConnection::session()
 {
-    return protectedNetworkProcess()->networkSession(sessionID());
+    return protect(networkProcess())->networkSession(sessionID());
 }
 
 CheckedPtr<NetworkSession> WebSWServerConnection::checkedSession()

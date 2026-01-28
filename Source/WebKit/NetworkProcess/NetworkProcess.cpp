@@ -216,11 +216,6 @@ AuthenticationManager& NetworkProcess::authenticationManager()
     return *supplement<AuthenticationManager>();
 }
 
-Ref<AuthenticationManager> NetworkProcess::protectedAuthenticationManager()
-{
-    return authenticationManager();
-}
-
 DownloadManager& NetworkProcess::downloadManager()
 {
     return m_downloadManager;
@@ -251,7 +246,7 @@ bool NetworkProcess::dispatchMessage(IPC::Connection& connection, IPC::Decoder& 
 {
 #if ENABLE(CONTENT_EXTENSIONS)
     if (decoder.messageReceiverName() == Messages::NetworkContentRuleListManager::messageReceiverName()) {
-        protectedNetworkContentRuleListManager()->didReceiveMessage(connection, decoder);
+        protect(networkContentRuleListManager())->didReceiveMessage(connection, decoder);
         return true;
     }
 #endif
@@ -1624,11 +1619,11 @@ void NetworkProcess::preconnectTo(PAL::SessionID sessionID, WebPageProxyIdentifi
 
     NetworkLoadParameters parametersForAdditionalPreconnect = parameters;
 
-    session->protectedNetworkLoadScheduler()->startedPreconnectForMainResource(url, userAgent);
+    protect(session->networkLoadScheduler())->startedPreconnectForMainResource(url, userAgent);
     Ref task = PreconnectTask::create(*session, WTF::move(parameters));
     task->start([weakSession = WeakPtr { *session }, url, userAgent, parametersForAdditionalPreconnect = WTF::move(parametersForAdditionalPreconnect)](const WebCore::ResourceError& error, const WebCore::NetworkLoadMetrics& metrics) mutable {
         if (CheckedPtr session = weakSession.get()) {
-            session->protectedNetworkLoadScheduler()->finishedPreconnectForMainResource(url, userAgent, error);
+            protect(session->networkLoadScheduler())->finishedPreconnectForMainResource(url, userAgent, error);
 #if ENABLE(ADDITIONAL_PRECONNECT_ON_HTTP_1X)
             if (equalLettersIgnoringASCIICase(metrics.protocol, "http/1.1"_s)) {
                 auto parameters = parametersForAdditionalPreconnect;

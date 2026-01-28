@@ -201,7 +201,6 @@ public:
     void removeNetworkConnectionToWebProcess(NetworkConnectionToWebProcess&);
 
     AuthenticationManager& authenticationManager();
-    Ref<AuthenticationManager> protectedAuthenticationManager();
     DownloadManager& downloadManager();
     CheckedRef<DownloadManager> checkedDownloadManager();
 
@@ -350,7 +349,6 @@ public:
 
 #if ENABLE(CONTENT_EXTENSIONS)
     NetworkContentRuleListManager& networkContentRuleListManager() { return m_networkContentRuleListManager; }
-    Ref<NetworkContentRuleListManager> protectedNetworkContentRuleListManager() { return m_networkContentRuleListManager; }
 #endif
 
     void syncLocalStorage(CompletionHandler<void()>&&);

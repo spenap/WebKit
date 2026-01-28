@@ -1281,7 +1281,7 @@ void NetworkConnectionToWebProcess::setCaptureExtraNetworkLoadMetricsEnabled(boo
 void NetworkConnectionToWebProcess::clearPageSpecificData(PageIdentifier pageID)
 {
     if (CheckedPtr session = networkSession())
-        session->protectedNetworkLoadScheduler()->clearPageData(pageID);
+        protect(session->networkLoadScheduler())->clearPageData(pageID);
 
     if (CheckedPtr storageSession = m_networkProcess->storageSession(m_sessionID))
         storageSession->clearPageSpecificDataForResourceLoadStatistics(pageID);
@@ -1713,7 +1713,7 @@ void NetworkConnectionToWebProcess::setResourceLoadSchedulingMode(WebCore::PageI
     if (!session)
         return;
 
-    session->protectedNetworkLoadScheduler()->setResourceLoadSchedulingMode(pageIdentifier, mode);
+    protect(session->networkLoadScheduler())->setResourceLoadSchedulingMode(pageIdentifier, mode);
 }
 
 void NetworkConnectionToWebProcess::prioritizeResourceLoads(const Vector<WebCore::ResourceLoaderIdentifier>& loadIdentifiers)
@@ -1732,7 +1732,7 @@ void NetworkConnectionToWebProcess::prioritizeResourceLoads(const Vector<WebCore
             loads.append(networkLoad.releaseNonNull());
     }
 
-    session->protectedNetworkLoadScheduler()->prioritizeLoads(loads);
+    protect(session->networkLoadScheduler())->prioritizeLoads(loads);
 }
 
 RefPtr<NetworkResourceLoader> NetworkConnectionToWebProcess::takeNetworkResourceLoader(WebCore::ResourceLoaderIdentifier resourceLoadIdentifier)
@@ -1879,7 +1879,7 @@ void NetworkConnectionToWebProcess::shouldOffloadIFrameForHost(const String& hos
 {
     CONNECTION_RELEASE_LOG(ResourceMonitoring, "shouldOffloadIFrameForHost: (host=%" SENSITIVE_LOG_STRING ")", host.utf8().data());
     if (CheckedPtr session = networkSession())
-        session->protectedResourceMonitorThrottler()->tryAccess(host, ContinuousApproximateTime::now(), WTF::move(completionHandler));
+        protect(session->resourceMonitorThrottler())->tryAccess(host, ContinuousApproximateTime::now(), WTF::move(completionHandler));
     else
         completionHandler(false);
 }
