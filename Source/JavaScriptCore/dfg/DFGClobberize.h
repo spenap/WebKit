@@ -2416,6 +2416,14 @@ void clobberize(Graph& graph, Node* node, const ReadFunctor& read, const WriteFu
         return;
     }
 
+    case MapOrSetSize: {
+        Edge& mapOrSetEdge = node->child1();
+        AbstractHeapKind heap = (mapOrSetEdge.useKind() == MapObjectUse) ? JSMapFields : JSSetFields;
+        read(heap);
+        def(HeapLocation(MapOrSetSizeLoc, heap, mapOrSetEdge), LazyNode(node));
+        return;
+    }
+
     case SetAdd: {
         Edge& mapEdge = node->child1();
         Edge& keyEdge = node->child2();

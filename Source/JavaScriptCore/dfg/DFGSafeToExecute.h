@@ -323,6 +323,7 @@ bool safeToExecute(AbstractStateType& state, Graph& graph, Node* node, bool igno
     case ToLowerCase:
     case MapGet:
     case LoadMapValue:
+    case MapOrSetSize:
     case MapStorage:
     case MapStorageOrSentinel:
     case MapIterationNext:

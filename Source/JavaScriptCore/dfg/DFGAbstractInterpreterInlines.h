@@ -1656,6 +1656,10 @@ bool AbstractInterpreter<AbstractStateType>::executeEffects(unsigned clobberLimi
     case MapSet:
         break;
 
+    case MapOrSetSize:
+        setTypeForNode(node, SpecInt32Only);
+        break;
+
     case MapGet:
         clearForNode(node);
         break;

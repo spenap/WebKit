@@ -3082,6 +3082,16 @@ private:
             break;
         }
 
+        case MapOrSetSize: {
+            if (node->child1().useKind() == MapObjectUse)
+                fixEdge<MapObjectUse>(node->child1());
+            else {
+                ASSERT(node->child1().useKind() == SetObjectUse);
+                fixEdge<SetObjectUse>(node->child1());
+            }
+            break;
+        }
+
         case SetAdd: {
             fixEdge<SetObjectUse>(node->child1());
             fixEdge<Int32Use>(node->child3());

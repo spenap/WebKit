@@ -3963,6 +3963,10 @@ void SpeculativeJIT::compile(Node* node)
         compileExtractValueFromWeakMapGet(node);
         break;
 
+    case MapOrSetSize:
+        compileMapOrSetSize(node);
+        break;
+
     case SetAdd:
         compileSetAdd(node);
         break;

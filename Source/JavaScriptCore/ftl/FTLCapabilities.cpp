@@ -290,6 +290,7 @@ inline CapabilityLevel canCompile(Node* node)
     case MapIterationEntry:
     case MapIterationEntryKey:
     case MapIterationEntryValue:
+    case MapOrSetSize:
     case MapStorage:
     case MapStorageOrSentinel:
     case MapIteratorNext:

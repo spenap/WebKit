@@ -596,6 +596,7 @@ namespace JSC { namespace DFG {
     macro(MapIterationEntry, NodeResultJS) \
     macro(MapIterationEntryKey, NodeResultInt32) \
     macro(MapIterationEntryValue, NodeResultJS) \
+    macro(MapOrSetSize, NodeResultInt32) \
     macro(SetAdd, NodeMustGenerate) \
     macro(MapSet, NodeMustGenerate | NodeHasVarArgs) \
     macro(MapOrSetDelete, NodeMustGenerate | NodeResultBoolean) \

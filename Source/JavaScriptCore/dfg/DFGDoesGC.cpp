@@ -276,6 +276,7 @@ bool doesGC(Graph& graph, Node* node)
     case DataViewSet:
     case PutByOffset:
     case WeakMapGet:
+    case MapOrSetSize:
     case NumberIsNaN:
     case NumberIsFinite:
     case NumberIsSafeInteger:

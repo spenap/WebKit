@@ -1132,6 +1132,7 @@ private:
 
         case MapHash:
         case MapIterationEntry:
+        case MapOrSetSize:
             setPrediction(SpecInt32Only);
             break;
 
