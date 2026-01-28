@@ -422,6 +422,9 @@ void GPUConnectionToWebProcess::didClose(IPC::Connection& connection)
 {
     assertIsMainThread();
 
+    if (m_isActiveNowPlayingProcess)
+        clearNowPlayingInfo();
+
 #if ENABLE(ROUTING_ARBITRATION) && HAVE(AVAUDIO_ROUTING_ARBITER)
     if (m_routingArbitrator)
         m_routingArbitrator->processDidTerminate();
