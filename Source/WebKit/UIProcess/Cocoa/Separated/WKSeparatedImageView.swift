@@ -41,7 +41,7 @@ extension WKSeparatedImageView {
             self.portalEntity?.components[ImagePresentationComponent.self]?.desiredViewingMode =
                 desiredViewingModeSpatial ? .spatial3D : .mono
             if let imageHash = self.imageHash {
-                ImagePresentationCache.shared.updateDesiredViewingMode(for: imageHash, desiredViewingModeSpatial)
+                ImagePresentationCache.shared[imageHash]?.desiredViewingModeSpatial = desiredViewingModeSpatial
             }
             #endif
         }
