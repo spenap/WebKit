@@ -606,7 +606,6 @@ style/ChildChangeInvalidation.h
 style/ClassChangeInvalidation.cpp
 style/ContainerQueryEvaluator.cpp
 style/ElementRuleCollector.cpp
-style/IdChangeInvalidation.cpp
 style/InlineTextBoxStyle.cpp
 style/MatchResultCache.cpp
 style/MatchedDeclarationsCache.cpp
