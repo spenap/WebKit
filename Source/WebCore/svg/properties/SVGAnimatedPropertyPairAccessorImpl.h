@@ -49,7 +49,7 @@ public:
     constexpr static const SVGMemberAccessor<OwnerType>& singleton() { return Base::template singleton<SVGAnimatedAngleOrientAccessor, property1, property2>(); }
 
 private:
-    void setDirty(const OwnerType& owner, SVGAnimatedProperty& animatedProperty) const final
+    void setDirty(const OwnerType& owner, SVGAnimatedPropertyBase& animatedProperty) const final
     {
         auto type = property2(owner)->baseVal();
         if (m_accessor1.matches(owner, animatedProperty) && type != SVGMarkerOrientAngle)
