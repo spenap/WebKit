@@ -326,14 +326,11 @@ style/InlineTextBoxStyle.cpp
 style/MatchResultCache.cpp
 style/StyleAdjuster.cpp
 style/StyleBuilder.cpp
-style/StyleBuilderCustom.h
 style/StyleBuilderStateInlines.h
 style/StyleDifference.cpp
 style/StyleExtractor.cpp
 style/StyleExtractorCustom.h
-style/StyleInvalidationFunctions.h
 style/StylePendingResources.cpp
-style/StyleRelations.cpp
 style/StyleResolveForDocument.cpp
 style/StyleResolver.cpp
 style/StyleScope.cpp

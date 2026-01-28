@@ -91,19 +91,4 @@ rendering/RenderLayer.cpp
 rendering/RenderTreeAsText.cpp
 [ iOS ] rendering/ios/RenderThemeIOS.mm
 style/ElementRuleCollector.cpp
-style/MatchResultCache.cpp
-style/PageRuleCollector.cpp
-style/RuleSetBuilder.cpp
-style/StyleBuilder.cpp
-style/StyleBuilderCustom.h
-style/StyleDifference.cpp
-style/StyleExtractorCustom.h
-style/StyleInvalidationFunctions.h
-style/StyleRelations.cpp
-style/UserAgentStyle.cpp
-style/computed/StyleComputedStyleBase+SettersInlines.h
-style/computed/StyleComputedStyleProperties+SettersCustomInlines.h
-svg/SVGClipPathElement.cpp
-svg/SVGUseElement.cpp
 testing/Internals.cpp
-testing/LegacyMockCDM.cpp
