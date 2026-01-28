@@ -2450,3 +2450,4 @@ webkit.org/b/306294 http/wpt/offscreen-canvas/transferToImageBitmap-webgl.html [
 
 webkit.org/b/306360 http/tests/download/sandboxed-iframe-download-not-allowed.html [ Pass Failure ]
 
+webkit.org/b/306379 [ Tahoe Debug ] webrtc/addTransceiver-then-addTrack.html [ Skip ]
