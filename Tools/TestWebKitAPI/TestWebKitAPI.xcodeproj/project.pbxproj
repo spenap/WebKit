@@ -680,6 +680,7 @@
 		97A826862DF8B677004EA039 /* JavaScriptCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = BC90964D1255620C00083756 /* JavaScriptCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		97B250AD2E26F36F0056806C /* switch.wgsl in CopyFiles */ = {isa = PBXBuildFile; fileRef = 97FB431F2E1D633600C63F41 /* switch.wgsl */; };
 		97B250AE2E2701AB0056806C /* const-assert.wgsl in CopyFiles */ = {isa = PBXBuildFile; fileRef = 97FB42E52E1D633600C63F41 /* const-assert.wgsl */; };
+		97CB27B42F29190B0024DD32 /* override-complex-expression.wgsl in CopyFiles */ = {isa = PBXBuildFile; fileRef = 97CB27AC2F2918DA0024DD32 /* override-complex-expression.wgsl */; };
 		97DAA8CE2DF1F325004B3040 /* MetalCompilationTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 97DAA8CD2DF1F325004B3040 /* MetalCompilationTests.mm */; };
 		97DAA8D02DF70B91004B3040 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 97DAA8CF2DF70B91004B3040 /* Metal.framework */; };
 		97FB432E2E1D637C00C63F41 /* access-expression.wgsl in CopyFiles */ = {isa = PBXBuildFile; fileRef = 97FB42D52E1D633600C63F41 /* access-expression.wgsl */; };
@@ -1808,6 +1809,7 @@
 				97FB43632E1D637C00C63F41 /* minus-minus-ambiguity.wgsl in CopyFiles */,
 				97FB43652E1D637C00C63F41 /* name-mangling.wgsl in CopyFiles */,
 				97FB43662E1D637C00C63F41 /* overload.wgsl in CopyFiles */,
+				97CB27B42F29190B0024DD32 /* override-complex-expression.wgsl in CopyFiles */,
 				97FB43682E1D637C00C63F41 /* override.wgsl in CopyFiles */,
 				97FB43692E1D637C00C63F41 /* pack-unpack.wgsl in CopyFiles */,
 				97FB436B2E1D637C00C63F41 /* packing-nested-array.wgsl in CopyFiles */,
@@ -3361,6 +3363,7 @@
 		63CAD04F2C478A55009CE119 /* GetMatchedCSSRules.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = GetMatchedCSSRules.mm; sourceTree = "<group>"; };
 		63D138CF2D90B08E0072E181 /* HistoryDelegate.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = HistoryDelegate.mm; sourceTree = "<group>"; };
 		63F668201F97C3AA0032EE51 /* ApplicationManifest.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ApplicationManifest.mm; sourceTree = "<group>"; };
+		6869316B2E69A1B000121550 /* WebAVPlayerControllerLeakTests.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = WebAVPlayerControllerLeakTests.mm; sourceTree = "<group>"; };
 		6B0A07F621FA9C2B00D57391 /* PrivateClickMeasurement.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = PrivateClickMeasurement.cpp; sourceTree = "<group>"; };
 		6B25A75125DC8D4E0070744F /* EventAttribution.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = EventAttribution.mm; sourceTree = "<group>"; };
 		6B306105218A372900F5A802 /* ClosingWebView.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ClosingWebView.mm; sourceTree = "<group>"; };
@@ -3624,6 +3627,7 @@
 		95C52728275F35E100DA7E40 /* FontShadowTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FontShadowTests.cpp; sourceTree = "<group>"; };
 		96E05A012DF7B66F00285827 /* WKWebExtensionAPIBookmarks.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = WKWebExtensionAPIBookmarks.mm; sourceTree = "<group>"; };
 		9739F73F2E5C548E002E7C61 /* ExponentialRampAtTimeTest.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ExponentialRampAtTimeTest.cpp; sourceTree = "<group>"; };
+		97CB27AC2F2918DA0024DD32 /* override-complex-expression.wgsl */ = {isa = PBXFileReference; lastKnownFileType = text; path = "override-complex-expression.wgsl"; sourceTree = "<group>"; };
 		97DAA8CD2DF1F325004B3040 /* MetalCompilationTests.mm */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; path = MetalCompilationTests.mm; sourceTree = "<group>"; };
 		97DAA8CF2DF70B91004B3040 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
 		97FB42D52E1D633600C63F41 /* access-expression.wgsl */ = {isa = PBXFileReference; lastKnownFileType = text; path = "access-expression.wgsl"; sourceTree = "<group>"; };
@@ -3812,7 +3816,6 @@
 		A1798B862243446B000764BD /* apple-pay-availability.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = "apple-pay-availability.html"; sourceTree = "<group>"; };
 		A1798B8822435D2E000764BD /* apple-pay-availability-in-iframe.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = "apple-pay-availability-in-iframe.html"; sourceTree = "<group>"; };
 		A17991861E1C994E00A505ED /* SharedBuffer.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = SharedBuffer.mm; sourceTree = "<group>"; };
-		6869316B2E69A1B000121550 /* WebAVPlayerControllerLeakTests.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = WebAVPlayerControllerLeakTests.mm; sourceTree = "<group>"; };
 		A17991891E1CA24100A505ED /* SharedBufferTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SharedBufferTest.cpp; sourceTree = "<group>"; };
 		A179918A1E1CA24100A505ED /* SharedBufferTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SharedBufferTest.h; sourceTree = "<group>"; };
 		A17A5A3422A887EC0065C5F0 /* AppKitTestSPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppKitTestSPI.h; sourceTree = "<group>"; };
@@ -5708,6 +5711,7 @@
 				97FB430C2E1D633600C63F41 /* name-mangling.wgsl */,
 				97FB430E2E1D633600C63F41 /* overload-errors.wgsl */,
 				97FB430D2E1D633600C63F41 /* overload.wgsl */,
+				97CB27AC2F2918DA0024DD32 /* override-complex-expression.wgsl */,
 				97FB430F2E1D633600C63F41 /* override.wgsl */,
 				97FB43102E1D633600C63F41 /* pack-unpack.wgsl */,
 				97FB43122E1D633600C63F41 /* packing-nested-array.wgsl */,
