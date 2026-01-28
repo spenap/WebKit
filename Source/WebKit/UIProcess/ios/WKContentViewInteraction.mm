@@ -2273,6 +2273,11 @@ typedef NS_ENUM(NSInteger, EndEditingReason) {
 #endif // ENABLE(TOUCH_EVENTS)
 }
 
+- (void)_touchEventsGestureRecognizerReset
+{
+    _page->resetPointerCapture();
+}
+
 #if ENABLE(TOUCH_EVENTS)
 - (void)_handleTouchActionsForTouchEvent:(const WebKit::NativeWebTouchEvent&)touchEvent
 {

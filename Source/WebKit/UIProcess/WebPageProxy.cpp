@@ -4895,6 +4895,11 @@ void WebPageProxy::touchWithIdentifierWasRemoved(WebCore::PointerID pointerId)
     send(Messages::WebPage::TouchWithIdentifierWasRemoved(pointerId));
 }
 
+void WebPageProxy::resetPointerCapture()
+{
+    send(Messages::WebPage::ResetPointerCapture());
+}
+
 void WebPageProxy::scrollBy(ScrollDirection direction, ScrollGranularity granularity)
 {
     if (!hasRunningProcess())
