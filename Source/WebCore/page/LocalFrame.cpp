@@ -943,18 +943,28 @@ VisiblePosition LocalFrame::visiblePositionForPoint(const IntPoint& framePoint) 
     return visiblePos;
 }
 
+HitTestResult LocalFrame::hitTestResultAtPoint(IntPoint point, OptionSet<HitTestRequest::Type> hitType)
+{
+    IntPoint pointInContents = protectedView()->windowToContents(point);
+
+    if (hitType.isEmpty())
+        return HitTestResult { pointInContents };
+
+    return eventHandler().hitTestResultAtPoint(pointInContents, hitType);
+}
+
 Document* LocalFrame::documentAtPoint(const IntPoint& point)
 {
     if (!view())
         return nullptr;
 
-    IntPoint pt = protectedView()->windowToContents(point);
-    HitTestResult result = HitTestResult(pt);
-
+    OptionSet<HitTestRequest::Type> hitType;
     if (contentRenderer()) {
-        constexpr OptionSet<HitTestRequest::Type> hitType { HitTestRequest::Type::ReadOnly, HitTestRequest::Type::Active, HitTestRequest::Type::DisallowUserAgentShadowContent, HitTestRequest::Type::AllowChildFrameContent };
-        result = eventHandler().hitTestResultAtPoint(pt, hitType);
+        hitType = { HitTestRequest::Type::ReadOnly, HitTestRequest::Type::Active, HitTestRequest::Type::DisallowUserAgentShadowContent, HitTestRequest::Type::AllowChildFrameContent };
     }
+
+    auto result = hitTestResultAtPoint(point, hitType);
+
     return result.innerNode() ? &result.innerNode()->document() : 0;
 }
 
