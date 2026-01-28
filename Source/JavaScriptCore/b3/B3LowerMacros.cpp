@@ -1328,6 +1328,7 @@ private:
         } else {
             ([&] {
                 MemoryValue* rtt;
+                auto* targetRTTPointer = constant(Int64, std::bit_cast<uintptr_t>(targetRTT));
                 if (targetRTT->kind() == Wasm::RTTKind::Function)
                     rtt = currentBlock->appendNew<MemoryValue>(m_proc, wrapTrapping(B3::Load), Int64, m_origin, value, safeCast<int32_t>(WebAssemblyFunctionBase::offsetOfRTT()));
                 else {
@@ -1341,8 +1342,13 @@ private:
                     }
 
                     rtt = currentBlock->appendNew<MemoryValue>(m_proc, B3::Load, pointerType(), m_origin, value, safeCast<int32_t>(WebAssemblyGCObjectBase::offsetOfRTT()));
+                    if (targetRTT->isFinalType()) {
+                        // If signature is final type and pointer equality failed, this value must not be a subtype.
+                        emitCheckOrBranchForCast(castKind, currentBlock->appendNew<Value>(m_proc, NotEqual, m_origin, rtt, targetRTTPointer), castFailure, falseBlock);
+                        return;
+                    }
+
                     if (targetRTT->displaySizeExcludingThis() < Wasm::RTT::inlinedDisplaySize) {
-                        auto* targetRTTPointer = constant(Int64, std::bit_cast<uintptr_t>(targetRTT));
                         auto* pointer = currentBlock->appendNew<MemoryValue>(m_proc, B3::Load, Int64, m_origin, rtt, safeCast<int32_t>(Wasm::RTT::offsetOfData() + targetRTT->displaySizeExcludingThis() * sizeof(RefPtr<const Wasm::RTT>)));
                         pointer->setReadsMutability(B3::Mutability::Immutable);
                         pointer->setControlDependent(false);
@@ -1350,10 +1356,8 @@ private:
                         emitCheckOrBranchForCast(castKind, currentBlock->appendNew<Value>(m_proc, NotEqual, m_origin, pointer, targetRTTPointer), castFailure, falseBlock);
                         return;
                     }
-
                 }
 
-                auto* targetRTTPointer = constant(Int64, std::bit_cast<uintptr_t>(targetRTT));
                 BasicBlock* equalBlock;
                 if (isCast)
                     equalBlock = continuation;
