@@ -1927,7 +1927,7 @@ const TimingFunction* KeyframeEffect::timingFunctionForKeyframeAtIndex(size_t in
 
 bool KeyframeEffect::canBeAccelerated() const
 {
-    if (!animation() || !animation()->timeline())
+    if (!animation() || !animation()->timeline() || animation()->isSkippedContentAnimation())
         return false;
 
     if (m_acceleratedPropertiesState == AcceleratedProperties::None)
