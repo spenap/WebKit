@@ -364,7 +364,6 @@ void WebPage::getPlatformEditorState(LocalFrame& frame, EditorState& result) con
     if (!result.hasPostLayoutAndVisualData())
         return;
 
-    ASSERT(frame.view());
     auto& postLayoutData = *result.postLayoutData;
     auto& visualData = *result.visualData;
 
@@ -405,8 +404,6 @@ void WebPage::getPlatformEditorState(LocalFrame& frame, EditorState& result) con
         selectedRange = selection.toNormalizedRange();
         String selectedText;
         if (selectedRange) {
-            auto [selectionGeometries, intersectingLayerIDs] = RenderObject::collectSelectionGeometries(*selectedRange);
-            convertContentToRootView(view, selectionGeometries);
             selectedText = plainTextForDisplay(*selectedRange);
             postLayoutData.selectedTextLength = selectedText.length();
             const int maxSelectedTextLength = 200;
@@ -433,9 +430,6 @@ void WebPage::getPlatformEditorState(LocalFrame& frame, EditorState& result) con
 
             if (auto imageElement = findSelectedEditableImageElement())
                 postLayoutData.selectedEditableImage = contextForElement(*imageElement);
-
-            visualData.selectionGeometries = WTF::move(selectionGeometries);
-            visualData.intersectingLayerIDs = WTF::move(intersectingLayerIDs);
         }
         // FIXME: We should disallow replace when the string contains only CJ characters.
         postLayoutData.isReplaceAllowed = result.isContentEditable && !result.isInPasswordField && !selectedText.containsOnly<isASCIIWhitespace>();

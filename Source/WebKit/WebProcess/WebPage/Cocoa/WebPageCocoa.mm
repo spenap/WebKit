@@ -672,6 +672,12 @@ static bool selectionIsTransparentOrFullyClipped(const VisibleSelection& selecti
     return startRenderer == endRenderer || rendererIsTransparentOrFullyClipped(*endRenderer);
 }
 
+static void convertContentToRootView(const LocalFrameView& view, Vector<SelectionGeometry>& geometries)
+{
+    for (auto& geometry : geometries)
+        geometry.setQuad(view.contentsToRootView(geometry.quad()));
+}
+
 void WebPage::getPlatformEditorStateCommon(const LocalFrame& frame, EditorState& result) const
 {
     if (!result.hasPostLayoutAndVisualData())
@@ -682,7 +688,11 @@ void WebPage::getPlatformEditorStateCommon(const LocalFrame& frame, EditorState&
     if (selection.isNone())
         return;
 
+    ASSERT(frame.view());
+    Ref view = *frame.view();
+
     auto& postLayoutData = *result.postLayoutData;
+    auto& visualData = *result.visualData;
 
     if (result.isContentEditable) {
         if (auto editingStyle = EditingStyle::styleAtSelectionStart(selection, false, EditingStyle::PropertiesToInclude::PostLayoutProperties)) {
@@ -762,6 +772,17 @@ void WebPage::getPlatformEditorStateCommon(const LocalFrame& frame, EditorState&
     if (enclosingFormControl || !m_page->settings().selectionHonorsOverflowScrolling())
         result.visualData->selectionClipRect = result.visualData->editableRootBounds;
 #endif
+
+    if (selection.isRange()) {
+        auto selectedRange = selection.toNormalizedRange();
+        if (selectedRange) {
+            auto [selectionGeometries, intersectingLayerIDs] = RenderObject::collectSelectionGeometries(*selectedRange);
+            convertContentToRootView(view, selectionGeometries);
+
+            visualData.selectionGeometries = WTF::move(selectionGeometries);
+            visualData.intersectingLayerIDs = WTF::move(intersectingLayerIDs);
+        }
+    }
 }
 
 void WebPage::getPDFFirstPageSize(WebCore::FrameIdentifier frameID, CompletionHandler<void(WebCore::FloatSize)>&& completionHandler)

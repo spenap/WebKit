@@ -85,6 +85,7 @@
 #include "RenderWidget.h"
 #include "RenderedPosition.h"
 #include "SVGRenderSupport.h"
+#include "SelectionGeometry.h"
 #include "Settings.h"
 #include "StyleResolver.h"
 #include "TransformState.h"
@@ -94,10 +95,6 @@
 #include <wtf/HexNumber.h>
 #include <wtf/TZoneMallocInlines.h>
 #include <wtf/text/TextStream.h>
-
-#if PLATFORM(IOS_FAMILY)
-#include "SelectionGeometry.h"
-#endif
 
 namespace WebCore {
 
@@ -799,7 +796,6 @@ CheckedPtr<RenderBlock> RenderObject::checkedContainingBlock() const
     return containingBlock();
 }
 
-#if PLATFORM(IOS_FAMILY)
 // This function is similar in spirit to RenderText::absoluteRectsForRange, but returns rectangles
 // which are annotated with additional state which helps iOS draw selections in its unique way.
 // No annotations are added in this class.
@@ -827,7 +823,6 @@ void RenderObject::collectSelectionGeometries(Vector<SelectionGeometry>& geometr
     for (auto& quad : quads)
         geometries.append(SelectionGeometry(quad, HTMLElement::selectionRenderingBehavior(protectedNode().get()), isHorizontalWritingMode(), checkedView()->pageNumberForBlockProgressionOffset(quad.enclosingBoundingBox().x())));
 }
-#endif
 
 IntRect RenderObject::absoluteBoundingBoxRect(bool useTransforms, bool* wasFixed) const
 {
@@ -2381,8 +2376,6 @@ PointerEvents RenderObject::usedPointerEvents() const
     return style().usedPointerEvents();
 }
 
-#if PLATFORM(IOS_FAMILY)
-
 static bool intervalsSufficientlyOverlap(int startA, int endA, int startB, int endB)
 {
     if (endA <= startA || endB <= startB)
@@ -2433,6 +2426,7 @@ Vector<SelectionGeometry> RenderObject::collectSelectionGeometriesWithoutUnionIn
     return collectSelectionGeometriesInternal(range).geometries;
 }
 
+#if PLATFORM(IOS_FAMILY)
 static bool areOnSameLine(const SelectionGeometry& a, const SelectionGeometry& b)
 {
     if (a.lineNumber() && a.lineNumber() == b.lineNumber())
@@ -2443,10 +2437,16 @@ static bool areOnSameLine(const SelectionGeometry& a, const SelectionGeometry& b
     return FloatQuad { quadA.p1(), quadA.p2(), quadB.p2(), quadB.p1() }.isEmpty()
         && FloatQuad { quadA.p4(), quadA.p3(), quadB.p3(), quadB.p4() }.isEmpty();
 }
+#endif // PLATFORM(IOS_FAMILY)
 
 static bool usesVisuallyContiguousBidiTextSelection(const SimpleRange& range)
 {
+#if !PLATFORM(IOS_FAMILY)
+    UNUSED_PARAM(range);
+    return false;
+#else
     return range.protectedStartContainer()->protectedDocument()->settings().visuallyContiguousBidiTextSelectionEnabled();
+#endif
 }
 
 struct SelectionEndpointDirections {
@@ -2467,6 +2467,11 @@ static SelectionEndpointDirections computeSelectionEndpointDirections(const Simp
 
 static void makeBidiSelectionVisuallyContiguousIfNeeded(const SelectionEndpointDirections directions, const SimpleRange& range, Vector<SelectionGeometry>& geometries)
 {
+#if !PLATFORM(IOS_FAMILY)
+    UNUSED_PARAM(directions);
+    UNUSED_PARAM(range);
+    UNUSED_PARAM(geometries);
+#else
     if (!range.startContainer().document().editor().shouldDrawVisuallyContiguousBidiSelection())
         return;
 
@@ -2570,6 +2575,7 @@ static void makeBidiSelectionVisuallyContiguousIfNeeded(const SelectionEndpointD
     endGeometry->setDirection(directions.lastLine);
     endGeometry->setQuad(makeSelectionQuad(end, selectionBoundsOnLastLine, directions.lastLine == TextDirection::RTL));
     geometries.appendList({ WTF::move(*startGeometry), WTF::move(*endGeometry) });
+#endif
 }
 
 static void adjustTextDirectionForCoalescedGeometries(const SelectionEndpointDirections& directions, const SimpleRange& range, Vector<SelectionGeometry>& geometries)
@@ -2953,8 +2959,6 @@ auto RenderObject::collectSelectionGeometries(const SimpleRange& range) -> Selec
 
     return { WTF::move(coalescedGeometries), WTF::move(intersectingLayerIDs) };
 }
-
-#endif
 
 String RenderObject::description() const
 {

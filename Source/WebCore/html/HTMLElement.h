@@ -46,11 +46,8 @@ enum class AutocapitalizeType : uint8_t;
 enum class EnterKeyHint : uint8_t;
 enum class InputMode : uint8_t;
 enum class PageIsEditable : bool;
-enum class ToggleState : bool;
-
-#if PLATFORM(IOS_FAMILY)
 enum class SelectionRenderingBehavior : bool;
-#endif
+enum class ToggleState : bool;
 
 enum class FireEvents : bool { No, Yes };
 enum class FocusPreviousElement : bool { No, Yes };
@@ -165,9 +162,7 @@ public:
     bool isValidCommandType(const CommandType) override;
     bool handleCommandInternal(HTMLButtonElement& invoker, const CommandType&) override;
 
-#if PLATFORM(IOS_FAMILY)
     static SelectionRenderingBehavior selectionRenderingBehavior(const Node*);
-#endif
 
 protected:
     HTMLElement(const QualifiedName& tagName, Document&, OptionSet<TypeFlag>);

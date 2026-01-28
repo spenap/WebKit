@@ -35,9 +35,7 @@
 #include <WebCore/WritingDirection.h>
 #include <wtf/text/WTFString.h>
 
-#if PLATFORM(IOS_FAMILY)
 #include <WebCore/SelectionGeometry.h>
-#endif
 
 #if USE(DICTATION_ALTERNATIVES)
 #include <WebCore/DictationContext.h>
@@ -147,16 +145,18 @@ struct EditorState {
 #if PLATFORM(IOS_FAMILY) || PLATFORM(GTK) || PLATFORM(WPE)
         WebCore::IntRect caretRectAtStart;
 #endif
+#if PLATFORM(COCOA)
+        Vector<WebCore::SelectionGeometry> selectionGeometries;
+        Vector<WebCore::PlatformLayerIdentifier> intersectingLayerIDs;
+#endif
 #if PLATFORM(IOS_FAMILY)
         WebCore::IntRect selectionClipRect;
         WebCore::IntRect editableRootBounds;
         WebCore::IntRect caretRectAtEnd;
-        Vector<WebCore::SelectionGeometry> selectionGeometries;
         Vector<WebCore::SelectionGeometry> markedTextRects;
         WebCore::IntRect markedTextCaretRectAtStart;
         WebCore::IntRect markedTextCaretRectAtEnd;
         std::optional<WebCore::PlatformLayerIdentifier> enclosingLayerID;
-        Vector<WebCore::PlatformLayerIdentifier> intersectingLayerIDs;
         std::optional<WebCore::ScrollingNodeID> enclosingScrollingNodeID;
         std::optional<WebCore::ScrollingNodeID> scrollingNodeIDAtStart;
         std::optional<WebCore::ScrollingNodeID> scrollingNodeIDAtEnd;

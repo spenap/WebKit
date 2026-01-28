@@ -587,7 +587,6 @@ platform/ios/QuickLook.mm @nonARC
 platform/ios/ScrollAnimatorIOS.mm @nonARC
 platform/ios/ScrollViewIOS.mm @nonARC
 platform/ios/ScrollbarThemeIOS.mm @nonARC
-platform/ios/SelectionGeometry.cpp
 platform/ios/SystemMemoryIOS.cpp
 platform/ios/ThemeIOS.mm @nonARC
 platform/ios/TileControllerMemoryHandlerIOS.cpp

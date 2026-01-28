@@ -2411,6 +2411,7 @@ set(WebCore_PRIVATE_FRAMEWORK_HEADERS
     platform/ScrollbarsControllerInlines.h
     platform/ScrollingEffectsController.h
     platform/SearchPopupMenu.h
+    platform/SelectionGeometry.h
     platform/SerializedPlatformDataCue.h
     platform/SerializedPlatformDataCueValue.h
     platform/ShareableResource.h

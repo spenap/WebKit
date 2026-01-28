@@ -2465,11 +2465,8 @@ enum class WebCore::AuthenticatorTransport : uint8_t {
 enum class WebCore::PublicKeyCredentialType : bool
 #endif
 
-#if PLATFORM(IOS_FAMILY)
 enum class WebCore::SelectionRenderingBehavior : bool;
-#endif
 
-#if PLATFORM(IOS_FAMILY)
 class WebCore::SelectionGeometry {
     WebCore::FloatQuad quad();
     WebCore::SelectionRenderingBehavior behavior();
@@ -2485,7 +2482,6 @@ class WebCore::SelectionGeometry {
     bool containsEnd();
     bool isHorizontal();
 };
-#endif
 
 header: <WebCore/DataListSuggestionInformation.h>
 [CustomHeader] enum class WebCore::DataListSuggestionActivationType : uint8_t {

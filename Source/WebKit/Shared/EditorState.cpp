@@ -129,6 +129,10 @@ TextStream& operator<<(TextStream& ts, const EditorState& editorState)
         if (editorState.visualData->caretRectAtStart != IntRect())
             ts.dumpProperty("caretRectAtStart"_s, editorState.visualData->caretRectAtStart);
 #endif
+#if PLATFORM(COCOA)
+        if (!editorState.visualData->selectionGeometries.isEmpty())
+            ts.dumpProperty("selectionGeometries"_s, editorState.visualData->selectionGeometries);
+#endif
 #if PLATFORM(IOS_FAMILY)
         if (editorState.visualData->selectionClipRect != IntRect())
             ts.dumpProperty("selectionClipRect"_s, editorState.visualData->selectionClipRect);
@@ -136,8 +140,6 @@ TextStream& operator<<(TextStream& ts, const EditorState& editorState)
             ts.dumpProperty("editableRootBounds"_s, editorState.visualData->editableRootBounds);
         if (editorState.visualData->caretRectAtEnd != IntRect())
             ts.dumpProperty("caretRectAtEnd"_s, editorState.visualData->caretRectAtEnd);
-        if (!editorState.visualData->selectionGeometries.isEmpty())
-            ts.dumpProperty("selectionGeometries"_s, editorState.visualData->selectionGeometries);
         if (!editorState.visualData->markedTextRects.isEmpty())
             ts.dumpProperty("markedTextRects"_s, editorState.visualData->markedTextRects);
         if (editorState.visualData->markedTextCaretRectAtStart != IntRect())
@@ -193,14 +195,17 @@ void EditorState::move(float x, float y)
     visualData->caretRectAtStart.move(roundedX, roundedY);
 #endif
 
+#if PLATFORM(COCOA)
+    for (auto& geometry : visualData->selectionGeometries)
+        geometry.move(x, y);
+#endif
+
 #if PLATFORM(IOS_FAMILY)
     visualData->selectionClipRect.move(roundedX, roundedY);
     visualData->editableRootBounds.move(roundedX, roundedY);
     visualData->caretRectAtEnd.move(roundedX, roundedY);
     visualData->markedTextCaretRectAtStart.move(roundedX, roundedY);
     visualData->markedTextCaretRectAtEnd.move(roundedX, roundedY);
-    for (auto& geometry : visualData->selectionGeometries)
-        geometry.move(x, y);
     for (auto& geometry : visualData->markedTextRects)
         geometry.move(x, y);
 #endif // PLATFORM(IOS_FAMILY)
