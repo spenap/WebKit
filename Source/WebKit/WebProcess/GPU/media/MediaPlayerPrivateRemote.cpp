@@ -1289,6 +1289,22 @@ DestinationColorSpace MediaPlayerPrivateRemote::colorSpace()
 }
 #endif
 
+Ref<MediaPlayerPrivateRemote::BitmapImagePromise> MediaPlayerPrivateRemote::bitmapImageForCurrentTime()
+{
+    if (readyState() < MediaPlayer::ReadyState::HaveCurrentData)
+        return BitmapImagePromise::createAndReject();
+
+    return protectedConnection()->sendWithPromisedReply(Messages::RemoteMediaPlayerProxy::BitmapImageForCurrentTime(), m_id)->whenSettled(RunLoop::mainSingleton(), [weakThis = ThreadSafeWeakPtr { *this }](auto&& result) -> Ref<BitmapImagePromise> {
+        RefPtr protectedThis = weakThis.get();
+        if (!result || !result.value() || !protectedThis)
+            return BitmapImagePromise::createAndReject();
+
+        if (auto bitmap = ShareableBitmap::create(WTF::move(**result)))
+            return BitmapImagePromise::createAndResolve(bitmap.releaseNonNull());
+        return BitmapImagePromise::createAndReject();
+    });
+}
+
 bool MediaPlayerPrivateRemote::hasAvailableVideoFrame() const
 {
     return m_cachedState.hasAvailableVideoFrame;

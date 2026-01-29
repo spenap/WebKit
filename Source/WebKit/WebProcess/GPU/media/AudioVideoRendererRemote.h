@@ -131,6 +131,7 @@ private:
     RefPtr<WebCore::VideoFrame> currentVideoFrame() const final;
     void paintCurrentVideoFrameInContext(WebCore::GraphicsContext&, const WebCore::FloatRect&) final;
     RefPtr<WebCore::NativeImage> currentNativeImage() const final;
+    Ref<BitmapImagePromise> currentBitmapImage() const final;
     std::optional<WebCore::VideoPlaybackQualityMetrics> videoPlaybackQualityMetrics() final;
     PlatformLayer* platformVideoLayer() const final;
 

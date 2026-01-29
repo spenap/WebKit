@@ -498,6 +498,23 @@ void RemoteAudioVideoRendererProxyManager::currentVideoFrame(RemoteAudioVideoRen
     completionHandler(WTF::move(result));
 }
 
+void RemoteAudioVideoRendererProxyManager::currentBitmapImage(RemoteAudioVideoRendererIdentifier identifier, CompletionHandler<void(std::optional<WebCore::ShareableBitmap::Handle>&&)>&& completionHandler) const
+{
+    RefPtr renderer = rendererFor(identifier);
+    if (!renderer) {
+        completionHandler(std::nullopt);
+        return;
+    }
+    renderer->currentBitmapImage()->whenSettled(RunLoop::mainSingleton(), [completionHandler = WTF::move(completionHandler)](auto&& result) mutable {
+        if (!result) {
+            completionHandler(std::nullopt);
+            return;
+        }
+        completionHandler((*result)->createHandle());
+    });
+}
+
+
 #if ENABLE(VIDEO_PRESENTATION_MODE)
 void RemoteAudioVideoRendererProxyManager::setVideoFullscreenFrame(RemoteAudioVideoRendererIdentifier identifier, const WebCore::FloatRect& frame)
 {

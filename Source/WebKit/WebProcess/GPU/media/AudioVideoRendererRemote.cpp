@@ -46,6 +46,7 @@
 #include <WebCore/MediaSamplesBlock.h>
 #include <WebCore/NotImplemented.h>
 #include <WebCore/PlatformLayer.h>
+#include <WebCore/ShareableBitmap.h>
 #include <wtf/CompletionHandler.h>
 #include <wtf/NeverDestroyed.h>
 #include <wtf/WorkQueue.h>
@@ -308,6 +309,23 @@ RefPtr<NativeImage> AudioVideoRendererRemote::currentNativeImage() const
     ASSERT_NOT_REACHED();
     return nullptr;
 #endif
+}
+
+Ref<AudioVideoRenderer::BitmapImagePromise> AudioVideoRendererRemote::currentBitmapImage() const
+{
+    RefPtr gpuProcessConnection = m_gpuProcessConnection.get();
+    if (!isGPURunning() || !gpuProcessConnection)
+        return BitmapImagePromise::createAndReject();
+
+    return gpuProcessConnection->connection().sendWithPromisedReply(Messages::RemoteAudioVideoRendererProxyManager::CurrentBitmapImage(m_identifier))->whenSettled(queueSingleton(), [weakThis = ThreadSafeWeakPtr { *this }](auto&& result) -> Ref<BitmapImagePromise> {
+        RefPtr protectedThis = weakThis.get();
+        if (!result || !result.value() || !protectedThis)
+            return BitmapImagePromise::createAndReject();
+
+        if (auto bitmap = ShareableBitmap::create(WTF::move(**result)))
+            return BitmapImagePromise::createAndResolve(bitmap.releaseNonNull());
+        return BitmapImagePromise::createAndReject();
+    });
 }
 
 std::optional<VideoPlaybackQualityMetrics> AudioVideoRendererRemote::videoPlaybackQualityMetrics()

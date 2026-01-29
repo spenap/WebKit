@@ -361,6 +361,7 @@ private:
     RefPtr<WebCore::VideoFrame> videoFrameForCurrentTime() final;
     RefPtr<WebCore::NativeImage> nativeImageForCurrentTime() final;
     WebCore::DestinationColorSpace colorSpace() final;
+    Ref<BitmapImagePromise> bitmapImageForCurrentTime() final;
 #if PLATFORM(COCOA)
     bool shouldGetNativeImageForCanvasDrawing() const final { return false; }
 #endif

@@ -9016,64 +9016,79 @@ void WebPage::requestTextRecognition(Element& element, TextRecognitionOptions&& 
         return;
     }
 
-    auto bitmap = createShareableBitmap(*renderImage, {
-        std::nullopt,
-        AllowAnimatedImages::No,
-        options.allowSnapshots == TextRecognitionOptions::AllowSnapshots::Yes ? UseSnapshotForTransparentImages::Yes : UseSnapshotForTransparentImages::No
-    });
-    if (!bitmap) {
-        if (completion)
-            completion({ });
-        return;
-    }
-
-    auto bitmapHandle = bitmap->createHandle();
-    if (!bitmapHandle) {
-        if (completion)
-            completion({ });
-        return;
-    }
-
     Vector<CompletionHandler<void(RefPtr<Element>&&)>> completionHandlers;
     if (completion)
         completionHandlers.append(WTF::move(completion));
     m_elementsPendingTextRecognition.append({ WeakPtr { element }, WTF::move(completionHandlers) });
 
-    auto cachedImage = renderImage->cachedImage();
-    auto imageURL = cachedImage ? element.protectedDocument()->completeURL(cachedImage->url().string()) : URL { };
-    sendWithAsyncReply(Messages::WebPageProxy::RequestTextRecognition(WTF::move(imageURL), WTF::move(*bitmapHandle), options.sourceLanguageIdentifier, options.targetLanguageIdentifier), [webPage = WeakPtr { *this }, weakElement = WeakPtr { element }] (auto&& result) {
+    auto bitmap = createShareableBitmapAsync(*renderImage, {
+        std::nullopt,
+        AllowAnimatedImages::No,
+        options.allowSnapshots == TextRecognitionOptions::AllowSnapshots::Yes ? UseSnapshotForTransparentImages::Yes : UseSnapshotForTransparentImages::No
+    })->whenSettled(RunLoop::mainSingleton(), [webPage = WeakPtr { *this }, weakElement = WeakPtr { *htmlElement }, options = WTF::move(options)](auto&& result) mutable {
         RefPtr protectedPage { webPage.get() };
         if (!protectedPage)
             return;
 
-        protectedPage->m_elementsPendingTextRecognition.removeAllMatching([&] (auto& elementAndCompletionHandlers) {
-            auto& [element, completionHandlers] = elementAndCompletionHandlers;
-            if (element)
-                return false;
+        auto resolveAndRemoveHandlerFollowingError = [&](WeakPtr<WebCore::HTMLElement, WebCore::WeakPtrImplWithEventTargetData>& originalElement) {
+            protectedPage->m_elementsPendingTextRecognition.removeAllMatching([&] (auto& elementAndCompletionHandlers) {
+                auto& [element, completionHandlers] = elementAndCompletionHandlers;
+                if (element.get() && originalElement != element)
+                    return false;
 
-            for (auto& completionHandler : completionHandlers)
-                completionHandler({ });
-            return true;
-        });
+                for (auto& completionHandler : completionHandlers) {
+                    if (completionHandler)
+                        completionHandler({ });
+                }
+                return true;
+            });
+        };
 
-        RefPtr htmlElement = downcast<HTMLElement>(weakElement.get());
-        if (!htmlElement)
+        if (!result || !weakElement) {
+            resolveAndRemoveHandlerFollowingError(weakElement);
             return;
+        }
 
-        ImageOverlay::updateWithTextRecognitionResult(*htmlElement, result);
-
-        auto matchIndex = protectedPage->m_elementsPendingTextRecognition.findIf([&] (auto& elementAndCompletionHandlers) {
-            return elementAndCompletionHandlers.first == htmlElement.get();
-        });
-
-        if (matchIndex == notFound)
+        auto bitmapHandle = (*result)->createHandle();
+        if (!bitmapHandle) {
+            resolveAndRemoveHandlerFollowingError(weakElement);
             return;
+        }
 
-        RefPtr imageOverlayHost = ImageOverlay::hasOverlay(*htmlElement) ? htmlElement.get() : nullptr;
-        for (auto& completionHandler : protectedPage->m_elementsPendingTextRecognition[matchIndex].second)
-            completionHandler(imageOverlayHost.copyRef());
+        CheckedPtr renderImage = dynamicDowncast<RenderImage>(weakElement->renderer());
+        if (!renderImage) {
+            resolveAndRemoveHandlerFollowingError(weakElement);
+            return;
+        }
 
-        protectedPage->m_elementsPendingTextRecognition.removeAt(matchIndex);
+        auto cachedImage = renderImage->cachedImage();
+        auto imageURL = cachedImage ? weakElement->protectedDocument()->completeURL(cachedImage->url().string()) : URL { };
+        protectedPage->sendWithAsyncReply(Messages::WebPageProxy::RequestTextRecognition(WTF::move(imageURL), WTF::move(*bitmapHandle), options.sourceLanguageIdentifier, options.targetLanguageIdentifier), [webPage, weakElement, resolveAndRemoveHandlerFollowingError = WTF::move(resolveAndRemoveHandlerFollowingError)] (auto&& result) mutable {
+            RefPtr protectedPage { webPage.get() };
+            if (!protectedPage)
+                return;
+
+            RefPtr htmlElement = weakElement.get();
+            if (!htmlElement) {
+                resolveAndRemoveHandlerFollowingError(weakElement);
+                return;
+            }
+
+            ImageOverlay::updateWithTextRecognitionResult(*htmlElement, result);
+
+            auto matchIndex = protectedPage->m_elementsPendingTextRecognition.findIf([&] (auto& elementAndCompletionHandlers) {
+                return elementAndCompletionHandlers.first == htmlElement.get();
+            });
+
+            if (matchIndex == notFound)
+                return;
+
+            RefPtr imageOverlayHost = ImageOverlay::hasOverlay(*htmlElement) ? htmlElement.get() : nullptr;
+            for (auto& completionHandler : protectedPage->m_elementsPendingTextRecognition[matchIndex].second)
+                completionHandler(imageOverlayHost.copyRef());
+
+            protectedPage->m_elementsPendingTextRecognition.removeAt(matchIndex);
+        });
     });
 }
 
@@ -9409,15 +9424,22 @@ void WebPage::beginTextRecognitionForVideoInElementFullScreen(const HTMLVideoEle
     if (rectInRootView.isEmpty())
         return;
 
-    RefPtr image = element.bitmapImageForCurrentTime();
-    if (!image)
-        return;
-    if (auto handle = image->createHandle())
-        send(Messages::WebPageProxy::BeginTextRecognitionForVideoInElementFullScreen(WTF::move(*handle), rectInRootView));
+    m_isPerformingTextRecognitionInElementFullScreen = true;
+    element.bitmapImageForCurrentTime()->whenSettled(RunLoop::mainSingleton(), [weakThis = WeakPtr { *this }, rectInRootView](auto&& result) {
+        if (!result)
+            return;
+        RefPtr protectedThis = weakThis.get();
+        if (!protectedThis || !protectedThis->m_isPerformingTextRecognitionInElementFullScreen)
+            return;
+        if (auto handle = (*result)->createHandle())
+            protectedThis->send(Messages::WebPageProxy::BeginTextRecognitionForVideoInElementFullScreen(WTF::move(*handle), rectInRootView));
+        protectedThis->m_isPerformingTextRecognitionInElementFullScreen = false;
+    });
 }
 
 void WebPage::cancelTextRecognitionForVideoInElementFullScreen()
 {
+    m_isPerformingTextRecognitionInElementFullScreen = false;
     send(Messages::WebPageProxy::CancelTextRecognitionForVideoInElementFullScreen());
 }
 #endif // ENABLE(IMAGE_ANALYSIS) && ENABLE(VIDEO)

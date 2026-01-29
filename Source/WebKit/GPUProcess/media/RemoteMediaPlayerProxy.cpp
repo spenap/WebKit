@@ -1006,6 +1006,23 @@ void RemoteMediaPlayerProxy::videoFrameForCurrentTimeIfChanged(CompletionHandler
     completionHandler(WTF::move(result), changed);
 }
 
+void RemoteMediaPlayerProxy::bitmapImageForCurrentTime(CompletionHandler<void(std::optional<WebCore::ShareableBitmap::Handle>&&)>&& completionHandler)
+{
+    RefPtr player = m_player;
+    if (!player) {
+        completionHandler({ });
+        return;
+    }
+
+    player->bitmapImageForCurrentTime()->whenSettled(RunLoop::mainSingleton(), [completionHandler = WTF::move(completionHandler)](auto&& result) mutable {
+        if (!result) {
+            completionHandler({ });
+            return;
+        }
+        completionHandler((*result)->createHandle());
+    });
+}
+
 void RemoteMediaPlayerProxy::setShouldDisableHDR(bool shouldDisable)
 {
     if (m_configuration.shouldDisableHDR == shouldDisable)
