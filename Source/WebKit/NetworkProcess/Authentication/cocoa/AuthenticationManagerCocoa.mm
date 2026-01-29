@@ -72,7 +72,7 @@ void AuthenticationManager::initializeConnection(IPC::Connection* connection)
             if (!challengeID)
                 return;
 
-            XPCObjectPtr<xpc_object_t> xpcEndPoint = xpc_dictionary_get_value(event.get(), ClientCertificateAuthentication::XPCSecKeyProxyEndpointKey);
+            OSObjectPtr<xpc_object_t> xpcEndPoint = xpc_dictionary_get_value(event.get(), ClientCertificateAuthentication::XPCSecKeyProxyEndpointKey);
             if (!xpcEndPoint || xpc_get_type(xpcEndPoint.get()) != XPC_TYPE_ENDPOINT)
                 return;
             auto endPoint = adoptNS([[NSXPCListenerEndpoint alloc] init]);
@@ -84,14 +84,14 @@ void AuthenticationManager::initializeConnection(IPC::Connection* connection)
                 return;
             }
 
-            XPCObjectPtr<xpc_object_t> certificateDataArray = xpc_dictionary_get_array(event.get(), ClientCertificateAuthentication::XPCCertificatesKey);
+            OSObjectPtr<xpc_object_t> certificateDataArray = xpc_dictionary_get_array(event.get(), ClientCertificateAuthentication::XPCCertificatesKey);
             if (!certificateDataArray)
                 return;
             RetainPtr<NSMutableArray> certificates;
             if (auto total = xpc_array_get_count(certificateDataArray.get())) {
                 certificates = [NSMutableArray arrayWithCapacity:total];
                 for (size_t i = 0; i < total; i++) {
-                    XPCObjectPtr<xpc_object_t> certificateData = xpc_array_get_value(certificateDataArray.get(), i);
+                    OSObjectPtr<xpc_object_t> certificateData = xpc_array_get_value(certificateDataArray.get(), i);
                     RetainPtr cfData = adoptCF(CFDataCreate(nullptr, static_cast<const UInt8*>(xpc_data_get_bytes_ptr(certificateData.get())), xpc_data_get_length(certificateData.get())));
                     RetainPtr certificate = adoptCF(SecCertificateCreateWithData(nullptr, cfData.get()));
                     if (!certificate)

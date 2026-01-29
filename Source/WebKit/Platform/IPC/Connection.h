@@ -327,20 +327,20 @@ public:
             : port(port)
         {
         }
-        Identifier(mach_port_t port, XPCObjectPtr<xpc_connection_t> xpcConnection)
+        Identifier(mach_port_t port, OSObjectPtr<xpc_connection_t> xpcConnection)
             : port(port)
             , xpcConnection(WTF::move(xpcConnection))
         {
         }
         operator bool() const { return MACH_PORT_VALID(port); }
         mach_port_t port { MACH_PORT_NULL };
-        XPCObjectPtr<xpc_connection_t> xpcConnection;
+        OSObjectPtr<xpc_connection_t> xpcConnection;
 #endif
     };
 
 #if OS(DARWIN)
     xpc_connection_t xpcConnection() const { return m_xpcConnection.get(); }
-    XPCObjectPtr<xpc_connection_t> protectedXPCConnection() const { return xpcConnection(); }
+    OSObjectPtr<xpc_connection_t> protectedXPCConnection() const { return xpcConnection(); }
     std::optional<audit_token_t> getAuditToken();
     pid_t remoteProcessID() const;
 #endif
@@ -810,7 +810,7 @@ private:
 
     std::unique_ptr<MachMessage> m_pendingOutgoingMachMessage;
 
-    XPCObjectPtr<xpc_connection_t> m_xpcConnection;
+    OSObjectPtr<xpc_connection_t> m_xpcConnection;
     std::atomic<bool> m_didRequestProcessTermination { false };
     std::optional<audit_token_t> m_auditToken;
 #elif OS(WINDOWS)

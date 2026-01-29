@@ -479,7 +479,7 @@ private:
     private:
         WeakPtr<NetworkProcessProxy> m_networkProcess;
     };
-    XPCObjectPtr<xpc_object_t> m_endpointMessage;
+    OSObjectPtr<xpc_object_t> m_endpointMessage;
 #endif
 
     WeakHashSet<WebsiteDataStore> m_websiteDataStores;

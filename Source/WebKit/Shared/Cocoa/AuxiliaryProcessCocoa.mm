@@ -115,7 +115,7 @@ void AuxiliaryProcess::platformInitialize(const AuxiliaryProcessInitializationPa
     setApplicationBundleIdentifier(parameters.clientBundleIdentifier);
 
 #if USE(SOURCE_APPLICATION_AUDIT_DATA)
-    if (XPCObjectPtr<xpc_connection_t> connection = parameters.connectionIdentifier.xpcConnection) {
+    if (OSObjectPtr<xpc_connection_t> connection = parameters.connectionIdentifier.xpcConnection) {
         audit_token_t auditToken { };
         xpc_connection_get_audit_token(connection.get(), &auditToken);
         setApplicationAuditToken(auditToken);
