@@ -3,7 +3,7 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2001 Dirk Mueller (mueller@kde.org)
- * Copyright (C) 2004-2025 Apple Inc. All rights reserved.
+ * Copyright (C) 2004-2026 Apple Inc. All rights reserved.
  *           (C) 2006 Alexey Proskuryakov (ap@nypop.com)
  * Copyright (C) 2010-2022 Google Inc. All rights reserved.
  * Copyright (C) 2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
@@ -51,6 +51,7 @@
 #include "HTMLOptGroupElement.h"
 #include "HTMLOptionsCollectionInlines.h"
 #include "HTMLParserIdioms.h"
+#include "HTMLSlotElement.h"
 #include "KeyboardEvent.h"
 #include "LocalDOMWindow.h"
 #include "LocalFrameInlines.h"
@@ -61,9 +62,11 @@
 #include "RenderListBox.h"
 #include "RenderMenuList.h"
 #include "RenderScrollbar.h"
-#include "RenderText.h"
 #include "RenderTheme.h"
+#include "ScriptDisallowedScope.h"
+#include "SelectButtonTextElement.h"
 #include "Settings.h"
+#include "ShadowRoot.h"
 #include <JavaScriptCore/ConsoleTypes.h>
 #include <wtf/TZoneMallocInlines.h>
 #include <wtf/text/MakeString.h>
@@ -98,12 +101,25 @@ HTMLSelectElement::HTMLSelectElement(const QualifiedName& tagName, Document& doc
 Ref<HTMLSelectElement> HTMLSelectElement::create(const QualifiedName& tagName, Document& document, HTMLFormElement* form)
 {
     ASSERT(tagName.matches(selectTag));
-    return adoptRef(*new HTMLSelectElement(tagName, document, form));
+    Ref select = adoptRef(*new HTMLSelectElement(tagName, document, form));
+    select->ensureUserAgentShadowRoot();
+    return select;
 }
 
 Ref<HTMLSelectElement> HTMLSelectElement::create(Document& document)
 {
-    return adoptRef(*new HTMLSelectElement(selectTag, document, nullptr));
+    Ref select = adoptRef(*new HTMLSelectElement(selectTag, document, nullptr));
+    select->ensureUserAgentShadowRoot();
+    return select;
+}
+
+void HTMLSelectElement::didAddUserAgentShadowRoot(ShadowRoot& root)
+{
+    Ref document = this->document();
+
+    ScriptDisallowedScope::EventAllowedScope rootScope { root };
+    root.appendChild(SelectButtonTextElement::create(document));
+    root.appendChild(HTMLSlotElement::create(slotTag, document));
 }
 
 HTMLSelectElement* HTMLSelectElement::findOwnerSelect(ContainerNode* startNode, ExcludeOptGroup excludeOptGroup)
@@ -371,6 +387,8 @@ bool HTMLSelectElement::childShouldCreateRenderer(const Node& child) const
     if (!usesMenuList())
         return is<HTMLOptionElement>(child) || is<HTMLOptGroupElement>(child) || validationMessageShadowTreeContains(child);
 #endif
+    if (child.isInShadowTree() && child.containingShadowRoot() == userAgentShadowRoot())
+        return true;
     return validationMessageShadowTreeContains(child);
 }
 
@@ -965,6 +983,13 @@ void HTMLSelectElement::selectOption(int optionIndex, SelectOptionFlags flags)
 
     invalidateSelectedItems();
     updateValidity();
+
+    // Invalidate the button text element's style so it picks up the new selection's
+    // direction and unicode-bidi in resolveCustomStyle.
+    if (usesMenuList()) {
+        ASSERT(is<SelectButtonTextElement>(userAgentShadowRoot()->firstChild()));
+        downcast<Element>(protect(protect(userAgentShadowRoot())->firstChild()))->invalidateStyle();
+    }
 
     // For the menu list case, this is what makes the selected element appear.
     if (CheckedPtr renderer = this->renderer())
@@ -1876,20 +1901,19 @@ PopupMenuStyle HTMLSelectElement::menuStyle() const
     auto defaultStyle = RenderStyle::create();
     CheckedPtr renderer = dynamicDowncast<RenderMenuList>(this->renderer());
     CheckedRef outerStyle = renderer ? renderer->style() : defaultStyle;
-    CheckedRef<const RenderStyle> innerStyle = (renderer && renderer->innerRenderer()) ? renderer->innerRenderer()->style() : outerStyle.get();
     return PopupMenuStyle(
-        innerStyle->visitedDependentColorApplyingColorFilter(),
-        innerStyle->visitedDependentBackgroundColorApplyingColorFilter(),
-        innerStyle->fontCascade(),
+        outerStyle->visitedDependentColorApplyingColorFilter(),
+        outerStyle->visitedDependentBackgroundColorApplyingColorFilter(),
+        outerStyle->fontCascade(),
         nullString(),
-        innerStyle->usedVisibility() == Visibility::Visible,
-        innerStyle->display() == DisplayType::None,
+        outerStyle->usedVisibility() == Visibility::Visible,
+        outerStyle->display() == DisplayType::None,
         outerStyle->hasUsedAppearance() && outerStyle->usedAppearance() == StyleAppearance::Menulist,
         outerStyle->writingMode().bidiDirection(),
         isOverride(outerStyle->unicodeBidi()),
         PopupMenuStyle::DefaultBackgroundColor,
         PopupMenuStyle::SelectPopup,
-        renderer ? renderer->popupMenuSize(innerStyle) : PopupMenuStyle::Size::Normal
+        renderer ? renderer->popupMenuSize(outerStyle) : PopupMenuStyle::Size::Normal
     );
 }
 
@@ -1990,4 +2014,4 @@ Ref<Scrollbar> HTMLSelectElement::createScrollbar(ScrollableArea& scrollableArea
     return Scrollbar::createNativeScrollbar(scrollableArea, orientation, widthStyle);
 }
 
-} // namespace
+} // namespace WebCore

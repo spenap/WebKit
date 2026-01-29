@@ -3,7 +3,7 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2000 Dirk Mueller (mueller@kde.org)
- * Copyright (C) 2004-2025 Apple Inc. All rights reserved.
+ * Copyright (C) 2004-2026 Apple Inc. All rights reserved.
  * Copyright (C) 2010-2015 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
@@ -40,6 +40,7 @@
 namespace WebCore {
 
 class HTMLOptionsCollection;
+class ShadowRoot;
 
 class HTMLSelectElement : public HTMLFormControlElement, public PopupMenuClient, private TypeAheadDataSource {
     WTF_MAKE_TZONE_ALLOCATED(HTMLSelectElement);
@@ -237,6 +238,8 @@ private:
     int nextSelectableListIndexPageAway(int startIndex, SkipDirection) const;
 
     void childrenChanged(const ChildChange&) final;
+
+    void didAddUserAgentShadowRoot(ShadowRoot&) final;
 
     // TypeAheadDataSource functions.
     int indexOfSelectedOption() const final;

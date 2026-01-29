@@ -29,7 +29,6 @@
 #include "RenderBlockFlow.h"
 #include "RenderBlockInlines.h"
 #include "RenderButton.h"
-#include "RenderMenuList.h"
 #include "RenderTreeBuilderBlock.h"
 #include <wtf/TZoneMallocInlines.h>
 
@@ -47,21 +46,6 @@ void RenderTreeBuilder::FormControls::attach(RenderButton& parent, RenderPtr<Ren
     m_builder.blockBuilder().attach(findOrCreateParentForChild(parent), WTF::move(child), beforeChild);
 }
 
-void RenderTreeBuilder::FormControls::attach(RenderMenuList& parent, RenderPtr<RenderObject> child, RenderObject* beforeChild)
-{
-    auto& newChild = *child.get();
-    m_builder.blockBuilder().attach(findOrCreateParentForChild(parent), WTF::move(child), beforeChild);
-    parent.didAttachChild(newChild, beforeChild);
-}
-
-RenderPtr<RenderObject> RenderTreeBuilder::FormControls::detach(RenderMenuList& parent, RenderObject& child, RenderTreeBuilder::WillBeDestroyed willBeDestroyed)
-{
-    auto* innerRenderer = parent.innerRenderer();
-    if (!innerRenderer || &child == innerRenderer)
-        return m_builder.blockBuilder().detach(parent, child, willBeDestroyed);
-    return m_builder.detach(*innerRenderer, child, willBeDestroyed);
-}
-
 RenderPtr<RenderObject> RenderTreeBuilder::FormControls::detach(RenderButton& parent, RenderObject& child, RenderTreeBuilder::WillBeDestroyed willBeDestroyed)
 {
     auto* innerRenderer = parent.innerRenderer();
@@ -74,19 +58,6 @@ RenderPtr<RenderObject> RenderTreeBuilder::FormControls::detach(RenderButton& pa
 
 
 RenderBlock& RenderTreeBuilder::FormControls::findOrCreateParentForChild(RenderButton& parent)
-{
-    auto* innerRenderer = parent.innerRenderer();
-    if (innerRenderer)
-        return *innerRenderer;
-
-    auto wrapper = Block::createAnonymousBlockWithStyle(parent.protectedDocument(), parent.style());
-    innerRenderer = wrapper.get();
-    m_builder.blockBuilder().attach(parent, WTF::move(wrapper), nullptr);
-    parent.setInnerRenderer(*innerRenderer);
-    return *innerRenderer;
-}
-
-RenderBlock& RenderTreeBuilder::FormControls::findOrCreateParentForChild(RenderMenuList& parent)
 {
     auto* innerRenderer = parent.innerRenderer();
     if (innerRenderer)

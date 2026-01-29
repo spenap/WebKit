@@ -2,7 +2,7 @@
  * This file is part of the select element renderer in WebCore.
  *
  * Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
- * Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2015 Apple Inc. All rights reserved.
+ * Copyright (C) 2006-2026 Apple Inc. All rights reserved.
  *               2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
  *
  * This library is free software; you can redistribute it and/or
@@ -26,7 +26,6 @@
 #include "RenderMenuList.h"
 
 #include "AXObjectCache.h"
-#include "AccessibilityMenuList.h"
 #include "CSSFontSelector.h"
 #include "Chrome.h"
 #include "ColorBlending.h"
@@ -55,6 +54,7 @@
 #include "RenderTheme.h"
 #include "RenderTreeBuilder.h"
 #include "RenderView.h"
+#include "SelectButtonTextElement.h"
 #include "StyleResolver.h"
 #include "TextRun.h"
 #include <math.h>
@@ -111,13 +111,6 @@ void RenderMenuList::willBeDestroyed()
     RenderFlexibleBox::willBeDestroyed();
 }
 
-void RenderMenuList::setInnerRenderer(RenderBlock& innerRenderer)
-{
-    ASSERT(!m_innerBlock.get());
-    m_innerBlock = innerRenderer;
-    adjustInnerStyle();
-}
-
 PopupMenuStyle::Size RenderMenuList::popupMenuSize(const RenderStyle& style)
 {
     auto bounds = absoluteBoundingBoxRectIgnoringTransforms();
@@ -129,84 +122,14 @@ HostWindow* RenderMenuList::hostWindow() const
     return RenderFlexibleBox::hostWindow();
 }
 
-void RenderMenuList::adjustInnerStyle()
-{
-    auto& innerStyle = m_innerBlock->mutableStyle();
-    innerStyle.setFlexGrow(1);
-    innerStyle.setFlexShrink(1);
-    // min-width: 0; is needed for correct shrinking.
-    innerStyle.setLogicalMinWidth(0_css_px);
-    // Use margin:auto instead of align-items:center to get safe centering, i.e.
-    // when the content overflows, treat it the same as align-items: flex-start.
-    // But we only do that for the cases where html.css would otherwise use center.
-    if (style().alignItems().isCenter()) {
-        innerStyle.setMarginBefore(CSS::Keyword::Auto { });
-        innerStyle.setMarginAfter(CSS::Keyword::Auto { });
-        innerStyle.setAlignSelf(CSS::Keyword::FlexStart { });
-    }
-
-    auto paddingBox = theme().popupInternalPaddingBox(style());
-    if (!writingMode().isHorizontal())
-        paddingBox = { paddingBox.left(), paddingBox.top(), paddingBox.right(), paddingBox.bottom() };
-
-    innerStyle.setPaddingBox(WTF::move(paddingBox));
-
-#if PLATFORM(IOS_FAMILY)
-    innerStyle.setTextAlign(writingMode().isBidiLTR() ? Style::TextAlign::Left : Style::TextAlign::Right);
-    TextDirection direction;
-    UnicodeBidi unicodeBidi;
-    if (selectElement().multiple() && selectedOptionCount(*this) != 1) {
-        direction = (m_buttonText && m_buttonText->text().defaultWritingDirection() == U_RIGHT_TO_LEFT) ? TextDirection::RTL : TextDirection::LTR;
-        unicodeBidi = UnicodeBidi::Normal;
-    } else if (m_optionStyle) {
-        direction = m_optionStyle->writingMode().bidiDirection();
-        unicodeBidi = m_optionStyle->unicodeBidi();
-    } else {
-        direction = style().writingMode().bidiDirection();
-        unicodeBidi = style().unicodeBidi();
-    }
-
-    innerStyle.setDirection(direction);
-    innerStyle.setUnicodeBidi(unicodeBidi);
-#else
-    if (m_optionStyle) {
-        if ((m_optionStyle->writingMode().bidiDirection() != innerStyle.writingMode().bidiDirection()
-            || m_optionStyle->unicodeBidi() != innerStyle.unicodeBidi()))
-            m_innerBlock->setNeedsLayoutAndPreferredWidthsUpdate();
-        innerStyle.setTextAlign(writingMode().isBidiLTR() ? Style::TextAlign::Left : Style::TextAlign::Right);
-        innerStyle.setDirection(m_optionStyle->writingMode().bidiDirection());
-        innerStyle.setUnicodeBidi(m_optionStyle->unicodeBidi());
-    }
-#endif // !PLATFORM(IOS_FAMILY)
-
-    if (m_innerBlock && m_innerBlock->layoutBox()) {
-        if (auto* inlineFormattingContextRoot = dynamicDowncast<RenderBlockFlow>(*m_innerBlock); inlineFormattingContextRoot && inlineFormattingContextRoot->inlineLayout())
-            inlineFormattingContextRoot->inlineLayout()->rootStyleWillChange(*inlineFormattingContextRoot, innerStyle);
-        if (auto* lineLayout = LayoutIntegration::LineLayout::containing(*m_innerBlock))
-            lineLayout->styleWillChange(*m_innerBlock, innerStyle, Style::DifferenceResult::Layout);
-        LayoutIntegration::LineLayout::updateStyle(*m_innerBlock);
-        for (auto& child : childrenOfType<RenderText>(*m_innerBlock))
-            LayoutIntegration::LineLayout::updateStyle(child);
-    }
-}
-
 HTMLSelectElement& RenderMenuList::selectElement() const
 {
     return downcast<HTMLSelectElement>(nodeForNonAnonymous());
 }
 
-void RenderMenuList::didAttachChild(RenderObject& child, RenderObject*)
-{
-    if (CheckedPtr cache = document().existingAXObjectCache())
-        cache->childrenChanged(*this, &child);
-}
-
 void RenderMenuList::styleDidChange(Style::Difference diff, const RenderStyle* oldStyle)
 {
     RenderBlock::styleDidChange(diff, oldStyle);
-
-    if (m_innerBlock) // RenderBlock handled updating the anonymous block's style.
-        adjustInnerStyle();
 
     bool fontChanged = !oldStyle || !oldStyle->fontCascadeEqual(style());
     if (fontChanged) {
@@ -267,11 +190,8 @@ void RenderMenuList::setTextFromOption(int optionIndex)
     int i = selectElement().optionToListIndex(optionIndex);
     String text = emptyString();
     if (i >= 0 && i < size) {
-        if (RefPtr option = dynamicDowncast<HTMLOptionElement>(*listItems[i])) {
+        if (RefPtr option = dynamicDowncast<HTMLOptionElement>(*listItems[i]))
             text = option->textIndentedToRespectGroupLabel();
-            auto* style = option->computedStyleForEditability();
-            m_optionStyle = style ? RenderStyle::clonePtr(*style) : nullptr;
-        }
     }
 
 #if PLATFORM(IOS_FAMILY)
@@ -290,42 +210,50 @@ void RenderMenuList::setText(const String& s)
 {
     String textToUse = s.isEmpty() ? "\n"_str : s;
 
-    if (m_buttonText)
+    if (m_buttonText) {
         m_buttonText->setText(textToUse.impl(), true);
-    else {
-        auto newButtonText = createRenderer<RenderText>(Type::Text, document(), textToUse);
-        m_buttonText = *newButtonText;
-        // FIXME: This mutation should go through the normal RenderTreeBuilder path.
-        if (RenderTreeBuilder::current())
-            RenderTreeBuilder::current()->attach(*this, WTF::move(newButtonText));
-        else
-            RenderTreeBuilder(*document().renderView()).attach(*this, WTF::move(newButtonText));
+        return;
     }
 
-    adjustInnerStyle();
-}
+    auto newButtonText = createRenderer<RenderText>(Type::Text, document(), textToUse);
+    m_buttonText = *newButtonText;
+    for (auto& child : childrenOfType<RenderElement>(*this)) {
+        if (!is<SelectButtonTextElement>(child.element()))
+            continue;
 
-String RenderMenuList::text() const
-{
-    return m_buttonText ? m_buttonText->text() : String();
+        // FIXME: This mutation should go through the normal RenderTreeBuilder path.
+        if (RenderTreeBuilder::current())
+            RenderTreeBuilder::current()->attach(child, WTF::move(newButtonText));
+        else
+            RenderTreeBuilder(*document().renderView()).attach(child, WTF::move(newButtonText));
+        break;
+    }
 }
 
 LayoutRect RenderMenuList::controlClipRect(const LayoutPoint& additionalOffset) const
 {
-    // Clip to the intersection of the content box and the content box for the inner box
-    // This will leave room for the arrows which sit in the inner box padding,
-    // and if the inner box ever spills out of the outer box, that will get clipped too.
-    LayoutRect outerBox(additionalOffset.x() + borderLeft() + paddingLeft(), 
-        additionalOffset.y() + borderTop() + paddingTop(),
-        contentBoxWidth(),
-        contentBoxHeight());
-    
-    LayoutRect innerBox(additionalOffset.x() + m_innerBlock->x() + m_innerBlock->paddingLeft(), 
-        additionalOffset.y() + m_innerBlock->y() + m_innerBlock->paddingTop(),
-        m_innerBlock->contentBoxWidth(),
-        m_innerBlock->contentBoxHeight());
+    auto internalPadding = theme().popupInternalPaddingBox(style());
+    auto zoom = style().usedZoomForLength();
 
-    return intersection(outerBox, innerBox);
+    float paddingBoxTop = 0;
+    float paddingBoxBottom = 0;
+    float paddingBoxLeft = 0;
+    float paddingBoxRight = 0;
+
+    if (auto top = internalPadding.top().tryFixed())
+        paddingBoxTop = top->resolveZoom(zoom);
+    if (auto bottom = internalPadding.bottom().tryFixed())
+        paddingBoxBottom = bottom->resolveZoom(zoom);
+    if (auto left = internalPadding.left().tryFixed())
+        paddingBoxLeft = left->resolveZoom(zoom);
+    if (auto right = internalPadding.right().tryFixed())
+        paddingBoxRight = right->resolveZoom(zoom);
+
+    LayoutRect clipRect(additionalOffset.x() + borderLeft() + paddingLeft() + paddingBoxLeft,
+        additionalOffset.y() + borderTop() + paddingTop() + paddingBoxTop,
+        contentBoxWidth() - paddingBoxLeft - paddingBoxRight,
+        contentBoxHeight() - paddingBoxTop - paddingBoxBottom);
+    return clipRect;
 }
 
 void RenderMenuList::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
@@ -333,8 +261,15 @@ void RenderMenuList::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, 
     if (style().fieldSizing() == FieldSizing::Content)
         return RenderFlexibleBox::computeIntrinsicLogicalWidths(minLogicalWidth, maxLogicalWidth);
 
-    maxLogicalWidth = shouldApplySizeContainment() ? theme().minimumMenuListSize(style()) : std::max(m_optionsWidth, theme().minimumMenuListSize(style()));
-    maxLogicalWidth += m_innerBlock->paddingStart() + m_innerBlock->paddingEnd();
+    LayoutUnit minimumSize = theme().minimumMenuListSize(style());
+    maxLogicalWidth = shouldApplySizeContainment() ? minimumSize : std::max(LayoutUnit(m_optionsWidth), minimumSize);
+
+    auto internalPadding = theme().popupInternalPaddingBox(style());
+    if (auto left = internalPadding.left().tryFixed())
+        maxLogicalWidth += LayoutUnit(left->resolveZoom(style().usedZoomForLength()));
+    if (auto right = internalPadding.right().tryFixed())
+        maxLogicalWidth += LayoutUnit(right->resolveZoom(style().usedZoomForLength()));
+
     if (shouldApplySizeOrInlineSizeContainment()) {
         if (auto logicalWidth = explicitIntrinsicInnerLogicalWidth())
             maxLogicalWidth = logicalWidth.value();
@@ -378,7 +313,6 @@ void RenderMenuList::showPopup()
     if (m_popupIsVisible)
         return;
 
-    ASSERT(m_innerBlock);
     if (!m_popup)
         m_popup = document().page()->chrome().createPopupMenu(selectElement());
     m_popupIsVisible = true;
@@ -470,7 +404,7 @@ LayoutUnit RenderMenuList::clientPaddingLeft() const
     }
     // If the appearance isn't MenulistPart, then the select is styled (non-native), so
     // we want to return the user specified padding.
-    return paddingLeft() + m_innerBlock->paddingLeft();
+    return paddingLeft();
 }
 
 LayoutUnit RenderMenuList::clientPaddingRight() const
@@ -478,7 +412,7 @@ LayoutUnit RenderMenuList::clientPaddingRight() const
     if ((style().usedAppearance() == StyleAppearance::Menulist || style().usedAppearance() == StyleAppearance::MenulistButton) && style().writingMode().isBidiLTR())
         return endOfLinePadding;
 
-    return paddingRight() + m_innerBlock->paddingRight();
+    return paddingRight();
 }
 
 void RenderMenuList::popupDidHide()

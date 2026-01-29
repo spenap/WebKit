@@ -2,7 +2,7 @@
  * This file is part of the select element renderer in WebCore.
  *
  * Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
- * Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2015 Apple Inc. All rights reserved.
+ * Copyright (C) 2006-2026 Apple Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -60,16 +60,9 @@ public:
 
     void didSetSelectedIndex(int listIndex);
 
-    String text() const;
-
 #if PLATFORM(IOS_FAMILY)
     void layout() override;
 #endif
-
-    RenderBlock* innerRenderer() const { return m_innerBlock.get(); }
-    void setInnerRenderer(RenderBlock&);
-
-    void didAttachChild(RenderObject& child, RenderObject* beforeChild);
 
     void getItemBackgroundColor(unsigned listIndex, Color&, bool& itemHasCustomBackgroundColor) const;
 
@@ -85,8 +78,6 @@ private:
     void willBeDestroyed() override;
 
     void element() const = delete;
-
-    bool createsAnonymousWrapper() const override { return true; }
 
     void updateFromElement() override;
 
@@ -105,7 +96,6 @@ private:
 
     std::optional<LayoutUnit> firstLineBaseline() const override { return RenderBlock::firstLineBaseline(); }
 
-    void adjustInnerStyle();
     void setText(const String&);
     void updateOptionsWidth();
 
@@ -114,14 +104,11 @@ private:
     bool isFlexibleBoxImpl() const override { return true; }
 
     SingleThreadWeakPtr<RenderText> m_buttonText;
-    SingleThreadWeakPtr<RenderBlock> m_innerBlock;
 
     bool m_needsOptionsWidthUpdate;
     int m_optionsWidth;
 
     std::optional<int> m_lastActiveIndex;
-
-    std::unique_ptr<RenderStyle> m_optionStyle;
 
 #if !PLATFORM(IOS_FAMILY)
     RefPtr<PopupMenu> m_popup;

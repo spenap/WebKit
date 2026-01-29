@@ -32,7 +32,6 @@ namespace WebCore {
 
 class RenderBlock;
 class RenderButton;
-class RenderMenuList;
 
 class RenderTreeBuilder::FormControls {
     WTF_MAKE_TZONE_ALLOCATED(FormControls);
@@ -40,14 +39,11 @@ public:
     FormControls(RenderTreeBuilder&);
 
     void attach(RenderButton& parent, RenderPtr<RenderObject> child, RenderObject* beforeChild);
-    void attach(RenderMenuList& parent, RenderPtr<RenderObject> child, RenderObject* beforeChild);
 
     [[nodiscard]] RenderPtr<RenderObject> detach(RenderButton& parent, RenderObject& child, RenderTreeBuilder::WillBeDestroyed);
-    [[nodiscard]] RenderPtr<RenderObject> detach(RenderMenuList& parent, RenderObject& child, RenderTreeBuilder::WillBeDestroyed);
 
 private:
     RenderBlock& findOrCreateParentForChild(RenderButton&);
-    RenderBlock& findOrCreateParentForChild(RenderMenuList&);
 
     RenderTreeBuilder& m_builder;
 };
