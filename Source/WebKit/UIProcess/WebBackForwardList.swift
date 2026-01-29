@@ -23,11 +23,11 @@
 
 #if compiler(>=6.2)
 
+#if ENABLE_BACK_FORWARD_LIST_SWIFT
+
 internal import WebCore_Private
 internal import WebKit_Internal
 internal import wtf
-
-#if ENABLE_BACK_FORWARD_LIST_SWIFT
 
 final class WebBackForwardList {
     private static let defaultCapacity = 100
