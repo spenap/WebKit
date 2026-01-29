@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2024 Apple Inc. All rights reserved.
+ * Copyright (C) 2017-2026 Apple Inc. All rights reserved.
  * Copyright (C) 2015 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1009,8 +1009,10 @@ void RenderTreeBuilder::updateAfterDescendants(RenderElement& renderer)
         firstLetterBuilder().updateAfterDescendants(*block);
     if (auto* listItem = dynamicDowncast<RenderListItem>(renderer))
         listBuilder().updateItemMarker(*listItem);
-    if (auto* blockFlow = dynamicDowncast<RenderBlockFlow>(renderer))
+    if (auto* blockFlow = dynamicDowncast<RenderBlockFlow>(renderer)) {
         multiColumnBuilder().updateAfterDescendants(*blockFlow);
+        formControlsBuilder().updateAfterDescendants(*blockFlow);
+    }
 }
 
 RenderPtr<RenderObject> RenderTreeBuilder::detachFromRenderGrid(RenderGrid& parent, RenderObject& child, WillBeDestroyed willBeDestroyed)

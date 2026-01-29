@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2024 Apple Inc. All rights reserved.
+ * Copyright (C) 2017-2026 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,10 +26,14 @@
 #include "config.h"
 #include "RenderTreeBuilderFormControls.h"
 
+#include "HTMLInputElement.h"
+#include "InputType.h"
 #include "RenderBlockFlow.h"
 #include "RenderBlockInlines.h"
 #include "RenderButton.h"
+#include "RenderDescendantIterator.h"
 #include "RenderTreeBuilderBlock.h"
+#include "Settings.h"
 #include <wtf/TZoneMallocInlines.h>
 
 namespace WebCore {
@@ -70,4 +74,49 @@ RenderBlock& RenderTreeBuilder::FormControls::findOrCreateParentForChild(RenderB
     return *innerRenderer;
 }
 
+void RenderTreeBuilder::FormControls::updateAfterDescendants(RenderElement& renderer)
+{
+    if (RefPtr inputElement = dynamicDowncast<HTMLInputElement>(renderer.element())) {
+        RefPtr inputType = inputElement->inputType();
+        if (!inputType)
+            return;
+
+        if (inputType->isCheckable())
+            updateCheckmark(renderer);
+    }
 }
+
+void RenderTreeBuilder::FormControls::updateCheckmark(RenderElement& renderer)
+{
+    RefPtr inputElement = dynamicDowncast<HTMLInputElement>(renderer.element());
+    ASSERT(inputElement);
+
+    auto pseudoStyle = renderer.getCachedPseudoStyle({ PseudoElementType::Checkmark });
+    if (!pseudoStyle)
+        return;
+
+    auto shouldHaveCheckmarkRenderer = [&]() -> bool {
+        return renderer.style().appearance() == StyleAppearance::Base && pseudoStyle->display() != DisplayType::None;
+    };
+
+    for (CheckedRef child : childrenOfType<RenderElement>(renderer)) {
+        if (child->style().pseudoElementType() == PseudoElementType::Checkmark) {
+            if (!shouldHaveCheckmarkRenderer())
+                m_builder.destroy(child);
+            return;
+        }
+    }
+
+    if (!shouldHaveCheckmarkRenderer())
+        return;
+
+    Ref document = renderer.document();
+    auto checkmarkStyle = RenderStyle::clone(*pseudoStyle);
+
+    RenderPtr<RenderBlockFlow> checkmark = createRenderer<RenderBlockFlow>(RenderObject::Type::BlockFlow, document, WTF::move(checkmarkStyle));
+    checkmark->initializeStyle();
+
+    m_builder.attach(renderer, WTF::move(checkmark));
+}
+
+} // namespace WebCore
