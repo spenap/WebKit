@@ -248,6 +248,19 @@ WebPageProxy* PageConfiguration::relatedPage() const
     return m_data.relatedPage.get();
 }
 
+BrowsingContextGroup* PageConfiguration::preferredBrowsingContextGroup() const
+{
+    if (auto opener = openerInfo())
+        return opener->browsingContextGroup.ptr();
+
+    if (auto relatedPage = this->relatedPage()) {
+        if (!relatedPage->isClosed())
+            return &relatedPage->browsingContextGroup();
+    }
+
+    return nullptr;
+}
+
 WebPageProxy* PageConfiguration::pageToCloneSessionStorageFrom() const
 {
     return m_data.pageToCloneSessionStorageFrom.get();

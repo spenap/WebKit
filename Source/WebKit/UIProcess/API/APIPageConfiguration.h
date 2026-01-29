@@ -469,6 +469,8 @@ public:
     void setBackgroundTextExtractionEnabled(bool enabled) { m_data.backgroundTextExtractionEnabled = enabled; }
     bool backgroundTextExtractionEnabled() const { return m_data.backgroundTextExtractionEnabled; }
 
+    WebKit::BrowsingContextGroup* preferredBrowsingContextGroup() const;
+
 #if PLATFORM(VISION)
 
 #if ENABLE(GAMEPAD)

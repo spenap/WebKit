@@ -842,6 +842,14 @@ static bool windowFeature(auto getter, const API::PageConfiguration& configurati
     return *optional;
 }
 
+static Ref<BrowsingContextGroup> getOrCreateBrowsingContextGroup(const API::PageConfiguration& configuration)
+{
+    if (RefPtr preferredBrowsingContextGroup = configuration.preferredBrowsingContextGroup())
+        return *preferredBrowsingContextGroup;
+
+    return BrowsingContextGroup::create();
+}
+
 WebPageProxy::WebPageProxy(PageClient& pageClient, WebProcessProxy& process, Ref<API::PageConfiguration>&& configuration)
     : m_internals(makeUniqueRefWithoutRefCountedCheck<Internals>(*this, configuration->openerInfo().transform([](API::PageConfiguration::OpenerInfo info) { return info.securityOrigin; } )))
     , m_identifier(Identifier::generate())
@@ -897,7 +905,7 @@ WebPageProxy::WebPageProxy(PageClient& pageClient, WebProcessProxy& process, Ref
     , m_ignoresAppBoundDomains(m_configuration->ignoresAppBoundDomains())
     , m_limitsNavigationsToAppBoundDomains(m_configuration->limitsNavigationsToAppBoundDomains())
 #endif
-    , m_browsingContextGroup(configuration->openerInfo() ? configuration->openerInfo()->browsingContextGroup : BrowsingContextGroup::create())
+    , m_browsingContextGroup(getOrCreateBrowsingContextGroup(m_configuration))
     , m_openerFrameIdentifier(configuration->openerInfo() ? std::optional(configuration->openerInfo()->frameID) : std::nullopt)
 #if HAVE(AUDIT_TOKEN)
     , m_presentingApplicationAuditToken(process.processPool().configuration().presentingApplicationProcessToken())
@@ -995,8 +1003,14 @@ WebPageProxy::WebPageProxy(PageClient& pageClient, WebProcessProxy& process, Ref
     if (RefPtr gpuProcess = GPUProcessProxy::singletonIfCreated())
         gpuProcess->setPresentingApplicationAuditToken(process.coreProcessIdentifier(), m_webPageID, m_presentingApplicationAuditToken);
 #endif
-    if (protect(preferences())->siteIsolationEnabled())
+    if (protect(preferences())->siteIsolationEnabled()) {
+        if (m_configuration->relatedPage()) {
+            // relatedPage should only be used after setting browsing context group.
+            WEBPAGEPROXY_RELEASE_LOG(Loading, "constructor, resets related page");
+            m_configuration->setRelatedPage(nullptr);
+        }
         IPC::Connection::setShouldCrashOnMessageCheckFailure(true);
+    }
 
     if (protect(preferences())->enhancedSecurityHeuristicsEnabled())
         internals().enhancedSecurityTracker.initializeWithWebsiteDataStore(protect(websiteDataStore()));
@@ -1359,10 +1373,11 @@ void WebPageProxy::launchProcess(const Site& site, ProcessLaunchReason reason)
     Ref processPool = m_configuration->processPool();
     RefPtr relatedPage = m_configuration->relatedPage();
 
+    bool siteIsolationEnabled = protect(preferences())->siteIsolationEnabled();
     if (RefPtr frameProcess = protect(browsingContextGroup())->processForSite(site)) {
-        ASSERT(protect(preferences())->siteIsolationEnabled());
+        ASSERT(siteIsolationEnabled);
         m_legacyMainFrameProcess = frameProcess->process();
-    } else if (relatedPage && !relatedPage->isClosed() && reason == ProcessLaunchReason::InitialProcess && hasSameGPUAndNetworkProcessPreferencesAs(*relatedPage)) {
+    } else if (relatedPage && !relatedPage->isClosed() && reason == ProcessLaunchReason::InitialProcess && hasSameGPUAndNetworkProcessPreferencesAs(*relatedPage) && !siteIsolationEnabled) {
         m_legacyMainFrameProcess = relatedPage->ensureRunningProcess();
         WEBPAGEPROXY_RELEASE_LOG(Loading, "launchProcess: Using process (process=%p, PID=%i) from related page", m_legacyMainFrameProcess.ptr(), m_legacyMainFrameProcess->processID());
     } else
