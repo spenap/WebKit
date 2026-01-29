@@ -6936,8 +6936,15 @@ header: <WebCore/TextExtractionTypes.h>
 };
 
 header: <WebCore/TextExtractionTypes.h>
+[CustomHeader] struct WebCore::TextExtraction::SelectOptionData {
+    String value;
+    String label;
+    bool isSelected;
+};
+
+header: <WebCore/TextExtractionTypes.h>
 [CustomHeader] struct WebCore::TextExtraction::SelectData {
-    Vector<String> selectedValues;
+    Vector<WebCore::TextExtraction::SelectOptionData> options;
     bool isMultiple;
 };
 

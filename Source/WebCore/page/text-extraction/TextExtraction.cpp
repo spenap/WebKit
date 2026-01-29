@@ -550,11 +550,11 @@ static inline Variant<SkipExtraction, ItemData, URL, Editable> extractItemData(N
                 continue;
 
             if (RefPtr option = dynamicDowncast<HTMLOptionElement>(*item)) {
-                if (!option->selected())
-                    continue;
-
-                if (auto optionValue = option->value(); !optionValue.isEmpty())
-                    selectData.selectedValues.append(WTF::move(optionValue));
+                selectData.options.append({
+                    .value = option->value(),
+                    .label = option->label(),
+                    .isSelected = option->selected(),
+                });
             }
         }
         selectData.isMultiple = select->multiple();
