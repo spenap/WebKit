@@ -6327,13 +6327,14 @@ class FilterAPITestsForPlatform(shell.ShellCommand, AddToLogMixin):
         if not modified_tests:
             defer.returnValue(SKIPPED)
 
-        MAX_TESTS = 30
+        platform = self.getProperty('platform')
+        configuration = self.getProperty('configuration', 'debug')
+
+        # iOS simulators have significant boot overhead, so use a lower cap
+        MAX_TESTS = 5 if platform == 'ios' else 30
 
         self.log_observer = logobserver.BufferLogObserver(wantStdout=True, wantStderr=True)
         self.addLogObserver('stdio', self.log_observer)
-
-        platform = self.getProperty('platform')
-        configuration = self.getProperty('configuration', 'debug')
 
         self.command = [
             'python3', 'Tools/Scripts/run-api-tests',
