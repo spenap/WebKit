@@ -95,7 +95,6 @@ private:
     void collectMatchingRules(DeclarationOrigin);
     void collectMatchingRules(const MatchRequest&);
     void collectMatchingRulesForList(const RuleSet::RuleDataVector*, const MatchRequest&);
-    void collectMatchingRulesForList(const RuleSet::RuleDataVector&, const MatchRequest&);
     void collectMatchingRulesForListSlow(const RuleSet::RuleDataVector&, const MatchRequest&);
     bool isFirstMatchModeAndHasMatchedAnyRules() const;
     struct ScopingRootWithDistance {
@@ -145,13 +144,6 @@ ALWAYS_INLINE void ElementRuleCollector::collectMatchingRulesForList(const RuleS
     if (!rules || rules->isEmpty())
         return;
     collectMatchingRulesForListSlow(*rules, matchRequest);
-}
-
-ALWAYS_INLINE void ElementRuleCollector::collectMatchingRulesForList(const RuleSet::RuleDataVector& rules, const MatchRequest& matchRequest)
-{
-    if (rules.isEmpty())
-        return;
-    collectMatchingRulesForListSlow(rules, matchRequest);
 }
 
 }

@@ -217,52 +217,38 @@ void ElementRuleCollector::collectMatchingRules(const MatchRequest& matchRequest
     if (shadowRoot && shadowRoot->mode() == ShadowRootMode::UserAgent)
         collectMatchingUserAgentPartRules(matchRequest);
 
-    bool isHTMLElement = element.isHTMLElement();
-    bool isCaseInsensitiveForHTML = isHTMLElement && element.document().isHTMLDocument();
-    auto& ruleSet = matchRequest.ruleSet;
+    bool isHTML = element.isHTMLElement() && element.document().isHTMLDocument();
 
     // We need to collect the rules for id, class, tag, and everything else into a buffer and
     // then sort the buffer.
     auto& id = element.idForStyleResolution();
     if (!id.isNull())
-        collectMatchingRulesForList(ruleSet.idRules(id), matchRequest);
+        collectMatchingRulesForList(matchRequest.ruleSet.idRules(id), matchRequest);
     if (element.hasClass()) {
         for (auto& className : element.classNames())
-            collectMatchingRulesForList(ruleSet.classRules(className), matchRequest);
+            collectMatchingRulesForList(matchRequest.ruleSet.classRules(className), matchRequest);
     }
-    if (element.hasAttributesWithoutUpdate() && ruleSet.hasAttributeRules()) {
+    if (element.hasAttributesWithoutUpdate() && matchRequest.ruleSet.hasAttributeRules()) {
         Vector<const RuleSet::RuleDataVector*, 4> ruleVectors;
         for (auto& attribute : element.attributes()) {
-            if (auto* rules = ruleSet.attributeRules(attribute.localName(), isCaseInsensitiveForHTML))
+            if (auto* rules = matchRequest.ruleSet.attributeRules(attribute.localName(), isHTML))
                 ruleVectors.append(rules);
         }
         for (auto* rules : ruleVectors)
             collectMatchingRulesForList(rules, matchRequest);
     }
-
     if (m_pseudoElementRequest && m_pseudoElementRequest->nameArgument() != nullAtom())
-        collectMatchingRulesForList(ruleSet.namedPseudoElementRules(m_pseudoElementRequest->nameArgument()), matchRequest);
-
+        collectMatchingRulesForList(matchRequest.ruleSet.namedPseudoElementRules(m_pseudoElementRequest->nameArgument()), matchRequest);
     if (element.isLink())
-        collectMatchingRulesForList(ruleSet.linkPseudoClassRules(), matchRequest);
+        collectMatchingRulesForList(matchRequest.ruleSet.linkPseudoClassRules(), matchRequest);
     if (matchesFocusPseudoClass(element))
-        collectMatchingRulesForList(ruleSet.focusPseudoClassRules(), matchRequest);
+        collectMatchingRulesForList(matchRequest.ruleSet.focusPseudoClassRules(), matchRequest);
     if (matchesFocusVisiblePseudoClass(element))
-        collectMatchingRulesForList(ruleSet.focusVisiblePseudoClassRules(), matchRequest);
+        collectMatchingRulesForList(matchRequest.ruleSet.focusVisiblePseudoClassRules(), matchRequest);
     if (&element == element.document().documentElement())
-        collectMatchingRulesForList(ruleSet.rootElementRules(), matchRequest);
-    collectMatchingRulesForList(ruleSet.tagRules(element.localName(), isCaseInsensitiveForHTML), matchRequest);
-    collectMatchingRulesForList(ruleSet.universalRules(), matchRequest);
-
-    // Shortcut selectors like "::marker" for HTML elements.
-    auto pseudoElementTypes = isHTMLElement ? ruleSet.universalHTMLPseudoElementTypes() : ruleSet.universalPseudoElementTypes();
-    if (m_pseudoElementRequest) {
-        if (pseudoElementTypes.contains(m_pseudoElementRequest->type()))
-            collectMatchingRulesForList(ruleSet.universalPseudoElementRules(), matchRequest);
-    } else {
-        // If pseudo-element is not requested then just mark the bits that tell that this element has these.
-        m_matchedPseudoElements.add(pseudoElementTypes & allPublicPseudoElementTypes);
-    }
+        collectMatchingRulesForList(matchRequest.ruleSet.rootElementRules(), matchRequest);
+    collectMatchingRulesForList(matchRequest.ruleSet.tagRules(element.localName(), isHTML), matchRequest);
+    collectMatchingRulesForList(matchRequest.ruleSet.universalRules(), matchRequest);
 }
 
 
@@ -329,9 +315,6 @@ bool ElementRuleCollector::matchesAnyAuthorRules()
 
     collectMatchingRules(DeclarationOrigin::Author);
 
-    if (m_mode == SelectorChecker::Mode::StyleInvalidation && m_matchedPseudoElements)
-        return true;
-
     return !m_matchedRules.isEmpty();
 }
 
@@ -367,8 +350,10 @@ void ElementRuleCollector::matchHostPseudoClassRules(DeclarationOrigin origin)
         collectMatchingRulesForList(&rules, hostMatchRequest);
     };
 
-    if (shadowRules->hasHostOrScopePseudoClassRulesInUniversalBucket())
-        collect(shadowRules->universalRules());
+    if (shadowRules->hasHostOrScopePseudoClassRulesInUniversalBucket()) {
+        if (auto* universalRules = shadowRules->universalRules())
+            collect(*universalRules);
+    }
 
     collect(shadowRules->hostPseudoClassRules());
 }
