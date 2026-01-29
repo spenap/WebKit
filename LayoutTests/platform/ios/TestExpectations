@@ -8176,7 +8176,6 @@ webkit.org/b/296566 [ Release ] imported/w3c/web-platform-tests/screen-orientati
 
 # webkit.org/b/295803 2x http/tests/webcodecs/ (layout-tests) tests flakey text failures
 [ Release ] http/tests/webcodecs/video-encoder-callbacks-do-not-leak.html [ Pass Failure ]
-[ Release ] http/tests/webcodecs/video-decoder-callbacks-do-not-leak.html [ Pass Failure ]
 
 webkit.org/b/296637 [ Release ] http/tests/dom/noopener-window-not-targetable.html [ Pass Failure ]
 
@@ -8455,4 +8454,6 @@ imported/w3c/web-platform-tests/uievents/mouse/layer-coords-transform.html [ Ski
 imported/w3c/web-platform-tests/uievents/mouse/mouse_boundary_events_on_image_map.html [ Skip ]
 
 webkit.org/b/306360 http/tests/download/sandboxed-iframe-download-not-allowed.html [ Pass Failure ]
+
+webkit.org/b/306570 http/tests/webcodecs/video-decoder-callbacks-do-not-leak.html [ Pass Failure ]
 
