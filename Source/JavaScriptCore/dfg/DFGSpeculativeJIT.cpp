@@ -14057,6 +14057,24 @@ void SpeculativeJIT::compileDefineAccessorProperty(Node* node)
     noResult(node, UseChildrenCalledExplicitly);
 }
 
+void SpeculativeJIT::compileObjectDefineProperty(Node* node)
+{
+    SpeculateCellOperand target(this, node->child1());
+    JSValueOperand key(this, node->child2());
+    SpeculateCellOperand descriptor(this, node->child3());
+
+    GPRReg targetGPR = target.gpr();
+    JSValueRegs keyRegs = key.jsValueRegs();
+    GPRReg descriptorGPR = descriptor.gpr();
+
+    speculateObject(node->child1(), targetGPR);
+    speculateObject(node->child3(), descriptorGPR);
+
+    flushRegisters();
+    callOperation(operationObjectDefineProperty, LinkableConstant::globalObject(*this, node), targetGPR, keyRegs, descriptorGPR);
+    noResult(node);
+}
+
 void SpeculativeJIT::emitAllocateButterfly(GPRReg storageResultGPR, GPRReg sizeGPR, GPRReg scratch1, GPRReg scratch2, GPRReg scratch3, JumpList& slowCases)
 {
     RELEASE_ASSERT(RegisterSetBuilder(storageResultGPR, sizeGPR, scratch1, scratch2, scratch3).numberOfSetGPRs() == 5);

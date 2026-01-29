@@ -1690,6 +1690,7 @@ private:
         case PutSetterByVal:
         case DefineDataProperty:
         case DefineAccessorProperty:
+        case ObjectDefineProperty:
         case CallCustomAccessorSetter:
         case DFG::Jump:
         case Branch:

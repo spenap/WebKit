@@ -105,6 +105,7 @@ namespace JSC {
     macro(RegExpSearchIntrinsic) \
     macro(ObjectAssignIntrinsic) \
     macro(ObjectCreateIntrinsic) \
+    macro(ObjectDefinePropertyIntrinsic) \
     macro(ObjectGetOwnPropertyNamesIntrinsic) \
     macro(ObjectGetOwnPropertySymbolsIntrinsic) \
     macro(ObjectGetPrototypeOfIntrinsic) \

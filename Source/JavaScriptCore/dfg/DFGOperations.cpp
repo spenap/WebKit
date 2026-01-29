@@ -2114,6 +2114,28 @@ JSC_DEFINE_JIT_OPERATION(operationPutByValWithThis, void, (JSGlobalObject* globa
     OPERATION_RETURN(scope);
 }
 
+JSC_DEFINE_JIT_OPERATION(operationObjectDefineProperty, void, (JSGlobalObject* globalObject, JSObject* target, EncodedJSValue encodedKey, JSObject* descriptor))
+{
+    VM& vm = globalObject->vm();
+    CallFrame* callFrame = DECLARE_CALL_FRAME(vm);
+    JITOperationPrologueCallFrameTracer tracer(vm, callFrame);
+    auto scope = DECLARE_THROW_SCOPE(vm);
+
+    auto propertyName = JSValue::decode(encodedKey).toPropertyKey(globalObject);
+    OPERATION_RETURN_IF_EXCEPTION(scope);
+
+    PropertyDescriptor desc;
+    bool success = toPropertyDescriptor(globalObject, descriptor, desc);
+    EXCEPTION_ASSERT(!scope.exception() == success);
+    if (!success)
+        OPERATION_RETURN(scope);
+    ASSERT((desc.attributes() & PropertyAttribute::Accessor) || (!desc.isAccessorDescriptor()));
+
+    scope.release();
+    target->methodTable()->defineOwnProperty(target, globalObject, propertyName, desc, true);
+    OPERATION_RETURN(scope);
+}
+
 ALWAYS_INLINE static void defineDataProperty(JSGlobalObject* globalObject, JSObject* base, PropertyName propertyName, JSValue value, int32_t attributes)
 {
     PropertyDescriptor descriptor = toPropertyDescriptor(value, jsUndefined(), jsUndefined(), DefinePropertyAttributes(attributes));

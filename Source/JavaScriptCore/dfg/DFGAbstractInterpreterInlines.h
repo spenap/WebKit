@@ -5241,6 +5241,7 @@ bool AbstractInterpreter<AbstractStateType>::executeEffects(unsigned clobberLimi
 
     case DefineDataProperty:
     case DefineAccessorProperty:
+    case ObjectDefineProperty:
         clobberWorld();
         break;
         

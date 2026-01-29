@@ -1725,6 +1725,7 @@ public:
     void compileCompareEqPtr(Node*);
     void compileDefineDataProperty(Node*);
     void compileDefineAccessorProperty(Node*);
+    void compileObjectDefineProperty(Node*);
     void compileStringSlice(Node*);
     void compileStringSubstring(Node*);
     void compileToLowerCase(Node*);

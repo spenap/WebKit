@@ -306,6 +306,7 @@ bool doesGC(Graph& graph, Node* node)
     case DataViewGetByteLengthAsInt52:
     case DefineDataProperty:
     case DefineAccessorProperty:
+    case ObjectDefineProperty:
     case DeleteById:
     case DeleteByVal:
     case DirectCall:

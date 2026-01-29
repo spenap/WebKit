@@ -3653,6 +3653,11 @@ void SpeculativeJIT::compile(Node* node)
         break;
     }
 
+    case ObjectDefineProperty: {
+        compileObjectDefineProperty(node);
+        break;
+    }
+
     case DefineAccessorProperty: {
         compileDefineAccessorProperty(node);
         break;

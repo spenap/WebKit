@@ -1163,6 +1163,9 @@ private:
         case DefineDataProperty:
             compileDefineDataProperty();
             break;
+        case ObjectDefineProperty:
+            compileObjectDefineProperty();
+            break;
         case DefineAccessorProperty:
             compileDefineAccessorProperty();
             break;
@@ -5457,6 +5460,15 @@ private:
         default:
             RELEASE_ASSERT_NOT_REACHED();
         }
+    }
+
+    void compileObjectDefineProperty()
+    {
+        JSGlobalObject* globalObject = m_graph.globalObjectFor(m_origin.semantic);
+        LValue target = lowObject(m_node->child1());
+        LValue key = lowJSValue(m_node->child2());
+        LValue descriptor = lowObject(m_node->child3());
+        vmCall(Void, operationObjectDefineProperty, weakPointer(globalObject), target, key, descriptor);
     }
 
     void compileDefineAccessorProperty()

@@ -3142,6 +3142,13 @@ private:
             break;
         }
 
+        case ObjectDefineProperty: {
+            fixEdge<ObjectUse>(node->child1()); // target
+            fixEdge<UntypedUse>(node->child2()); // key
+            fixEdge<ObjectUse>(node->child3()); // descriptor
+            break;
+        }
+
         case StringValueOf: {
             fixupStringValueOf(node);
             break;
