@@ -1516,6 +1516,9 @@ class YarrGenerator final : public YarrJITInfo {
         // Used to wrap 'Terminal' subpattern matches (at the end of the regexp).
         ParenthesesSubpatternTerminalBegin,
         ParenthesesSubpatternTerminalEnd,
+        // Used to wrap non-capturing FixedCount parentheses (e.g., (?:x){3,3}).
+        ParenthesesSubpatternFixedCountBegin,
+        ParenthesesSubpatternFixedCountEnd,
         // Used to wrap generic captured matches
         ParenthesesSubpatternBegin,
         ParenthesesSubpatternEnd,
@@ -3569,7 +3572,7 @@ class YarrGenerator final : public YarrJITInfo {
 
                 // Calculate how much input we need to check for, and if non-zero check.
                 op.m_checkAdjust = Checked<unsigned>(alternative->m_minimumSize);
-                if ((term->quantityType == QuantifierType::FixedCount) && (term->type != PatternTerm::Type::ParentheticalAssertion))
+                if ((term->quantityType == QuantifierType::FixedCount) && (term->quantityMaxCount == 1) && (term->type != PatternTerm::Type::ParentheticalAssertion))
                     op.m_checkAdjust -= disjunction->m_minimumSize;
                 if (op.m_checkAdjust)
                     op.m_jumps.append(jumpIfNoAvailableInput(op.m_checkAdjust));
@@ -3621,7 +3624,7 @@ class YarrGenerator final : public YarrJITInfo {
 
                 // Calculate how much input we need to check for, and if non-zero check.
                 op.m_checkAdjust = alternative->m_minimumSize;
-                if ((term->quantityType == QuantifierType::FixedCount) && (term->type != PatternTerm::Type::ParentheticalAssertion))
+                if ((term->quantityType == QuantifierType::FixedCount) && (term->quantityMaxCount == 1) && (term->type != PatternTerm::Type::ParentheticalAssertion))
                     op.m_checkAdjust -= disjunction->m_minimumSize;
                 if (op.m_op == YarrOpCode::StringListAlternativeNext) {
                     YarrOp* prevOp = &m_ops[op.m_previousOp];
@@ -3801,6 +3804,56 @@ class YarrGenerator final : public YarrJITInfo {
 
                 // This is the entry point to jump to when we stop matching - we will
                 // do so once the subpattern cannot match any more.
+                op.m_reentry = m_jit.label();
+                break;
+            }
+
+            // YarrOpCode::ParenthesesSubpatternFixedCountBegin/End
+            //
+            // These nodes support non-capturing parentheses with FixedCount quantifier.
+            // Example: (?:abc){3,3} or (?:x){5,5}
+            // The semantics are: match exactly N times. Any failure = total failure.
+            // Note: We reuse BackTrackInfoParentheses offsets for frame layout compatibility
+            // with the interpreter fallback path.
+            case YarrOpCode::ParenthesesSubpatternFixedCountBegin: {
+                termMatchTargets.append(MatchTargets());
+
+                PatternTerm* term = op.m_term;
+                unsigned parenthesesFrameLocation = term->frameLocation;
+
+                // Initialize the match count to 0.
+                storeToFrame(MacroAssembler::TrustedImm32(0), parenthesesFrameLocation + BackTrackInfoParentheses::matchAmountIndex());
+
+                // Set the reentry label for looping.
+                op.m_reentry = m_jit.label();
+
+                // Store the current index for empty match detection.
+                storeToFrame(m_regs.index, parenthesesFrameLocation + BackTrackInfoParentheses::beginIndex());
+                break;
+            }
+            case YarrOpCode::ParenthesesSubpatternFixedCountEnd: {
+                YarrOp& beginOp = m_ops[op.m_previousOp];
+                PatternTerm* term = op.m_term;
+                unsigned parenthesesFrameLocation = term->frameLocation;
+
+                termMatchTargets.takeLast();
+
+                // If the nested alternative matched without consuming any characters, punt to interpreter.
+                // FIXME: <https://bugs.webkit.org/show_bug.cgi?id=200786>
+                if (!term->parentheses.disjunction->m_minimumSize)
+                    m_abortExecution.append(m_jit.branch32(MacroAssembler::Equal, m_regs.index, frameAddress().withOffset(parenthesesFrameLocation * sizeof(void*))));
+
+                // Increment the match count.
+                const MacroAssembler::RegisterID countTemporary = m_regs.regT0;
+                loadFromFrame(parenthesesFrameLocation + BackTrackInfoParentheses::matchAmountIndex(), countTemporary);
+                m_jit.add32(MacroAssembler::TrustedImm32(1), countTemporary);
+                storeToFrame(countTemporary, parenthesesFrameLocation + BackTrackInfoParentheses::matchAmountIndex());
+
+                // If we haven't matched enough times yet, loop back.
+                m_jit.branch32(MacroAssembler::Below, countTemporary, MacroAssembler::Imm32(term->quantityMaxCount)).linkTo(beginOp.m_reentry, &m_jit);
+
+                // We've matched the required number of times, continue to next opcode.
+                // Set the reentry point for backtracking to propagate failure upward.
                 op.m_reentry = m_jit.label();
                 break;
             }
@@ -4495,6 +4548,24 @@ class YarrGenerator final : public YarrJITInfo {
                 m_backtrackingState.append(op.m_jumps);
                 break;
 
+            // YarrOpCode::ParenthesesSubpatternFixedCountBegin/End
+            //
+            // For non-capturing FixedCount parentheses, any failure means the entire
+            // pattern fails. There's no partial backtracking - we either match
+            // exactly N times or we fail completely.
+            case YarrOpCode::ParenthesesSubpatternFixedCountBegin:
+                // Any backtrack to Begin means we failed to match the required count.
+                // First link any pending backtrack state from the content inside,
+                // then propagate the failure upward.
+                m_backtrackingState.link(&m_jit);
+                m_backtrackingState.fallthrough();
+                break;
+            case YarrOpCode::ParenthesesSubpatternFixedCountEnd:
+                // Backtracking into the End means something after the parentheses failed.
+                // For FixedCount, we don't try alternative counts, so just fail.
+                m_backtrackingState.append(op.m_jumps);
+                break;
+
             // YarrOpCode::ParenthesesSubpatternBegin/End
             //
             // When we are backtracking back out of a capturing subpattern we need
@@ -4730,24 +4801,36 @@ class YarrGenerator final : public YarrJITInfo {
             parenthesesEndOpCode = YarrOpCode::ParenthesesSubpatternTerminalEnd;
         } else {
 #if ENABLE(YARR_JIT_ALL_PARENS_EXPRESSIONS)
-            // We only handle generic parenthesis with non-fixed counts.
             if (term->quantityType == QuantifierType::FixedCount) {
-                // This subpattern is not supported by the JIT.
-                m_failureReason = JITFailureReason::FixedCountParenthesizedSubpattern;
-                return;
-            }
+                // Handle non-capturing FixedCount with specialized OpCodes.
+                if (!term->capture()) {
+                    parenthesesBeginOpCode = YarrOpCode::ParenthesesSubpatternFixedCountBegin;
+                    parenthesesEndOpCode = YarrOpCode::ParenthesesSubpatternFixedCountEnd;
 
-            m_containsNestedSubpatterns = true;
+                    // If there is more than one alternative we cannot use the 'simple' nodes.
+                    if (term->parentheses.disjunction->m_alternatives.size() != 1) {
+                        alternativeBeginOpCode = YarrOpCode::NestedAlternativeBegin;
+                        alternativeNextOpCode = YarrOpCode::NestedAlternativeNext;
+                        alternativeEndOpCode = YarrOpCode::NestedAlternativeEnd;
+                    }
+                } else {
+                    // FIXME: Add JIT support for capturing FixedCount parentheses.
+                    m_failureReason = JITFailureReason::FixedCountParenthesizedSubpattern;
+                    return;
+                }
+            } else {
+                m_containsNestedSubpatterns = true;
 
-            // Select the 'Generic' nodes.
-            parenthesesBeginOpCode = YarrOpCode::ParenthesesSubpatternBegin;
-            parenthesesEndOpCode = YarrOpCode::ParenthesesSubpatternEnd;
+                // Select the 'Generic' nodes.
+                parenthesesBeginOpCode = YarrOpCode::ParenthesesSubpatternBegin;
+                parenthesesEndOpCode = YarrOpCode::ParenthesesSubpatternEnd;
 
-            // If there is more than one alternative we cannot use the 'simple' nodes.
-            if (term->parentheses.disjunction->m_alternatives.size() != 1) {
-                alternativeBeginOpCode = YarrOpCode::NestedAlternativeBegin;
-                alternativeNextOpCode = YarrOpCode::NestedAlternativeNext;
-                alternativeEndOpCode = YarrOpCode::NestedAlternativeEnd;
+                // If there is more than one alternative we cannot use the 'simple' nodes.
+                if (term->parentheses.disjunction->m_alternatives.size() != 1) {
+                    alternativeBeginOpCode = YarrOpCode::NestedAlternativeBegin;
+                    alternativeNextOpCode = YarrOpCode::NestedAlternativeNext;
+                    alternativeEndOpCode = YarrOpCode::NestedAlternativeEnd;
+                }
             }
 #else
             // This subpattern is not supported by the JIT.
@@ -4772,7 +4855,7 @@ class YarrGenerator final : public YarrJITInfo {
                 // Calculate how much input we need to check for, and if non-zero check.
                 YarrOp& lastOp = m_ops[lastOpIndex];
                 lastOp.m_checkAdjust = nestedAlternative->m_minimumSize;
-                if ((term->quantityType == QuantifierType::FixedCount) && (term->type != PatternTerm::Type::ParentheticalAssertion))
+                if ((term->quantityType == QuantifierType::FixedCount) && (term->quantityMaxCount == 1) && (term->type != PatternTerm::Type::ParentheticalAssertion))
                     lastOp.m_checkAdjust -= disjunction->m_minimumSize;
 
                 Checked<unsigned, RecordOverflow> checkedOffsetResult(checkedOffset);
@@ -6153,6 +6236,18 @@ public:
                 out.printf("capturing pattern #%u\n", term->parentheses.subpatternId);
             else
                 out.print("non-capturing\n");
+            return 0;
+
+        case YarrOpCode::ParenthesesSubpatternFixedCountBegin:
+            out.printf("ParenthesesSubpatternFixedCountBegin checked-offset:(%u) non-capturing ", op.m_checkedOffset.value());
+            term->dumpQuantifier(out);
+            out.print("\n");
+            return 0;
+
+        case YarrOpCode::ParenthesesSubpatternFixedCountEnd:
+            out.printf("ParenthesesSubpatternFixedCountEnd checked-offset:(%u) non-capturing ", op.m_checkedOffset.value());
+            term->dumpQuantifier(out);
+            out.print("\n");
             return 0;
 
         case YarrOpCode::ParenthesesSubpatternBegin:

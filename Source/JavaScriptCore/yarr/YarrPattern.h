@@ -829,6 +829,14 @@ private:
         static unsigned beginIndex() { return offsetof(BackTrackInfoParenthesesTerminal, begin) / sizeof(uintptr_t); }
     };
 
+    struct BackTrackInfoParenthesesFixedCount {
+        uintptr_t begin;
+        uintptr_t matchAmount;
+
+        static unsigned beginIndex() { return offsetof(BackTrackInfoParenthesesFixedCount, begin) / sizeof(uintptr_t); }
+        static unsigned matchAmountIndex() { return offsetof(BackTrackInfoParenthesesFixedCount, matchAmount) / sizeof(uintptr_t); }
+    };
+
     struct BackTrackInfoParentheses {
         uintptr_t begin;
         uintptr_t returnAddress;
