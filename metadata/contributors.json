@@ -2498,6 +2498,14 @@
    },
    {
       "emails" : [
+         "d_delatoba@apple.com"
+      ],
+      "github" : "diegodelatoba",
+      "name" : "Diego De La Toba",
+      "status" : "committer"
+   },
+   {
+      "emails" : [
          "diegohcg@webkit.org",
          "diego.gonzalez@openbossa.org"
       ],
