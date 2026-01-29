@@ -2497,6 +2497,7 @@ set(WebCoreTestSupport_IDL_FILES
     testing/MockContentFilterSettings.idl
     testing/MockMediaDeviceRoute.idl
     testing/MockMediaDeviceRouteController.idl
+    testing/MockMediaDeviceRouteURLCallback.idl
     testing/MockPageOverlay.idl
     testing/MockWebAuthenticationConfiguration.idl
     testing/ServiceWorkerInternals.idl
