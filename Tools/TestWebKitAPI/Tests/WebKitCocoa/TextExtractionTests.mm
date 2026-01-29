@@ -384,7 +384,8 @@ TEST(TextExtractionTests, VisibleTextOnly)
 
     EXPECT_TRUE([debugText containsString:@"Test"]);
     EXPECT_TRUE([debugText containsString:@"foo"]);
-    EXPECT_TRUE([debugText containsString:@"Subject “The quick brown fox jumped over the lazy dog”"]);
+    EXPECT_TRUE([debugText containsString:@"Subject"]);
+    EXPECT_TRUE([debugText containsString:@"“The quick brown fox jumped over the lazy dog”"]);
     EXPECT_TRUE([debugText containsString:@"0"]);
 #if ENABLE(TEXT_EXTRACTION_FILTER)
     EXPECT_FALSE([debugText containsString:@"Here’s to the crazy ones"]);
@@ -500,8 +501,9 @@ TEST(TextExtractionTests, NodesToSkip)
     }()];
 
     NSArray<NSString *> *lines = [debugText componentsSeparatedByString:@"\n"];
-    EXPECT_EQ([lines count], 1u);
-    EXPECT_WK_STREQ("Test 0", lines[0]);
+    EXPECT_EQ([lines count], 2u);
+    EXPECT_WK_STREQ("Test", lines[0]);
+    EXPECT_WK_STREQ("0", lines[1]);
 }
 
 TEST(TextExtractionTests, RequestJSHandleForNodeIdentifier)

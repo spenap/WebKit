@@ -16,7 +16,10 @@ root
             input,'text',uid=…,placeholder='Enter text here'
             role='button',title='Test action','Clickable Div'
         section,aria-label='Content with Roles'
-            article,role='article','Article Title\n\nJanuary 1, 2024\nThis is some article content with highlighted text.'
+            article,role='article'
+                'Article Title'
+                'January 1, 2024'
+                'This is some article content with highlighted text.'
             role='complementary',aria-label='Related information'
                 'Related Links'
                 list
@@ -66,7 +69,11 @@ root
             <div role='button' title='Test action'>Clickable Div</div>
         </section>
         <section aria-label='Content with Roles'>
-            <article role='article'>Article Title  January 1, 2024 This is some article content with highlighted text.</article>
+            <article role='article'>
+                Article Title
+                January 1, 2024
+                This is some article content with highlighted text.
+            </article>
             <aside role='complementary' aria-label='Related information'>
                 Related Links
                 <ul>
@@ -238,7 +245,15 @@ root
               "children": [
                 {
                   "type": "text",
-                  "content": "Article Title January 1, 2024 This is some article content with highlighted text."
+                  "content": "Article Title"
+                },
+                {
+                  "type": "text",
+                  "content": "January 1, 2024"
+                },
+                {
+                  "type": "text",
+                  "content": "This is some article content with highlighted text."
                 }
               ]
             },
