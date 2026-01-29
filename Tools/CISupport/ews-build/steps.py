@@ -5851,6 +5851,13 @@ class RunAPITests(shell.Test, AddToLogMixin, ShellMixin):
             if self.name != RunAPITestsWithoutChange.name:
                 self.build.results = SUCCESS
                 self.setProperty('build_summary', message)
+                # Add parallel safety testing for modified API tests (only for initial run)
+                if self.name == RunAPITests.name:
+                    self.steps_to_add += [
+                        FindModifiedAPITests(skipBuildIfNoResult=False),
+                        FilterAPITestsForPlatform(),
+                        RunAPITestsParallelSafety(),
+                    ]
         elif (self.name != RunAPITestsWithoutChange.name and self.preexisting_failures_in_results_db and len(self.failing_tests_filtered) == 0):
             # This means all the tests which failed in this run were also failing or flaky in results database
             message = f"Ignored pre-existing failure: {', '.join(self.preexisting_failures_in_results_db)}"
@@ -6155,6 +6162,352 @@ class AnalyzeAPITestsResults(buildstep.BuildStep, AddToLogMixin):
             send_email_to_bot_watchers(email_subject, email_text, builder_name, 'preexisting-{}'.format(test_name))
         except Exception as e:
             print('Error in sending email for pre-existing failure: {}'.format(e))
+
+
+class FindModifiedAPITests(shell.ShellCommand, AnalyzeChange):
+    name = 'find-modified-api-tests'
+    description = ['find-modified-api tests running']
+    descriptionDone = ['Found modified API tests']
+    RE_API_TEST = br'^(\+\+\+).*(Tools/TestWebKitAPI/Tests/.*\.(cpp|mm|m))'
+    RE_TEST_F = re.compile(r'TEST_F\s*\(\s*(\w+)\s*,\s*(\w+)\s*\)')
+    RE_TEST = re.compile(r'TEST\s*\(\s*(\w+)\s*,\s*(\w+)\s*\)')
+    API_TEST_PATHS = ['Tools/TestWebKitAPI/Tests/']
+
+    def __init__(self, skipBuildIfNoResult=True):
+        self.skipBuildIfNoResult = skipBuildIfNoResult
+        super().__init__(logEnviron=False)
+
+    @staticmethod
+    def _extract_test_names_from_content(content):
+        """Extract test names from file content string"""
+        test_names = []
+        for pattern in [FindModifiedAPITests.RE_TEST_F, FindModifiedAPITests.RE_TEST]:
+            matches = pattern.findall(content)
+            for suite, test in matches:
+                test_names.append(f'{suite}.{test}')
+        return test_names
+
+    @staticmethod
+    def _get_binary_for_test_path(file_path):
+        """Determine which test binary a file belongs to"""
+        binaries = ['TestWTF', 'TestWebCore', 'TestIPC', 'TestWGSL']
+        for binary in binaries:
+            if binary in file_path:
+                return binary
+        return 'TestWebKitAPI'
+
+    @defer.inlineCallbacks
+    def run(self):
+        self.log_observer = logobserver.BufferLogObserver()
+        self.addLogObserver('stdio', self.log_observer)
+
+        patch = self._get_patch()
+        if not patch:
+            yield self._addToLog('stdio', 'No patch found, using git diff against base branch\n')
+            remote = self.getProperty('remote', 'origin')
+            base_ref = self.getProperty('github.base.ref', 'main')
+            # Use triple-dot diff to compare merge-base with HEAD (only PR changes)
+            self.command = ['git', 'diff', f'remotes/{remote}/{base_ref}...HEAD', '--name-only']
+            rc = yield super().run()
+
+            if rc != SUCCESS:
+                return defer.returnValue(SKIPPED)
+
+            log_text = self.log_observer.getStdout()
+            changed_files = [f for f in log_text.splitlines() if any(f.startswith(path) for path in self.API_TEST_PATHS)]
+        else:
+            yield self._addToLog('stdio', 'Found patch, analyzing for API test changes\n')
+            changed_files = self.find_test_names_from_patch(patch)
+
+        if not changed_files:
+            yield self._addToLog('stdio', 'No API test files were modified\n')
+            self.setProperty('modified_api_tests', [])
+            if self.skipBuildIfNoResult:
+                self.build.results = SKIPPED
+                self.build.buildFinished(['{} {} doesn\'t modify any API tests'.format(
+                    self.change_type,
+                    self.getProperty('patch_id', '') or self.getProperty('github.number', ''),
+                )], SKIPPED)
+            return defer.returnValue(SKIPPED)
+
+        yield self._addToLog('stdio', f'Found {len(changed_files)} modified API test file(s):\n')
+        for file_path in changed_files:
+            yield self._addToLog('stdio', f'  - {file_path}\n')
+
+        # Extract test names from modified files, keyed by file for round-robin selection
+        # Note: Files are on the worker, not master, so we use git show to read content
+        tests_by_file = {}
+        for file_path in changed_files:
+            # Create fresh log observer for each file to avoid accumulation
+            file_log_observer = logobserver.BufferLogObserver()
+            self.addLogObserver('stdio', file_log_observer)
+
+            self.command = ['git', 'show', f'HEAD:{file_path}']
+            rc = yield super().run()
+
+            if rc != SUCCESS:
+                yield self._addToLog('stdio', f'  Warning: Could not read {file_path} via git show\n')
+                continue
+
+            content = file_log_observer.getStdout()
+            binary = self._get_binary_for_test_path(file_path)
+            test_names = self._extract_test_names_from_content(content)
+            yield self._addToLog('stdio', f'  Extracted {len(test_names)} test(s) from {file_path}\n')
+
+            if test_names:
+                tests_by_file[file_path] = [(binary, test) for test in test_names]
+
+        if not tests_by_file:
+            yield self._addToLog('stdio', '\nCould not extract test names from modified files, will skip parallel safety testing\n')
+            self.setProperty('modified_api_tests', [])
+            return defer.returnValue(SKIPPED)
+
+        # Collect all tests with file info for round-robin selection in later step
+        seen_tests = {}
+        for file_path, tests in tests_by_file.items():
+            for binary, test in tests:
+                full_test_name = f'{binary}.{test}'
+                if full_test_name not in seen_tests:
+                    seen_tests[full_test_name] = {'file': file_path, 'test': full_test_name}
+        all_tests = list(seen_tests.values())
+
+        MAX_TESTS = 250
+        if all_tests:
+            total_tests = len(all_tests)
+            if total_tests > MAX_TESTS:
+                yield self._addToLog('stdio', f'\nWarning: Truncating to {MAX_TESTS} tests (was {total_tests})\n')
+                all_tests = all_tests[:MAX_TESTS]
+            yield self._addToLog('stdio', f'\nIdentified {len(all_tests)} API test(s) for parallel safety testing:\n')
+            for item in all_tests:
+                yield self._addToLog('stdio', f'  - {item["test"]}\n')
+
+        self.setProperty('modified_api_tests', all_tests)
+        defer.returnValue(SUCCESS if all_tests else SKIPPED)
+
+    def find_test_names_from_patch(self, patch):
+        """Find modified API test files from patch"""
+        test_files = []
+        for line in patch.splitlines():
+            match = re.search(self.RE_API_TEST, line, re.IGNORECASE)
+            if match:
+                test_name = match.group(2).decode('utf-8')
+                test_files.append(test_name)
+        return list(set(test_files))
+
+    def getResultSummary(self):
+        modified_tests = self.getProperty('modified_api_tests', [])
+        if self.results == SUCCESS and modified_tests:
+            return {'step': f'Found {len(modified_tests)} modified API test(s)'}
+        if self.results == SKIPPED:
+            return {'step': 'No API tests modified'}
+        return super().getResultSummary()
+
+
+class FilterAPITestsForPlatform(shell.ShellCommand, AddToLogMixin):
+    name = 'filter-api-tests-for-platform'
+    description = ['filtering api tests for platform']
+    descriptionDone = ['filtered api tests']
+    UNSUPPORTED_PLATFORMS = ['gtk', 'wpe']
+
+    def __init__(self, **kwargs):
+        super().__init__(logEnviron=False, timeout=120, **kwargs)
+
+    def doStepIf(self, step):
+        platform = self.getProperty('platform')
+        if platform in self.UNSUPPORTED_PLATFORMS:
+            return False
+        return bool(self.getProperty('modified_api_tests', []))
+
+    def hideStepIf(self, results, step):
+        return not self.doStepIf(step)
+
+    @defer.inlineCallbacks
+    def run(self):
+        modified_tests = self.getProperty('modified_api_tests', [])
+        if not modified_tests:
+            defer.returnValue(SKIPPED)
+
+        MAX_TESTS = 30
+
+        self.log_observer = logobserver.BufferLogObserver(wantStdout=True, wantStderr=True)
+        self.addLogObserver('stdio', self.log_observer)
+
+        platform = self.getProperty('platform')
+        configuration = self.getProperty('configuration', 'debug')
+
+        self.command = [
+            'python3', 'Tools/Scripts/run-api-tests',
+            '--dump',
+            f'--{configuration}',
+        ]
+        self.command += customBuildFlag(platform, self.getProperty('fullPlatform'))
+
+        yield self._addToLog('stdio', f'Querying available tests on this platform...\n')
+        yield self._addToLog('stdio', f'Command: {" ".join(self.command)}\n\n')
+
+        rc = yield super().run()
+
+        if rc != SUCCESS:
+            yield self._addToLog('stdio', '\nWarning: Could not query available tests, proceeding with all tests\n')
+            # Fall back to all tests without filtering
+            all_test_names = [item['test'] for item in modified_tests]
+            self.setProperty('modified_api_tests', all_test_names[:MAX_TESTS])
+            defer.returnValue(SUCCESS)
+
+        available_tests = set()
+        log_text = self.log_observer.getStdout() + self.log_observer.getStderr()
+        for line in log_text.splitlines():
+            line = line.strip()
+            if line and '.' in line and not line.startswith('Command:'):
+                available_tests.add(line)
+
+        yield self._addToLog('stdio', f'\nFound {len(available_tests)} available tests on this platform\n')
+
+        # Filter by availability and group by file
+        tests_by_file = {}
+        filtered_out = 0
+        for item in modified_tests:
+            test_name = item['test']
+            file_path = item['file']
+            if test_name in available_tests:
+                if file_path not in tests_by_file:
+                    tests_by_file[file_path] = []
+                tests_by_file[file_path].append(test_name)
+            else:
+                filtered_out += 1
+
+        if filtered_out:
+            yield self._addToLog('stdio', f'Filtered out {filtered_out} test(s) not available on this platform\n')
+
+        # Round-robin selection up to MAX_TESTS
+        selected_tests = []
+        file_iterators = {f: iter(tests) for f, tests in tests_by_file.items()}
+        active_files = list(file_iterators.keys())
+
+        while active_files and len(selected_tests) < MAX_TESTS:
+            for file_path in list(active_files):
+                if len(selected_tests) >= MAX_TESTS:
+                    break
+                try:
+                    test = next(file_iterators[file_path])
+                    selected_tests.append(test)
+                except StopIteration:
+                    active_files.remove(file_path)
+
+        total_available = sum(len(tests) for tests in tests_by_file.values())
+        truncated_count = total_available - len(selected_tests)
+
+        if selected_tests:
+            yield self._addToLog('stdio', f'Selected {len(selected_tests)} test(s) for parallel safety testing:\n')
+            for test in selected_tests:
+                yield self._addToLog('stdio', f'  - {test}\n')
+            if truncated_count:
+                yield self._addToLog('stdio', f'({truncated_count} test(s) skipped due to {MAX_TESTS} test limit)\n')
+        else:
+            yield self._addToLog('stdio', 'No modified tests are available on this platform\n')
+
+        self.setProperty('modified_api_tests', selected_tests)
+        defer.returnValue(SUCCESS if selected_tests else SKIPPED)
+
+    def doStepIf(self, step):
+        return bool(self.getProperty('modified_api_tests', []))
+
+    def hideStepIf(self, results, step):
+        return not self.doStepIf(step)
+
+    def getResultSummary(self):
+        modified_tests = self.getProperty('modified_api_tests', [])
+        if self.results == SUCCESS and modified_tests:
+            return {'step': f'{len(modified_tests)} test(s) available on platform'}
+        if self.results == SKIPPED:
+            return {'step': 'No tests available on platform'}
+        return super().getResultSummary()
+
+
+class RunAPITestsParallelSafety(RunAPITests):
+    name = 'run-api-tests-parallel-safety'
+    description = ['api-tests-parallel-safety running']
+    descriptionDone = ['api-tests-parallel-safety']
+    suffix = 'parallel_safety'
+    UNSUPPORTED_PLATFORMS = ['gtk', 'wpe']
+
+    def doStepIf(self, step):
+        platform = self.getProperty('platform')
+        if platform in self.UNSUPPORTED_PLATFORMS:
+            return False
+        return bool(self.getProperty('modified_api_tests', []))
+
+    def hideStepIf(self, results, step):
+        return not self.doStepIf(step)
+
+    @defer.inlineCallbacks
+    def run(self):
+        modified_tests_raw = self.getProperty('modified_api_tests', [])
+        if not modified_tests_raw:
+            return defer.returnValue(SKIPPED)
+
+        # Handle both dict format (from FindModifiedAPITests) and string format (from FilterAPITestsForPlatform)
+        modified_tests = []
+        for item in modified_tests_raw:
+            if isinstance(item, dict):
+                modified_tests.append(item.get('test', ''))
+            else:
+                modified_tests.append(item)
+        modified_tests = [t for t in modified_tests if t]  # Filter empty strings
+
+        if not modified_tests:
+            return defer.returnValue(SKIPPED)
+
+        platform = self.getProperty('platform')
+        configuration = self.getProperty('configuration', 'debug')
+
+        # Build command
+        self.command = [
+            'python3', 'Tools/Scripts/run-api-tests',
+            '--timestamps', '--no-build',
+            f'--{configuration}',
+            '--verbose',
+            f'--json-output={self.jsonFileName}'
+        ]
+
+        self.command += customBuildFlag(platform, self.getProperty('fullPlatform'))
+
+        # Add each test with its own --test-parallel-safety flag
+        for test in modified_tests:
+            self.command += ['--test-parallel-safety', test]
+
+        yield self._addToLog('stdio', f'Running parallel safety testing on {len(modified_tests)} test(s)\n')
+        yield self._addToLog('stdio', f'Command: {" ".join(self.command)}\n\n')
+
+        rc = yield shell.Test.run(self)
+
+        if self.failedTestCount:
+            rc = FAILURE
+
+        defer.returnValue(rc)
+
+    def doOnFailure(self):
+        # No retry needed for parallel safety tests - failures are legitimate
+        pass
+
+    def analyze_failures_using_results_db(self):
+        # Skip results DB checking for parallel safety tests
+        pass
+
+    def getResultSummary(self):
+        if self.results == SKIPPED:
+            return {'step': 'No API tests to check for parallel safety'}
+
+        modified_tests = self.getProperty('modified_api_tests', [])
+        if self.results == SUCCESS:
+            return {'step': f'Passed parallel safety for {len(modified_tests)} test(s)'}
+
+        if self.failedTestCount:
+            self.failedTestPluralSuffix = '' if self.failedTestCount == 1 else 's'
+            status = f'{self.failedTestCount} parallel safety test{self.failedTestPluralSuffix} failed'
+            return {'step': status}
+
+        return super().getResultSummary()
 
 
 class ArchiveTestResults(shell.ShellCommand):
