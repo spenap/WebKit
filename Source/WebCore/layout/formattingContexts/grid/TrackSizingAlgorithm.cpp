@@ -155,20 +155,24 @@ static TrackIndexes tracksWithIntrinsicSizingFunction(const UnsizedTracks& unsiz
     return trackList;
 }
 
-static Vector<LayoutUnit> minContentContributions(const PlacedGridItems&, const GridItemIndexes&, const IntegrationUtils&)
+static Vector<LayoutUnit> minContentContributions(const PlacedGridItems& gridItems, const GridItemIndexes& gridItemIndexes,
+    const IntegrationUtils& integrationUtils, const GridItemSizingFunctions& gridItemSizingFunctions)
 {
-    ASSERT_NOT_IMPLEMENTED_YET();
-    return { { } };
+    return gridItemIndexes.map([&](size_t gridItemIndex) {
+        return gridItemSizingFunctions.minContentContribution(gridItems[gridItemIndex].layoutBox(), integrationUtils);
+    });
 }
 
-static Vector<LayoutUnit> maxContentContributions(const PlacedGridItems&, const GridItemIndexes&, const IntegrationUtils&)
+static Vector<LayoutUnit> maxContentContributions(const PlacedGridItems& gridItems, const GridItemIndexes& gridItemIndexes,
+    const IntegrationUtils& integrationUtils, const GridItemSizingFunctions& gridItemSizingFunctions)
 {
-    ASSERT_NOT_IMPLEMENTED_YET();
-    return { { } };
+    return gridItemIndexes.map([&](size_t gridItemIndex) {
+        return gridItemSizingFunctions.maxContentContribution(gridItems[gridItemIndex].layoutBox(), integrationUtils);
+    });
 }
 
 static void sizeTracksToFitNonSpanningItems(UnsizedTracks& unsizedTracks, const PlacedGridItems& gridItems, const PlacedGridItemSpanList& gridItemSpanList,
-    const IntegrationUtils& integrationUtils)
+    const IntegrationUtils& integrationUtils, const GridItemSizingFunctions& gridItemSizingFunctions)
 {
     // For each track with an intrinsic track sizing function and not a flexible sizing function, consider the items in it with a span of 1:
     for (auto trackIndex : tracksWithIntrinsicSizingFunction(unsizedTracks)) {
@@ -180,7 +184,7 @@ static void sizeTracksToFitNonSpanningItems(UnsizedTracks& unsizedTracks, const 
             [&](const CSS::Keyword::MinContent&) -> LayoutUnit {
                 // If the track has a min-content min track sizing function, set its base size
                 // to the maximum of the items’ min-content contributions, floored at zero.
-                auto itemContributions = minContentContributions(gridItems, singleSpanningItemsIndexes, integrationUtils);
+                auto itemContributions = minContentContributions(gridItems, singleSpanningItemsIndexes, integrationUtils, gridItemSizingFunctions);
                 ASSERT(itemContributions.size() == singleSpanningItemsIndexes.size());
                 if (itemContributions.isEmpty())
                     return { };
@@ -189,7 +193,7 @@ static void sizeTracksToFitNonSpanningItems(UnsizedTracks& unsizedTracks, const 
             [&](const CSS::Keyword::MaxContent&) -> LayoutUnit {
                 // If the track has a max-content min track sizing function, set its base
                 // size to the maximum of the items’ max-content contributions, floored at zero.
-                auto itemContributions = maxContentContributions(gridItems, singleSpanningItemsIndexes, integrationUtils);
+                auto itemContributions = maxContentContributions(gridItems, singleSpanningItemsIndexes, integrationUtils, gridItemSizingFunctions);
                 ASSERT(itemContributions.size() == singleSpanningItemsIndexes.size());
                 if (itemContributions.isEmpty())
                     return { };
@@ -210,7 +214,7 @@ static void sizeTracksToFitNonSpanningItems(UnsizedTracks& unsizedTracks, const 
             [&](const CSS::Keyword::MinContent&) -> LayoutUnit {
                 // If the track has a min-content max track sizing function, set its growth
                 // limit to the maximum of the items’ min-content contributions.
-                auto itemContributions = minContentContributions(gridItems, singleSpanningItemsIndexes, integrationUtils);
+                auto itemContributions = minContentContributions(gridItems, singleSpanningItemsIndexes, integrationUtils, gridItemSizingFunctions);
                 ASSERT(itemContributions.size() == singleSpanningItemsIndexes.size());
                 if (itemContributions.isEmpty())
                     return { };
@@ -219,7 +223,7 @@ static void sizeTracksToFitNonSpanningItems(UnsizedTracks& unsizedTracks, const 
             [&](const CSS::Keyword::MaxContent&) -> LayoutUnit {
                 // If the track has a max-content max track sizing function, set its growth
                 // limit to the maximum of the items’ max-content contributions.
-                auto itemContributions = maxContentContributions(gridItems, singleSpanningItemsIndexes, integrationUtils);
+                auto itemContributions = maxContentContributions(gridItems, singleSpanningItemsIndexes, integrationUtils, gridItemSizingFunctions);
                 auto maximumMaxContentContribution = itemContributions.isEmpty() ? 0_lu : std::ranges::max(itemContributions);
 
                 auto hasFitContentMaximum = [] {
@@ -248,7 +252,7 @@ static void sizeTracksToFitNonSpanningItems(UnsizedTracks& unsizedTracks, const 
 
 // https://drafts.csswg.org/css-grid-1/#algo-content
 static void resolveIntrinsicTrackSizes(UnsizedTracks& unsizedTracks, const PlacedGridItems& gridItems, const PlacedGridItemSpanList& gridItemSpanList,
-    const IntegrationUtils& integrationUtils)
+    const IntegrationUtils& integrationUtils, const GridItemSizingFunctions& gridItemSizingFunctions)
 {
     // 1. Shim baseline-aligned items so their intrinsic size contributions reflect their
     // baseline alignment.
@@ -258,7 +262,7 @@ static void resolveIntrinsicTrackSizes(UnsizedTracks& unsizedTracks, const Place
     UNUSED_VARIABLE(shimBaselineAlignedItems);
 
     // 2. Size tracks to fit non-spanning items.
-    sizeTracksToFitNonSpanningItems(unsizedTracks, gridItems, gridItemSpanList, integrationUtils);
+    sizeTracksToFitNonSpanningItems(unsizedTracks, gridItems, gridItemSpanList, integrationUtils, gridItemSizingFunctions);
 
     // 3. Increase sizes to accommodate spanning items crossing content-sized tracks:
     // Next, consider the items with a span of 2 that do not span a track with a flexible
@@ -282,7 +286,9 @@ static void resolveIntrinsicTrackSizes(UnsizedTracks& unsizedTracks, const Place
 }
 
 // https://drafts.csswg.org/css-grid-1/#algo-track-sizing
-TrackSizes TrackSizingAlgorithm::sizeTracks(const PlacedGridItems& gridItems, const PlacedGridItemSpanList& gridItemSpanList, const TrackSizingFunctionsList& trackSizingFunctions, std::optional<LayoutUnit> availableSpace, const GridItemSizingFunctions&, const IntegrationUtils& integrationUtils)
+TrackSizes TrackSizingAlgorithm::sizeTracks(const PlacedGridItems& gridItems, const PlacedGridItemSpanList& gridItemSpanList,
+    const TrackSizingFunctionsList& trackSizingFunctions, std::optional<LayoutUnit> availableSpace, const GridItemSizingFunctions& gridItemSizingFunctions,
+    const IntegrationUtils& integrationUtils)
 {
     ASSERT(gridItems.size() == gridItemSpanList.size());
 
@@ -290,7 +296,7 @@ TrackSizes TrackSizingAlgorithm::sizeTracks(const PlacedGridItems& gridItems, co
     auto unsizedTracks = initializeTrackSizes(trackSizingFunctions);
 
     // 2. Resolve Intrinsic Track Sizes
-    resolveIntrinsicTrackSizes(unsizedTracks, gridItems, gridItemSpanList, integrationUtils);
+    resolveIntrinsicTrackSizes(unsizedTracks, gridItems, gridItemSpanList, integrationUtils, gridItemSizingFunctions);
 
     // 3. Maximize Tracks
     auto maximizeTracks = [] {
