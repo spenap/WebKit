@@ -75,6 +75,16 @@ namespace JSC::LOL {
     macro(op_bitor) \
     macro(op_bitxor) \
     macro(op_mov) \
+    macro(op_is_empty) \
+    macro(op_typeof_is_undefined) \
+    macro(op_typeof_is_function) \
+    macro(op_is_undefined_or_null) \
+    macro(op_is_boolean) \
+    macro(op_is_number) \
+    macro(op_is_big_int) \
+    macro(op_is_object) \
+    macro(op_is_cell_with_type) \
+    macro(op_has_structure_with_flags) \
 
 
 #define FOR_EACH_OP_WITH_SLOW_CASE(macro) \

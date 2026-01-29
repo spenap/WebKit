@@ -229,7 +229,17 @@ using ReplayRegisterAllocator = RegisterAllocator<ReplayBackend>;
     macro(OpToNumeric, m_operand, 0) \
     macro(OpBitnot, m_operand, 0) \
     macro(OpResolveScope, m_scope, 1) \
-    macro(OpGetFromScope, m_scope, 1)
+    macro(OpGetFromScope, m_scope, 1) \
+    macro(OpIsEmpty, m_operand, 0) \
+    macro(OpTypeofIsUndefined, m_operand, 0) \
+    macro(OpTypeofIsFunction, m_operand, 0) \
+    macro(OpIsUndefinedOrNull, m_operand, 0) \
+    macro(OpIsBoolean, m_operand, 0) \
+    macro(OpIsNumber, m_operand, 0) \
+    macro(OpIsBigInt, m_operand, 0) \
+    macro(OpIsObject, m_operand, 0) \
+    macro(OpIsCellWithType, m_operand, 0) \
+    macro(OpHasStructureWithFlags, m_operand, 0)
 
 #define ALLOCATE_USE_DEFS_FOR_UNARY_OP(Struct, operand, scratchCount) \
 template<typename Backend> \
