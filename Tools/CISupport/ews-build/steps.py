@@ -83,8 +83,8 @@ STATIC_ANALYSIS_ARCHIVE_PATH = '/tmp/static-analysis.zip'
 SHOULD_FILTER_LOGS = load_password('SHOULD_FILTER_LOGS', default=True)
 SHOULD_LOAD_CONTRIBUTORS_FROM_NETWORK = load_password('SHOULD_FILTER_LOGS', default=True)
 SUFFIX_WITHOUT_CHANGE = '-without-change'
-MACOS_SEQUOIA_TRIGGER = 'feature-disabled-for-now'
-MACOS_SEQUOIA_BUILDER_NAME = 'feature-disabled-for-now'
+MACOS_SEQUOIA_TRIGGER = 'macos-sequoia-release-build-ews'
+MACOS_SEQUOIA_BUILDER_NAME = 'macOS-Sequoia-Release-Build-EWS'
 
 if CURRENT_HOSTNAME in EWS_BUILD_HOSTNAMES:
     CURRENT_HOSTNAME = 'ews-build.webkit.org'
