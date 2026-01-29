@@ -3255,6 +3255,8 @@ void WebProcessProxy::sendWasmDebuggerResponse(const String& response)
     debuggable->sendResponseToFrontend(response);
 }
 
+#endif // ENABLE(WEBASSEMBLY_DEBUGGER) && ENABLE(REMOTE_INSPECTOR)
+
 #if ENABLE(IPC_TESTING_API)
 void WebProcessProxy::takeInvalidMessageStringForTesting(CompletionHandler<void(String&&)>&& callback)
 {
@@ -3263,8 +3265,6 @@ void WebProcessProxy::takeInvalidMessageStringForTesting(CompletionHandler<void(
     callback(WTF::move(errorString));
 }
 #endif
-
-#endif // ENABLE(WEBASSEMBLY_DEBUGGER) && ENABLE(REMOTE_INSPECTOR)
 
 } // namespace WebKit
 
