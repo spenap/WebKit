@@ -99,10 +99,7 @@ private:
 
     void reportProcessCPUTime(Seconds, WebCore::ActivityStateForCPUSampling) final;
 
-    bool toolbarsVisible() const final;
-    bool statusbarVisible() const final;
-    bool scrollbarsVisible() const final;
-    bool menubarVisible() const final;
+    bool isPopup() const final;
     
     void setResizable(bool) final;
     

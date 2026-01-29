@@ -1024,16 +1024,6 @@ TEST(WebKit, NotificationPermission)
     TestWebKitAPI::Util::run(&done);
 }
 
-TEST(WebKit, ToolbarVisible)
-{
-    auto webView = adoptNS([[TestWKWebView alloc] initWithFrame:CGRectMake(0, 0, 800, 600) configuration:adoptNS([[WKWebViewConfiguration alloc] init]).get()]);
-    [webView loadHTMLString:@"<script>alert('visible:' + window.toolbar.visible)</script>" baseURL:nil];
-    EXPECT_WK_STREQ([webView _test_waitForAlert], "visible:true");
-    webView.get()._toolbarsAreVisible = NO;
-    [webView evaluateJavaScript:@"alert('visible:' + window.toolbar.visible)" completionHandler:nil];
-    EXPECT_WK_STREQ([webView _test_waitForAlert], "visible:false");
-}
-
 @interface MouseMoveOverElementDelegate : NSObject <WKUIDelegatePrivate>
 @property (nonatomic, copy) void (^mouseDidMoveOverElement)(_WKHitTestResult *, NSEventModifierFlags, id<NSSecureCoding>);
 @property (nonatomic, copy) WKWebView* (^createWebViewWithConfiguration)(WKWebViewConfiguration *, WKNavigationAction *, WKWindowFeatures *);

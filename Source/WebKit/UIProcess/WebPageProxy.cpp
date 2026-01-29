@@ -904,10 +904,6 @@ WebPageProxy::WebPageProxy(PageClient& pageClient, WebProcessProxy& process, Ref
 #endif
     , m_aboutSchemeHandler(AboutSchemeHandler::create())
     , m_pageForTesting(WebPageProxyTesting::create(*this))
-    , m_statusBarIsVisible(windowFeature([] (auto& features) { return features.statusBarVisible; }, configuration))
-    , m_menuBarIsVisible(windowFeature([] (auto& features) { return features.menuBarVisible; }, configuration))
-    , m_toolbarsAreVisible(windowFeature([] (auto& features) { return features.toolBarVisible; }, configuration)
-        || windowFeature([] (auto& features) { return features.locationBarVisible; }, configuration))
 {
     WEBPAGEPROXY_RELEASE_LOG(Loading, "constructor, site isolation enabled %d", protect(preferences())->siteIsolationEnabled());
 
@@ -9570,30 +9566,6 @@ void WebPageProxy::mouseDidMoveOverElement(WebHitTestResultData&& hitTestResultD
     setToolTip(hitTestResultData.tooltipText);
 }
 
-void WebPageProxy::setToolbarsAreVisible(bool visible)
-{
-    m_toolbarsAreVisible = visible;
-    forEachWebContentProcess([&](auto& webProcess, auto pageID) {
-        webProcess.send(Messages::WebPage::SetToolbarsAreVisible(visible), pageID);
-    });
-}
-
-void WebPageProxy::setMenuBarIsVisible(bool visible)
-{
-    m_statusBarIsVisible = visible;
-    forEachWebContentProcess([&](auto& webProcess, auto pageID) {
-        webProcess.send(Messages::WebPage::SetMenuBarIsVisible(visible), pageID);
-    });
-}
-
-void WebPageProxy::setStatusBarIsVisible(bool visible)
-{
-    m_menuBarIsVisible = visible;
-    forEachWebContentProcess([&](auto& webProcess, auto pageID) {
-        webProcess.send(Messages::WebPage::SetStatusBarIsVisible(visible), pageID);
-    });
-}
-
 void WebPageProxy::setIsResizable(bool isResizable)
 {
     m_uiClient->setIsResizable(*this, isResizable);
@@ -12337,9 +12309,6 @@ WebPageCreationParameters WebPageProxy::creationParameters(WebProcessProxy& proc
         .openedMainFrameName = m_openedMainFrameName,
         .initialSandboxFlags = m_mainFrame ? m_mainFrame->effectiveSandboxFlags() : SandboxFlags { },
         .initialReferrerPolicy = m_mainFrame ? m_mainFrame->effectiveReferrerPolicy() : ReferrerPolicy::EmptyString,
-        .statusBarIsVisible = m_statusBarIsVisible,
-        .menuBarIsVisible = m_menuBarIsVisible,
-        .toolbarsAreVisible = m_toolbarsAreVisible,
         .shouldSendConsoleLogsToUIProcessForTesting = m_configuration->shouldSendConsoleLogsToUIProcessForTesting(),
     };
 

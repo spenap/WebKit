@@ -426,6 +426,7 @@ RefPtr<Page> WebChromeClient::createWindow(LocalFrame& frame, const String& open
     ASSERT(parameters);
 
     parameters->oldPageID = page->identifier();
+    parameters->isPopup = windowFeatures.wantsPopup();
 
     webProcess.createWebPage(*newPageID, WTF::move(*parameters));
     return webProcess.webPage(*newPageID)->corePage();
@@ -466,34 +467,12 @@ void WebChromeClient::reportProcessCPUTime(Seconds cpuTime, ActivityStateForCPUS
     WebProcess::singleton().send(Messages::WebProcessPool::ReportWebContentCPUTime(cpuTime, static_cast<uint64_t>(activityState)), 0);
 }
 
-bool WebChromeClient::toolbarsVisible() const
+bool WebChromeClient::isPopup() const
 {
     RefPtr page = m_page.get();
     if (!page)
         return false;
-    return page->toolbarsAreVisible();
-}
-
-bool WebChromeClient::statusbarVisible() const
-{
-    RefPtr page = m_page.get();
-    if (!page)
-        return false;
-    return page->statusBarIsVisible();
-}
-
-bool WebChromeClient::scrollbarsVisible() const
-{
-    notImplemented();
-    return true;
-}
-
-bool WebChromeClient::menubarVisible() const
-{
-    RefPtr page = m_page.get();
-    if (!page)
-        return false;
-    return page->menuBarIsVisible();
+    return page->isPopup();
 }
 
 void WebChromeClient::setResizable(bool resizable)

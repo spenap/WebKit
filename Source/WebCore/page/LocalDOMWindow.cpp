@@ -746,42 +746,42 @@ Crypto& LocalDOMWindow::crypto() const
 BarProp& LocalDOMWindow::locationbar()
 {
     if (!m_locationbar)
-        m_locationbar = BarProp::create(*this, BarProp::Locationbar);
+        m_locationbar = BarProp::create(*this);
     return *m_locationbar;
 }
 
 BarProp& LocalDOMWindow::menubar()
 {
     if (!m_menubar)
-        m_menubar = BarProp::create(*this, BarProp::Menubar);
+        m_menubar = BarProp::create(*this);
     return *m_menubar;
 }
 
 BarProp& LocalDOMWindow::personalbar()
 {
     if (!m_personalbar)
-        m_personalbar = BarProp::create(*this, BarProp::Personalbar);
+        m_personalbar = BarProp::create(*this);
     return *m_personalbar;
 }
 
 BarProp& LocalDOMWindow::scrollbars()
 {
     if (!m_scrollbars)
-        m_scrollbars = BarProp::create(*this, BarProp::Scrollbars);
+        m_scrollbars = BarProp::create(*this);
     return *m_scrollbars;
 }
 
 BarProp& LocalDOMWindow::statusbar()
 {
     if (!m_statusbar)
-        m_statusbar = BarProp::create(*this, BarProp::Statusbar);
+        m_statusbar = BarProp::create(*this);
     return *m_statusbar;
 }
 
 BarProp& LocalDOMWindow::toolbar()
 {
     if (!m_toolbar)
-        m_toolbar = BarProp::create(*this, BarProp::Toolbar);
+        m_toolbar = BarProp::create(*this);
     return *m_toolbar;
 }
 

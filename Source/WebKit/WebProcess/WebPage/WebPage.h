@@ -2110,13 +2110,6 @@ public:
     void setOverflowHeightForTopScrollEdgeEffect(double value) { m_overflowHeightForTopScrollEdgeEffect = value; }
 #endif
 
-    bool statusBarIsVisible() const { return m_statusBarIsVisible; }
-    void setStatusBarIsVisible(bool visible) { m_statusBarIsVisible = visible; }
-    bool menuBarIsVisible() const { return m_menuBarIsVisible; }
-    void setMenuBarIsVisible(bool visible) { m_menuBarIsVisible = visible; }
-    bool toolbarsAreVisible() const { return m_toolbarsAreVisible; }
-    void setToolbarsAreVisible(bool visible) { m_toolbarsAreVisible = visible; }
-
     RefPtr<WebCore::ShareableBitmap> shareableBitmapSnapshotForNode(WebCore::Node&);
 
     void paintRemoteFrameContents(WebCore::FrameIdentifier, const WebCore::IntRect&, WebCore::GraphicsContext&);
@@ -2125,6 +2118,8 @@ public:
     void showCaptionDisplaySettingsPreview(WebCore::HTMLMediaElementIdentifier);
     void hideCaptionDisplaySettingsPreview(WebCore::HTMLMediaElementIdentifier);
 #endif
+
+    bool isPopup() const { return m_isPopup; }
 
 private:
     WebPage(WebCore::PageIdentifier, WebPageCreationParameters&&);
@@ -3238,10 +3233,8 @@ private:
 
     mutable RefPtr<Logger> m_logger;
 
-    bool m_statusBarIsVisible { true };
-    bool m_menuBarIsVisible { true };
-    bool m_toolbarsAreVisible { true };
     bool m_backgroundTextExtractionEnabled { false };
+    bool m_isPopup { false };
 };
 
 #if !PLATFORM(IOS_FAMILY)
