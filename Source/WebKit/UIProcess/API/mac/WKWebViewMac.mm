@@ -1229,6 +1229,16 @@ ALLOW_DEPRECATED_IMPLEMENTATIONS_END
 
 #endif // ENABLE(CONTENT_INSET_BACKGROUND_FILL)
 
+- (void)viewDidChangeEffectiveAppearance
+{
+    // This can be called during [super initWithCoder:] and [super initWithFrame:].
+    // That is before _impl is ready to be used, so check. <rdar://problem/39611236>
+    if (!_impl)
+        return;
+
+    _impl->effectiveAppearanceDidChange();
+}
+
 #if USE(APPLE_INTERNAL_SDK) && __has_include(<WebKitAdditions/WKWebViewMacAdditionsAfter.mm>)
 #import <WebKitAdditions/WKWebViewMacAdditionsAfter.mm>
 #endif
