@@ -4025,7 +4025,7 @@ bool AccessibilityObject::isWithinHiddenWebArea() const
 
 #if ENABLE_ACCESSIBILITY_LOCAL_FRAME
     if (RefPtr parentScrollView = dynamicDowncast<AccessibilityScrollView>(webArea->parentObject())) {
-        if (parentScrollView->isHostingFrameInert()) {
+        if (parentScrollView->isHostingFrameInert() || parentScrollView->isHostingFrameRenderHidden()) {
             // The frame that hosts this web area is inert, so this entire frame should be inert as well.
             return true;
         }

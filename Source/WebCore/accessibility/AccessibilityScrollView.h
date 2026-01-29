@@ -43,16 +43,18 @@ struct InheritedFrameState {
     InheritedFrameState()
         : isAXHidden(false)
         , isInert(false)
+        , isRenderHidden(false)
     { }
 
-    InheritedFrameState(bool isAXHidden, bool isInert)
+    InheritedFrameState(bool isAXHidden, bool isInert, bool isRenderHidden)
         : isAXHidden(isAXHidden)
         , isInert(isInert)
+        , isRenderHidden(isRenderHidden)
     { }
 
-    bool isAXHidden;
-    bool isInert;
-    // FIXME: include visibility state.
+    bool isAXHidden { false };
+    bool isInert { false };
+    bool isRenderHidden { false };
 };
 #endif
 
@@ -86,8 +88,8 @@ public:
     // We can't use isIgnored() because FrameHost scroll views are always ignored (see computeIsIgnored).
     bool isHostingFrameHidden() const { return isAXHidden(); }
     bool isHostingFrameInert() const;
-    bool isIgnoredFromHostingFrame() const { return isHostingFrameHidden() || isHostingFrameInert(); }
-    // FIXME: This should also consider visibility state for full site isolation support.
+    bool isHostingFrameRenderHidden() const;
+    bool isIgnoredFromHostingFrame() const { return isHostingFrameHidden() || isHostingFrameInert() || isHostingFrameRenderHidden(); }
 #endif // ENABLE(ACCESSIBLITY_LOCAL_FRAME)
 
 private:

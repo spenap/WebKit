@@ -336,7 +336,7 @@ void AccessibilityScrollView::addLocalFrameChild()
 
         // Set the initial hosting node state on the child frame's root scroll view.
         if (RefPtr childScrollView = dynamicDowncast<AccessibilityScrollView>(frameRoot.get()))
-            childScrollView->setInheritedFrameState({ isHostingFrameHidden(), isHostingFrameInert() });
+            childScrollView->setInheritedFrameState({ isHostingFrameHidden(), isHostingFrameInert(), isHostingFrameRenderHidden() });
 
         m_localFrame = downcast<AXLocalFrame>(cache->create(AccessibilityRole::LocalFrame));
         m_localFrame->setLocalFrameView(localFrameView.get());
@@ -579,6 +579,18 @@ bool AccessibilityScrollView::isHostingFrameInert() const
     return false;
 }
 
+bool AccessibilityScrollView::isHostingFrameRenderHidden() const
+{
+    if (isRoot())
+        return m_inheritedFrameState.isRenderHidden;
+
+    RefPtr frameOwner = frameOwnerElement();
+    if (CheckedPtr renderer = frameOwner ? frameOwner->renderer() : nullptr)
+        return WebCore::isRenderHidden(renderer->style());
+
+    return false;
+}
+
 void AccessibilityScrollView::updateHostedFrameInheritedState()
 {
     if (!m_localFrame)
@@ -601,7 +613,7 @@ void AccessibilityScrollView::updateHostedFrameInheritedState()
     if (!hostedFrameScrollView)
         return;
 
-    hostedFrameScrollView->setInheritedFrameState({ isHostingFrameHidden(), isHostingFrameInert() });
+    hostedFrameScrollView->setInheritedFrameState({ isHostingFrameHidden(), isHostingFrameInert(), isHostingFrameRenderHidden() });
 
 #if ENABLE(INCLUDE_IGNORED_IN_CORE_AX_TREE)
     hostedFrameScrollView->recomputeIsIgnoredForDescendants(/* includeSelf */ true);
