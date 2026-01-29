@@ -79,6 +79,7 @@ struct Request;
 
 enum class FocusDirection : uint8_t;
 enum class FoundElementInRemoteFrame : bool;
+enum class ShouldFocusElement : bool;
 
 struct FocusEventData;
 struct GlobalWindowIdentifier;
@@ -308,7 +309,7 @@ private:
 
     RefPtr<WebCore::LocalFrame> localFrame();
 
-    void findFocusableElementDescendingIntoRemoteFrame(WebCore::FocusDirection, const WebCore::FocusEventData&, CompletionHandler<void(WebCore::FoundElementInRemoteFrame)>&&);
+    void findFocusableElementDescendingIntoRemoteFrame(WebCore::FocusDirection, const WebCore::FocusEventData&, WebCore::ShouldFocusElement, CompletionHandler<void(WebCore::FoundElementInRemoteFrame)>&&);
 
     CheckedRef<WebFrameInspectorTarget> ensureInspectorTarget();
 

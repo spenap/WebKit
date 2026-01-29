@@ -41,6 +41,7 @@ class SecurityOriginData;
 enum class FocusDirection : uint8_t;
 enum class FoundElementInRemoteFrame : bool;
 enum class RenderAsTextFlag : uint16_t;
+enum class ShouldFocusElement : bool;
 
 struct AccessibilityRemoteToken;
 struct FocusEventData;
@@ -65,7 +66,7 @@ public:
     virtual void documentURLForConsoleLog(CompletionHandler<void(const URL&)>&&) = 0;
     virtual void updateScrollingMode(ScrollbarMode scrollingMode) = 0;
     virtual void reportMixedContentViolation(bool blocked, const URL& target) = 0;
-    virtual void findFocusableElementDescendingIntoRemoteFrame(FocusDirection, const FocusEventData&, CompletionHandler<void(FoundElementInRemoteFrame)>&&) = 0;
+    virtual void findFocusableElementDescendingIntoRemoteFrame(FocusDirection, const FocusEventData&, ShouldFocusElement, CompletionHandler<void(FoundElementInRemoteFrame)>&&) = 0;
 
     virtual bool isWebRemoteFrameClient() const { return false; }
     virtual ~RemoteFrameClient() { }
