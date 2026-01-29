@@ -29,6 +29,7 @@
 
 #if ENABLE(YARR_JIT)
 
+#include <JavaScriptCore/FPRInfo.h>
 #include <JavaScriptCore/GPRInfo.h>
 
 namespace JSC {
@@ -81,6 +82,22 @@ public:
 
     static constexpr GPRReg returnRegister = ARM64Registers::x0;
     static constexpr GPRReg returnRegister2 = ARM64Registers::x1;
+
+    // SIMD registers for Boyer-Moore SIMD lookahead (caller-saved, safe to use)
+    // Pattern constants (persistent across loop iterations)
+    static constexpr FPRReg vectorTemp0 = ARM64Registers::q0;
+    static constexpr FPRReg vectorTemp1 = ARM64Registers::q1;
+    static constexpr FPRReg vectorTemp2 = ARM64Registers::q2;
+    static constexpr FPRReg vectorTemp3 = ARM64Registers::q3;
+    static constexpr FPRReg vectorTemp4 = ARM64Registers::q4;
+    static constexpr FPRReg vectorInput0 = ARM64Registers::q16;
+    static constexpr FPRReg vectorInput1 = ARM64Registers::q17;
+    static constexpr FPRReg vectorInput2 = ARM64Registers::q18;
+    static constexpr FPRReg vectorInput3 = ARM64Registers::q19;
+    static constexpr FPRReg vectorScratch0 = ARM64Registers::q20;
+    static constexpr FPRReg vectorScratch1 = ARM64Registers::q21;
+    static constexpr FPRReg vectorScratch2 = ARM64Registers::q22;
+    static constexpr FPRReg vectorScratch3 = ARM64Registers::q23;
 #elif CPU(X86_64)
     // Argument registers
     static constexpr GPRReg input = X86Registers::edi;
@@ -178,6 +195,24 @@ public:
     GPRReg unicodeAndSubpatternIdTemp { InvalidGPRReg };
     GPRReg endOfStringAddress { InvalidGPRReg };
     GPRReg firstCharacterAdditionalReadSize { InvalidGPRReg };
+
+#if CPU(ARM64)
+    // SIMD registers for Boyer-Moore SIMD lookahead
+    // These are not used for inline JIT, but need to be present for template instantiation.
+    static constexpr FPRReg vectorTemp0 = InvalidFPRReg;
+    static constexpr FPRReg vectorTemp1 = InvalidFPRReg;
+    static constexpr FPRReg vectorTemp2 = InvalidFPRReg;
+    static constexpr FPRReg vectorTemp3 = InvalidFPRReg;
+    static constexpr FPRReg vectorTemp4 = InvalidFPRReg;
+    static constexpr FPRReg vectorInput0 = InvalidFPRReg;
+    static constexpr FPRReg vectorInput1 = InvalidFPRReg;
+    static constexpr FPRReg vectorInput2 = InvalidFPRReg;
+    static constexpr FPRReg vectorInput3 = InvalidFPRReg;
+    static constexpr FPRReg vectorScratch0 = InvalidFPRReg;
+    static constexpr FPRReg vectorScratch1 = InvalidFPRReg;
+    static constexpr FPRReg vectorScratch2 = InvalidFPRReg;
+    static constexpr FPRReg vectorScratch3 = InvalidFPRReg;
+#endif
 };
 #endif
 
