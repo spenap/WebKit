@@ -118,7 +118,6 @@
     RELEASE_ASSERT(WTF::IOSApplication::isMobileSafari() || applicationBundleIdentifier() == "com.apple.WebKit.TestWebKitAPI"_s);
 #endif
     RELEASE_ASSERT(!isInAuxiliaryProcess());
-    RELEASE_ASSERT([decoder isKindOfClass:WKRemoteObjectDecoder.class]);
 
     RetainPtr identifierObject = dynamic_objc_cast<NSNumber>([decoder decodeObjectOfClass:NSNumber.class forKey:@"identifierObject"]);
     if (!identifierObject) {
@@ -164,13 +163,24 @@
         return nil;
     }
 
+    uint64_t documentIDProcessIdentifier = [dynamic_objc_cast<NSNumber>([decoder decodeObjectOfClass:NSNumber.class forKey:@"documentIDProcessIdentifier"]) unsignedLongLongValue];
+    uint64_t worldIdentifierHighBits = [dynamic_objc_cast<NSNumber>([decoder decodeObjectOfClass:NSNumber.class forKey:@"worldIdentifierHighBits"]) unsignedLongLongValue];
+    uint64_t worldIdentifierLowBits = [dynamic_objc_cast<NSNumber>([decoder decodeObjectOfClass:NSNumber.class forKey:@"worldIdentifierLowBits"]) unsignedLongLongValue];
+
+    Markable<WebCore::ScriptExecutionContextIdentifier> documentID;
+    if (WebCore::ProcessIdentifier::isValidIdentifier(documentIDProcessIdentifier) && WTF::UUID::isValid(worldIdentifierHighBits, worldIdentifierLowBits))
+        documentID = WebCore::ScriptExecutionContextIdentifier { WTF::UUID(worldIdentifierHighBits, worldIdentifierLowBits), WebCore::ProcessIdentifier(documentIDProcessIdentifier) };
+
     WebCore::JSHandleIdentifier identifier { WebCore::WebProcessJSHandleIdentifier(rawIdentifierObject), WebCore::ProcessIdentifier(rawIdentifierProcessIdentifier) };
     WebKit::ContentWorldIdentifier worldIdentifier { WebKit::NonProcessQualifiedContentWorldIdentifier(rawWorldIdentifierObject), WebCore::ProcessIdentifier(rawWorldIdentifierProcessIdentifier) };
+
+    auto frameInfo = WebKit::legacyEmptyFrameInfo({ });
+    frameInfo.documentID = documentID;
 
     WebKit::JSHandleInfo info {
         identifier,
         worldIdentifier,
-        WebKit::legacyEmptyFrameInfo({ }),
+        WTF::move(frameInfo),
         std::nullopt
     };
 
@@ -187,7 +197,6 @@
     RELEASE_ASSERT(WTF::IOSApplication::isMobileSafari() || applicationBundleIdentifier() == "com.apple.WebKit.TestWebKitAPI"_s);
 #endif
     RELEASE_ASSERT(isInWebProcess());
-    RELEASE_ASSERT([coder isKindOfClass:WKRemoteObjectEncoder.class]);
 
     const auto& info = _ref->info();
     WebCore::WebKitJSHandle::jsHandleSentToAnotherProcess(info.identifier);
@@ -197,6 +206,12 @@
 
     [coder encodeObject:@(info.worldIdentifier.object().toUInt64()) forKey:@"worldIdentifierObject"];
     [coder encodeObject:@(info.worldIdentifier.processIdentifier().toUInt64()) forKey:@"worldIdentifierProcessIdentifier"];
+
+    if (info.frameInfo.documentID) {
+        [coder encodeObject:@(info.frameInfo.documentID->processIdentifier().toUInt64()) forKey:@"documentIDProcessIdentifier"];
+        [coder encodeObject:@(info.frameInfo.documentID->object().high()) forKey:@"worldIdentifierHighBits"];
+        [coder encodeObject:@(info.frameInfo.documentID->object().low()) forKey:@"worldIdentifierLowBits"];
+    }
 
     // Remaining information is currently not needed, and this is on its way to being removed so let's not add more here.
     // This also avoids encoding any complex types.

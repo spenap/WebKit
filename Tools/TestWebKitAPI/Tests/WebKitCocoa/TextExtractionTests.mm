@@ -36,6 +36,7 @@
 #import "Utilities.h"
 #import "WKWebViewConfigurationExtras.h"
 #import <WebKit/WKContentWorldPrivate.h>
+#import <WebKit/WKFrameInfoPrivate.h>
 #import <WebKit/WKPreferencesPrivate.h>
 #import <WebKit/WKWebViewConfigurationPrivate.h>
 #import <WebKit/WKWebViewPrivate.h>
@@ -44,6 +45,7 @@
 #import <WebKit/_WKRemoteObjectInterface.h>
 #import <WebKit/_WKRemoteObjectRegistry.h>
 #import <WebKit/_WKTextExtraction.h>
+#import <pal/spi/cocoa/NSKeyedUnarchiverSPI.h>
 #import <wtf/SoftLinking.h>
 #import <wtf/WorkQueue.h>
 #import <wtf/cocoa/TypeCastsCocoa.h>
@@ -752,8 +754,10 @@ TEST(TextExtractionTests, InjectedBundle)
     RetainPtr webView = adoptNS([[TestWKWebView alloc] initWithFrame:CGRectMake(0, 0, 800, 600) configuration:configuration]);
     RetainPtr receiver = adoptNS([JSHandleReceiver new]);
     __block RetainPtr<_WKJSHandle> handle;
+    __block RetainPtr<_WKJSHandle> decodedHandle;
     receiver.get().dictionaryReceiver = ^(NSDictionary *dictionary) {
         handle = dynamic_objc_cast<_WKJSHandle>(dictionary[@"testkey"]);
+        decodedHandle = [NSKeyedUnarchiver _strictlyUnarchivedObjectOfClasses:[NSSet setWithObject:_WKJSHandle.class] fromData:dynamic_objc_cast<NSData>(dictionary[@"testdatakey"]) error:nil];
     };
 
     _WKRemoteObjectInterface *interface = [_WKRemoteObjectInterface remoteObjectInterfaceWithProtocol:@protocol(JSHandlePlugInProtocol)];
@@ -763,6 +767,8 @@ TEST(TextExtractionTests, InjectedBundle)
     [webView loadHTMLString:@"text outside <div id='testelement'> text inside </div>" baseURL:nil];
     while (!handle)
         Util::spinRunLoop();
+    EXPECT_NOT_NULL(handle.get().frame._documentIdentifier);
+    EXPECT_TRUE([handle.get().frame._documentIdentifier isEqual:decodedHandle.get().frame._documentIdentifier]);
 }
 
 #if PLATFORM(IOS_FAMILY)

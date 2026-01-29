@@ -68,7 +68,10 @@ static JSValueRef javaScriptFunction(JSContextRef context, JSObjectRef, JSObject
             _WKRemoteObjectInterface *interface = [_WKRemoteObjectInterface remoteObjectInterfaceWithProtocol:@protocol(JSHandlePlugInProtocol)];
 
             id<JSHandlePlugInProtocol> remoteObject = [globalBrowserContextController._remoteObjectRegistry remoteObjectProxyWithInterface:interface];
-            [remoteObject receiveDictionaryFromWebProcess:@{ @"testkey" : handle }];
+            [remoteObject receiveDictionaryFromWebProcess:@{
+                @"testkey" : handle,
+                @"testdatakey" : [NSKeyedArchiver archivedDataWithRootObject:handle requiringSecureCoding:YES error:nullptr]
+            }];
         }
     }
     return JSValueMakeUndefined(context);
