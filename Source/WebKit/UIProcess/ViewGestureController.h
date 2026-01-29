@@ -97,6 +97,7 @@ namespace WebKit {
 
 class ViewSnapshot;
 class WebBackForwardList;
+using WebBackForwardListWrapper = WebBackForwardList;
 class WebBackForwardListItem;
 class WebPageProxy;
 class WebProcessProxy;

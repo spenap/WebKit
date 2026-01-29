@@ -55,6 +55,8 @@
 namespace WebKit {
 using namespace WebCore;
 
+#if !ENABLE(BACK_FORWARD_LIST_SWIFT)
+
 static const unsigned DefaultCapacity = 100;
 
 WebBackForwardList::WebBackForwardList(WebPageProxy& page)
@@ -781,5 +783,83 @@ String WebBackForwardList::loggingString()
 
     return builder.toString();
 }
+
+#else // ENABLE(BACK_FORWARD_LIST_SWIFT)
+
+WebBackForwardListWrapper::WebBackForwardListWrapper(WebPageProxy& webPageProxy)
+    : m_impl(WTF::makeUniqueWithoutFastMallocCheck<WebBackForwardList>(WebBackForwardList::init(webPageProxy)))
+{
+}
+
+WebBackForwardListWrapper::~WebBackForwardListWrapper()
+{
+}
+
+WebBackForwardListItem* WebBackForwardListWrapper::currentItem() const
+{
+    return m_impl->currentItem();
+}
+
+WebBackForwardListItem* WebBackForwardListWrapper::backItem() const
+{
+    return m_impl->backItem();
+}
+
+WebBackForwardListItem* WebBackForwardListWrapper::forwardItem() const
+{
+    return m_impl->forwardItem();
+}
+
+WebBackForwardListItem* WebBackForwardListWrapper::itemAtIndex(int index) const
+{
+    return m_impl->itemAtIndex(index);
+}
+
+unsigned WebBackForwardListWrapper::backListCount() const
+{
+    return m_impl->backListCount();
+}
+
+unsigned WebBackForwardListWrapper::forwardListCount() const
+{
+    return m_impl->forwardListCount();
+}
+
+Ref<API::Array> WebBackForwardListWrapper::backList() const
+{
+    return backListAsAPIArrayWithLimit(backListCount());
+}
+
+Ref<API::Array> WebBackForwardListWrapper::forwardList() const
+{
+    return forwardListAsAPIArrayWithLimit(forwardListCount());
+}
+
+Ref<API::Array> WebBackForwardListWrapper::backListAsAPIArrayWithLimit(unsigned limit) const
+{
+    return m_impl->backListAsAPIArrayWithLimit(limit);
+}
+
+Ref<API::Array> WebBackForwardListWrapper::forwardListAsAPIArrayWithLimit(unsigned limit) const
+{
+    return m_impl->forwardListAsAPIArrayWithLimit(limit);
+}
+
+void WebBackForwardListWrapper::removeAllItems()
+{
+    m_impl->removeAllItems();
+}
+
+void WebBackForwardListWrapper::clear()
+{
+    m_impl->clear();
+}
+
+String WebBackForwardListWrapper::loggingString()
+{
+    return String::fromUTF8WithLatin1Fallback(std::string(m_impl->loggingString()));
+}
+
+#endif // ENABLE(BACK_FORWARD_LIST_SWIFT)
 
 } // namespace WebKit
