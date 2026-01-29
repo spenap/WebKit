@@ -201,7 +201,7 @@
 #include <JavaScriptCore/RemoteInspector.h>
 #endif
 
-#if ENABLE(WEBASSEMBLY_DEBUGGER)
+#if ENABLE(WEBASSEMBLY_DEBUGGER) && ENABLE(REMOTE_INSPECTOR)
 #include <JavaScriptCore/WasmDebugServer.h>
 #endif
 
@@ -330,7 +330,7 @@ WebProcess::WebProcess()
     , m_viewUpdateDispatcher(*this)
 #endif
     , m_webInspectorInterruptDispatcher(*this)
-#if ENABLE(WEBASSEMBLY_DEBUGGER)
+#if ENABLE(WEBASSEMBLY_DEBUGGER) && ENABLE(REMOTE_INSPECTOR)
     , m_wasmDebuggerDispatcher(*this)
 #endif
     , m_webLoaderStrategy(makeUniqueRefWithoutRefCountedCheck<WebLoaderStrategy>(*this))
@@ -447,7 +447,7 @@ void WebProcess::initializeConnection(IPC::Connection* connection)
 #endif // PLATFORM(IOS_FAMILY)
 
     protectedWebInspectorInterruptDispatcher()->initializeConnection(*connection);
-#if ENABLE(WEBASSEMBLY_DEBUGGER)
+#if ENABLE(WEBASSEMBLY_DEBUGGER) && ENABLE(REMOTE_INSPECTOR)
     protectedWasmDebuggerDispatcher()->initializeConnection(*connection);
 #endif
 
@@ -732,7 +732,7 @@ void WebProcess::initializeWebProcess(WebProcessCreationParameters&& parameters,
     m_shouldInitializeAccessibility = parameters.shouldInitializeAccessibility;
 #endif
 
-#if ENABLE(WEBASSEMBLY_DEBUGGER)
+#if ENABLE(WEBASSEMBLY_DEBUGGER) && ENABLE(REMOTE_INSPECTOR)
     if (JSC::Options::enableWasmDebugger()) [[unlikely]] {
         bool success = JSC::Wasm::DebugServer::singleton().startRWI([](const String& response) {
             return WebKit::WebProcess::singleton().send(Messages::WebProcessProxy::SendWasmDebuggerResponse(response), 0);

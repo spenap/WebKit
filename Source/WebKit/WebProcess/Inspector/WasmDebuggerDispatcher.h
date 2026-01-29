@@ -24,7 +24,7 @@
 
 #pragma once
 
-#if ENABLE(WEBASSEMBLY_DEBUGGER)
+#if ENABLE(WEBASSEMBLY_DEBUGGER) && ENABLE(REMOTE_INSPECTOR)
 
 #include "MessageReceiver.h"
 #include <wtf/CheckedRef.h>
@@ -62,4 +62,4 @@ private:
 
 } // namespace WebKit
 
-#endif // ENABLE(WEBASSEMBLY_DEBUGGER)
+#endif // ENABLE(WEBASSEMBLY_DEBUGGER) && ENABLE(REMOTE_INSPECTOR)

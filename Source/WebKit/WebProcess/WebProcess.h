@@ -88,7 +88,7 @@ OBJC_CLASS NSMutableDictionary;
 #include <WebCore/CaptionUserPreferences.h>
 #endif
 
-#if ENABLE(WEBASSEMBLY_DEBUGGER)
+#if ENABLE(WEBASSEMBLY_DEBUGGER) && ENABLE(REMOTE_INSPECTOR)
 #include "WasmDebuggerDispatcher.h"
 #endif
 
@@ -285,7 +285,7 @@ public:
 
     EventDispatcher& eventDispatcher() { return m_eventDispatcher; }
     Ref<WebInspectorInterruptDispatcher> protectedWebInspectorInterruptDispatcher() { return m_webInspectorInterruptDispatcher; }
-#if ENABLE(WEBASSEMBLY_DEBUGGER)
+#if ENABLE(WEBASSEMBLY_DEBUGGER) && ENABLE(REMOTE_INSPECTOR)
     Ref<WasmDebuggerDispatcher> protectedWasmDebuggerDispatcher() { return m_wasmDebuggerDispatcher; }
 #endif
 
@@ -789,7 +789,7 @@ private:
     ViewUpdateDispatcher m_viewUpdateDispatcher;
 #endif
     WebInspectorInterruptDispatcher m_webInspectorInterruptDispatcher;
-#if ENABLE(WEBASSEMBLY_DEBUGGER)
+#if ENABLE(WEBASSEMBLY_DEBUGGER) && ENABLE(REMOTE_INSPECTOR)
     WasmDebuggerDispatcher m_wasmDebuggerDispatcher;
 #endif
 

@@ -471,7 +471,7 @@ WTF_ALLOW_UNSAFE_BUFFER_USAGE_END
     if (Options::useTracePoints())
         requestEntryScopeService(EntryScopeService::TracePoints);
 
-#if ENABLE(WEBASSEMBLY)
+#if ENABLE(WEBASSEMBLY_DEBUGGER)
     if (Options::enableWasmDebugger()) [[unlikely]]
         m_debugState = makeUnique<Wasm::DebugState>();
 #endif
@@ -579,7 +579,7 @@ VM::~VM()
     m_sharedJITStubs = nullptr;
 #endif
 
-#if ENABLE(WEBASSEMBLY)
+#if ENABLE(WEBASSEMBLY_DEBUGGER)
     if (Options::enableWasmDebugger()) [[unlikely]] {
         auto& debugServer = Wasm::DebugServer::singleton();
         if (debugServer.isConnected())
@@ -1996,7 +1996,7 @@ void VM::DrainMicrotaskDelayScope::decrement()
     }
 }
 
-#if ENABLE(WEBASSEMBLY)
+#if ENABLE(WEBASSEMBLY_DEBUGGER)
 Wasm::DebugState* VM::debugState()
 {
     RELEASE_ASSERT(!!m_debugState);

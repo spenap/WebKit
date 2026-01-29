@@ -25,7 +25,7 @@
 
 #pragma once
 
-#if ENABLE(WEBASSEMBLY_DEBUGGER)
+#if ENABLE(WEBASSEMBLY_DEBUGGER) && ENABLE(REMOTE_INSPECTOR)
 
 #include <JavaScriptCore/InspectorFrontendChannel.h>
 #include <JavaScriptCore/RemoteInspectionTarget.h>
@@ -76,4 +76,4 @@ private:
 
 SPECIALIZE_TYPE_TRAITS_CONTROLLABLE_TARGET(WebKit::WasmDebuggerDebuggable, WasmDebugger);
 
-#endif // ENABLE(WEBASSEMBLY_DEBUGGER)
+#endif // ENABLE(WEBASSEMBLY_DEBUGGER) && ENABLE(REMOTE_INSPECTOR)

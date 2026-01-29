@@ -145,7 +145,7 @@
 #include "AudioSessionRoutingArbitratorProxy.h"
 #endif
 
-#if ENABLE(WEBASSEMBLY_DEBUGGER)
+#if ENABLE(WEBASSEMBLY_DEBUGGER) && ENABLE(REMOTE_INSPECTOR)
 #include "WasmDebuggerDispatcherMessages.h"
 #endif
 
@@ -721,7 +721,7 @@ void WebProcessProxy::shutDown()
 
     shutDownProcess();
 
-#if ENABLE(WEBASSEMBLY_DEBUGGER)
+#if ENABLE(WEBASSEMBLY_DEBUGGER) && ENABLE(REMOTE_INSPECTOR)
     if (JSC::Options::enableWasmDebugger()) [[unlikely]]
         destroyWasmDebuggerTarget();
 #endif
@@ -1456,7 +1456,7 @@ void WebProcessProxy::didFinishLaunching(ProcessLauncher* launcher, IPC::Connect
     protect(processPool())->processDidFinishLaunching(*this);
     m_backgroundResponsivenessTimer->updateState();
 
-#if ENABLE(WEBASSEMBLY_DEBUGGER)
+#if ENABLE(WEBASSEMBLY_DEBUGGER) && ENABLE(REMOTE_INSPECTOR)
     if (JSC::Options::enableWasmDebugger()) [[unlikely]]
         createWasmDebuggerTarget();
 #endif
@@ -3179,7 +3179,7 @@ void WebProcessProxy::didPostLegacySynchronousMessage(WebPageProxyIdentifier pag
     didPostMessage(pageID, identifier, WTF::move(frameInfo), handlerID, WTF::move(message), WTF::move(completionHandler));
 }
 
-#if ENABLE(WEBASSEMBLY_DEBUGGER)
+#if ENABLE(WEBASSEMBLY_DEBUGGER) && ENABLE(REMOTE_INSPECTOR)
 
 void WebProcessProxy::createWasmDebuggerTarget()
 {
@@ -3264,7 +3264,7 @@ void WebProcessProxy::takeInvalidMessageStringForTesting(CompletionHandler<void(
 }
 #endif
 
-#endif // ENABLE(WEBASSEMBLY_DEBUGGER)
+#endif // ENABLE(WEBASSEMBLY_DEBUGGER) && ENABLE(REMOTE_INSPECTOR)
 
 } // namespace WebKit
 

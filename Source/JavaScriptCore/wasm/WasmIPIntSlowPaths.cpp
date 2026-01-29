@@ -70,6 +70,7 @@ namespace JSC { namespace IPInt {
 #define IPINT_CALLEE(callFrame) \
     (uncheckedDowncast<Wasm::IPIntCallee>(uncheckedDowncast<Wasm::Callee>(callFrame->callee().asNativeCallee())))
 
+#if ENABLE(WEBASSEMBLY_DEBUGGER)
 // Sets a breakpoint at the callee entry when stepping into a call.
 // Should Call this before WASM_CALL_RETURN in prepare_call* functions.
 #define IPINT_HANDLE_STEP_INTO_CALL(callerVM, boxedCallee, calleeInstance) do { \
@@ -89,6 +90,16 @@ namespace JSC { namespace IPInt {
                 debugServer.execution().setStepIntoBreakpointForThrow((throwVM)); \
         } \
     } while (false)
+#else
+#define IPINT_HANDLE_STEP_INTO_CALL(callerVM, boxedCallee, calleeInstance) do { \
+        UNUSED_PARAM(callerVM); \
+        UNUSED_PARAM(boxedCallee); \
+        UNUSED_PARAM(calleeInstance); \
+    } while (false)
+#define IPINT_HANDLE_STEP_INTO_THROW(throwVM) do { \
+        UNUSED_PARAM(throwVM); \
+    } while (false)
+#endif
 
 
 // For operation calls that may throw an exception, we return (<val>, 0)
@@ -1241,8 +1252,12 @@ WASM_IPINT_EXTERN_CPP_DECL(check_stack_and_vm_traps, void* candidateNewStackPoin
 {
     VM& vm = instance->vm();
 
+#if ENABLE(WEBASSEMBLY_DEBUGGER)
     if (Options::enableWasmDebugger()) [[unlikely]]
         vm.debugState()->setPrologueStopData(instance, callee);
+#else
+    UNUSED_PARAM(callee);
+#endif
 
     if (vm.traps().handleTrapsIfNeeded()) {
         if (vm.hasPendingTerminationException())
@@ -1257,6 +1272,7 @@ WASM_IPINT_EXTERN_CPP_DECL(check_stack_and_vm_traps, void* candidateNewStackPoin
     IPINT_THROW(Wasm::ExceptionType::StackOverflow);
 }
 
+#if ENABLE(WEBASSEMBLY_DEBUGGER)
 static UNUSED_FUNCTION void displayWasmDebugState(JSWebAssemblyInstance* instance, Wasm::IPIntCallee* callee, IPIntStackEntry* sp, IPIntLocal* pl)
 {
     dataLogLn("=== WASM Debug State ===");
@@ -1283,12 +1299,13 @@ static UNUSED_FUNCTION void displayWasmDebugState(JSWebAssemblyInstance* instanc
         dataLogLn("WASM Stack: Invalid stack pointers");
     dataLogLn("=== End WASM Debug State ===");
 }
-
+#endif
 
 WASM_IPINT_EXTERN_CPP_DECL(unreachable_breakpoint_handler, CallFrame* callFrame, Register* sp)
 {
     dataLogLnIf(Options::verboseWasmDebugger(), "[Code][unreachable] Start");
     bool breakpointHandled = false;
+#if ENABLE(WEBASSEMBLY_DEBUGGER)
     if (Options::enableWasmDebugger()) [[unlikely]] {
         Wasm::DebugServer& debugServer = Wasm::DebugServer::singleton();
         if (debugServer.needToHandleBreakpoints()) {
@@ -1296,13 +1313,18 @@ WASM_IPINT_EXTERN_CPP_DECL(unreachable_breakpoint_handler, CallFrame* callFrame,
             uint8_t* mc = static_cast<uint8_t*>(sp[3].pointer());
             IPIntLocal* pl = static_cast<IPIntLocal*>(sp[0].pointer());
             Wasm::IPIntCallee* callee = static_cast<Wasm::IPIntCallee*>(sp[1].pointer());
-    
+
             IPIntStackEntry* stackPointer = reinterpret_cast<IPIntStackEntry*>(sp + 4);
             if (Options::verboseWasmDebugger())
                 displayWasmDebugState(instance, callee, stackPointer, pl);
             breakpointHandled = debugServer.execution().hitBreakpoint(callFrame, instance, callee, pc, mc, pl, stackPointer);
         }
     }
+#else
+    UNUSED_PARAM(instance);
+    UNUSED_PARAM(callFrame);
+    UNUSED_PARAM(sp);
+#endif
     dataLogLnIf(Options::verboseWasmDebugger(), "[Code][unreachable] Done with breakpointHandled=", breakpointHandled);
     IPINT_RETURN(static_cast<EncodedJSValue>(static_cast<int32_t>(breakpointHandled)));
 }

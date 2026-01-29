@@ -4307,14 +4307,11 @@ void CommandLine::parseArguments(int argc, char** argv, int start)
             continue;
         }
 
-#if ENABLE(WEBASSEMBLY)
+#if ENABLE(WEBASSEMBLY_DEBUGGER)
         auto argView = StringView::fromLatin1(arg);
         constexpr auto wasmDebugOption = "--wasm-debugger"_s;
         bool isBareOption = argView.length() == wasmDebugOption.length();
         if (argView.startsWith(wasmDebugOption) && (isBareOption || argView[wasmDebugOption.length()] == '=')) {
-#if !CPU(ARM64)
-            dataLogLn("ERROR: --wasm-debugger only supported on ARM64");
-#else
             JSC::Options::enableWasmDebugger() = true;
             JSC::Options::useBBQJIT() = false;
             JSC::Options::useOMGJIT() = false;
@@ -4325,7 +4322,6 @@ void CommandLine::parseArguments(int argc, char** argv, int start)
                 else
                     dataLogLn("ERROR: invalid port number for --wasm-debugger=", suffix);
             }
-#endif
             continue;
         }
 #endif
@@ -4405,7 +4401,7 @@ int runJSC(const CommandLine& options, bool isWorker, const Func& func)
             globalObject = GlobalObject::create(vm, GlobalObject::createStructure(vm, jsNull()), options.m_arguments);
             globalObject->setInspectable(options.m_inspectable);
 
-#if ENABLE(WEBASSEMBLY)
+#if ENABLE(WEBASSEMBLY_DEBUGGER)
             if (Options::enableWasmDebugger()) [[unlikely]]
                 Wasm::DebugServer::singleton().start();
 #endif
@@ -4516,7 +4512,7 @@ int runJSC(const CommandLine& options, bool isWorker, const Func& func)
         vm.derefSuppressingSaferCPPChecking();
     }
 
-#if ENABLE(WEBASSEMBLY)
+#if ENABLE(WEBASSEMBLY_DEBUGGER)
     if (Options::enableWasmDebugger()) [[unlikely]]
         Wasm::DebugServer::singleton().stop();
 #endif

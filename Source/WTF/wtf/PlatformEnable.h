@@ -855,7 +855,9 @@
 #define ENABLE_WEBASSEMBLY 1
 #endif
 
-#if !defined(ENABLE_WEBASSEMBLY_DEBUGGER) && ENABLE(WEBASSEMBLY) && ENABLE(REMOTE_INSPECTOR)
+/* WebAssembly Debugger - GDB Remote Protocol debugging for WebAssembly.
+ * Restricted to macOS ARM64 only. Supports JSC shell TCP socket mode and WebKit RWI integration. */
+#if !defined(ENABLE_WEBASSEMBLY_DEBUGGER) && PLATFORM(MAC) && CPU(ARM64) && ENABLE(WEBASSEMBLY)
 #define ENABLE_WEBASSEMBLY_DEBUGGER 1
 #endif
 
