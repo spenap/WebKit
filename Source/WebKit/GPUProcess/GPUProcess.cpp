@@ -599,11 +599,6 @@ RemoteAudioSessionProxyManager& GPUProcess::audioSessionManager() const
         m_audioSessionManager = RemoteAudioSessionProxyManager::create(const_cast<GPUProcess&>(*this));
     return *m_audioSessionManager;
 }
-
-Ref<RemoteAudioSessionProxyManager> GPUProcess::protectedAudioSessionManager() const
-{
-    return audioSessionManager();
-}
 #endif
 
 #if ENABLE(MEDIA_STREAM) && PLATFORM(COCOA)

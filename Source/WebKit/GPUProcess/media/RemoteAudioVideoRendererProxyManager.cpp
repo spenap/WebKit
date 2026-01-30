@@ -618,8 +618,8 @@ void RemoteAudioVideoRendererProxyManager::setLegacyCDMSession(RemoteAudioVideoR
         renderer->setCDMSession(nullptr);
         return;
     }
-    if (RefPtr cdmSession = m_gpuConnectionToWebProcess.get()->protectedLegacyCdmFactoryProxy()->getSession(*instanceId))
-        renderer->setCDMSession(cdmSession->protectedSession().get());
+    if (RefPtr cdmSession = protect(m_gpuConnectionToWebProcess.get()->legacyCdmFactoryProxy())->getSession(*instanceId))
+        renderer->setCDMSession(protect(cdmSession->session()).get());
     else
         ALWAYS_LOG(LOGIDENTIFIER, "Unable to find LegacyCDMSession: ", instanceId->loggingString());
 }
@@ -638,7 +638,7 @@ void RemoteAudioVideoRendererProxyManager::setCDMInstance(RemoteAudioVideoRender
         renderer->setCDMInstance(nullptr);
         return;
     }
-    if (RefPtr instanceProxy = m_gpuConnectionToWebProcess.get()->protectedCdmFactoryProxy()->getInstance(*instanceId))
+    if (RefPtr instanceProxy = protect(m_gpuConnectionToWebProcess.get()->cdmFactoryProxy())->getInstance(*instanceId))
         renderer->setCDMInstance(&instanceProxy->instance());
     else
         ALWAYS_LOG(LOGIDENTIFIER, "Unable to find CDMInstance: ", instanceId->loggingString());
