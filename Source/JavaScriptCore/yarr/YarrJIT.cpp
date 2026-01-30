@@ -3827,6 +3827,14 @@ class YarrGenerator final : public YarrJITInfo {
                 // Set the reentry label for looping.
                 op.m_reentry = m_jit.label();
 
+                // Clear nested captures at the start of each iteration.
+                // This is required by ECMAScript spec - capture groups are reset to undefined
+                // at the beginning of each iteration of a quantified group.
+                if (m_compileMode == JITCompileMode::IncludeSubpatterns && term->containsAnyCaptures()) {
+                    for (unsigned subpattern = term->parentheses.subpatternId; subpattern <= term->parentheses.lastSubpatternId; subpattern++)
+                        clearSubpatternStart(subpattern);
+                }
+
                 // Store the current index for empty match detection.
                 storeToFrame(m_regs.index, parenthesesFrameLocation + BackTrackInfoParentheses::beginIndex());
                 break;
