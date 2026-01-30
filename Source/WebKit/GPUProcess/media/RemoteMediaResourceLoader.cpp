@@ -86,11 +86,6 @@ RefPtr<PlatformMediaResource> RemoteMediaResourceLoader::requestResource(Resourc
 
 void RemoteMediaResourceLoader::sendH2Ping(const URL& url, CompletionHandler<void(Expected<Seconds, ResourceError>&&)>&& completionHandler)
 {
-    assertIsMainRunLoop();
-    RefPtr remoteMediaPlayerProxy = m_remoteMediaPlayerProxy.get();
-    if (!remoteMediaPlayerProxy)
-        return completionHandler(makeUnexpected(internalError(url)));
-
     m_connection->sendWithAsyncReply(Messages::RemoteMediaResourceLoaderProxy::SendH2Ping(url), WTF::move(completionHandler), identifier());
 }
 
