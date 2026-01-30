@@ -305,15 +305,24 @@ li {
     text-align: match-parent;
 }
 
-:is(dir, dl, menu, ol, ul) :is(dir, dl, menu, ol, ul) {
+/* The rightmost selector is written explicitly rather than with :is() to help with RuleSet bucketing.*/
+:is(dir, dl, menu, ol, ul) dir,
+:is(dir, dl, menu, ol, ul) dl,
+:is(dir, dl, menu, ol, ul) menu,
+:is(dir, dl, menu, ol, ul) ol,
+:is(dir, dl, menu, ol, ul) ul {
     margin-block: 0;
 }
 
-:is(dir, menu, ol, ul) :is(dir, menu, ul) {
+:is(dir, menu, ol, ul) dir,
+:is(dir, menu, ol, ul) menu,
+:is(dir, menu, ol, ul) ul {
     list-style-type: circle;
 }
 
-:is(dir, menu, ol, ul) :is(dir, menu, ol, ul) :is(dir, menu, ul) {
+:is(dir, menu, ol, ul) :is(dir, menu, ol, ul) dir,
+:is(dir, menu, ol, ul) :is(dir, menu, ol, ul) menu,
+:is(dir, menu, ol, ul) :is(dir, menu, ol, ul) ul {
     list-style-type: square;
 }
 
@@ -781,7 +790,7 @@ input:-webkit-autofill, input:-webkit-autofill-strong-password, input:-webkit-au
     color: #000000 !important;
 }
 
-:autofill {
+input:autofill {
     field-sizing: fixed !important;
 }
 
@@ -904,7 +913,7 @@ input[type="range"] {
     color: #909090;
 }
 
-input[type="range"]::-webkit-slider-container, input[type="range"]::-webkit-media-slider-container {
+input[type="range"]::-webkit-slider-container {
     flex: 1;
     box-sizing: border-box;
     display: flex;
@@ -919,7 +928,7 @@ input[type="range"]::-webkit-slider-runnable-track {
     display: block;
 }
 
-input[type="range"]::-webkit-slider-thumb, input[type="range"]::-webkit-media-slider-thumb {
+input[type="range"]::-webkit-slider-thumb {
     appearance: auto;
     box-sizing: border-box;
     display: block;
@@ -930,12 +939,6 @@ input[type="range"]::-webkit-slider-thumb, input[type="range"]::-webkit-slider-t
     background-color: white;
     border: initial;
     box-shadow: 0px 6px 13px rgba(0, 0, 0, 0.2), 0px 0.5px 4px rgba(0, 0, 0, 0.2);
-}
-
-input[type="range"]::-webkit-media-slider-thumb {
-    background-color: white;
-    border: 1px solid rgb(66, 66, 66);
-    padding: 0px;
 }
 
 input:disabled, textarea:disabled {
