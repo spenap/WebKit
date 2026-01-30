@@ -773,6 +773,7 @@ TEST(TextExtractionTests, InjectedBundle)
     EXPECT_NOT_NULL(handle.get().frame._documentIdentifier);
     EXPECT_TRUE([handle.get().frame._documentIdentifier isEqual:decodedHandle.get().frame._documentIdentifier]);
     EXPECT_TRUE([handle.get().frame._documentIdentifier isEqual:[webView mainFrame].info._documentIdentifier]);
+    EXPECT_TRUE([handle.get().frame _isSameFrame:[webView mainFrame].info]);
 }
 
 #if PLATFORM(IOS_FAMILY)
