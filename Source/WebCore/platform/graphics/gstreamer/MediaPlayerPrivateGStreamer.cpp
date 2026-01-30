@@ -4747,6 +4747,7 @@ bool MediaPlayerPrivateGStreamer::applyAudioSinkDevice(GstElement* audioSink, Gs
 
 void MediaPlayerPrivateGStreamer::audioOutputDeviceChanged()
 {
+#if ENABLE(MEDIA_STREAM)
     RefPtr player = m_player.get();
     if (!player)
         return;
@@ -4778,6 +4779,7 @@ void MediaPlayerPrivateGStreamer::audioOutputDeviceChanged()
         GST_WARNING_OBJECT(pipeline(), "Could not obtain GstDevice for identifier '%s'", deviceId.utf8().data());
 
     GST_DEBUG_OBJECT(pipeline(), "%s to audio output device '%s'", changed ? "Changed" : "Could not change", deviceId.utf8().data());
+#endif
 }
 
 String MediaPlayerPrivateGStreamer::codecForStreamId(TrackID streamId)
