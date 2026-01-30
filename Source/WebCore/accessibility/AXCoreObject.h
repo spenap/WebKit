@@ -625,6 +625,7 @@ public:
     bool isFrame() const;
 #if PLATFORM(COCOA)
     virtual RetainPtr<id> remoteFramePlatformElement() const = 0;
+    virtual pid_t remoteFrameProcessIdentifier() const = 0;
 #endif
     virtual bool hasRemoteFrameChild() const = 0;
 
