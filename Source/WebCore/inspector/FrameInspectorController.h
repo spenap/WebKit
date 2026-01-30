@@ -49,6 +49,7 @@ class FrontendRouter;
 namespace WebCore {
 
 class InspectorBackendClient;
+class InspectorController;
 class InspectorFrontendClient;
 class InspectorInstrumentation;
 class InstrumentingAgents;
