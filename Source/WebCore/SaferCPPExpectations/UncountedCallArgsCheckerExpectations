@@ -534,7 +534,6 @@ platform/ScrollView.cpp
 platform/ScrollableArea.cpp
 platform/Widget.cpp
 platform/animation/AcceleratedEffectValues.cpp
-platform/audio/cocoa/AudioFileReaderCocoa.cpp
 [ iOS ] platform/audio/ios/MediaSessionManagerIOS.mm
 [ Mac ] platform/cocoa/DragImageCocoa.mm
 platform/cocoa/PlaybackSessionModelMediaElement.mm
