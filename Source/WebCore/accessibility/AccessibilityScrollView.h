@@ -37,27 +37,6 @@ class AccessibilityScrollbar;
 class Scrollbar;
 class ScrollView;
 
-#if ENABLE(ACCESSIBILITY_LOCAL_FRAME)
-// Visibility/hidden state from the hosting frame element.
-struct InheritedFrameState {
-    InheritedFrameState()
-        : isAXHidden(false)
-        , isInert(false)
-        , isRenderHidden(false)
-    { }
-
-    InheritedFrameState(bool isAXHidden, bool isInert, bool isRenderHidden)
-        : isAXHidden(isAXHidden)
-        , isInert(isInert)
-        , isRenderHidden(isRenderHidden)
-    { }
-
-    bool isAXHidden { false };
-    bool isInert { false };
-    bool isRenderHidden { false };
-};
-#endif
-
 class AccessibilityScrollView final : public AccessibilityObject {
 public:
     static Ref<AccessibilityScrollView> create(AXID, ScrollView&, AXObjectCache&);
@@ -78,7 +57,7 @@ public:
     AccessibilityObject* crossFrameParentObject() const final;
     AccessibilityObject* crossFrameChildObject() const final;
 
-    void setInheritedFrameState(InheritedFrameState state) { m_inheritedFrameState = state; }
+    void setInheritedFrameState(InheritedFrameState);
     const InheritedFrameState& inheritedFrameState() const { return m_inheritedFrameState; }
     bool isAXHidden() const final;
     bool isARIAHidden() const final;

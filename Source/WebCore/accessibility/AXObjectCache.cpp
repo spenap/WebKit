@@ -962,6 +962,17 @@ AXCoreObject* AXObjectCache::rootObjectForFrame(LocalFrame& frame)
     return getOrCreate(frame.view());
 }
 
+#if ENABLE(ACCESSIBILITY_LOCAL_FRAME)
+void AXObjectCache::setFrameInheritedState(LocalFrame& frame, const InheritedFrameState& state)
+{
+    RefPtr scrollView = dynamicDowncast<AccessibilityScrollView>(rootObjectForFrame(frame));
+    if (!scrollView)
+        return;
+
+    scrollView->setInheritedFrameState(state);
+}
+#endif
+
 #if ENABLE(ACCESSIBILITY_ISOLATED_TREE)
 void AXObjectCache::buildIsolatedTreeIfNeeded()
 {

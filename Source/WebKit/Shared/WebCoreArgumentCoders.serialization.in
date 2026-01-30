@@ -9176,6 +9176,15 @@ header: <WebCore/AXObjectCache.h>
     String language;
 };
 
+#if ENABLE(ACCESSIBILITY_LOCAL_FRAME)
+header: <WebCore/AXObjectCache.h>
+[CustomHeader] struct WebCore::InheritedFrameState {
+    bool isAXHidden;
+    bool isInert;
+    bool isRenderHidden;
+};
+#endif
+
 #if PLATFORM(COCOA)
 header: <WebCore/AXObjectCache.h>
 [CustomHeader] struct WebCore::LiveRegionAnnouncementData {

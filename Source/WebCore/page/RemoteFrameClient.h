@@ -30,6 +30,10 @@
 #include <WebCore/ScrollTypes.h>
 #include <wtf/TZoneMallocInlines.h>
 
+#if ENABLE(ACCESSIBILITY_LOCAL_FRAME)
+#include <WebCore/AXObjectCache.h>
+#endif
+
 namespace WebCore {
 
 class DataSegment;
@@ -59,8 +63,11 @@ public:
     virtual String layerTreeAsText(size_t baseIndent, OptionSet<LayerTreeAsTextOptions>) = 0;
     virtual void closePage() = 0;
     virtual void bindRemoteAccessibilityFrames(int processIdentifier, FrameIdentifier target, AccessibilityRemoteToken dataToken, CompletionHandler<void(AccessibilityRemoteToken, int)>&&) = 0;
-    virtual void updateRemoteFrameAccessibilityOffset(FrameIdentifier target, IntPoint) = 0;
     virtual void unbindRemoteAccessibilityFrames(int) = 0;
+    virtual void updateRemoteFrameAccessibilityOffset(FrameIdentifier target, IntPoint) = 0;
+#if ENABLE(ACCESSIBILITY_LOCAL_FRAME)
+    virtual void updateRemoteFrameAccessibilityInheritedState(FrameIdentifier target, const InheritedFrameState&) = 0;
+#endif
     virtual void focus() = 0;
     virtual void unfocus() = 0;
     virtual void documentURLForConsoleLog(CompletionHandler<void(const URL&)>&&) = 0;
