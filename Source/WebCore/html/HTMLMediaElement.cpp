@@ -3456,7 +3456,7 @@ void HTMLMediaElement::mediaPlayerKeyNeeded(const SharedBuffer& initData)
     if (auto initDataBuffer = initData.tryCreateArrayBuffer())
         init.initData = Uint8Array::create(initDataBuffer.releaseNonNull());
 
-    Ref event = WebKitMediaKeyNeededEvent::create(eventNames().webkitneedkeyEvent, init);
+    Ref event = WebKitMediaKeyNeededEvent::create(eventNames().webkitneedkeyEvent, WTF::move(init));
     scheduleEvent(WTF::move(event));
 }
 
@@ -3597,8 +3597,12 @@ void HTMLMediaElement::mediaPlayerInitializationDataEncountered(const String& in
     //    The event interface MediaEncryptedEvent has:
     //      initDataType = initDataType
     //      initData = initData
-    MediaEncryptedEventInit initializer { initDataType, WTF::move(initData) };
-    scheduleEvent(MediaEncryptedEvent::create(eventNames().encryptedEvent, initializer, Event::IsTrusted::Yes));
+    auto initializer = MediaEncryptedEvent::Init {
+        { false, false, false },
+        initDataType,
+        WTF::move(initData)
+    };
+    scheduleEvent(MediaEncryptedEvent::create(eventNames().encryptedEvent, WTF::move(initializer), Event::IsTrusted::Yes));
 }
 
 void HTMLMediaElement::mediaPlayerWaitingForKeyChanged()

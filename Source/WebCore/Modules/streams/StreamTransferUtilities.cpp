@@ -61,7 +61,7 @@ static ExceptionOr<void> packAndPostMessage(JSDOMGlobalObject& globalObject, Mes
     if (catchScope.exception()) [[unlikely]]
         return Exception { ExceptionCode::InvalidStateError, "Unable to set value"_s };
 
-    return port.postMessage(globalObject, data, { });
+    return port.postMessage(globalObject, data, StructuredSerializeOptions { });
 }
 
 // https://streams.spec.whatwg.org/#abstract-opdef-crossrealmtransformsenderror

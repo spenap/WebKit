@@ -1143,20 +1143,20 @@ public:
 
     struct ImageOverlayText {
         String text;
-        RefPtr<DOMPointReadOnly> topLeft;
-        RefPtr<DOMPointReadOnly> topRight;
-        RefPtr<DOMPointReadOnly> bottomRight;
-        RefPtr<DOMPointReadOnly> bottomLeft;
+        Ref<DOMPointReadOnly> topLeft;
+        Ref<DOMPointReadOnly> topRight;
+        Ref<DOMPointReadOnly> bottomRight;
+        Ref<DOMPointReadOnly> bottomLeft;
         bool hasLeadingWhitespace { true };
 
         ~ImageOverlayText();
     };
 
     struct ImageOverlayLine {
-        RefPtr<DOMPointReadOnly> topLeft;
-        RefPtr<DOMPointReadOnly> topRight;
-        RefPtr<DOMPointReadOnly> bottomRight;
-        RefPtr<DOMPointReadOnly> bottomLeft;
+        Ref<DOMPointReadOnly> topLeft;
+        Ref<DOMPointReadOnly> topRight;
+        Ref<DOMPointReadOnly> bottomRight;
+        Ref<DOMPointReadOnly> bottomLeft;
         Vector<ImageOverlayText> children;
         bool hasTrailingNewline { true };
         bool isVertical { false };
@@ -1166,19 +1166,19 @@ public:
 
     struct ImageOverlayBlock {
         String text;
-        RefPtr<DOMPointReadOnly> topLeft;
-        RefPtr<DOMPointReadOnly> topRight;
-        RefPtr<DOMPointReadOnly> bottomRight;
-        RefPtr<DOMPointReadOnly> bottomLeft;
+        Ref<DOMPointReadOnly> topLeft;
+        Ref<DOMPointReadOnly> topRight;
+        Ref<DOMPointReadOnly> bottomRight;
+        Ref<DOMPointReadOnly> bottomLeft;
 
         ~ImageOverlayBlock();
     };
 
     struct ImageOverlayDataDetector {
-        RefPtr<DOMPointReadOnly> topLeft;
-        RefPtr<DOMPointReadOnly> topRight;
-        RefPtr<DOMPointReadOnly> bottomRight;
-        RefPtr<DOMPointReadOnly> bottomLeft;
+        Ref<DOMPointReadOnly> topLeft;
+        Ref<DOMPointReadOnly> topRight;
+        Ref<DOMPointReadOnly> bottomRight;
+        Ref<DOMPointReadOnly> bottomLeft;
 
         ~ImageOverlayDataDetector();
     };
@@ -1204,8 +1204,17 @@ public:
     bool usingAppleInternalSDK() const;
     bool usingGStreamer() const;
 
-    using NowPlayingInfoArtwork = WebCore::NowPlayingInfoArtwork;
-    using NowPlayingMetadata = WebCore::NowPlayingMetadata;
+    struct NowPlayingInfoArtwork {
+        String src;
+        String mimeType;
+    };
+    struct NowPlayingMetadata {
+        String title;
+        String artist;
+        String album;
+        String sourceApplicationIdentifier;
+        std::optional<NowPlayingInfoArtwork> artwork;
+    };
     std::optional<NowPlayingMetadata> nowPlayingMetadata() const;
 
     struct NowPlayingState {
@@ -1346,24 +1355,23 @@ public:
         bool isSameSiteLax { false };
         bool isSameSiteStrict { false };
 
-        CookieData(Cookie cookie)
-            : name(cookie.name)
-            , value(cookie.value)
-            , domain(cookie.domain)
-            , path(cookie.path)
-            , expires(cookie.expires)
-            , isHttpOnly(cookie.httpOnly)
-            , isSecure(cookie.secure)
-            , isSession(cookie.session)
-            , isSameSiteNone(cookie.sameSite == Cookie::SameSitePolicy::None)
-            , isSameSiteLax(cookie.sameSite == Cookie::SameSitePolicy::Lax)
-            , isSameSiteStrict(cookie.sameSite == Cookie::SameSitePolicy::Strict)
+        static CookieData fromCookie(Cookie cookie)
         {
-            ASSERT(!(isSameSiteLax && isSameSiteStrict) && !(isSameSiteLax && isSameSiteNone) && !(isSameSiteStrict && isSameSiteNone));
-        }
-
-        CookieData()
-        {
+            auto cookieData = CookieData {
+                WTF::move(cookie.name),
+                WTF::move(cookie.value),
+                WTF::move(cookie.domain),
+                WTF::move(cookie.path),
+                cookie.expires,
+                cookie.httpOnly,
+                cookie.secure,
+                cookie.session,
+                cookie.sameSite == Cookie::SameSitePolicy::None,
+                cookie.sameSite == Cookie::SameSitePolicy::Lax,
+                cookie.sameSite == Cookie::SameSitePolicy::Strict
+            };
+            ASSERT(!(cookieData.isSameSiteLax && cookieData.isSameSiteStrict) && !(cookieData.isSameSiteLax && cookieData.isSameSiteNone) && !(cookieData.isSameSiteStrict && cookieData.isSameSiteNone));
+            return cookieData;
         }
 
         static Cookie toCookie(CookieData&& cookieData)

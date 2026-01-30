@@ -2306,7 +2306,7 @@ ExceptionOr<void> Internals::unconstrainedScrollTo(Element& element, double x, d
     if (!document || !document->view())
         return Exception { ExceptionCode::InvalidAccessError };
 
-    element.scrollTo(ScrollToOptions(x, y), ScrollClamping::Unclamped);
+    element.scrollTo(ScrollToOptions { { ScrollBehavior::Auto }, x, y }, ScrollClamping::Unclamped);
 
     Ref frameView = *document->view();
     frameView->setViewportConstrainedObjectsNeedLayout();
@@ -5484,8 +5484,18 @@ std::optional<Internals::NowPlayingMetadata> Internals::nowPlayingMetadata() con
     if (!manager)
         return std::nullopt;
 
-    if (auto nowPlayingInfo = manager->nowPlayingInfo())
-        return nowPlayingInfo->metadata;
+    if (auto nowPlayingInfo = manager->nowPlayingInfo()) {
+        return { {
+            nowPlayingInfo->metadata.title,
+            nowPlayingInfo->metadata.artist,
+            nowPlayingInfo->metadata.album,
+            nowPlayingInfo->metadata.sourceApplicationIdentifier,
+            nowPlayingInfo->metadata.artwork ? std::optional { NowPlayingInfoArtwork {
+                nowPlayingInfo->metadata.artwork->src,
+                nowPlayingInfo->metadata.artwork->mimeType
+            } } : std::nullopt,
+        } };
+    }
 
     return std::nullopt;
 }
@@ -7269,7 +7279,7 @@ auto Internals::getCookies() const -> Vector<CookieData>
     Vector<Cookie> cookies;
     page->cookieJar().getRawCookies(*document, document->cookieURL(), cookies);
     return WTF::map(cookies, [](auto& cookie) {
-        return CookieData { cookie };
+        return CookieData::fromCookie(cookie);
     });
 }
 
@@ -8251,19 +8261,16 @@ ExceptionOr<Vector<Internals::FrameDamage>> Internals::getFrameDamageHistory() c
         return Exception { ExceptionCode::NotSupportedError };
 
     Vector<Internals::FrameDamage> damageDetails;
-    size_t sequenceId = 0;
+    unsigned sequenceId = 0;
     document->page()->chrome().client().foreachRegionInDamageHistoryForTesting([&](const auto& region) {
-        FrameDamage details;
-        details.sequenceId = sequenceId++;
-
         const auto& regionBounds = region.bounds();
-        details.bounds = DOMRectReadOnly::create(regionBounds.x(), regionBounds.y(), regionBounds.width(), regionBounds.height());
-
-        const auto& regionRects = region.rects();
-        details.rects = regionRects.map([](const IntRect& rect) -> Ref<DOMRectReadOnly> {
-            return DOMRectReadOnly::create(rect.x(), rect.y(), rect.width(), rect.height());
+        damageDetails.append(FrameDamage {
+            .sequenceId = sequenceId++,
+            .bounds = DOMRectReadOnly::create(regionBounds.x(), regionBounds.y(), regionBounds.width(), regionBounds.height()),
+            .rects = region.rects().map([](const IntRect& rect) -> Ref<DOMRectReadOnly> {
+                return DOMRectReadOnly::create(rect.x(), rect.y(), rect.width(), rect.height());
+            }),
         });
-        damageDetails.append(WTF::move(details));
     });
 
     return damageDetails;

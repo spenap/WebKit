@@ -6015,7 +6015,7 @@ RefPtr<MediaSessionManagerInterface> Page::mediaSessionManager()
         Ref { *m_mediaSessionManager }->setShouldDeactivateAudioSession(true);
 #endif
 
-        MediaEngineConfigurationFactory::setMediaSessionManagerProvider([] (PageIdentifier identifier) {
+        MediaEngineConfigurationFactory::setMediaSessionManagerProvider([](PageIdentifier identifier) {
             return Page::mediaSessionManagerForPageIdentifier(identifier);
         });
     }
