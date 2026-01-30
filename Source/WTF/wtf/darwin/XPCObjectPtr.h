@@ -82,3 +82,5 @@ WTF_OS_OBJECT_XPC_TYPES(WTF_DECLARE_XPC_OSOBJECT_RETAIN_TRAITS)
 #endif // !__has_feature(objc_arc)
 
 } // namespace WTF
+
+using WTF::protect;
