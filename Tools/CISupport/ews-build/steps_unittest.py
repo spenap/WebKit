@@ -3696,7 +3696,7 @@ class TestUpdateWorkingDirectory(BuildStepMixinAdditions, unittest.TestCase):
                         ).exit(0),
             ExpectShell(workdir='wkdir',
                         log_environ=False,
-                        command=['git', 'checkout', '--progress', '-b', 'main'],
+                        command=['git', 'checkout', '--progress', '-B', 'main'],
                         ).exit(0),
         )
         self.expect_outcome(result=SUCCESS, state_string='Updated working directory')
@@ -3717,7 +3717,7 @@ class TestUpdateWorkingDirectory(BuildStepMixinAdditions, unittest.TestCase):
                         ).exit(0),
             ExpectShell(workdir='wkdir',
                         log_environ=False,
-                        command=['git', 'checkout', '--progress', '-b', 'safari-xxx-branch'],
+                        command=['git', 'checkout', '--progress', '-B', 'safari-xxx-branch'],
                         ).exit(0),
             ExpectShell(workdir='wkdir',
                         log_environ=False,
@@ -3746,7 +3746,7 @@ class TestUpdateWorkingDirectory(BuildStepMixinAdditions, unittest.TestCase):
                         ).exit(0),
             ExpectShell(workdir='wkdir',
                         log_environ=False,
-                        command=['git', 'checkout', '--progress', '-b', 'main'],
+                        command=['git', 'checkout', '--progress', '-B', 'main'],
                         ).exit(0),
         )
         self.expect_outcome(result=SUCCESS, state_string='Updated working directory')
@@ -3768,7 +3768,7 @@ class TestUpdateWorkingDirectory(BuildStepMixinAdditions, unittest.TestCase):
                         ).exit(0),
             ExpectShell(workdir='wkdir',
                         log_environ=False,
-                        command=['git', 'checkout', '--progress', '-b', 'safari-xxx-branch'],
+                        command=['git', 'checkout', '--progress', '-B', 'safari-xxx-branch'],
                         ).exit(0),
             ExpectShell(workdir='wkdir',
                         log_environ=False,
@@ -4037,7 +4037,7 @@ class TestCheckOutPullRequest(BuildStepMixinAdditions, unittest.TestCase):
                 timeout=600,
                 log_environ=False,
                 env=self.ENV,
-                command=['git', 'checkout', '--progress', '-b', 'eng/pull-request-branch'],
+                command=['git', 'checkout', '--progress', '-B', 'eng/pull-request-branch'],
             ).exit(0),
             ExpectShell(
                 workdir='wkdir',
@@ -4094,7 +4094,7 @@ class TestCheckOutPullRequest(BuildStepMixinAdditions, unittest.TestCase):
                 timeout=600,
                 log_environ=False,
                 env=self.ENV,
-                command=['git', 'checkout', '--progress', '-b', 'eng/pull-request-branch'],
+                command=['git', 'checkout', '--progress', '-B', 'eng/pull-request-branch'],
             ).exit(0),
             ExpectShell(
                 workdir='wkdir',
@@ -4151,7 +4151,7 @@ class TestCheckOutPullRequest(BuildStepMixinAdditions, unittest.TestCase):
                 timeout=600,
                 log_environ=False,
                 env=self.ENV,
-                command=['git', 'checkout', '--progress', '-b', 'integration/ci/1234'],
+                command=['git', 'checkout', '--progress', '-B', 'integration/ci/1234'],
             ).exit(0),
             ExpectShell(
                 workdir='wkdir',
@@ -4208,7 +4208,7 @@ class TestCheckOutPullRequest(BuildStepMixinAdditions, unittest.TestCase):
                 timeout=600,
                 log_environ=False,
                 env=self.ENV,
-                command=['git', 'checkout', '--progress', '-b', 'eng/pull-request-branch'],
+                command=['git', 'checkout', '--progress', '-B', 'eng/pull-request-branch'],
             ).exit(0),
             ExpectShell(
                 workdir='wkdir',
