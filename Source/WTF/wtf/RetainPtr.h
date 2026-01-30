@@ -31,6 +31,7 @@
 
 #if USE(CF)
 #include <CoreFoundation/CoreFoundation.h>
+#include <wtf/cf/CFTypeTraits.h>
 #endif
 
 #ifdef __OBJC__
@@ -320,7 +321,7 @@ template<typename T> inline RetainPtr<RetainPtrType<T>> retainPtr(T ptr)
 
 #if USE(CF)
 template<typename T>
-    requires (std::is_pointer_v<T> && std::is_convertible_v<T, CFTypeRef> && !IsNSType<T>)
+    requires IsCFType<T>
 ALWAYS_INLINE CLANG_POINTER_CONVERSION RetainPtr<RetainPtrType<T>> protect(T ptr)
 {
     return ptr;
