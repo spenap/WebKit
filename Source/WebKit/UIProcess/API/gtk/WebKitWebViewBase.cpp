@@ -891,17 +891,8 @@ static void webkitWebViewBaseSnapshot(GtkWidget* widget, GtkSnapshot* snapshot)
 
     bool notifyNextPresentationUpdate = false;
     auto* pageSnapshot = gtk_snapshot_new();
-    if (!webViewBase->priv->isBlank) {
-        if (drawingArea->isInAcceleratedCompositingMode())
-            notifyNextPresentationUpdate = webViewBase->priv->acceleratedBackingStore->snapshot(pageSnapshot);
-        else {
-            graphene_rect_t bounds = GRAPHENE_RECT_INIT(0, 0, widgetSize.width(), widgetSize.height());
-            RefPtr<cairo_t> cr = adoptRef(gtk_snapshot_append_cairo(pageSnapshot, &bounds));
-            WebCore::Region unpaintedRegion; // This is simply unused.
-            drawingArea->paint(cr.get(), IntRect { { 0, 0 }, drawingArea->size() }, unpaintedRegion);
-            notifyNextPresentationUpdate = true;
-        }
-    }
+    if (!webViewBase->priv->isBlank)
+        notifyNextPresentationUpdate = webViewBase->priv->acceleratedBackingStore->snapshot(pageSnapshot);
 
     if (auto* pageRenderNode = gtk_snapshot_free_to_node(pageSnapshot)) {
         bool showingNavigationSnapshot = webViewBase->priv->pageProxy->isShowingNavigationGestureSnapshot();
@@ -941,14 +932,8 @@ static gboolean webkitWebViewBaseDraw(GtkWidget* widget, cairo_t* cr)
         if (showingNavigationSnapshot)
             cairo_push_group(cr);
 
-        if (drawingArea->isInAcceleratedCompositingMode()) {
-            ASSERT(webViewBase->priv->acceleratedBackingStore);
-            notifyNextPresentationUpdate = webViewBase->priv->acceleratedBackingStore->paint(cr, clipRect);
-        } else {
-            WebCore::Region unpaintedRegion; // This is simply unused.
-            drawingArea->paint(cr, clipRect, unpaintedRegion);
-            notifyNextPresentationUpdate = true;
-        }
+        ASSERT(webViewBase->priv->acceleratedBackingStore);
+        notifyNextPresentationUpdate = webViewBase->priv->acceleratedBackingStore->paint(cr, clipRect);
 
         if (showingNavigationSnapshot) {
             RefPtr<cairo_pattern_t> group = adoptRef(cairo_pop_group(cr));
@@ -3501,7 +3486,7 @@ void webkitWebViewBaseSetPlugID(WebKitWebViewBase* webViewBase, const String& pl
 RendererBufferDescription webkitWebViewBaseGetRendererBufferDescription(WebKitWebViewBase* webViewBase)
 {
     auto* drawingArea = static_cast<DrawingAreaProxyCoordinatedGraphics*>(webViewBase->priv->pageProxy->drawingArea());
-    if (!drawingArea || !drawingArea->isInAcceleratedCompositingMode())
+    if (!drawingArea)
         return { };
 
     return webViewBase->priv->acceleratedBackingStore->bufferDescription();
@@ -3546,7 +3531,7 @@ static SkImage* webkitWebViewBaseSnapshotFromWidget(GtkWidget* view)
 SkImage* webkitWebViewBaseSnapshotForTesting(WebKitWebViewBase* webViewBase)
 {
     auto* drawingArea = static_cast<DrawingAreaProxyCoordinatedGraphics*>(webViewBase->priv->pageProxy->drawingArea());
-    if (!drawingArea || !drawingArea->isInAcceleratedCompositingMode())
+    if (!drawingArea)
         return webkitWebViewBaseSnapshotFromWidget(GTK_WIDGET(webViewBase));
 
     if (auto image = webViewBase->priv->acceleratedBackingStore->bufferAsNativeImageForTesting()) {
