@@ -7617,7 +7617,7 @@ SourceBufferChangeTypeEnabled:
 
 SpatialImageControlsEnabled:
   type: bool
-  status: testable
+  status: preview
   category: media
   condition: ENABLE(SPATIAL_IMAGE_CONTROLS)
   humanReadableName: "Spatial image controls API"
@@ -7626,8 +7626,10 @@ SpatialImageControlsEnabled:
     WebKitLegacy:
       default: false
     WebKit:
+      "ENABLE(PANORAMA_IMAGE_CONTROLS)": true
       default: false
     WebCore:
+      "ENABLE(PANORAMA_IMAGE_CONTROLS)": true
       default: false
 
 SpatialNavigationEnabled:
