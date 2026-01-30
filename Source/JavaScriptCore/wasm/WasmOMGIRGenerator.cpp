@@ -6428,7 +6428,7 @@ Expected<std::unique_ptr<InternalFunction>, String> parseAndCompileOMG(Compilati
         ionGraphFunction = JSON::Object::create();
         auto passes = JSON::Array::create();
         ionGraphPasses = passes.get();
-        ionGraphFunction->setString("name"_s, makeString(IndexOrName(functionIndexSpace, info.nameSection->get(functionIndexSpace))));
+        ionGraphFunction->setString("name"_s, callee.nameWithHash());
         ionGraphFunction->setArray("passes"_s, WTF::move(passes));
     }
     auto result = makeUnique<InternalFunction>();
