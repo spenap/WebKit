@@ -9064,6 +9064,21 @@ WebArchiveTestingModeEnabled:
     WebCore:
       default: false
 
+WebAssemblyDebuggerEnabled:
+  type: bool
+  status: internal
+  category: javascript
+  humanReadableName: "WebAssembly Debugger"
+  humanReadableDescription: "Enable LLDB debugging support for WebAssembly (requires page reload)"
+  condition: ENABLE(WEBASSEMBLY_DEBUGGER) && ENABLE(REMOTE_INSPECTOR)
+  defaultValue:
+    WebKitLegacy:
+      default: false
+    WebKit:
+      default: false
+    WebCore:
+      default: false
+
 WebAssemblyESMIntegrationEnabled:
   type: bool
   status: testable
