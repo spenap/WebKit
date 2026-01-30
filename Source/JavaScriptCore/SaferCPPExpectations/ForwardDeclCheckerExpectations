@@ -64,4 +64,3 @@ runtime/StringSplitCache.h
 runtime/Structure.h
 runtime/VM.h
 runtime/WriteBarrier.h
-wasm/WasmBBQJIT.h
