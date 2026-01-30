@@ -1522,10 +1522,6 @@ void KeyframeEffect::updateEffectStackMembership()
     if (!target)
         return;
 
-#if ENABLE(THREADED_ANIMATIONS)
-    StackMembershipMutationScope stackMembershipMutationScope(*this);
-#endif
-
     bool isRelevant = animation() && animation()->isRelevant();
     if (isRelevant && !m_inTargetEffectStack)
         target->ensureKeyframeEffectStack().addEffect(*this);
