@@ -2139,7 +2139,7 @@ private:
     void platformWillPerformEditingCommand();
     void sendEditorStateUpdate();
 
-    void getPlatformEditorStateCommon(const WebCore::LocalFrame&, EditorState&) const;
+    void getPlatformEditorStateCommon(WebCore::LocalFrame&, EditorState&) const;
 
     void updateSizeForCSSDefaultViewportUnits();
     void updateSizeForCSSSmallViewportUnits();

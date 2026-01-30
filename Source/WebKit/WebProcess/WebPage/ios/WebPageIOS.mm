@@ -384,12 +384,8 @@ void WebPage::getPlatformEditorState(LocalFrame& frame, EditorState& result) con
     const auto& selection = frame.selection().selection();
     std::optional<SimpleRange> selectedRange;
     postLayoutData.isStableStateUpdate = m_isInStableState;
-    bool startNodeIsInsideFixedPosition = false;
-    bool endNodeIsInsideFixedPosition = false;
+
     if (selection.isCaret()) {
-        visualData.caretRectAtStart = view->contentsToRootView(frame.selection().absoluteCaretBounds(&startNodeIsInsideFixedPosition));
-        endNodeIsInsideFixedPosition = startNodeIsInsideFixedPosition;
-        visualData.caretRectAtEnd = visualData.caretRectAtStart;
         // FIXME: The following check should take into account writing direction.
         postLayoutData.isReplaceAllowed = result.isContentEditable && atBoundaryOfGranularity(selection.start(), TextGranularity::WordGranularity, SelectionDirection::Forward);
 
@@ -399,8 +395,6 @@ void WebPage::getPlatformEditorState(LocalFrame& frame, EditorState& result) con
         if (selection.isContentEditable())
             charactersAroundPosition(selection.start(), postLayoutData.characterAfterSelection, postLayoutData.characterBeforeSelection, postLayoutData.twoCharacterBeforeSelection);
     } else if (selection.isRange()) {
-        visualData.caretRectAtStart = view->contentsToRootView(VisiblePosition(selection.start()).absoluteCaretBounds(&startNodeIsInsideFixedPosition));
-        visualData.caretRectAtEnd = view->contentsToRootView(VisiblePosition(selection.end()).absoluteCaretBounds(&endNodeIsInsideFixedPosition));
         selectedRange = selection.toNormalizedRange();
         String selectedText;
         if (selectedRange) {
@@ -444,7 +438,6 @@ void WebPage::getPlatformEditorState(LocalFrame& frame, EditorState& result) con
     }
 #endif
 
-    postLayoutData.insideFixedPosition = startNodeIsInsideFixedPosition || endNodeIsInsideFixedPosition;
     if (!selection.isNone()) {
         bool selectionIsEditable = selection.hasEditableStyle();
         if (selectionIsEditable) {
