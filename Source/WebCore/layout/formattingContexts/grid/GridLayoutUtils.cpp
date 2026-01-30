@@ -161,6 +161,7 @@ LayoutUnit usedInlineSizeForGridItem(const PlacedGridItem& placedGridItem, Layou
     return { };
 }
 
+// https://drafts.csswg.org/css-grid-1/#min-size-auto
 static LayoutUnit automaticMinimumInlineSize(const PlacedGridItem& gridItem, LayoutUnit borderAndPadding, const TrackSizingFunctionsList& trackSizingFunctions)
 {
     auto& inlineAxisSizes = gridItem.inlineAxisSizes();
@@ -209,11 +210,20 @@ static LayoutUnit automaticMinimumInlineSize(const PlacedGridItem& gridItem, Lay
     return contentBasedMinimumSize();
 }
 
+// https://drafts.csswg.org/css-grid-1/#min-size-auto
 static LayoutUnit automaticMinimumBlockSize(const PlacedGridItem& gridItem, LayoutUnit borderAndPadding, const TrackSizingFunctionsList& trackSizingFunctions)
 {
     auto& blockAxisSizes = gridItem.blockAxisSizes();
     ASSERT(blockAxisSizes.minimumSize.isAuto());
 
+    // the used value of its automatic minimum size in a given axis is the content-based
+    // minimum size if all of the following are true
+    //
+    // its computed overflow is not a scrollable overflow value
+    // it spans at least one track in that axis whose min track sizing function is auto
+    // if it spans more than one track in that axis, none of those tracks are flexible
+    //
+    // Otherwise, the automatic minimum size is zero, as usual.
     if (hasScrollableBlockOverflow(gridItem))
         return { };
 
@@ -226,18 +236,23 @@ static LayoutUnit automaticMinimumBlockSize(const PlacedGridItem& gridItem, Layo
     if (gridItemRowSpanCount > 1 && spansFlexMaxTrackSizingFunction({ gridItemRowStartLine, gridItemRowEndLine }, trackSizingFunctions))
         return { };
 
+    // The content-based minimum size for a grid item in a given dimension is its
     auto contentBasedMinimumSize = [&] {
+        // specified size suggestion if it exists
         if (auto specifiedSizeSuggestion = blockSpecifiedSizeSuggestion(gridItem, borderAndPadding))
             return *specifiedSizeSuggestion;
 
+        // otherwise its transferred size suggestion if that exists and the element is replaced
         if (gridItem.isReplacedElement()) {
             if (auto transferredSizeSuggestion = blockTransferredSizeSuggestion(gridItem))
                 return *transferredSizeSuggestion;
         }
-
+        // else its content size suggestion
         return blockContentSizeSuggestion(gridItem);
     };
 
+    // In all cases, the size suggestion is additionally clamped by the maximum size in
+    // the affected axis, if it’s definite
     auto& maximumSize = blockAxisSizes.maximumSize;
     if (auto fixedMaximumSize = maximumSize.tryFixed())
         return std::min(contentBasedMinimumSize(), Style::evaluate<LayoutUnit>(*fixedMaximumSize, gridItem.usedZoom()));
