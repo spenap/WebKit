@@ -4500,7 +4500,6 @@ void RenderLayerBacking::updateAcceleratedEffectsAndBaseValues(HashSet<Ref<Accel
     auto target = Styleable::fromRenderer(renderer);
     ASSERT(target);
 
-    bool hasInterpolatingEffect = false;
     bool hasEffectAffectingFilter = false;
     bool hasEffectAffectingBackdropFilter = false;
     auto borderBoxRect = snappedIntRect(m_owningLayer.rendererBorderBoxRect());
@@ -4511,6 +4510,20 @@ void RenderLayerBacking::updateAcceleratedEffectsAndBaseValues(HashSet<Ref<Accel
         return { };
     }();
 
+    // We keep property sets to track all properties we've encountered as well as
+    // those we know will interpolate (ie. the animation is in the "running" state).
+    // We will use these to determine if there are non-interpolating animations
+    // that we can disregard.
+    OptionSet<AcceleratedEffectProperty> allAcceleratedProperties;
+    OptionSet<AcceleratedEffectProperty> interpolatingProperties;
+
+    // We keep another property set to track proeprties for which we have found an
+    // interpolating effect that fully replaces any previous effect or base value.
+    // The purpose of this property set is to not add any effect, running or otherwise,
+    // that is fully replaced by effects higher up the effect stack, ensuring a minimal
+    // amount of accelerated effects.
+    OptionSet<AcceleratedEffectProperty> replacedAcceleratedProperties;
+
     AcceleratedEffects acceleratedEffects;
     HashSet<Ref<AcceleratedTimeline>> effectTimelines;
     if (auto* effectStack = target->keyframeEffectStack()) {
@@ -4518,7 +4531,7 @@ void RenderLayerBacking::updateAcceleratedEffectsAndBaseValues(HashSet<Ref<Accel
         if (effectStack->allowsAcceleration()) {
             auto animatesWidth = effectStack->containsProperty(CSSPropertyWidth);
             auto animatesHeight = effectStack->containsProperty(CSSPropertyHeight);
-            for (const auto& effect : effectStack->sortedEffects()) {
+            for (const auto& effect : effectStack->sortedEffects() | std::views::reverse) {
                 if (!effect || !effect->canHaveAcceleratedRepresentation() || !effect->canBeAccelerated())
                     continue;
                 if (animatesWidth || animatesHeight) {
@@ -4529,13 +4542,21 @@ void RenderLayerBacking::updateAcceleratedEffectsAndBaseValues(HashSet<Ref<Accel
                 Ref acceleratedEffect = effect->acceleratedRepresentation(borderBoxRect, baseValues, disallowedAcceleratedProperties);
                 // FIXME: it feels like we should be able to assert here, or perhaps we could just fold this into the logic
                 // to determine whether we have an interpolating effect.
-                if (acceleratedEffect->animatedProperties().isEmpty())
+                auto& acceleratedProperties = acceleratedEffect->animatedProperties();
+                if (acceleratedProperties.isEmpty())
                     continue;
-                if (!hasInterpolatingEffect && effect->isRunningAccelerated())
-                    hasInterpolatingEffect = true;
-                if (!hasEffectAffectingFilter && acceleratedEffect->animatedProperties().contains(AcceleratedEffectProperty::Filter))
+                // This effect is fully replaced by effects higher up the stack.
+                if (replacedAcceleratedProperties.containsAll(acceleratedProperties))
+                    continue;
+                // Keep track of properties replaced by this effect.
+                replacedAcceleratedProperties.add(acceleratedEffect->replacedProperties());
+                // Keep track of this effect's properties in the list of all known properties.
+                allAcceleratedProperties.add(acceleratedProperties);
+                if (effect->isRunningAccelerated())
+                    interpolatingProperties.add(acceleratedProperties);
+                if (!hasEffectAffectingFilter && acceleratedProperties.contains(AcceleratedEffectProperty::Filter))
                     hasEffectAffectingFilter = true;
-                if (!hasEffectAffectingBackdropFilter && acceleratedEffect->animatedProperties().contains(AcceleratedEffectProperty::BackdropFilter))
+                if (!hasEffectAffectingBackdropFilter && acceleratedProperties.contains(AcceleratedEffectProperty::BackdropFilter))
                     hasEffectAffectingBackdropFilter = true;
                 effectTimelines.add(Ref { *acceleratedEffect->timeline() });
                 weakAcceleratedEffects.add(acceleratedEffect.ptr());
@@ -4545,16 +4566,35 @@ void RenderLayerBacking::updateAcceleratedEffectsAndBaseValues(HashSet<Ref<Accel
         effectStack->setAcceleratedEffects(WTF::move(weakAcceleratedEffects));
     }
 
+    // Effects were added in reverse, so we need to reverse the accelerated effects.
+    acceleratedEffects.reverse();
+
+    // Now let's prune any effect that only animates a non-interpolating property.
+    auto nonInterpolatingProperties = allAcceleratedProperties ^ interpolatingProperties;
+    if (!nonInterpolatingProperties.isEmpty()) {
+        // Make a copy of our current list of effects and clear the the original list as well
+        // as the set of timelines. We'll re-populate both without effects that are only animating
+        // non-interpolating properties.
+        auto effectsIncludingNonInterpolating = acceleratedEffects;
+        acceleratedEffects.clear();
+        effectTimelines.clear();
+        for (auto& acceleratedEffect : effectsIncludingNonInterpolating) {
+            if (nonInterpolatingProperties.containsAll(acceleratedEffect->animatedProperties()))
+                continue;
+            acceleratedEffects.append(acceleratedEffect);
+            effectTimelines.add(Ref { *acceleratedEffect->timeline() });
+        }
+    }
+
     // If all of the effects in the stack are either idle, paused or filling, then the
     // effect stack will not produce an interpolated value and we don't need to run
     // any of these effects. Otherwise, add the timelines we've encountered for the
     // effects to the general timelines list.
-    if (hasInterpolatingEffect)
-        timelines.addAll(effectTimelines);
-    else {
+    if (interpolatingProperties.isEmpty()) {
         acceleratedEffects.clear();
         baseValues = { };
-    }
+    } else
+        timelines.addAll(effectTimelines);
 
     // If a filter property was disallowed, it's because it cannot be represented remotely,
     // so we must ensure we reset it in the base values so that we don't attempt to encode

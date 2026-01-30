@@ -1,7 +1,7 @@
-<!DOCTYPE html><!-- webkit-test-runner [ AsyncOverflowScrollingEnabled=true ThreadedTimeBasedAnimationsEnabled=false ] -->
+<!DOCTYPE html><!-- webkit-test-runner [ AsyncOverflowScrollingEnabled=true ThreadedTimeBasedAnimationsEnabled=true ] -->
 <body>
-<script src="../resources/testharness.js"></script>
-<script src="../resources/testharnessreport.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <style>
 
 div {
@@ -42,8 +42,8 @@ promise_test(async test => {
     animations.push(target.animate({ transform: ["none", "translateX(100px)"] }, duration));
     animations.push(target.animate({ transform: ["none", "translateY(100px)"] }, duration));
     await allAnimationsAreReadyToAnimateAccelerated(animations);
-    assert_equals(internals.acceleratedAnimationsForElement(target).length, 2);
-}, "Two replacing animations with explicit keyframes for the same accelerated property can run accelerated.");
+    assert_equals(internals.acceleratedAnimationsForElement(target).length, 1);
+}, "Two replacing animations with explicit keyframes for the same accelerated property yield only a single accelerated animation.");
 
 promise_test(async test => {
     const target = createDiv(test);
