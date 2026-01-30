@@ -85,6 +85,17 @@ namespace JSC::LOL {
     macro(op_is_object) \
     macro(op_is_cell_with_type) \
     macro(op_has_structure_with_flags) \
+    macro(op_jmp) \
+    macro(op_jtrue) \
+    macro(op_jfalse) \
+    macro(op_jeq_null) \
+    macro(op_jneq_null) \
+    macro(op_jundefined_or_null) \
+    macro(op_jnundefined_or_null) \
+    macro(op_jeq_ptr) \
+    macro(op_jneq_ptr) \
+    macro(op_jeq) \
+    macro(op_jneq) \
 
 
 #define FOR_EACH_OP_WITH_SLOW_CASE(macro) \
