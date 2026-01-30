@@ -662,7 +662,7 @@ void RemoteGraphicsContext::strokeLineWithColorAndThickness(const PathDataLine& 
 
 void RemoteGraphicsContext::strokeArc(const PathArc& arc)
 {
-    context().strokePath(Path({ PathSegment { arc } }));
+    context().strokeArc(arc);
 }
 
 void RemoteGraphicsContext::strokeClosedArc(const PathClosedArc& closedArc)

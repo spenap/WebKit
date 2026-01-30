@@ -98,3 +98,11 @@ request = "rdar://168411469"
 symbols = [
     "DDResultGetRange",
 ]
+
+[[temporary-usage]]
+requires = [ "HAVE_CGCONTEXT_STROKE_ARC" ]
+request = "rdar://169211312"
+cleanup = "rdar://169211412"
+symbols = [
+    "CGContextStrokeArc",
+]

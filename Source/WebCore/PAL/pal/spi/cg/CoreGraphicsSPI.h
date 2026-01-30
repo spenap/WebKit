@@ -467,6 +467,12 @@ CG_LOCAL bool CGIsInLockdownModeForPDF();
 CG_EXTERN void CGEnterLockdownModeForFonts();
 #endif
 
+#if HAVE(CGCONTEXT_STROKE_ARC)
+void CGContextStrokeArc(CGContextRef cg_nullable,
+    CGFloat x, CGFloat y, CGFloat radius, CGFloat startAngle, CGFloat endAngle,
+    bool clockwise);
+#endif
+
 extern CGDataProviderRef __nullable CGDataProviderCreateWithCopyOfData(const void *, size_t);
 
 WTF_EXTERN_C_END

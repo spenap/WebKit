@@ -1312,6 +1312,16 @@ void GraphicsContextCG::strokeRect(const FloatRect& rect, float lineWidth)
     CGContextStrokePath(context);
 }
 
+void GraphicsContextCG::strokeArc(const PathArc& arc)
+{
+#if HAVE(CGCONTEXT_STROKE_ARC)
+    CGContextRef context = platformContext();
+    CGContextStrokeArc(context, arc.center.x(), arc.center.y(), arc.radius, arc.startAngle, arc.endAngle, arc.direction == RotationDirection::Clockwise);
+#else
+    GraphicsContext::strokeArc(arc);
+#endif
+}
+
 void GraphicsContextCG::setLineCap(LineCap cap)
 {
     switch (cap) {
