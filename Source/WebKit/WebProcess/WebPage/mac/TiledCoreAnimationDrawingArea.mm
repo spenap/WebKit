@@ -646,11 +646,6 @@ PlatformCALayer* TiledCoreAnimationDrawingArea::layerForTransientZoom() const
     return scaledLayer->platformCALayer();
 }
 
-RefPtr<WebCore::PlatformCALayer> TiledCoreAnimationDrawingArea::protectedLayerForTransientZoom() const
-{
-    return layerForTransientZoom();
-}
-
 PlatformCALayer* TiledCoreAnimationDrawingArea::shadowLayerForTransientZoom() const
 {
     CheckedPtr frameView =  Ref { m_webPage.get() }->localMainFrameView();
@@ -813,7 +808,7 @@ void TiledCoreAnimationDrawingArea::applyTransientZoomToPage(double scale, Float
     // and not apply the transform, so we can't depend on it to do so.
     TransformationMatrix finalTransform;
     finalTransform.scale(scale);
-    protectedLayerForTransientZoom()->setTransform(finalTransform);
+    protect(layerForTransientZoom())->setTransform(finalTransform);
     
     Ref frameView = *webPage->localMainFrameView();
 

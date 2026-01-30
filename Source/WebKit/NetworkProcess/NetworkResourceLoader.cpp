@@ -1704,7 +1704,7 @@ void NetworkResourceLoader::didRetrieveCacheEntry(std::unique_ptr<NetworkCache::
     response = sanitizeResponseIfPossible(WTF::move(response), ResourceResponse::SanitizationType::CrossOriginSafe);
     if (isSynchronous()) {
         m_synchronousLoadData->response = WTF::move(response);
-        sendReplyToSynchronousRequest(*m_synchronousLoadData, entry->protectedBuffer().get(), { });
+        sendReplyToSynchronousRequest(*m_synchronousLoadData, protect(entry->buffer()).get(), { });
         cleanup(LoadResult::Success);
         return;
     }
@@ -1752,7 +1752,7 @@ void NetworkResourceLoader::sendResultForCacheEntry(std::unique_ptr<NetworkCache
 #if ENABLE(SHAREABLE_RESOURCE)
     if (auto handle = entry->shareableResourceHandle()) {
 #if ENABLE(CONTENT_FILTERING)
-        if (contentFilter && !contentFilter->continueAfterDataReceived(entry->protectedBuffer()->makeContiguous())) {
+        if (contentFilter && !contentFilter->continueAfterDataReceived(protect(entry->buffer())->makeContiguous())) {
             contentFilter->continueAfterNotifyFinished(m_parameters.request.url());
             contentFilter->stopFilteringMainResource();
             dispatchDidFinishResourceLoad();

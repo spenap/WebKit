@@ -173,7 +173,7 @@ bool NetworkProcessConnection::dispatchMessage(IPC::Connection& connection, IPC:
     }
 
     if (decoder.messageReceiverName() == Messages::WebSWClientConnection::messageReceiverName()) {
-        protectedServiceWorkerConnection()->didReceiveMessage(connection, decoder);
+        protect(serviceWorkerConnection())->didReceiveMessage(connection, decoder);
         return true;
     }
     if (decoder.messageReceiverName() == Messages::WebSWContextManagerConnection::messageReceiverName()) {
@@ -183,7 +183,7 @@ bool NetworkProcessConnection::dispatchMessage(IPC::Connection& connection, IPC:
         return true;
     }
     if (decoder.messageReceiverName() == Messages::WebSharedWorkerObjectConnection::messageReceiverName()) {
-        protectedSharedWorkerConnection()->didReceiveMessage(connection, decoder);
+        protect(sharedWorkerConnection())->didReceiveMessage(connection, decoder);
         return true;
     }
     if (decoder.messageReceiverName() == Messages::WebSharedWorkerContextManagerConnection::messageReceiverName()) {
@@ -322,21 +322,11 @@ WebSWClientConnection& NetworkProcessConnection::serviceWorkerConnection()
     return *m_swConnection;
 }
 
-Ref<WebSWClientConnection> NetworkProcessConnection::protectedServiceWorkerConnection()
-{
-    return serviceWorkerConnection();
-}
-
 WebSharedWorkerObjectConnection& NetworkProcessConnection::sharedWorkerConnection()
 {
     if (!m_sharedWorkerConnection)
         m_sharedWorkerConnection = WebSharedWorkerObjectConnection::create();
     return *m_sharedWorkerConnection;
-}
-
-Ref<WebSharedWorkerObjectConnection> NetworkProcessConnection::protectedSharedWorkerConnection()
-{
-    return sharedWorkerConnection();
 }
 
 void NetworkProcessConnection::messagesAvailableForPort(const WebCore::MessagePortIdentifier& messagePortIdentifier)

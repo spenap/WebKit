@@ -340,7 +340,6 @@ public:
 
 #if OS(DARWIN)
     xpc_connection_t xpcConnection() const { return m_xpcConnection.get(); }
-    OSObjectPtr<xpc_connection_t> protectedXPCConnection() const { return xpcConnection(); }
     std::optional<audit_token_t> getAuditToken();
     pid_t remoteProcessID() const;
 #endif
@@ -362,7 +361,6 @@ public:
     ~Connection();
 
     Client* client() const { return m_client.get(); }
-    RefPtr<Client> protectedClient() const { return m_client.get(); }
 
     enum UniqueIDType { };
     using UniqueID = AtomicObjectIdentifier<UniqueIDType>;
@@ -960,7 +958,7 @@ template<typename T> Error Connection::waitForAndDispatchImmediately(uint64_t de
         return Error::InvalidConnection;
 
     ASSERT(decoderOrError.value()->destinationID() == destinationID);
-    protectedClient()->didReceiveMessage(*this, decoderOrError.value());
+    protect(client())->didReceiveMessage(*this, decoderOrError.value());
     return Error::NoError;
 }
 

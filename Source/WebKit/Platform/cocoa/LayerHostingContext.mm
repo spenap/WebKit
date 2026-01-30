@@ -125,11 +125,6 @@ CALayer *LayerHostingContext::rootLayer() const
     return [m_context layer];
 }
 
-RetainPtr<CALayer> LayerHostingContext::protectedRootLayer() const
-{
-    return rootLayer();
-}
-
 LayerHostingContextID LayerHostingContext::contextID() const
 {
 #if USE(EXTENSIONKIT)

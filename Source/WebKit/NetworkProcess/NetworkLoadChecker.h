@@ -156,7 +156,6 @@ private:
 #endif
 
     RefPtr<NetworkCORSPreflightChecker> protectedCORSPreflightChecker() const;
-    RefPtr<WebCore::SecurityOrigin> protectedOrigin() const { return m_origin; }
     RefPtr<WebCore::SecurityOrigin> parentOrigin() const { return m_parentOrigin; }
 
     bool checkTAO(const WebCore::ResourceResponse&);

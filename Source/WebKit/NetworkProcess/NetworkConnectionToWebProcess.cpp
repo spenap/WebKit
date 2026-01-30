@@ -302,13 +302,13 @@ bool NetworkConnectionToWebProcess::dispatchMessage(IPC::Connection& connection,
 #endif
 #if USE(LIBWEBRTC)
     if (decoder.messageReceiverName() == Messages::NetworkRTCMonitor::messageReceiverName()) {
-        protectedRTCProvider()->didReceiveNetworkRTCMonitorMessage(connection, decoder);
+        protect(rtcProvider())->didReceiveNetworkRTCMonitorMessage(connection, decoder);
         return true;
     }
 #endif
 #if ENABLE(WEB_RTC)
     if (decoder.messageReceiverName() == Messages::NetworkMDNSRegister::messageReceiverName()) {
-        protectedMDNSRegister()->didReceiveMessage(connection, decoder);
+        protect(mdnsRegister())->didReceiveMessage(connection, decoder);
         return true;
     }
 #endif
@@ -409,13 +409,13 @@ void NetworkConnectionToWebProcess::registerToRTCDataChannelProxy()
     if (m_isRegisteredToRTCDataChannelProxy)
         return;
     m_isRegisteredToRTCDataChannelProxy = true;
-    m_networkProcess->protectedRTCDataChannelProxy()->registerConnectionToWebProcess(*this);
+    protect(m_networkProcess->rtcDataChannelProxy())->registerConnectionToWebProcess(*this);
 }
 
 void NetworkConnectionToWebProcess::unregisterToRTCDataChannelProxy()
 {
     if (m_isRegisteredToRTCDataChannelProxy)
-        m_networkProcess->protectedRTCDataChannelProxy()->unregisterConnectionToWebProcess(*this);
+        protect(m_networkProcess->rtcDataChannelProxy())->unregisterConnectionToWebProcess(*this);
 }
 #endif
 

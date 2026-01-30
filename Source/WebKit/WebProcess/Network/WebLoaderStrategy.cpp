@@ -732,7 +732,7 @@ void WebLoaderStrategy::networkProcessCrashed()
     WEBLOADERSTRATEGY_RELEASE_LOG_ERROR_BASIC("networkProcessCrashed: failing all pending resource loaders");
 
     for (auto& loader : m_webResourceLoaders.values()) {
-        scheduleInternallyFailedLoad(*loader->protectedResourceLoader());
+        scheduleInternallyFailedLoad(*protect(loader->resourceLoader()));
         loader->detachFromCoreLoader();
     }
 

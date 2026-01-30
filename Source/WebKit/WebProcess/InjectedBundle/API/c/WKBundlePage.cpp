@@ -327,22 +327,22 @@ WKBundleBackForwardListRef WKBundlePageGetBackForwardList(WKBundlePageRef pageRe
 
 void WKBundlePageInstallPageOverlay(WKBundlePageRef pageRef, WKBundlePageOverlayRef pageOverlayRef)
 {
-    WebKit::toImpl(pageRef)->corePage()->pageOverlayController().installPageOverlay(*WebKit::toImpl(pageOverlayRef)->protectedCoreOverlay(), WebCore::PageOverlay::FadeMode::DoNotFade);
+    WebKit::toImpl(pageRef)->corePage()->pageOverlayController().installPageOverlay(*protect(WebKit::toImpl(pageOverlayRef)->coreOverlay()), WebCore::PageOverlay::FadeMode::DoNotFade);
 }
 
 void WKBundlePageUninstallPageOverlay(WKBundlePageRef pageRef, WKBundlePageOverlayRef pageOverlayRef)
 {
-    WebKit::toImpl(pageRef)->corePage()->pageOverlayController().uninstallPageOverlay(*WebKit::toImpl(pageOverlayRef)->protectedCoreOverlay(), WebCore::PageOverlay::FadeMode::DoNotFade);
+    WebKit::toImpl(pageRef)->corePage()->pageOverlayController().uninstallPageOverlay(*protect(WebKit::toImpl(pageOverlayRef)->coreOverlay()), WebCore::PageOverlay::FadeMode::DoNotFade);
 }
 
 void WKBundlePageInstallPageOverlayWithAnimation(WKBundlePageRef pageRef, WKBundlePageOverlayRef pageOverlayRef)
 {
-    WebKit::toImpl(pageRef)->corePage()->pageOverlayController().installPageOverlay(*WebKit::toImpl(pageOverlayRef)->protectedCoreOverlay(), WebCore::PageOverlay::FadeMode::Fade);
+    WebKit::toImpl(pageRef)->corePage()->pageOverlayController().installPageOverlay(*protect(WebKit::toImpl(pageOverlayRef)->coreOverlay()), WebCore::PageOverlay::FadeMode::Fade);
 }
 
 void WKBundlePageUninstallPageOverlayWithAnimation(WKBundlePageRef pageRef, WKBundlePageOverlayRef pageOverlayRef)
 {
-    WebKit::toImpl(pageRef)->corePage()->pageOverlayController().uninstallPageOverlay(*WebKit::toImpl(pageOverlayRef)->protectedCoreOverlay(), WebCore::PageOverlay::FadeMode::Fade);
+    WebKit::toImpl(pageRef)->corePage()->pageOverlayController().uninstallPageOverlay(*protect(WebKit::toImpl(pageOverlayRef)->coreOverlay()), WebCore::PageOverlay::FadeMode::Fade);
 }
 
 void WKBundlePageSetTopOverhangImage(WKBundlePageRef pageRef, WKImageRef imageRef)
