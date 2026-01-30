@@ -286,8 +286,6 @@ imported/w3c/web-platform-tests/svg/pservers/reftests/gradient-transform-02.svg 
 imported/w3c/web-platform-tests/svg/pservers/reftests/pattern-inheritance-template-pattern-removed.svg [ ImageOnlyFailure ]
 imported/w3c/web-platform-tests/svg/render/reftests/blending-svg-foreign-object.html                   [ ImageOnlyFailure ]
 imported/w3c/web-platform-tests/svg/shapes/reftests/pathlength-004b.svg                                [ ImageOnlyFailure ]
-imported/w3c/web-platform-tests/svg/shapes/reftests/pathlength-005.html                                [ ImageOnlyFailure ]
-imported/w3c/web-platform-tests/svg/styling/border-spacing-svg-zoom-table-display.html                 [ ImageOnlyFailure ]
 imported/w3c/web-platform-tests/svg/styling/invalidation/nth-child-of-class.svg                        [ ImageOnlyFailure ]
 imported/w3c/web-platform-tests/svg/styling/invalidation/nth-last-child-of-class.svg                   [ ImageOnlyFailure ]
 imported/w3c/web-platform-tests/svg/text/reftests/dominant-baseline-hanging-small-font-size.svg        [ ImageOnlyFailure ]
