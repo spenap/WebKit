@@ -3450,6 +3450,24 @@ class TestAnalyzeLayoutTestsResultsRedTree(BuildStepMixinAdditions, unittest.Tes
             self.assertTrue(f'Test name: <a href="https://github.com/WebKit/WebKit/blob/main/LayoutTests/{flaky_test}">{flaky_test}</a>' in self._emails_list[0])
         return step_result
 
+    def test_step_retry_with_change_error_with_flakies(self):
+        self.configureStep()
+        self.configureCommonProperties()
+        first_run_failures = ["test/failure1.html", "test/failure2.html", "test/pre-existent/flaky1.html", "test/pre-existent/flaky2.html"]
+        first_run_flakies = ["test/flaky1.html", "test/flaky2.html"]
+        self.setProperty('first_run_failures', first_run_failures)
+        self.setProperty('first_run_flakies', first_run_flakies)
+        self.setProperty('with_change_repeat_failures_results_nonflaky_failures', [])
+        self.setProperty('with_change_repeat_failures_results_flakies', ["test/pre-existent/flaky1.html"])
+        self.setProperty('with_change_repeat_failures_retcode', FAILURE)
+        self.expect_outcome(result=SUCCESS, state_string='Passed layout tests')
+        step_result = self.run_step()
+        self.assertEqual(len(self._emails_list), 1)
+        self.assertTrue('Subject: Info about 6 flaky failures' in self._emails_list[0])
+        for flaky_test in first_run_failures + first_run_flakies:
+            self.assertTrue(f'Test name: <a href="https://github.com/WebKit/WebKit/blob/main/LayoutTests/{flaky_test}">{flaky_test}</a>' in self._emails_list[0])
+        return step_result
+
     def test_step_retry_with_change_timeouts(self):
         self.configureStep()
         self.configureCommonProperties()
