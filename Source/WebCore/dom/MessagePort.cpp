@@ -62,6 +62,12 @@ static HashMap<MessagePortIdentifier, ScriptExecutionContextIdentifier>& portToC
     return map;
 }
 
+void MessagePort::setMessageHandler(MessageHandler&& messageHandler)
+{
+    ASSERT(!m_messageHandler);
+    m_messageHandler = WTF::move(messageHandler);
+}
+
 bool MessagePort::isMessagePortAliveForTesting(const MessagePortIdentifier& identifier)
 {
     Locker locker { allMessagePortsLock };
@@ -232,6 +238,7 @@ void MessagePort::close()
     });
 
     removeAllEventListeners();
+    m_messageHandler = { };
 }
 
 void MessagePort::contextDestroyed()
@@ -271,6 +278,12 @@ void MessagePort::dispatchMessages()
             // close() in Worker onmessage handler should prevent next message from dispatching.
             if (workerGlobalScope && workerGlobalScope->isClosing())
                 return;
+
+            if (pendingActivity->object().m_messageHandler) {
+                ASSERT(message.transferredPorts.isEmpty());
+                pendingActivity->object().m_messageHandler(*JSC::jsCast<JSDOMGlobalObject*>(globalObject), message.message.releaseNonNull().get());
+                return;
+            }
 
             auto ports = MessagePort::entanglePorts(*context, WTF::move(message.transferredPorts));
             auto event = MessageEvent::create(*globalObject, message.message.releaseNonNull(), { }, { }, { }, WTF::move(ports));

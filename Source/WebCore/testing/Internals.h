@@ -1672,6 +1672,8 @@ public:
     ExceptionOr<Vector<FrameDamage>> getFrameDamageHistory() const;
 #endif // ENABLE(DAMAGE_TRACKING)
 
+    ExceptionOr<Ref<ReadableStream>> readableStreamFromMessagePort(JSDOMGlobalObject&, MessagePort&);
+
 #if ENABLE(MODEL_ELEMENT)
     void disableModelLoadDelaysForTesting();
     String modelElementState(HTMLModelElement&);

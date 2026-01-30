@@ -243,6 +243,7 @@
 #include "StaticNodeList.h"
 #include "StorageNamespace.h"
 #include "StorageNamespaceProvider.h"
+#include "StreamTransferUtilities.h"
 #include "StringCallback.h"
 #include "StyleGridPosition.h"
 #include "StyleResolver.h"
@@ -8346,6 +8347,11 @@ void Internals::testAsyncIterator(JSDOMGlobalObject& globalObject, JSC::JSValue 
     Vector<JSC::Strong<JSC::Unknown>> results;
     Ref domIterator = domIteratorOrException.releaseReturnValue();
     storeNextResults(domIterator.get(), WTF::move(results), WTF::move(promise));
+}
+
+ExceptionOr<Ref<ReadableStream>> Internals::readableStreamFromMessagePort(JSDOMGlobalObject& globalObject, MessagePort& port)
+{
+    return setupCrossRealmTransformReadable(globalObject, port);
 }
 
 #if ENABLE(MODEL_ELEMENT)

@@ -1524,6 +1524,8 @@ enum ContentsFormat {
     attribute boolean shouldSkipResourceMonitorThrottling;
 #endif
 
+    [CallWith=CurrentGlobalObject] ReadableStream readableStreamFromMessagePort(MessagePort port);
+
     [Conditional=MODEL_ELEMENT] undefined disableModelLoadDelaysForTesting();
     [Conditional=MODEL_ELEMENT] DOMString modelElementState(HTMLModelElement element);
     [Conditional=MODEL_ELEMENT] boolean isModelElementIntersectingViewport(HTMLModelElement element);

@@ -42,7 +42,9 @@ class JSValue;
 
 namespace WebCore {
 
+class JSDOMGlobalObject;
 class LocalFrame;
+class SerializedScriptValue;
 class WebCoreOpaqueRoot;
 
 struct StructuredSerializeOptions;
@@ -66,6 +68,9 @@ public:
     void start();
     void close();
     void entangle();
+
+    using MessageHandler = Function<void(JSDOMGlobalObject&, SerializedScriptValue&)>;
+    void setMessageHandler(MessageHandler&&);
 
     // Returns nullptr if the passed-in vector is empty.
     static ExceptionOr<Vector<TransferredMessagePort>> disentanglePorts(Vector<Ref<MessagePort>>&&);
@@ -121,6 +126,8 @@ private:
 
     MessagePortIdentifier m_identifier;
     MessagePortIdentifier m_remoteIdentifier;
+
+    MessageHandler m_messageHandler;
 };
 
 WebCoreOpaqueRoot root(MessagePort*);

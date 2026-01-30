@@ -386,6 +386,7 @@ Modules/streams/ReadableStreamToSharedBufferSink.cpp
 Modules/streams/ReadableStreamSource.cpp
 Modules/streams/StreamPipeToUtilities.cpp @no-unify
 Modules/streams/StreamTeeUtilities.cpp
+Modules/streams/StreamTransferUtilities.cpp
 Modules/streams/TransformStream.cpp
 Modules/streams/WritableStream.cpp
 Modules/url-pattern/URLPattern.cpp
