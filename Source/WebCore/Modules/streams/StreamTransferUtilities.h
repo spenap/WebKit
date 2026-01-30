@@ -25,7 +25,7 @@
 
 #pragma once
 
-#include "ExceptionOr.h"
+#include <WebCore/ExceptionOr.h>
 
 namespace WebCore {
 
