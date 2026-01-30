@@ -219,14 +219,14 @@ inline WeakPtr<match_constness_t<Source, Target>, WeakPtrImpl> dynamicDowncast(W
 
 template<typename T, typename WeakPtrImpl, typename PtrTraits = RawPtrTraits<T>>
     requires HasRefPtrMemberFunctions<T>::value
-ALWAYS_INLINE Ref<T, PtrTraits> protect(const WeakRef<T, WeakPtrImpl>& weakRef)
+ALWAYS_INLINE CLANG_POINTER_CONVERSION Ref<T, PtrTraits> protect(const WeakRef<T, WeakPtrImpl>& weakRef)
 {
     return Ref<T, PtrTraits>(*weakRef.ptr());
 }
 
 template<typename T, typename WeakPtrImpl, typename CheckedPtrTraits = RawPtrTraits<T>>
     requires (HasCheckedPtrMemberFunctions<T>::value && !HasRefPtrMemberFunctions<T>::value)
-ALWAYS_INLINE CheckedRef<T, CheckedPtrTraits> protect(const WeakRef<T, WeakPtrImpl>& weakRef)
+ALWAYS_INLINE CLANG_POINTER_CONVERSION CheckedRef<T, CheckedPtrTraits> protect(const WeakRef<T, WeakPtrImpl>& weakRef)
 {
     return CheckedRef<T, CheckedPtrTraits>(*weakRef.ptr());
 }

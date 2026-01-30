@@ -374,14 +374,14 @@ template<typename T, typename U, typename WeakPtrImpl, typename PtrTraits> inlin
 
 template<typename T, typename WeakPtrImpl, typename PtrTraits, typename RefPtrTraits = RawPtrTraits<T>, typename RefDerefTraits = DefaultRefDerefTraits<T>>
     requires HasRefPtrMemberFunctions<T>::value
-ALWAYS_INLINE RefPtr<T, RefPtrTraits, RefDerefTraits> protect(const WeakPtr<T, WeakPtrImpl, PtrTraits>& weakPtr)
+ALWAYS_INLINE CLANG_POINTER_CONVERSION RefPtr<T, RefPtrTraits, RefDerefTraits> protect(const WeakPtr<T, WeakPtrImpl, PtrTraits>& weakPtr)
 {
     return RefPtr<T, RefPtrTraits, RefDerefTraits>(weakPtr.get());
 }
 
 template<typename T, typename WeakPtrImpl, typename WeakPtrPtrTraits, typename CheckedPtrTraits = RawPtrTraits<T>>
     requires (HasCheckedPtrMemberFunctions<T>::value && !HasRefPtrMemberFunctions<T>::value)
-ALWAYS_INLINE CheckedPtr<T, CheckedPtrTraits> protect(const WeakPtr<T, WeakPtrImpl, WeakPtrPtrTraits>& weakPtr)
+ALWAYS_INLINE CLANG_POINTER_CONVERSION CheckedPtr<T, CheckedPtrTraits> protect(const WeakPtr<T, WeakPtrImpl, WeakPtrPtrTraits>& weakPtr)
 {
     return CheckedPtr<T, CheckedPtrTraits>(weakPtr.get());
 }

@@ -62,7 +62,7 @@ WTF_OS_OBJECT_DISPATCH_TYPES(WTF_IMPLEMENT_IS_OS_OBJECT_FUNCTIONS_DISPATCH)
 
 // Dispatch protect() functions.
 #define WTF_DECLARE_DISPATCH_PROTECT(TypeName) \
-ALWAYS_INLINE OSObjectPtr<TypeName##_t> protect(TypeName##_t ptr) \
+ALWAYS_INLINE CLANG_POINTER_CONVERSION OSObjectPtr<TypeName##_t> protect(TypeName##_t ptr) \
 { \
     return ptr; \
 }
