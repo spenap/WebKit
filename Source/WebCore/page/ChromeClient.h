@@ -790,6 +790,8 @@ public:
     WEBCORE_EXPORT virtual void showCaptionDisplaySettings(HTMLMediaElement&, const ResolvedCaptionDisplaySettingsOptions&, CompletionHandler<void(ExceptionOr<void>)>&&);
 #endif
 
+    virtual void updateRemoteIntersectionObserversInOtherWebProcesses() { }
+
     WEBCORE_EXPORT virtual ~ChromeClient();
 
 protected:

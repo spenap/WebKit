@@ -997,10 +997,10 @@ void Document::commonTeardown()
     m_documentFragmentForInnerOuterHTML = nullptr;
     m_frameMemoryMonitor = nullptr;
 
-    auto intersectionObservers = m_intersectionObservers;
-    for (auto& weakIntersectionObserver : intersectionObservers) {
-        if (RefPtr intersectionObserver = weakIntersectionObserver.get())
-            intersectionObserver->disconnect();
+    auto localIntersectionObservers = m_localIntersectionObservers;
+    for (auto& weakLocalIntersectionObserver : localIntersectionObservers) {
+        if (RefPtr localIntersectionObserver = weakLocalIntersectionObserver.get())
+            localIntersectionObserver->disconnect();
     }
 
     auto resizeObservers = m_resizeObservers;
@@ -10492,21 +10492,73 @@ void Document::scheduleRenderingUpdate(OptionSet<RenderingUpdateStep> requestedS
 
 void Document::addIntersectionObserver(IntersectionObserver& observer)
 {
-    ASSERT(m_intersectionObservers.find(&observer) == notFound);
-    m_intersectionObservers.append(observer);
+    ASSERT(!m_localIntersectionObservers.contains(&observer));
+    ASSERT(!m_remoteIntersectionObservers.contains(&observer));
+
+    switch (observer.type()) {
+    case IntersectionObserver::Type::Local:
+        m_localIntersectionObservers.append(observer);
+        break;
+
+    case IntersectionObserver::Type::Remote:
+        m_remoteIntersectionObservers.append(observer);
+        break;
+    }
 }
 
 void Document::removeIntersectionObserver(IntersectionObserver& observer)
 {
-    m_intersectionObservers.removeFirst(&observer);
+    bool removed = false;
+
+    switch (observer.type()) {
+    case IntersectionObserver::Type::Local:
+        ASSERT(!m_remoteIntersectionObservers.contains(&observer));
+        removed = m_localIntersectionObservers.removeFirst(&observer);
+        break;
+
+    case IntersectionObserver::Type::Remote:
+        ASSERT(!m_localIntersectionObservers.contains(&observer));
+        removed = m_remoteIntersectionObservers.removeFirst(&observer);
+        break;
+    }
+
+    ASSERT_UNUSED(removed, removed);
 }
 
-void Document::updateIntersectionObservations()
+static void updateAndNotifyIntersectionObservers(const Vector<WeakPtr<IntersectionObserver>>& intersectionObservers, const Frame& hostFrame)
 {
-    updateIntersectionObservations(m_intersectionObservers);
+    Vector<WeakPtr<IntersectionObserver>> intersectionObserversWithPendingNotifications;
+
+    for (auto& weakObserver : intersectionObservers) {
+        RefPtr observer = weakObserver.get();
+        if (!observer)
+            continue;
+
+        auto needNotify = observer->updateObservations(hostFrame);
+        if (needNotify == IntersectionObserver::NeedNotify::Yes)
+            intersectionObserversWithPendingNotifications.append(observer);
+    }
+
+    for (auto& weakObserver : intersectionObserversWithPendingNotifications) {
+        if (RefPtr observer = weakObserver.get())
+            observer->notify();
+    }
 }
 
-void Document::updateIntersectionObservations(const Vector<WeakPtr<IntersectionObserver>>& intersectionObservers)
+void Document::updateRemoteIntersectionObservers()
+{
+    RefPtr page = this->page();
+    if (!page)
+        return;
+
+    RefPtr mainFrame = this->page()->mainFrame();
+    if (!mainFrame)
+        return;
+
+    updateAndNotifyIntersectionObservers(m_remoteIntersectionObservers, *mainFrame);
+}
+
+void Document::updateIntersectionObservers()
 {
     RefPtr frame = this->frame();
     if (!frame)
@@ -10522,32 +10574,18 @@ void Document::updateIntersectionObservations(const Vector<WeakPtr<IntersectionO
 
     bool needsLayout = frameView->layoutContext().isLayoutPending() || (renderView() && renderView()->needsLayout());
     if (needsLayout || hasPendingStyleRecalc()) {
-        if (!intersectionObservers.isEmpty()) {
+        if (numberOfIntersectionObservers()) {
             LOG_WITH_STREAM(IntersectionObserver, stream << "Document " << this << " updateIntersectionObservations - needsLayout " << needsLayout << " or has pending style recalc " << hasPendingStyleRecalc() << "; scheduling another update");
             scheduleRenderingUpdate(RenderingUpdateStep::IntersectionObservations);
         }
         return;
     }
 
-    Vector<WeakPtr<IntersectionObserver>> intersectionObserversWithPendingNotifications;
+    updateAndNotifyIntersectionObservers(m_localIntersectionObservers, *frame);
+    updateRemoteIntersectionObservers();
 
-    for (auto& weakObserver : intersectionObservers) {
-        RefPtr observer = weakObserver.get();
-        if (!observer)
-            continue;
-
-        auto needNotify = observer->updateObservations(*frame);
-        if (needNotify == IntersectionObserver::NeedNotify::Yes)
-            intersectionObserversWithPendingNotifications.append(observer);
-    }
-
-    if (intersectionObserversWithPendingNotifications.size())
-        LOG_WITH_STREAM(IntersectionObserver, stream << "Document " << this << " updateIntersectionObservations - notifying observers");
-
-    for (auto& weakObserver : intersectionObserversWithPendingNotifications) {
-        if (RefPtr observer = weakObserver.get())
-            observer->notify();
-    }
+    if (frame->isMainFrame())
+        page->chrome().client().updateRemoteIntersectionObserversInOtherWebProcesses();
 }
 
 void Document::scheduleInitialIntersectionObservationUpdate()

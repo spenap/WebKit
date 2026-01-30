@@ -582,6 +582,8 @@ private:
     void showCaptionDisplaySettings(WebCore::HTMLMediaElement&, const WebCore::ResolvedCaptionDisplaySettingsOptions&, CompletionHandler<void(WebCore::ExceptionOr<void>)>&&) final;
 #endif
 
+    void updateRemoteIntersectionObserversInOtherWebProcesses() final;
+
     mutable bool m_cachedMainFrameHasHorizontalScrollbar { false };
     mutable bool m_cachedMainFrameHasVerticalScrollbar { false };
 

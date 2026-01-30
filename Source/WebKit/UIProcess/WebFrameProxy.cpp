@@ -62,6 +62,7 @@
 #include <WebCore/FocusEventData.h>
 #include <WebCore/FrameTreeSyncData.h>
 #include <WebCore/Image.h>
+#include <WebCore/LayoutRect.h>
 #include <WebCore/MIMETypeRegistry.h>
 #include <WebCore/NavigationScheduler.h>
 #include <WebCore/RemoteFrameLayoutInfo.h>

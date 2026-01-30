@@ -2417,4 +2417,10 @@ void WebChromeClient::showCaptionDisplaySettings(HTMLMediaElement& element, cons
 }
 #endif
 
+void WebChromeClient::updateRemoteIntersectionObserversInOtherWebProcesses()
+{
+    if (RefPtr page = m_page.get())
+        page->send(Messages::WebPageProxy::UpdateRemoteIntersectionObserversInOtherWebProcesses());
+}
+
 } // namespace WebKit
