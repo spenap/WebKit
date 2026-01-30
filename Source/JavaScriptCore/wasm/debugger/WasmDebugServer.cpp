@@ -98,9 +98,8 @@ bool DebugServer::start()
     m_moduleManager = makeUnique<ModuleManager>();
     m_executionHandler = makeUnique<ExecutionHandler>(*this, *m_moduleManager);
 
-    startAcceptThread();
-
     setState(State::Running);
+    startAcceptThread();
     return true;
 }
 
