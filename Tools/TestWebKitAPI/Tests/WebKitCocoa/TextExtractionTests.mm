@@ -41,6 +41,7 @@
 #import <WebKit/WKWebViewConfigurationPrivate.h>
 #import <WebKit/WKWebViewPrivate.h>
 #import <WebKit/_WKContentWorldConfiguration.h>
+#import <WebKit/_WKFrameTreeNode.h>
 #import <WebKit/_WKJSHandle.h>
 #import <WebKit/_WKRemoteObjectInterface.h>
 #import <WebKit/_WKRemoteObjectRegistry.h>
@@ -771,6 +772,7 @@ TEST(TextExtractionTests, InjectedBundle)
         Util::spinRunLoop();
     EXPECT_NOT_NULL(handle.get().frame._documentIdentifier);
     EXPECT_TRUE([handle.get().frame._documentIdentifier isEqual:decodedHandle.get().frame._documentIdentifier]);
+    EXPECT_TRUE([handle.get().frame._documentIdentifier isEqual:[webView mainFrame].info._documentIdentifier]);
 }
 
 #if PLATFORM(IOS_FAMILY)
