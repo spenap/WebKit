@@ -150,12 +150,14 @@ bool RenderStyle::scrollAnchoringSuppressionStyleDidChange(const RenderStyle* ot
         return false;
 
     if (m_computedStyle.m_nonInheritedData->boxData.ptr() != other->m_computedStyle.m_nonInheritedData->boxData.ptr()) {
-        if (m_computedStyle.m_nonInheritedData->boxData->width != other->m_computedStyle.m_nonInheritedData->boxData->width
-            || m_computedStyle.m_nonInheritedData->boxData->minWidth != other->m_computedStyle.m_nonInheritedData->boxData->minWidth
-            || m_computedStyle.m_nonInheritedData->boxData->maxWidth != other->m_computedStyle.m_nonInheritedData->boxData->maxWidth
-            || m_computedStyle.m_nonInheritedData->boxData->height != other->m_computedStyle.m_nonInheritedData->boxData->height
-            || m_computedStyle.m_nonInheritedData->boxData->minHeight != other->m_computedStyle.m_nonInheritedData->boxData->minHeight
-            || m_computedStyle.m_nonInheritedData->boxData->maxHeight != other->m_computedStyle.m_nonInheritedData->boxData->maxHeight)
+        auto& boxData = m_computedStyle.m_nonInheritedData->boxData.get();
+        auto& otherBoxData = other->m_computedStyle.m_nonInheritedData->boxData.get();
+        if (boxData.width != otherBoxData.width
+            || boxData.minWidth != otherBoxData.minWidth
+            || boxData.maxWidth != otherBoxData.maxWidth
+            || boxData.height != otherBoxData.height
+            || boxData.minHeight != otherBoxData.minHeight
+            || boxData.maxHeight != otherBoxData.maxHeight)
             return true;
     }
 
@@ -165,17 +167,19 @@ bool RenderStyle::scrollAnchoringSuppressionStyleDidChange(const RenderStyle* ot
     if (position() != other->position())
         return true;
 
-    if (m_computedStyle.m_nonInheritedData->surroundData.ptr() && other->m_computedStyle.m_nonInheritedData->surroundData.ptr() && m_computedStyle.m_nonInheritedData->surroundData != other->m_computedStyle.m_nonInheritedData->surroundData) {
-        if (m_computedStyle.m_nonInheritedData->surroundData->margin != other->m_computedStyle.m_nonInheritedData->surroundData->margin)
+    if (m_computedStyle.m_nonInheritedData->surroundData.ptr() && other->m_computedStyle.m_nonInheritedData->surroundData.ptr()) {
+        auto& surroundData = m_computedStyle.m_nonInheritedData->surroundData.get();
+        auto& otherSurroundData = other->m_computedStyle.m_nonInheritedData->surroundData.get();
+        if (surroundData.margin != otherSurroundData.margin)
             return true;
 
-        if (m_computedStyle.m_nonInheritedData->surroundData->padding != other->m_computedStyle.m_nonInheritedData->surroundData->padding)
+        if (surroundData.padding != otherSurroundData.padding)
             return true;
-    }
 
-    if (position() != PositionType::Static) {
-        if (m_computedStyle.m_nonInheritedData->surroundData->inset != other->m_computedStyle.m_nonInheritedData->surroundData->inset)
-            return true;
+        if (position() != PositionType::Static) {
+            if (surroundData.inset != otherSurroundData.inset)
+                return true;
+        }
     }
 
     if (hasTransformRelatedProperty() != other->hasTransformRelatedProperty() || transform() != other->transform())

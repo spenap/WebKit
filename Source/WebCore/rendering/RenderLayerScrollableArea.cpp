@@ -97,13 +97,11 @@ RenderLayerScrollableArea::RenderLayerScrollableArea(RenderLayer& layer)
     : m_layer(layer)
 {
     auto& renderer = m_layer.renderer();
-    if (renderer.document().settings().cssScrollAnchoringEnabled() && !is<HTMLHtmlElement>(renderer.element()) && !is<HTMLBodyElement>(renderer.element()))
+    if (renderer.settings().cssScrollAnchoringEnabled() && !is<HTMLHtmlElement>(renderer.element()) && !is<HTMLBodyElement>(renderer.element()))
         m_scrollAnchoringController = WTF::makeUnique<ScrollAnchoringController>(*this);
 }
 
-RenderLayerScrollableArea::~RenderLayerScrollableArea()
-{
-}
+RenderLayerScrollableArea::~RenderLayerScrollableArea() = default;
 
 void RenderLayerScrollableArea::clear()
 {

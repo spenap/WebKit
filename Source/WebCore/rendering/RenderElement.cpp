@@ -1129,8 +1129,8 @@ void RenderElement::styleDidChange(Style::Difference diff, const RenderStyle* ol
     }
 
     bool shouldCheckIfInAncestorChain = false;
-    if (frame().settings().cssScrollAnchoringEnabled() && (style().outOfFlowPositionStyleDidChange(oldStyle) || (shouldCheckIfInAncestorChain = style().scrollAnchoringSuppressionStyleDidChange(oldStyle)))) {
-        LOG_WITH_STREAM(ScrollAnchoring, stream << "RenderElement::styleDidChange() found node with style change: " << *this << " from: " << oldStyle->position() <<" to: " << style().position());
+    if (settings().cssScrollAnchoringEnabled() && (style().outOfFlowPositionStyleDidChange(oldStyle) || (shouldCheckIfInAncestorChain = style().scrollAnchoringSuppressionStyleDidChange(oldStyle)))) {
+        LOG_WITH_STREAM(ScrollAnchoring, stream << "RenderElement::styleDidChange() " << diff << " found node with style change: " << *this << " from: " << oldStyle->position() <<" to: " << style().position());
         auto* controller = searchParentChainForScrollAnchoringController(*this);
         if (controller && (!shouldCheckIfInAncestorChain || (shouldCheckIfInAncestorChain && controller->isInScrollAnchoringAncestorChain(*this))))
             controller->notifyChildHadSuppressingStyleChange();
