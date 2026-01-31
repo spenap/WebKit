@@ -143,5 +143,3 @@ function shouldBeFalse(value, message) {
     shouldBeTrue(re.test("x"), "{1,5} should match 1");
     shouldBeTrue(re.test("xxxxx"), "{1,5} should match 5");
 })();
-
-print("All tests passed!");
