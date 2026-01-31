@@ -56,22 +56,13 @@ public:
 
     // PopupMenuClient methods
     void valueChanged(unsigned listIndex, bool fireEvents = true) override;
-    void selectionChanged(unsigned, bool) override { }
-    void selectionCleared() override { }
     String itemText(unsigned listIndex) const override;
-    String itemLabel(unsigned listIndex) const override;
-    String itemIcon(unsigned listIndex) const override;
     String itemToolTip(unsigned) const override { return String(); }
     String itemAccessibilityText(unsigned) const override { return String(); }
     bool itemIsEnabled(unsigned listIndex) const override;
     PopupMenuStyle itemStyle(unsigned listIndex) const override;
     PopupMenuStyle menuStyle() const override;
-    int clientInsetLeft() const override;
-    int clientInsetRight() const override;
-    LayoutUnit clientPaddingLeft() const override;
-    LayoutUnit clientPaddingRight() const override;
     int listSize() const override;
-    int popupSelectedIndex() const override;
     void popupDidHide() override;
     bool itemIsSeparator(unsigned listIndex) const override;
     bool itemIsLabel(unsigned listIndex) const override;
@@ -80,9 +71,14 @@ public:
 #if !PLATFORM(COCOA)
     void setTextFromItem(unsigned listIndex) override;
 #endif
+#if PLATFORM(WIN)
+    int clientInsetLeft() const override;
+    int clientInsetRight() const override;
+    LayoutUnit clientPaddingLeft() const override;
+    LayoutUnit clientPaddingRight() const override;
     FontSelector* fontSelector() const override;
     HostWindow* hostWindow() const override;
-    Ref<Scrollbar> createScrollbar(ScrollableArea&, ScrollbarOrientation, ScrollbarWidth) override;
+#endif
 
     Vector<RecentSearch>& recentSearches() { return m_recentSearches; }
 

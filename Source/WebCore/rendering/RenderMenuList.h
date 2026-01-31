@@ -54,8 +54,10 @@ public:
 
     void getItemBackgroundColor(unsigned listIndex, Color&, bool& itemHasCustomBackgroundColor) const;
 
+#if PLATFORM(WIN)
     LayoutUnit clientPaddingLeft() const;
     LayoutUnit clientPaddingRight() const;
+#endif
 
     void updateFromElement() final;
 

@@ -219,6 +219,7 @@ void RenderMenuList::getItemBackgroundColor(unsigned listIndex, Color& itemBackg
     itemBackgroundColor = blendSourceOver(Color::white, backgroundColor);
 }
 
+#if PLATFORM(WIN)
 const int endOfLinePadding = 2;
 
 LayoutUnit RenderMenuList::clientPaddingLeft() const
@@ -242,6 +243,7 @@ LayoutUnit RenderMenuList::clientPaddingRight() const
 
     return paddingRight();
 }
+#endif
 
 #if PLATFORM(IOS_FAMILY)
 void RenderMenuList::layout()

@@ -61,7 +61,6 @@
 #include "NodeRareData.h"
 #include "RenderListBox.h"
 #include "RenderMenuList.h"
-#include "RenderScrollbar.h"
 #include "RenderTheme.h"
 #include "ScriptDisallowedScope.h"
 #include "SelectFallbackButtonElement.h"
@@ -1858,16 +1857,6 @@ String HTMLSelectElement::itemText(unsigned listIndex) const
     return itemString;
 }
 
-String HTMLSelectElement::itemLabel(unsigned) const
-{
-    return String();
-}
-
-String HTMLSelectElement::itemIcon(unsigned) const
-{
-    return String();
-}
-
 String HTMLSelectElement::itemToolTip(unsigned listIndex) const
 {
     const auto& listItems = this->listItems();
@@ -1978,36 +1967,9 @@ PopupMenuStyle HTMLSelectElement::menuStyle() const
     );
 }
 
-int HTMLSelectElement::clientInsetLeft() const
-{
-    return 0;
-}
-
-int HTMLSelectElement::clientInsetRight() const
-{
-    return 0;
-}
-
-LayoutUnit HTMLSelectElement::clientPaddingLeft() const
-{
-    CheckedPtr renderer = dynamicDowncast<RenderMenuList>(this->renderer());
-    return renderer ? renderer->clientPaddingLeft() : 0_lu;
-}
-
-LayoutUnit HTMLSelectElement::clientPaddingRight() const
-{
-    CheckedPtr renderer = dynamicDowncast<RenderMenuList>(this->renderer());
-    return renderer ? renderer->clientPaddingRight() : 0_lu;
-}
-
 int HTMLSelectElement::listSize() const
 {
     return listItems().size();
-}
-
-int HTMLSelectElement::popupSelectedIndex() const
-{
-    return optionToListIndex(selectedIndex());
 }
 
 void HTMLSelectElement::popupDidHide()
@@ -2045,16 +2007,27 @@ void HTMLSelectElement::setTextFromItem(unsigned listIndex)
 }
 #endif
 
-void HTMLSelectElement::listBoxSelectItem(int listIndex, bool allowMultiplySelections, bool shift, bool fireOnChangeNow)
+#if PLATFORM(WIN)
+int HTMLSelectElement::clientInsetLeft() const
 {
-    if (!popupMultiple())
-        optionSelectedByUser(listToOptionIndex(listIndex), fireOnChangeNow, false);
-    else {
-        updateSelectedState(listIndex, allowMultiplySelections, shift);
-        updateValidity();
-        if (fireOnChangeNow)
-            listBoxOnChange();
-    }
+    return 0;
+}
+
+int HTMLSelectElement::clientInsetRight() const
+{
+    return 0;
+}
+
+LayoutUnit HTMLSelectElement::clientPaddingLeft() const
+{
+    CheckedPtr renderer = dynamicDowncast<RenderMenuList>(this->renderer());
+    return renderer ? renderer->clientPaddingLeft() : 0_lu;
+}
+
+LayoutUnit HTMLSelectElement::clientPaddingRight() const
+{
+    CheckedPtr renderer = dynamicDowncast<RenderMenuList>(this->renderer());
+    return renderer ? renderer->clientPaddingRight() : 0_lu;
 }
 
 FontSelector* HTMLSelectElement::fontSelector() const
@@ -2068,14 +2041,7 @@ HostWindow* HTMLSelectElement::hostWindow() const
         return renderer->hostWindow();
     return nullptr;
 }
-
-Ref<Scrollbar> HTMLSelectElement::createScrollbar(ScrollableArea& scrollableArea, ScrollbarOrientation orientation, ScrollbarWidth widthStyle)
-{
-    CheckedPtr renderer = dynamicDowncast<RenderMenuList>(this->renderer());
-    if (renderer && renderer->style().usesLegacyScrollbarStyle())
-        return RenderScrollbar::createCustomScrollbar(scrollableArea, orientation, this);
-    return Scrollbar::createNativeScrollbar(scrollableArea, orientation, widthStyle);
-}
+#endif
 
 void HTMLSelectElement::didUpdateActiveOption(int optionIndex)
 {

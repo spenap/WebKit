@@ -90,7 +90,7 @@ void RenderSelectFallbackButton::updateFromElement()
     }
 
 #if PLATFORM(IOS_FAMILY)
-    if (selectElement->popupMultiple()) {
+    if (selectElement->multiple()) {
         size_t count = selectedOptionCount(selectElement.get());
         if (count != 1)
             text = htmlSelectMultipleItems(count);
