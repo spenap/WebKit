@@ -8902,11 +8902,6 @@ void ByteCodeParser::parseBlock(unsigned limit)
             }
             LAST_OPCODE_LINKED(op_ret);
         }
-        case op_end:
-            ASSERT(!inlineCallFrame());
-            addToGraph(Return, get(currentInstruction->as<OpEnd>().m_value));
-            flushForReturn();
-            LAST_OPCODE(op_end);
 
         case op_throw:
             addToGraph(Throw, get(currentInstruction->as<OpThrow>().m_value));

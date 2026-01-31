@@ -334,7 +334,7 @@ namespace JSC {
         using OpNop = ::JSC::OpNop;
         using CodeBlock = std::unique_ptr<UnlinkedCodeBlockGenerator>;
         using InstructionType = JSInstruction;
-        static constexpr OpcodeID opcodeForDisablingOptimizations = op_end;
+        static constexpr OpcodeID opcodeForDisablingOptimizations = op_debug;
     };
 
     class BytecodeGenerator : public BytecodeGeneratorBase<JSGeneratorTraits> {
@@ -878,7 +878,6 @@ namespace JSC {
         RegisterID* emitGetGlobalPrivate(RegisterID* dst, const Identifier& property);
 
         RegisterID* emitReturn(RegisterID* src);
-        RegisterID* emitEnd(RegisterID* src);
 
         RegisterID* emitConstruct(RegisterID* dst, RegisterID* func, RegisterID* lazyThis, ExpectedFunction, CallArguments&, const JSTextPosition& divot, const JSTextPosition& divotStart, const JSTextPosition& divotEnd);
         RegisterID* emitSuperConstruct(RegisterID* dst, RegisterID* func, RegisterID* lazyThis, ExpectedFunction, CallArguments&, const JSTextPosition& divot, const JSTextPosition& divotStart, const JSTextPosition& divotEnd);
@@ -1119,9 +1118,9 @@ namespace JSC {
         RegisterID* emitMove(RegisterID* dst, RegisterID* src);
 
     public:
-        void disablePeepholeOptimization() { m_lastOpcodeID = op_end; }
+        void disablePeepholeOptimization() { m_lastOpcodeID = op_debug; }
     private:
-        bool canDoPeepholeOptimization() const { return m_lastOpcodeID != op_end; }
+        bool canDoPeepholeOptimization() const { return m_lastOpcodeID != op_debug; }
 
     public:
         bool isSuperUsedInInnerArrowFunction();
