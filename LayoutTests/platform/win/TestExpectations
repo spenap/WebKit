@@ -4631,6 +4631,11 @@ imported/w3c/web-platform-tests/css/CSS2/box-display/display-009.xht [ ImageOnly
 imported/w3c/web-platform-tests/css/CSS2/box-display/display-012.xht [ ImageOnlyFailure ]
 imported/w3c/web-platform-tests/css/CSS2/box-display/display-013.xht [ ImageOnlyFailure ]
 
+fast/css-generated-content/initial-letter-first-line-wrapping.html [ ImageOnlyFailure ]
+fast/editing/selection-across-flex-grid-boundary.html [ ImageOnlyFailure ]
+fast/rendering/missing-selection-with-sibling-table.html [ ImageOnlyFailure ]
+fast/text/vertical-quotation-marks.html [ ImageOnlyFailure ]
+
 # webkit.org/b/304535 ui-serif, ui-sans-serif, ui-monospace, ui-rounded generic families not implemented on Windows
 imported/w3c/web-platform-tests/css/css-fonts/generic-family-lang-attr-cascade.html [ ImageOnlyFailure ]
 
