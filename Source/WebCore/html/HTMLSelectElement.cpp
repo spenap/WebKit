@@ -816,14 +816,10 @@ void HTMLSelectElement::scrollToSelection()
 void HTMLSelectElement::setOptionsChangedOnRenderer()
 {
     if (CheckedPtr renderer = this->renderer()) {
-#if !PLATFORM(IOS_FAMILY)
         if (auto* renderMenuList = dynamicDowncast<RenderMenuList>(*renderer))
             renderMenuList->setOptionsChanged(true);
         else
             downcast<RenderListBox>(*renderer).setOptionsChanged(true);
-#else
-        downcast<RenderMenuList>(*renderer).setOptionsChanged(true);
-#endif
     }
 
 #if !PLATFORM(IOS_FAMILY)
