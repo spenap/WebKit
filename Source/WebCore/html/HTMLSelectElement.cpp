@@ -1665,32 +1665,20 @@ void HTMLSelectElement::listBoxDefaultEventHandler(Event& event)
 
 void HTMLSelectElement::defaultEventHandler(Event& event)
 {
-#if !PLATFORM(IOS_FAMILY)
-    bool rendererIsMenuList = false;
-#endif
-    {
-        CheckedPtr renderer = this->renderer();
-        if (!renderer)
-            return;
+    CheckedPtr renderer = this->renderer();
+    if (!renderer)
+        return;
 
-#if !PLATFORM(IOS_FAMILY)
-        rendererIsMenuList = renderer->isRenderMenuList();
-#endif
-    }
-
-#if !PLATFORM(IOS_FAMILY)
     if (isDisabledFormControl()) {
         HTMLFormControlElement::defaultEventHandler(event);
         return;
     }
 
-    if (rendererIsMenuList)
+    if (is<RenderMenuList>(renderer))
         menuListDefaultEventHandler(event);
     else 
         listBoxDefaultEventHandler(event);
-#else
-    menuListDefaultEventHandler(event);
-#endif
+
     if (event.defaultHandled())
         return;
 
