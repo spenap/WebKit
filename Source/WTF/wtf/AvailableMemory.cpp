@@ -29,6 +29,7 @@
 #include <algorithm>
 #include <array>
 #include <mutex>
+#include <wtf/PageBlock.h>
 
 #if PLATFORM(IOS_FAMILY)
 #include <wtf/spi/darwin/MemoryStatusSPI.h>
@@ -216,7 +217,7 @@ MemoryStatus memoryStatus()
 
     size_t memoryFootprint = 0;
     if (!sysctl(mib, 4, &info, &infolen, nullptr, 0))
-        memoryFootprint = static_cast<size_t>(info.ki_rssize) * vmPageSize();
+        memoryFootprint = static_cast<size_t>(info.ki_rssize) * pageSize();
 #endif
 
     double percentInUse = static_cast<double>(memoryFootprint) / static_cast<double>(availableMemory());
