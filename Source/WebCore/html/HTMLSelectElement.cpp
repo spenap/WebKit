@@ -1773,6 +1773,7 @@ unsigned HTMLSelectElement::length() const
 }
 
 #if PLATFORM(IOS_FAMILY)
+NO_RETURN_DUE_TO_ASSERT
 void HTMLSelectElement::showPopup()
 {
     ASSERT_NOT_REACHED();
