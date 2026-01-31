@@ -150,8 +150,8 @@ bool RenderStyle::scrollAnchoringSuppressionStyleDidChange(const RenderStyle* ot
         return false;
 
     if (m_computedStyle.m_nonInheritedData->boxData.ptr() != other->m_computedStyle.m_nonInheritedData->boxData.ptr()) {
-        auto& boxData = m_computedStyle.m_nonInheritedData->boxData.get();
-        auto& otherBoxData = other->m_computedStyle.m_nonInheritedData->boxData.get();
+        SUPPRESS_UNCOUNTED_LOCAL auto& boxData = m_computedStyle.m_nonInheritedData->boxData.get();
+        SUPPRESS_UNCOUNTED_LOCAL auto& otherBoxData = other->m_computedStyle.m_nonInheritedData->boxData.get();
         if (boxData.width != otherBoxData.width
             || boxData.minWidth != otherBoxData.minWidth
             || boxData.maxWidth != otherBoxData.maxWidth
@@ -168,8 +168,8 @@ bool RenderStyle::scrollAnchoringSuppressionStyleDidChange(const RenderStyle* ot
         return true;
 
     if (m_computedStyle.m_nonInheritedData->surroundData.ptr() && other->m_computedStyle.m_nonInheritedData->surroundData.ptr()) {
-        auto& surroundData = m_computedStyle.m_nonInheritedData->surroundData.get();
-        auto& otherSurroundData = other->m_computedStyle.m_nonInheritedData->surroundData.get();
+        SUPPRESS_UNCOUNTED_LOCAL auto& surroundData = m_computedStyle.m_nonInheritedData->surroundData.get();
+        SUPPRESS_UNCOUNTED_LOCAL auto& otherSurroundData = other->m_computedStyle.m_nonInheritedData->surroundData.get();
         if (surroundData.margin != otherSurroundData.margin)
             return true;
 
