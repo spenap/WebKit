@@ -30,7 +30,6 @@ typedef (double or CSSNumericValue) CSSNumberish;
 // https://drafts.csswg.org/web-animations-2/#the-computedeffecttiming-dictionary
 [
     JSGenerateToJSObject,
-    LegacyNativeDictionaryRequiredInterfaceNullability,
 ] dictionary ComputedEffectTiming : EffectTiming {
     // FIXME: Add support for `startTime`.
     // CSSNumberish         startTime;

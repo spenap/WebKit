@@ -791,14 +791,14 @@ ExceptionOr<Ref<KeyframeEffect>> KeyframeEffect::create(JSGlobalObject& lexicalG
             keyframeEffect->setIterationComposite(options.iterationComposite);
 
             return OptionalEffectTiming {
-                *convertedDuration,
-                options.iterations,
                 options.delay,
                 options.endDelay,
-                options.iterationStart,
-                options.easing,
                 options.fill,
-                options.direction
+                options.iterationStart,
+                options.iterations,
+                *convertedDuration,
+                options.direction,
+                options.easing
             };
         }
     );

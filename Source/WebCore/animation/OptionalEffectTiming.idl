@@ -26,9 +26,7 @@
 // https://drafts.csswg.org/web-animations-1/#dictdef-optionaleffecttiming
 //   and then modified by
 // https://drafts.csswg.org/web-animations-2/#the-effecttiming-dictionaries
-[
-    LegacyNativeDictionaryRequiredInterfaceNullability,
-] dictionary OptionalEffectTiming {
+dictionary OptionalEffectTiming {
     double delay;
     double endDelay;
     FillMode fill;

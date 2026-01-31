@@ -28,9 +28,7 @@ typedef unsigned long FramesPerSecond;
 // https://drafts.csswg.org/web-animations-1/#dictdef-keyframeanimationoptions
 //   and then modified by
 // https://drafts.csswg.org/web-animations-2/#the-animatable-interface-mixin
-[
-    LegacyNativeDictionaryRequiredInterfaceNullability,
-] dictionary KeyframeAnimationOptions : KeyframeEffectOptions {
+dictionary KeyframeAnimationOptions : KeyframeEffectOptions {
     DOMString id = "";
     AnimationTimeline? timeline;
     [EnabledBySetting=WebAnimationsCustomFrameRateEnabled] (FramesPerSecond or AnimationFrameRatePreset) frameRate = "auto";

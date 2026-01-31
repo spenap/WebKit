@@ -36,9 +36,7 @@
 };
 
 // https://drafts.csswg.org/css-animations/#dictdef-animationeventinit
-[
-    LegacyNativeDictionaryRequiredInterfaceNullability,
-] dictionary AnimationEventInit : EventInit {
+dictionary AnimationEventInit : EventInit {
     DOMString animationName = "";
     double elapsedTime = 0.0;
     DOMString pseudoElement = "";
