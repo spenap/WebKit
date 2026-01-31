@@ -185,6 +185,7 @@ void RuleSet::addRule(RuleData&& ruleData, CascadeLayerIdentifier cascadeLayerId
     const CSSSelector* focusVisibleSelector = nullptr;
     const CSSSelector* rootElementSelector = nullptr;
     const CSSSelector* hostPseudoClassSelector = nullptr;
+    const CSSSelector* fullscreenPseudoClassSelector = nullptr;
     const CSSSelector* customPseudoElementSelector = nullptr;
     const CSSSelector* slottedPseudoElementSelector = nullptr;
     const CSSSelector* partPseudoElementSelector = nullptr;
@@ -275,6 +276,14 @@ void RuleSet::addRule(RuleData&& ruleData, CascadeLayerIdentifier cascadeLayerId
             case CSSSelector::PseudoClass::Root:
                 rootElementSelector = selector;
                 break;
+#if ENABLE(FULLSCREEN_API)
+            case CSSSelector::PseudoClass::Fullscreen:
+            case CSSSelector::PseudoClass::InternalInWindowFullscreen:
+            case CSSSelector::PseudoClass::InternalFullscreenDocument:
+            case CSSSelector::PseudoClass::InternalAnimatingFullscreenTransition:
+                fullscreenPseudoClassSelector = selector;
+                break;
+#endif
             case CSSSelector::PseudoClass::Scope:
                 m_hasHostOrScopePseudoClassRulesInUniversalBucket = true;
                 break;
@@ -396,6 +405,11 @@ void RuleSet::addRule(RuleData&& ruleData, CascadeLayerIdentifier cascadeLayerId
         return;
     }
 
+    if (fullscreenPseudoClassSelector) {
+        m_fullscreenPseudoClassRules.append(ruleData);
+        return;
+    }
+
     if (namedPseudoElementSelector) {
         addToRuleSet(namedPseudoElementSelector->stringList()->first(), m_namedPseudoElementRules, ruleData);
         return;
@@ -498,6 +512,7 @@ void RuleSet::traverseRuleDatas(Function&& function)
     traverseVector(m_partPseudoElementRules);
     traverseVector(m_focusPseudoClassRules);
     traverseVector(m_focusVisiblePseudoClassRules);
+    traverseVector(m_fullscreenPseudoClassRules);
     traverseVector(m_rootElementRules);
     traverseVector(m_universalRules);
     traverseVector(m_universalPseudoElementRules);
@@ -602,6 +617,7 @@ void RuleSet::shrinkToFit()
     m_partPseudoElementRules.shrinkToFit();
     m_focusPseudoClassRules.shrinkToFit();
     m_focusVisiblePseudoClassRules.shrinkToFit();
+    m_fullscreenPseudoClassRules.shrinkToFit();
     m_rootElementRules.shrinkToFit();
     m_universalRules.shrinkToFit();
     m_universalPseudoElementRules.shrinkToFit();

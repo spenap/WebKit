@@ -37,6 +37,7 @@
 #include "CSSValueKeywords.h"
 #include "ContainerQueryEvaluator.h"
 #include "DeclarationOrigin.h"
+#include "DocumentFullscreen.h"
 #include "ElementInlines.h"
 #include "ElementRareData.h"
 #include "ElementTextDirection.h"
@@ -249,6 +250,10 @@ void ElementRuleCollector::collectMatchingRules(const MatchRequest& matchRequest
         collectMatchingRulesForList(ruleSet.focusPseudoClassRules(), matchRequest);
     if (matchesFocusVisiblePseudoClass(element))
         collectMatchingRulesForList(ruleSet.focusVisiblePseudoClassRules(), matchRequest);
+#if ENABLE(FULLSCREEN_API)
+    if (auto* fullscreen = element.document().fullscreenIfExists(); fullscreen && fullscreen->isFullscreen())
+        collectMatchingRulesForList(ruleSet.fullscreenPseudoClassRules(), matchRequest);
+#endif
     if (&element == element.document().documentElement())
         collectMatchingRulesForList(ruleSet.rootElementRules(), matchRequest);
     collectMatchingRulesForList(ruleSet.tagRules(element.localName(), isCaseInsensitiveForHTML), matchRequest);

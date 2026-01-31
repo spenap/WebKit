@@ -111,6 +111,7 @@ public:
     const RuleDataVector& partPseudoElementRules() const { return m_partPseudoElementRules; }
     const RuleDataVector& focusPseudoClassRules() const { return m_focusPseudoClassRules; }
     const RuleDataVector& focusVisiblePseudoClassRules() const { return m_focusVisiblePseudoClassRules; }
+    const RuleDataVector& fullscreenPseudoClassRules() const { return m_fullscreenPseudoClassRules; }
     const RuleDataVector& rootElementRules() const { return m_rootElementRules; }
     const RuleDataVector& universalRules() const { return m_universalRules; }
     // For pseudo-element rules that apply to all elements or all HTML elements like "::marker".
@@ -222,6 +223,7 @@ private:
     RuleDataVector m_partPseudoElementRules;
     RuleDataVector m_focusPseudoClassRules;
     RuleDataVector m_focusVisiblePseudoClassRules;
+    RuleDataVector m_fullscreenPseudoClassRules;
     RuleDataVector m_rootElementRules;
     RuleDataVector m_universalRules;
     RuleDataVector m_universalPseudoElementRules;
