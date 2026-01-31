@@ -94,6 +94,8 @@ RenderMenuList::RenderMenuList(HTMLSelectElement& element, RenderStyle&& style)
     ASSERT(isRenderMenuList());
 }
 
+RenderMenuList::~RenderMenuList() = default;
+
 HTMLSelectElement& RenderMenuList::selectElement() const
 {
     return downcast<HTMLSelectElement>(nodeForNonAnonymous());

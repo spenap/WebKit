@@ -38,6 +38,7 @@ class RenderMenuList final : public RenderFlexibleBox {
     WTF_OVERRIDE_DELETE_FOR_CHECKED_PTR(RenderMenuList);
 public:
     RenderMenuList(HTMLSelectElement&, RenderStyle&&);
+    virtual ~RenderMenuList();
 
     HTMLSelectElement& selectElement() const;
 
