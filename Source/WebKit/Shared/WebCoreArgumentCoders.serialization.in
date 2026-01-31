@@ -1673,7 +1673,7 @@ class WebCore::Site {
     WebCore::RegistrableDomain domain()
 }
 
-struct WebCore::AudioConfiguration {
+struct WebCore::PlatformMediaCapabilitiesAudioConfiguration {
     String contentType;
     String channels;
     std::optional<uint64_t> bitrate;
@@ -2263,7 +2263,7 @@ header: <WebCore/Color.h>
     std::optional<WebCore::ColorDataForIPC> data();
 }
 
-struct WebCore::MediaCapabilitiesInfo {
+struct WebCore::PlatformMediaCapabilitiesInfo {
     bool supported;
     bool smooth;
     bool powerEfficient;
@@ -2309,12 +2309,12 @@ struct WebCore::MediaStreamRequest {
     WebCore::MediaStreamRequest::Type type;
 };
 #endif
-struct WebCore::MediaCapabilitiesDecodingInfo : WebCore::MediaCapabilitiesInfo {
-    WebCore::MediaDecodingConfiguration configuration;
+struct WebCore::PlatformMediaCapabilitiesDecodingInfo : WebCore::PlatformMediaCapabilitiesInfo {
+    WebCore::PlatformMediaDecodingConfiguration configuration;
 }
 
-struct WebCore::MediaCapabilitiesEncodingInfo : WebCore::MediaCapabilitiesInfo {
-    WebCore::MediaEncodingConfiguration configuration;
+struct WebCore::PlatformMediaCapabilitiesEncodingInfo : WebCore::PlatformMediaCapabilitiesInfo {
+    WebCore::PlatformMediaEncodingConfiguration configuration;
 }
 
 header: <WebCore/VideoCodecType.h>
@@ -3406,20 +3406,20 @@ struct WebCore::CDMKeySystemConfiguration {
 }
 #endif // ENABLE(ENCRYPTED_MEDIA)
 
-struct WebCore::MediaConfiguration {
-    std::optional<WebCore::VideoConfiguration> video;
-    std::optional<WebCore::AudioConfiguration> audio;
+struct WebCore::PlatformMediaConfiguration {
+    std::optional<WebCore::PlatformMediaCapabilitiesVideoConfiguration> video;
+    std::optional<WebCore::PlatformMediaCapabilitiesAudioConfiguration> audio;
 
     std::optional<Vector<String>> allowedMediaContainerTypes;
     std::optional<Vector<String>> allowedMediaCodecTypes;
 };
 
-struct WebCore::MediaEncodingConfiguration : WebCore::MediaConfiguration {
-    WebCore::MediaEncodingType type;
+struct WebCore::PlatformMediaEncodingConfiguration : WebCore::PlatformMediaConfiguration {
+    WebCore::PlatformMediaEncodingType type;
 };
 
-struct WebCore::MediaDecodingConfiguration : WebCore::MediaConfiguration {
-    WebCore::MediaDecodingType type;
+struct WebCore::PlatformMediaDecodingConfiguration : WebCore::PlatformMediaConfiguration {
+    WebCore::PlatformMediaDecodingType type;
     std::optional<WebCore::PageIdentifier> pageIdentifier;
     bool canExposeVP9;
 };
@@ -4381,13 +4381,13 @@ struct WebCore::MediaSelectionOption {
     LegibleAuto,
 };
 
-enum class WebCore::MediaDecodingType : uint8_t {
+enum class WebCore::PlatformMediaDecodingType : uint8_t {
     File,
     MediaSource,
     WebRTC
 };
 
-enum class WebCore::MediaEncodingType : bool;
+enum class WebCore::PlatformMediaEncodingType : bool;
 
 class WebCore::BufferSource {
     std::span<const uint8_t> span();
@@ -7633,16 +7633,16 @@ struct WebCore::NowPlayingInfo {
     bool isVideo;
 }
 
-struct WebCore::VideoConfiguration {
+struct WebCore::PlatformMediaCapabilitiesVideoConfiguration {
     String contentType;
     uint32_t width;
     uint32_t height;
     uint64_t bitrate;
     double framerate;
     std::optional<bool> alphaChannel;
-    std::optional<WebCore::ColorGamut> colorGamut;
-    std::optional<WebCore::HdrMetadataType> hdrMetadataType;
-    std::optional<WebCore::TransferFunction> transferFunction;
+    std::optional<WebCore::PlatformMediaCapabilitiesHdrMetadataType> hdrMetadataType;
+    std::optional<WebCore::PlatformMediaCapabilitiesColorGamut> colorGamut;
+    std::optional<WebCore::PlatformMediaCapabilitiesTransferFunction> transferFunction;
 }
 
 enum class WebCore::UserScriptInjectionTime : bool;
@@ -7852,19 +7852,19 @@ enum class WebCore::PaginationMode : uint8_t {
     BottomToTopPaginated
 };
 
-[Nested] enum class WebCore::HdrMetadataType : uint8_t {
+[Nested] enum class WebCore::PlatformMediaCapabilitiesHdrMetadataType : uint8_t {
     SmpteSt2086,
     SmpteSt209410,
     SmpteSt209440,
 };
 
-[Nested] enum class WebCore::TransferFunction : uint8_t {
+[Nested] enum class WebCore::PlatformMediaCapabilitiesTransferFunction : uint8_t {
      SRGB,
      PQ,
      HLG,
 };
 
-[Nested] enum class WebCore::ColorGamut : uint8_t {
+[Nested] enum class WebCore::PlatformMediaCapabilitiesColorGamut : uint8_t {
     SRGB,
     P3,
     Rec2020,
@@ -9041,7 +9041,7 @@ header: <WebCore/MediaSamplesBlock.h>
     std::pair<MediaTime, MediaTime> trimInterval;
     RefPtr<WebCore::FragmentedSharedBuffer> data;
     RefPtr<WebCore::SharedBuffer> hdrMetadata;
-    std::optional<WebCore::HdrMetadataType> hdrMetadataType;
+    std::optional<WebCore::PlatformMediaCapabilitiesHdrMetadataType> hdrMetadataType;
     uint32_t flags;
 #if ENABLE(ENCRYPTED_MEDIA)
     int32_t bytesOfClearDataCount;

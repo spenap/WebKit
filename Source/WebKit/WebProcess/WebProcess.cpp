@@ -119,7 +119,6 @@
 #include <WebCore/LegacySchemeRegistry.h>
 #include <WebCore/LocalDOMWindow.h>
 #include <WebCore/LocalFrame.h>
-#include <WebCore/MediaEngineConfigurationFactory.h>
 #include <WebCore/MemoryCache.h>
 #include <WebCore/MemoryRelease.h>
 #include <WebCore/MessagePort.h>
@@ -130,6 +129,7 @@
 #include <WebCore/PageGroup.h>
 #include <WebCore/PermissionController.h>
 #include <WebCore/PlatformKeyboardEvent.h>
+#include <WebCore/PlatformMediaEngineConfigurationFactory.h>
 #include <WebCore/PlatformMediaSession.h>
 #include <WebCore/ProcessIdentifier.h>
 #include <WebCore/ProcessWarming.h>
@@ -2498,7 +2498,7 @@ void WebProcess::setUseGPUProcessForMedia(bool useGPUProcessForMedia)
     if (useGPUProcessForMedia)
         Ref { mediaEngineConfigurationFactory() }->registerFactory();
     else
-        MediaEngineConfigurationFactory::resetFactories();
+        WebCore::PlatformMediaEngineConfigurationFactory::resetFactories();
 
     if (useGPUProcessForMedia) {
         WebCore::AudioHardwareListener::setCreationFunction([] (WebCore::AudioHardwareListener::Client& client) {

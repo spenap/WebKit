@@ -32,11 +32,11 @@
 #import "DeprecatedGlobalSettings.h"
 #import "ImageAdapter.h"
 #import "Logging.h"
-#import "MediaConfiguration.h"
 #import "MediaPlayer.h"
 #import "MediaStrategy.h"
 #import "NowPlayingInfo.h"
 #import "Page.h"
+#import "PlatformMediaConfiguration.h"
 #import "PlatformMediaSession.h"
 #import "PlatformStrategies.h"
 #import "Settings.h"
@@ -722,7 +722,7 @@ void MediaSessionManagerCocoa::audioOutputDeviceChanged()
 }
 
 #if PLATFORM(MAC)
-std::optional<bool> MediaSessionManagerCocoa::supportsSpatialAudioPlaybackForConfiguration(const MediaConfiguration& configuration)
+std::optional<bool> MediaSessionManagerCocoa::supportsSpatialAudioPlaybackForConfiguration(const PlatformMediaConfiguration& configuration)
 {
     ASSERT(configuration.audio);
     if (!configuration.audio)
@@ -732,7 +732,7 @@ std::optional<bool> MediaSessionManagerCocoa::supportsSpatialAudioPlaybackForCon
     if (supportsSpatialAudioPlayback.has_value())
         return supportsSpatialAudioPlayback;
 
-    auto calculateSpatialAudioSupport = [] (const MediaConfiguration& configuration) {
+    auto calculateSpatialAudioSupport = [](const PlatformMediaConfiguration& configuration) {
         if (!PAL::canLoad_AudioToolbox_AudioGetDeviceSpatialPreferencesForContentType())
             return false;
 

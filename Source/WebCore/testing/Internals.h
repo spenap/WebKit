@@ -151,6 +151,8 @@ class WebGLRenderingContext;
 class WindowProxy;
 class XMLHttpRequest;
 
+struct VideoConfiguration;
+
 enum class DocumentMarkerType : uint32_t;
 
 #if ENABLE(ENCRYPTED_MEDIA)
@@ -1339,7 +1341,7 @@ public:
     std::optional<AV1CodecConfigurationRecord> parseAV1CodecParameters(const String&);
     String createAV1CodecParametersString(const AV1CodecConfigurationRecord&);
     bool validateAV1ConfigurationRecord(const String&);
-    bool validateAV1PerLevelConstraints(const String&, const VideoConfiguration&);
+    bool validateAV1PerLevelConstraints(const String&, VideoConfiguration&&);
 
     struct CookieData {
         String name;
