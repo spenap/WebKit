@@ -62,7 +62,9 @@ public:
     virtual bool itemIsLabel(unsigned listIndex) const = 0;
     virtual bool itemIsSelected(unsigned listIndex) const = 0;
     virtual bool shouldPopOver() const = 0;
+#if !PLATFORM(COCOA)
     virtual void setTextFromItem(unsigned listIndex) = 0;
+#endif
 
     virtual void listBoxSelectItem(int /*listIndex*/, bool /*allowMultiplySelections*/, bool /*shift*/, bool /*fireOnChangeNow*/ = true) { ASSERT_NOT_REACHED(); }
     virtual bool popupMultiple() const

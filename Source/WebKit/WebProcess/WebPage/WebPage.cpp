@@ -5862,6 +5862,7 @@ void WebPage::replaceMatches(const Vector<uint32_t>& matchIndices, const String&
     completionHandler(numberOfReplacements);
 }
 
+#if !PLATFORM(IOS_FAMILY)
 void WebPage::didChangeSelectedIndexForActivePopupMenu(int32_t newIndex)
 {
     changeSelectedIndex(newIndex);
@@ -5873,6 +5874,7 @@ void WebPage::changeSelectedIndex(int32_t index)
     if (RefPtr menu = m_activePopupMenu)
         menu->didChangeSelectedIndex(index);
 }
+#endif
 
 #if PLATFORM(IOS_FAMILY)
 void WebPage::didChooseFilesForOpenPanelWithDisplayStringAndIcon(const Vector<String>& files, const String& displayString, std::span<const uint8_t> iconData)
@@ -6075,11 +6077,13 @@ void WebPage::capitalizeWord(FrameIdentifier frameID)
 }
 #endif
 
+#if !PLATFORM(COCOA)
 void WebPage::setTextForActivePopupMenu(int32_t index)
 {
     if (RefPtr menu = m_activePopupMenu)
         menu->setTextForIndex(index);
 }
+#endif
 
 #if PLATFORM(GTK)
 void WebPage::failedToShowPopupMenu()

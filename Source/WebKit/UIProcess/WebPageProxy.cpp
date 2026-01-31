@@ -10615,6 +10615,7 @@ void WebPageProxy::startTextIndicatorFadeOut()
 }
 #endif // !PLATFORM(COCOA)
 
+#if !PLATFORM(IOS_FAMILY)
 void WebPageProxy::Internals::valueChangedForPopupMenu(WebPopupMenuProxy*, int32_t newSelectedIndex)
 {
     Ref protectedPage = page.get();
@@ -10624,10 +10625,30 @@ void WebPageProxy::Internals::valueChangedForPopupMenu(WebPopupMenuProxy*, int32
     protectedPage->sendToProcessContainingFrame(frame->frameID(), Messages::WebPage::DidChangeSelectedIndexForActivePopupMenu(newSelectedIndex));
 }
 
+NativeWebMouseEvent* WebPageProxy::Internals::currentlyProcessedMouseDownEvent()
+{
+    // <https://bugs.webkit.org/show_bug.cgi?id=57904> We need to keep track of the mouse down event in the case where we
+    // display a popup menu for select elements. When the user changes the selected item, we fake a mouseup event by
+    // using this stored mousedown event and changing the event type. This trickery happens when WebProcess handles
+    // a mousedown event that runs the default handler for HTMLSelectElement, so the triggering mousedown must be the first event.
+
+    if (mouseEventQueue.isEmpty())
+        return nullptr;
+
+    auto& event = mouseEventQueue.first();
+    if (event.type() != WebEventType::MouseDown)
+        return nullptr;
+
+    return &event;
+}
+#endif
+
+#if !PLATFORM(COCOA)
 void WebPageProxy::Internals::setTextFromItemForPopupMenu(WebPopupMenuProxy*, int32_t index)
 {
     protect(page)->send(Messages::WebPage::SetTextForActivePopupMenu(index));
 }
+#endif // !PLATFORM(COCOA)
 
 void WebPageProxy::startDeferringResizeEvents()
 {
@@ -10672,23 +10693,6 @@ bool WebPageProxy::isProcessingMouseEvents() const
 bool WebPageProxy::isProcessingWheelEvents() const
 {
     return m_wheelEventCoalescer && m_wheelEventCoalescer->hasEventsBeingProcessed();
-}
-
-NativeWebMouseEvent* WebPageProxy::Internals::currentlyProcessedMouseDownEvent()
-{
-    // <https://bugs.webkit.org/show_bug.cgi?id=57904> We need to keep track of the mouse down event in the case where we
-    // display a popup menu for select elements. When the user changes the selected item, we fake a mouseup event by
-    // using this stored mousedown event and changing the event type. This trickery happens when WebProcess handles
-    // a mousedown event that runs the default handler for HTMLSelectElement, so the triggering mousedown must be the first event.
-
-    if (mouseEventQueue.isEmpty())
-        return nullptr;
-
-    auto& event = mouseEventQueue.first();
-    if (event.type() != WebEventType::MouseDown)
-        return nullptr;
-
-    return &event;
 }
 
 void WebPageProxy::postMessageToInjectedBundle(const String& messageName, API::Object* messageBody)

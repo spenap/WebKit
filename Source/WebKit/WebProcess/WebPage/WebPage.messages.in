@@ -398,8 +398,12 @@ messages -> WebPage WantsAsyncDispatchMessage {
 
 
     # Popup menu.
+#if !PLATFORM(IOS_FAMILY)
     DidChangeSelectedIndexForActivePopupMenu(int32_t newIndex)
+#endif
+#if !PLATFORM(COCOA)
     SetTextForActivePopupMenu(int32_t index)
+#endif
 #if PLATFORM(GTK)
     FailedToShowPopupMenu()
 #endif

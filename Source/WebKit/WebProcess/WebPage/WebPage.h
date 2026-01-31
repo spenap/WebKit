@@ -2434,8 +2434,12 @@ private:
     void addLayerForFindOverlay(CompletionHandler<void(std::optional<WebCore::PlatformLayerIdentifier>)>&&);
     void removeLayerForFindOverlay(CompletionHandler<void()>&&);
 
+#if !PLATFORM(IOS_FAMILY)
     void didChangeSelectedIndexForActivePopupMenu(int32_t newIndex);
+#endif
+#if !PLATFORM(COCOA)
     void setTextForActivePopupMenu(int32_t index);
+#endif
 
 #if PLATFORM(GTK)
     void failedToShowPopupMenu();

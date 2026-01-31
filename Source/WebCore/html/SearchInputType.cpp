@@ -208,10 +208,12 @@ bool SearchInputType::itemIsSelected(unsigned) const
     return false;
 }
 
+#if !PLATFORM(COCOA)
 void SearchInputType::setTextFromItem(unsigned listIndex)
 {
     protectedElement()->setValue(itemText(listIndex));
 }
+#endif
 
 FontSelector* SearchInputType::fontSelector() const
 {

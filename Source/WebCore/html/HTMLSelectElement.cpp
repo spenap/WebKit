@@ -2038,16 +2038,12 @@ bool HTMLSelectElement::itemIsSelected(unsigned listIndex) const
     return option && option->selected();
 }
 
+#if !PLATFORM(COCOA)
 void HTMLSelectElement::setTextFromItem(unsigned listIndex)
 {
-#if !PLATFORM(COCOA)
     downcast<SelectFallbackButtonElement>(*protect(userAgentShadowRoot())->firstChild()).setTextFromOption(listToOptionIndex(listIndex));
-#else
-    // FIXME: Remove the setTextFromItem() API and IPC call from Cocoa platforms entirely.
-    UNUSED_PARAM(listIndex);
-    ASSERT_NOT_REACHED();
-#endif
 }
+#endif
 
 void HTMLSelectElement::listBoxSelectItem(int listIndex, bool allowMultiplySelections, bool shift, bool fireOnChangeNow)
 {

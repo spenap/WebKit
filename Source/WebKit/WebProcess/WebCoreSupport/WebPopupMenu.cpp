@@ -56,6 +56,7 @@ void WebPopupMenu::disconnectClient()
     m_popupClient = nullptr;
 }
 
+#if !PLATFORM(IOS_FAMILY)
 void WebPopupMenu::didChangeSelectedIndex(int newIndex)
 {
     RefPtr popupClient = m_popupClient;
@@ -66,12 +67,15 @@ void WebPopupMenu::didChangeSelectedIndex(int newIndex)
     if (newIndex >= 0)
         popupClient->valueChanged(newIndex);
 }
+#endif
 
+#if !PLATFORM(COCOA)
 void WebPopupMenu::setTextForIndex(int index)
 {
     if (RefPtr popupClient = m_popupClient)
         popupClient->setTextFromItem(index);
 }
+#endif
 
 Vector<WebPopupItem> WebPopupMenu::populateItems()
 {

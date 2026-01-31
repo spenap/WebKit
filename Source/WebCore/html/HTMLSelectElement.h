@@ -140,7 +140,9 @@ public:
     bool itemIsLabel(unsigned listIndex) const override;
     bool itemIsSelected(unsigned listIndex) const override;
     bool shouldPopOver() const override { return !POPUP_MENU_PULLS_DOWN; }
+#if !PLATFORM(COCOA)
     void setTextFromItem(unsigned listIndex) override;
+#endif
     void listBoxSelectItem(int listIndex, bool allowMultiplySelections, bool shift, bool fireOnChangeNow = true) override;
     bool popupMultiple() const override { return multiple(); }
     FontSelector* fontSelector() const override;

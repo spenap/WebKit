@@ -77,7 +77,9 @@ public:
     bool itemIsLabel(unsigned listIndex) const override;
     bool itemIsSelected(unsigned listIndex) const override;
     bool shouldPopOver() const override { return false; }
+#if !PLATFORM(COCOA)
     void setTextFromItem(unsigned listIndex) override;
+#endif
     FontSelector* fontSelector() const override;
     HostWindow* hostWindow() const override;
     Ref<Scrollbar> createScrollbar(ScrollableArea&, ScrollbarOrientation, ScrollbarWidth) override;
