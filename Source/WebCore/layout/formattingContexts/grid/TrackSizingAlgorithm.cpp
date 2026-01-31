@@ -96,7 +96,12 @@ static LayoutUnit computeHypotheticalFrSize(const UnsizedTracks& tracks, LayoutU
     if (leftoverSpace <= 0_lu)
         return 0_lu;
 
-    // If this value (flex factor sum) is less than 1, set it to 1 instead.
+    // https://drafts.csswg.org/css-grid-1/#typedef-flex
+    // Values between 0fr and 1fr have a somewhat special behavior: when the sum of the
+    // flex factors is less than 1, they take up less than 100% of the leftover space.
+    // Handle this by clamping flex factor sum to at least 1.0. Thus, a grid with a single
+    // 0.5fr track will have a hypothetical fr size of leftoverSpace / 1.0, and the track will use
+    // (0.5 * leftoverSpace) total.
     flexFactorSum = std::max(1.0, flexFactorSum);
 
     // Let the hypothetical fr size be the leftover space divided by the flex factor sum.
@@ -285,10 +290,7 @@ static void resolveIntrinsicTrackSizes(UnsizedTracks& unsizedTracks, const Place
     UNUSED_VARIABLE(setInfiniteGrowthLimitsToBaseSize);
 }
 
-// https://drafts.csswg.org/css-grid-1/#algo-track-sizing
-TrackSizes TrackSizingAlgorithm::sizeTracks(const PlacedGridItems& gridItems, const PlacedGridItemSpanList& gridItemSpanList,
-    const TrackSizingFunctionsList& trackSizingFunctions, std::optional<LayoutUnit> availableSpace, const GridItemSizingFunctions& gridItemSizingFunctions,
-    const IntegrationUtils& integrationUtils)
+TrackSizes TrackSizingAlgorithm::sizeTracks(const PlacedGridItems& gridItems, const PlacedGridItemSpanList& gridItemSpanList, const TrackSizingFunctionsList& trackSizingFunctions, std::optional<LayoutUnit> availableSpace, const GridItemSizingFunctions& gridItemSizingFunctions, FreeSpaceScenario freeSpaceScenario, const IntegrationUtils& integrationUtils)
 {
     ASSERT(gridItems.size() == gridItemSpanList.size());
 
@@ -305,6 +307,7 @@ TrackSizes TrackSizingAlgorithm::sizeTracks(const PlacedGridItems& gridItems, co
     UNUSED_VARIABLE(maximizeTracks);
 
     // 4. Expand Flexible Tracks
+    // https://drafts.csswg.org/css-grid-1/#algo-flex-tracks
     auto expandFlexibleTracks = [&] {
         if (!hasFlexTracks(unsizedTracks))
             return;
@@ -313,13 +316,27 @@ TrackSizes TrackSizingAlgorithm::sizeTracks(const PlacedGridItems& gridItems, co
         if (!totalFlex)
             return;
 
-        // Otherwise, if the free space is an indefinite length:
-        if (!availableSpace)
-            notImplemented();
+        // https://drafts.csswg.org/css-grid-1/#algo-flex-tracks
+        // "If...sizing the grid container under a min-content
+        // constraint, the used flex fraction is zero."
+        if (freeSpaceScenario == FreeSpaceScenario::MinContent)
+            return;
 
-        // From spec: "If the free space is zero [...] The used flex fraction is zero."
-        // This handles the case where all available space is consumed by non-flexible tracks.
-        // FIXME: handle "sizing the grid container under a min-content constraint"
+        // Otherwise, if the free space is an indefinite length:
+        if (freeSpaceScenario == FreeSpaceScenario::Indefinite) {
+            // FIXME: Implement indefinite free space (spec §11.7 Scenario 3).
+            // Compute flex fraction based on max-content contributions.
+            ASSERT(!availableSpace);
+            notImplemented();
+            return;
+        }
+
+        ASSERT(freeSpaceScenario == FreeSpaceScenario::Definite);
+        ASSERT(availableSpace.has_value());
+
+        // https://drafts.csswg.org/css-grid-1/#algo-flex-tracks
+        // "If the free space is zero...the used flex fraction is zero."
+        // If availableSpace is zero, free space must also be 0.
         if (availableSpace.value() == 0_lu)
             return;
 
@@ -329,17 +346,14 @@ TrackSizes TrackSizingAlgorithm::sizeTracks(const PlacedGridItems& gridItems, co
         // grid tracks and a space to fill of the available grid space.
         auto frSize = findSizeOfFr(unsizedTracks, *availableSpace);
 
-        // https://drafts.csswg.org/css-grid-1/#typedef-flex
-        // Values between 0fr and 1fr have a somewhat special behavior: when the sum of the flex factors is less than 1, they will take up less than 100% of the leftover space.
-        if (totalFlex < 1.0) {
-            ASSERT_NOT_IMPLEMENTED_YET();
-            return;
+        // For each flexible track, if the product of the used flex fraction and the track's flex factor is greater than the track's base size, set its base size to that product.
+        for (auto& flexTrack : flexTracks) {
+            LayoutUnit flexSize = frSize * LayoutUnit(flexTrack.flexFactor.value);
+            if (flexSize > unsizedTracks[flexTrack.trackIndex].baseSize)
+                unsizedTracks[flexTrack.trackIndex].baseSize = flexSize;
         }
-
-        // FIXME: finish implementation for flex track sizing.
-        UNUSED_VARIABLE(frSize);
     };
-    UNUSED_VARIABLE(expandFlexibleTracks);
+    expandFlexibleTracks();
 
     // 5. Expand Stretched auto Tracks
     auto expandStretchedAutoTracks = [] {
