@@ -3,5 +3,3 @@
 [ iOS ] platform/ios/VideoPresentationInterfaceIOS.mm
 [ iOS ] platform/ios/wak/WAKView.mm
 [ iOS ] platform/ios/wak/WAKWindow.mm
-svg/properties/SVGAnimatedPropertyAccessorImpl.h
-svg/properties/SVGAnimatedPropertyPairAccessorImpl.h

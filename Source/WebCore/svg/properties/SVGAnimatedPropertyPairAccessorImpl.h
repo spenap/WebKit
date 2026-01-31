@@ -80,7 +80,7 @@ private:
 
     void appendAnimatedInstance(OwnerType& owner, SVGAttributeAnimator& animator) const final
     {
-        static_cast<SVGAnimatedAngleOrientAnimator&>(animator).appendAnimatedInstance(property1(owner), property2(owner));
+        downcast<SVGAnimatedAngleOrientAnimator>(animator).appendAnimatedInstance(property1(owner), property2(owner));
     }
 };
 
@@ -115,7 +115,7 @@ private:
 
     void appendAnimatedInstance(OwnerType& owner, SVGAttributeAnimator& animator) const final
     {
-        static_cast<SVGAnimatedIntegerPairAnimator&>(animator).appendAnimatedInstance(property1(owner), property2(owner));
+        downcast<SVGAnimatedIntegerPairAnimator>(animator).appendAnimatedInstance(property1(owner), property2(owner));
     }
 };
 
@@ -150,7 +150,7 @@ private:
 
     void appendAnimatedInstance(OwnerType& owner, SVGAttributeAnimator& animator) const final
     {
-        static_cast<SVGAnimatedNumberPairAnimator&>(animator).appendAnimatedInstance(property1(owner), property2(owner));
+        downcast<SVGAnimatedNumberPairAnimator>(animator).appendAnimatedInstance(property1(owner), property2(owner));
     }
 };
 
