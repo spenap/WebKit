@@ -2069,24 +2069,6 @@ float RenderLayerScrollableArea::deviceScaleFactor() const
     return m_layer.renderer().protectedDocument()->deviceScaleFactor();
 }
 
-void RenderLayerScrollableArea::updateScrollAnchoringElement()
-{
-    if (m_scrollAnchoringController)
-        m_scrollAnchoringController->updateAnchorElement();
-}
-
-void RenderLayerScrollableArea::updateScrollPositionForScrollAnchoringController()
-{
-    if (m_scrollAnchoringController)
-        m_scrollAnchoringController->adjustScrollPositionForAnchoring();
-}
-
-void RenderLayerScrollableArea::invalidateScrollAnchoringElement()
-{
-    if (m_scrollAnchoringController)
-        m_scrollAnchoringController->invalidateAnchorElement();
-}
-
 void RenderLayerScrollableArea::updateAnchorPositionedAfterScroll()
 {
     Style::AnchorPositionEvaluator::updateScrollAdjustments(m_layer.renderer().view());

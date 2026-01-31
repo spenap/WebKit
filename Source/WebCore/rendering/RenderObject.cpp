@@ -2328,14 +2328,14 @@ ScrollAnchoringController* RenderObject::searchParentChainForScrollAnchoringCont
 {
     if (renderer.hasLayer()) {
         if (auto* scrollableArea = downcast<RenderLayerModelObject>(renderer).layer()->scrollableArea()) {
-            auto controller = scrollableArea->scrollAnchoringController();
+            auto* controller = scrollableArea->scrollAnchoringController();
             if (controller && controller->anchorElement())
                 return controller;
         }
     }
     for (CheckedPtr enclosingLayer = renderer.enclosingLayer(); enclosingLayer; enclosingLayer = enclosingLayer->parent()) {
         if (RenderLayerScrollableArea* scrollableArea = enclosingLayer->scrollableArea()) {
-            auto controller = scrollableArea->scrollAnchoringController();
+            auto* controller = scrollableArea->scrollAnchoringController();
             if (controller && controller->anchorElement())
                 return controller;
         }
