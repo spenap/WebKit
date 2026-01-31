@@ -713,21 +713,24 @@ FocusableElementSearchResult FocusController::findFocusableElementInDocumentOrde
         if (!owner->contentFrame())
             return findResult;
 
-        document->setFocusedElement(nullptr);
-        setFocusedFrame(owner->protectedContentFrame().get());
+        if (shouldFocusElement == ShouldFocusElement::Yes) {
+            document->setFocusedElement(nullptr);
+            setFocusedFrame(owner->protectedContentFrame().get());
+        }
         return findResult;
     }
-    
+
     // FIXME: It would be nice to just be able to call setFocusedElement(node) here, but we can't do
     // that because some elements (e.g. HTMLInputElement and HTMLTextAreaElement) do extra work in
     // their focus() methods.
 
     Ref newDocument = element->document();
 
-    if (newDocument.ptr() != document) {
-        // Focus is going away from this document, so clear the focused node.
+    if (newDocument.ptr() != document && shouldFocusElement == ShouldFocusElement::Yes)
         document->setFocusedElement(nullptr);
-    }
+
+    if (shouldFocusElement == ShouldFocusElement::No)
+        return findResult;
 
     setFocusedFrame(newDocument->protectedFrame().get());
 
@@ -738,8 +741,9 @@ FocusableElementSearchResult FocusController::findFocusableElementInDocumentOrde
             frame->selection().setSelection(newSelection, FrameSelection::defaultSetSelectionOptions(UserTriggered::Yes), intent);
         }
     }
-    if (shouldFocusElement == ShouldFocusElement::Yes)
-        element->focus({ SelectionRestorationMode::SelectAll, direction, { }, { }, FocusVisibility::Visible });
+
+    element->focus({ SelectionRestorationMode::SelectAll, direction, { }, { }, FocusVisibility::Visible });
+
     return findResult;
 }
 
