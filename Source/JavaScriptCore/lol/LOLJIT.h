@@ -96,6 +96,18 @@ namespace JSC::LOL {
     macro(op_jneq_ptr) \
     macro(op_jeq) \
     macro(op_jneq) \
+    macro(op_jless) \
+    macro(op_jlesseq) \
+    macro(op_jgreater) \
+    macro(op_jgreatereq) \
+    macro(op_jnless) \
+    macro(op_jnlesseq) \
+    macro(op_jngreater) \
+    macro(op_jngreatereq) \
+    macro(op_jstricteq) \
+    macro(op_jnstricteq) \
+    macro(op_jbelow) \
+    macro(op_jbeloweq) \
 
 
 #define FOR_EACH_OP_WITH_SLOW_CASE(macro) \
@@ -377,11 +389,24 @@ private:
     template <typename EmitCompareFunctor>
     void emitCompareImpl(VirtualRegister op1, JSValueRegs op1Regs, VirtualRegister op2, JSValueRegs op2Regs, RelationalCondition, const EmitCompareFunctor&);
 
+    template<typename Op>
+    void emitCompareAndJump(const JSInstruction*, RelationalCondition);
+
     template<typename Op, typename SlowOperation>
     void emitCompareSlow(const JSInstruction*, DoubleCondition, SlowOperation, Vector<SlowCaseEntry>::iterator&);
     template<typename SlowOperation>
     void emitCompareSlowImpl(const auto& allocations, VirtualRegister op1, JSValueRegs op1Regs, VirtualRegister op2, JSValueRegs op2Regs, JSValueRegs dstRegs, SlowOperation, Vector<SlowCaseEntry>::iterator&, const Invocable<void(FPRReg, FPRReg)> auto&);
 
+    template<typename Op, typename SlowOperation>
+    void emitCompareAndJumpSlow(const JSInstruction*, DoubleCondition, SlowOperation, bool invertOperationResult, Vector<SlowCaseEntry>::iterator&);
+
+    template<typename Op>
+    void emitCompareUnsignedAndJumpImpl(const JSInstruction*, RelationalCondition);
+
+    template<typename Op>
+    void emitStrictEqJumpImpl(const JSInstruction*, RelationalCondition);
+    template<typename Op>
+    void emitStrictEqJumpSlowImpl(const JSInstruction*, ResultCondition, Vector<SlowCaseEntry>::iterator&);
 
     static MacroAssemblerCodeRef<JITThunkPtrTag> slow_op_get_from_scopeGenerator(VM&);
     static MacroAssemblerCodeRef<JITThunkPtrTag> slow_op_resolve_scopeGenerator(VM&);

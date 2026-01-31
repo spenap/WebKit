@@ -738,6 +738,8 @@ void LOLJIT::privateCompileSlowCases()
         REPLAY_ALLOCATION_FOR_OP(op_jnundefined_or_null, OpJnundefinedOrNull)
         REPLAY_ALLOCATION_FOR_OP(op_jeq_ptr, OpJeqPtr)
         REPLAY_ALLOCATION_FOR_OP(op_jneq_ptr, OpJneqPtr)
+        REPLAY_ALLOCATION_FOR_OP(op_jbelow, OpJbelow)
+        REPLAY_ALLOCATION_FOR_OP(op_jbeloweq, OpJbeloweq)
 
         default:
             RELEASE_ASSERT_NOT_REACHED();
@@ -974,6 +976,7 @@ void LOLJIT::emitCompareSlow(const JSInstruction* instruction, DoubleCondition c
     emitCompareSlowImpl(allocations, op1, op1Regs, op2, op2Regs, dstRegs, operation, iter, emitDoubleCompare);
 }
 
+// FIXME: Maybe this should take a shouldBox template parameter instead of relying on !dstRegs
 template<typename SlowOperation>
 void LOLJIT::emitCompareSlowImpl(const auto& allocations, VirtualRegister lhs, JSValueRegs lhsRegs, VirtualRegister rhs, JSValueRegs rhsRegs, JSValueRegs dstRegs, SlowOperation operation, Vector<SlowCaseEntry>::iterator& iter, const Invocable<void(FPRReg, FPRReg)> auto& emitDoubleCompare)
 {
@@ -1090,6 +1093,218 @@ void LOLJIT::emitSlow_op_greater(const JSInstruction* currentInstruction, Vector
 void LOLJIT::emitSlow_op_greatereq(const JSInstruction* currentInstruction, Vector<SlowCaseEntry>::iterator& iter)
 {
     emitCompareSlow<OpGreatereq>(currentInstruction, DoubleGreaterThanOrEqualAndOrdered, operationCompareGreaterEq, iter);
+}
+
+// Jump compare bytecodes
+
+template<typename Op>
+void LOLJIT::emitCompareAndJump(const JSInstruction* instruction, RelationalCondition condition)
+{
+    auto bytecode = instruction->as<Op>();
+    VirtualRegister op1 = bytecode.m_lhs;
+    VirtualRegister op2 = bytecode.m_rhs;
+    unsigned target = jumpTarget(instruction, bytecode.m_targetLabel);
+    auto allocations = m_fastAllocator.allocate(*this, bytecode, m_bytecodeIndex);
+    auto [ op1Regs, op2Regs ] = allocations.uses;
+
+    auto emitCompareAndJump = [&](RelationalCondition cond, JSValueRegs leftJSR, auto right) {
+        addJump(branch32(cond, leftJSR.payloadGPR(), right), target);
+    };
+    emitCompareImpl(op1, op1Regs, op2, op2Regs, condition, emitCompareAndJump);
+    m_fastAllocator.releaseScratches(allocations);
+}
+
+template<typename Op, typename SlowOperation>
+void LOLJIT::emitCompareAndJumpSlow(const JSInstruction* instruction, DoubleCondition condition, SlowOperation operation, bool invertOperationResult, Vector<SlowCaseEntry>::iterator& iter)
+{
+    auto bytecode = instruction->as<Op>();
+    unsigned target = jumpTarget(instruction, bytecode.m_targetLabel);
+
+    VirtualRegister op1 = bytecode.m_lhs;
+    VirtualRegister op2 = bytecode.m_rhs;
+    auto allocations = m_replayAllocator.allocate(*this, bytecode, m_bytecodeIndex);
+    auto [ op1Regs, op2Regs ] = allocations.uses;
+
+    auto emitDoubleCompare = [&](FPRReg left, FPRReg right) {
+        emitJumpSlowToHot(branchDouble(condition, left, right), target);
+    };
+    // Pass empty dstRegs since we're doing a jump, not storing a result, result will be in returnValueGPR
+    emitCompareSlowImpl(allocations, op1, op1Regs, op2, op2Regs, JSValueRegs(), operation, iter, emitDoubleCompare);
+
+    emitJumpSlowToHot(branchTest32(invertOperationResult ? Zero : NonZero, returnValueGPR), target);
+
+    m_replayAllocator.releaseScratches(allocations);
+}
+
+void LOLJIT::emit_op_jless(const JSInstruction* currentInstruction)
+{
+    emitCompareAndJump<OpJless>(currentInstruction, LessThan);
+}
+
+void LOLJIT::emit_op_jlesseq(const JSInstruction* currentInstruction)
+{
+    emitCompareAndJump<OpJlesseq>(currentInstruction, LessThanOrEqual);
+}
+
+void LOLJIT::emit_op_jgreater(const JSInstruction* currentInstruction)
+{
+    emitCompareAndJump<OpJgreater>(currentInstruction, GreaterThan);
+}
+
+void LOLJIT::emit_op_jgreatereq(const JSInstruction* currentInstruction)
+{
+    emitCompareAndJump<OpJgreatereq>(currentInstruction, GreaterThanOrEqual);
+}
+
+void LOLJIT::emit_op_jnless(const JSInstruction* currentInstruction)
+{
+    emitCompareAndJump<OpJnless>(currentInstruction, GreaterThanOrEqual);
+}
+
+void LOLJIT::emit_op_jnlesseq(const JSInstruction* currentInstruction)
+{
+    emitCompareAndJump<OpJnlesseq>(currentInstruction, GreaterThan);
+}
+
+void LOLJIT::emit_op_jngreater(const JSInstruction* currentInstruction)
+{
+    emitCompareAndJump<OpJngreater>(currentInstruction, LessThanOrEqual);
+}
+
+void LOLJIT::emit_op_jngreatereq(const JSInstruction* currentInstruction)
+{
+    emitCompareAndJump<OpJngreatereq>(currentInstruction, LessThan);
+}
+
+void LOLJIT::emitSlow_op_jless(const JSInstruction* currentInstruction, Vector<SlowCaseEntry>::iterator& iter)
+{
+    emitCompareAndJumpSlow<OpJless>(currentInstruction, DoubleLessThanAndOrdered, operationCompareLess, false, iter);
+}
+
+void LOLJIT::emitSlow_op_jlesseq(const JSInstruction* currentInstruction, Vector<SlowCaseEntry>::iterator& iter)
+{
+    emitCompareAndJumpSlow<OpJlesseq>(currentInstruction, DoubleLessThanOrEqualAndOrdered, operationCompareLessEq, false, iter);
+}
+
+void LOLJIT::emitSlow_op_jgreater(const JSInstruction* currentInstruction, Vector<SlowCaseEntry>::iterator& iter)
+{
+    emitCompareAndJumpSlow<OpJgreater>(currentInstruction, DoubleGreaterThanAndOrdered, operationCompareGreater, false, iter);
+}
+
+void LOLJIT::emitSlow_op_jgreatereq(const JSInstruction* currentInstruction, Vector<SlowCaseEntry>::iterator& iter)
+{
+    emitCompareAndJumpSlow<OpJgreatereq>(currentInstruction, DoubleGreaterThanOrEqualAndOrdered, operationCompareGreaterEq, false, iter);
+}
+
+void LOLJIT::emitSlow_op_jnless(const JSInstruction* currentInstruction, Vector<SlowCaseEntry>::iterator& iter)
+{
+    emitCompareAndJumpSlow<OpJnless>(currentInstruction, DoubleGreaterThanOrEqualOrUnordered, operationCompareLess, true, iter);
+}
+
+void LOLJIT::emitSlow_op_jnlesseq(const JSInstruction* currentInstruction, Vector<SlowCaseEntry>::iterator& iter)
+{
+    emitCompareAndJumpSlow<OpJnlesseq>(currentInstruction, DoubleGreaterThanOrUnordered, operationCompareLessEq, true, iter);
+}
+
+void LOLJIT::emitSlow_op_jngreater(const JSInstruction* currentInstruction, Vector<SlowCaseEntry>::iterator& iter)
+{
+    emitCompareAndJumpSlow<OpJngreater>(currentInstruction, DoubleLessThanOrEqualOrUnordered, operationCompareGreater, true, iter);
+}
+
+void LOLJIT::emitSlow_op_jngreatereq(const JSInstruction* currentInstruction, Vector<SlowCaseEntry>::iterator& iter)
+{
+    emitCompareAndJumpSlow<OpJngreatereq>(currentInstruction, DoubleLessThanOrUnordered, operationCompareGreaterEq, true, iter);
+}
+
+// Strict equality jumps
+
+template<typename Op>
+void LOLJIT::emitStrictEqJumpImpl(const JSInstruction* currentInstruction, RelationalCondition condition)
+{
+    auto bytecode = currentInstruction->as<Op>();
+    unsigned target = jumpTarget(currentInstruction, bytecode.m_targetLabel);
+    auto allocations = m_fastAllocator.allocate(*this, bytecode, m_bytecodeIndex);
+    auto [ lhsRegs, rhsRegs ] = allocations.uses;
+
+    // Fast path: both are integers
+    addSlowCase(branchIfNotInt32(lhsRegs));
+    addSlowCase(branchIfNotInt32(rhsRegs));
+
+    addJump(branch32(condition, lhsRegs.payloadGPR(), rhsRegs.payloadGPR()), target);
+
+    m_fastAllocator.releaseScratches(allocations);
+}
+
+template<typename Op>
+void LOLJIT::emitStrictEqJumpSlowImpl(const JSInstruction* currentInstruction, ResultCondition condition, Vector<SlowCaseEntry>::iterator& iter)
+{
+    auto bytecode = currentInstruction->as<Op>();
+    unsigned target = jumpTarget(currentInstruction, bytecode.m_targetLabel);
+    auto allocations = m_replayAllocator.allocate(*this, bytecode, m_bytecodeIndex);
+    auto [ lhsRegs, rhsRegs ] = allocations.uses;
+
+    linkAllSlowCases(iter);
+
+    ASSERT(m_replayAllocator.allocatedRegisters().isEmpty());
+    loadGlobalObject(s_scratch);
+    callOperation(operationCompareStrictEq, s_scratch, lhsRegs, rhsRegs);
+
+    emitJumpSlowToHot(branchTest32(condition, returnValueGPR), target);
+
+    m_replayAllocator.releaseScratches(allocations);
+}
+
+void LOLJIT::emit_op_jstricteq(const JSInstruction* currentInstruction)
+{
+    emitStrictEqJumpImpl<OpJstricteq>(currentInstruction, Equal);
+}
+
+void LOLJIT::emitSlow_op_jstricteq(const JSInstruction* currentInstruction, Vector<SlowCaseEntry>::iterator& iter)
+{
+    emitStrictEqJumpSlowImpl<OpJstricteq>(currentInstruction, NonZero, iter);
+}
+
+void LOLJIT::emit_op_jnstricteq(const JSInstruction* currentInstruction)
+{
+    emitStrictEqJumpImpl<OpJnstricteq>(currentInstruction, NotEqual);
+}
+
+void LOLJIT::emitSlow_op_jnstricteq(const JSInstruction* currentInstruction, Vector<SlowCaseEntry>::iterator& iter)
+{
+    emitStrictEqJumpSlowImpl<OpJnstricteq>(currentInstruction, Zero, iter);
+}
+
+template<typename Op>
+void LOLJIT::emitCompareUnsignedAndJumpImpl(const JSInstruction* currentInstruction, RelationalCondition condition)
+{
+    auto bytecode = currentInstruction->as<Op>();
+    unsigned target = jumpTarget(currentInstruction, bytecode.m_targetLabel);
+    auto allocations = m_fastAllocator.allocate(*this, bytecode, m_bytecodeIndex);
+    auto [ lhsRegs, rhsRegs ] = allocations.uses;
+
+    if (isOperandConstantInt(bytecode.m_rhs)) {
+        jitAssertIsJSInt32(lhsRegs.payloadGPR());
+        addJump(branch32(condition, lhsRegs.payloadGPR(), Imm32(getOperandConstantInt(bytecode.m_rhs))), target);
+    } else if (isOperandConstantInt(bytecode.m_lhs)) {
+        jitAssertIsJSInt32(rhsRegs.payloadGPR());
+        addJump(branch32(commute(condition), rhsRegs.payloadGPR(), Imm32(getOperandConstantInt(bytecode.m_lhs))), target);
+    } else {
+        jitAssertIsJSInt32(lhsRegs.payloadGPR());
+        jitAssertIsJSInt32(rhsRegs.payloadGPR());
+        addJump(branch32(condition, lhsRegs.payloadGPR(), rhsRegs.payloadGPR()), target);
+    }
+
+    m_fastAllocator.releaseScratches(allocations);
+}
+
+void LOLJIT::emit_op_jbelow(const JSInstruction* currentInstruction)
+{
+    emitCompareUnsignedAndJumpImpl<OpJbelow>(currentInstruction, Below);
+}
+
+void LOLJIT::emit_op_jbeloweq(const JSInstruction* currentInstruction)
+{
+    emitCompareUnsignedAndJumpImpl<OpJbeloweq>(currentInstruction, BelowOrEqual);
 }
 
 // Conversion

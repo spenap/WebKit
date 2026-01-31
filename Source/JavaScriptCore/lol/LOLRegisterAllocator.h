@@ -418,6 +418,126 @@ auto RegisterAllocator<Backend>::allocate(Backend& jit, const OpJneqPtr& instruc
     return result;
 }
 
+template<typename Backend>
+auto RegisterAllocator<Backend>::allocate(Backend& jit, const OpJless& instruction, BytecodeIndex index)
+{
+    std::array<AllocationHint, 2> uses = { instruction.m_lhs, instruction.m_rhs };
+    std::array<AllocationHint, 0> defs = { };
+    auto result = allocateImpl<0>(jit, instruction, index, uses, defs);
+    m_allocator.flushAllRegisters(*this);
+    return result;
+}
+
+template<typename Backend>
+auto RegisterAllocator<Backend>::allocate(Backend& jit, const OpJlesseq& instruction, BytecodeIndex index)
+{
+    std::array<AllocationHint, 2> uses = { instruction.m_lhs, instruction.m_rhs };
+    std::array<AllocationHint, 0> defs = { };
+    auto result = allocateImpl<0>(jit, instruction, index, uses, defs);
+    m_allocator.flushAllRegisters(*this);
+    return result;
+}
+
+template<typename Backend>
+auto RegisterAllocator<Backend>::allocate(Backend& jit, const OpJgreater& instruction, BytecodeIndex index)
+{
+    std::array<AllocationHint, 2> uses = { instruction.m_lhs, instruction.m_rhs };
+    std::array<AllocationHint, 0> defs = { };
+    auto result = allocateImpl<0>(jit, instruction, index, uses, defs);
+    m_allocator.flushAllRegisters(*this);
+    return result;
+}
+
+template<typename Backend>
+auto RegisterAllocator<Backend>::allocate(Backend& jit, const OpJgreatereq& instruction, BytecodeIndex index)
+{
+    std::array<AllocationHint, 2> uses = { instruction.m_lhs, instruction.m_rhs };
+    std::array<AllocationHint, 0> defs = { };
+    auto result = allocateImpl<0>(jit, instruction, index, uses, defs);
+    m_allocator.flushAllRegisters(*this);
+    return result;
+}
+
+template<typename Backend>
+auto RegisterAllocator<Backend>::allocate(Backend& jit, const OpJnless& instruction, BytecodeIndex index)
+{
+    std::array<AllocationHint, 2> uses = { instruction.m_lhs, instruction.m_rhs };
+    std::array<AllocationHint, 0> defs = { };
+    auto result = allocateImpl<0>(jit, instruction, index, uses, defs);
+    m_allocator.flushAllRegisters(*this);
+    return result;
+}
+
+template<typename Backend>
+auto RegisterAllocator<Backend>::allocate(Backend& jit, const OpJnlesseq& instruction, BytecodeIndex index)
+{
+    std::array<AllocationHint, 2> uses = { instruction.m_lhs, instruction.m_rhs };
+    std::array<AllocationHint, 0> defs = { };
+    auto result = allocateImpl<0>(jit, instruction, index, uses, defs);
+    m_allocator.flushAllRegisters(*this);
+    return result;
+}
+
+template<typename Backend>
+auto RegisterAllocator<Backend>::allocate(Backend& jit, const OpJngreater& instruction, BytecodeIndex index)
+{
+    std::array<AllocationHint, 2> uses = { instruction.m_lhs, instruction.m_rhs };
+    std::array<AllocationHint, 0> defs = { };
+    auto result = allocateImpl<0>(jit, instruction, index, uses, defs);
+    m_allocator.flushAllRegisters(*this);
+    return result;
+}
+
+template<typename Backend>
+auto RegisterAllocator<Backend>::allocate(Backend& jit, const OpJngreatereq& instruction, BytecodeIndex index)
+{
+    std::array<AllocationHint, 2> uses = { instruction.m_lhs, instruction.m_rhs };
+    std::array<AllocationHint, 0> defs = { };
+    auto result = allocateImpl<0>(jit, instruction, index, uses, defs);
+    m_allocator.flushAllRegisters(*this);
+    return result;
+}
+
+template<typename Backend>
+auto RegisterAllocator<Backend>::allocate(Backend& jit, const OpJstricteq& instruction, BytecodeIndex index)
+{
+    std::array<AllocationHint, 2> uses = { instruction.m_lhs, instruction.m_rhs };
+    std::array<AllocationHint, 0> defs = { };
+    auto result = allocateImpl<0>(jit, instruction, index, uses, defs);
+    m_allocator.flushAllRegisters(*this);
+    return result;
+}
+
+template<typename Backend>
+auto RegisterAllocator<Backend>::allocate(Backend& jit, const OpJnstricteq& instruction, BytecodeIndex index)
+{
+    std::array<AllocationHint, 2> uses = { instruction.m_lhs, instruction.m_rhs };
+    std::array<AllocationHint, 0> defs = { };
+    auto result = allocateImpl<0>(jit, instruction, index, uses, defs);
+    m_allocator.flushAllRegisters(*this);
+    return result;
+}
+
+template<typename Backend>
+auto RegisterAllocator<Backend>::allocate(Backend& jit, const OpJbelow& instruction, BytecodeIndex index)
+{
+    std::array<AllocationHint, 2> uses = { instruction.m_lhs, instruction.m_rhs };
+    std::array<AllocationHint, 0> defs = { };
+    auto result = allocateImpl<0>(jit, instruction, index, uses, defs);
+    m_allocator.flushAllRegisters(*this);
+    return result;
+}
+
+template<typename Backend>
+auto RegisterAllocator<Backend>::allocate(Backend& jit, const OpJbeloweq& instruction, BytecodeIndex index)
+{
+    std::array<AllocationHint, 2> uses = { instruction.m_lhs, instruction.m_rhs };
+    std::array<AllocationHint, 0> defs = { };
+    auto result = allocateImpl<0>(jit, instruction, index, uses, defs);
+    m_allocator.flushAllRegisters(*this);
+    return result;
+}
+
 
 } // namespace JSC
 
