@@ -3351,7 +3351,7 @@ class YarrGenerator final : public YarrJITInfo {
                     m_jit.move(MacroAssembler::TrustedImm32(0), m_regs.firstCharacterAdditionalReadSize);
 #endif
 
-#if CPU(ARM64)
+#if CPU(ARM64) || CPU(X86_64)
                 // Try multi-pattern SIMD search first if available (more selective for alternation patterns)
                 if (op.m_maskedAltInfo) {
                     MacroAssembler::JumpList matched;
@@ -5090,7 +5090,7 @@ class YarrGenerator final : public YarrJITInfo {
             } else
                 dataLogLnIf(YarrJITInternal::verbose, "BM collection failed");
 
-#if CPU(ARM64)
+#if CPU(ARM64) || CPU(X86_64)
             // Try multi-pattern SIMD search for alternations with 2 fixed alternatives
             // This is more effective than bitmap lookahead for patterns like /agggtaaa|tttaccct/i
             if (m_charSize == CharSize::Char8 && alternatives.size() >= 2) {
@@ -5322,7 +5322,7 @@ class YarrGenerator final : public YarrJITInfo {
         return pointer;
     }
 
-#if CPU(ARM64)
+#if CPU(ARM64) || CPU(X86_64)
     // Generate SIMD-accelerated multi-pattern search for alternation patterns like /agggtaaa|tttaccct/i:
     // The idea comes from the SkipUntilOneOfMasked optimization from V8.
     //
@@ -5375,6 +5375,11 @@ class YarrGenerator final : public YarrJITInfo {
 
         if (checkedOffset > 0x7fffffff)
             return std::nullopt;
+
+#if CPU(X86_64)
+        if (!MacroAssembler::supportsAVX())
+            return std::nullopt;
+#endif
 
         auto baseOffset = Checked<int32_t, RecordOverflow>(-static_cast<int32_t>(checkedOffset));
         int32_t minCharsNeeded = 16 + 3; // Need 19 chars from current position
@@ -5431,10 +5436,12 @@ class YarrGenerator final : public YarrJITInfo {
         else
             m_jit.move128ToVector(mask2Vector, m_regs.vectorTemp3);
 
+#if CPU(ARM64)
         // vectorTemp4 = TBL extraction mask (extracts byte 0 of each 32-bit word from 2-register table)
         // Indices: 0, 4, 8, 12, 16, 20, 24, 28 = 0x1c1814100c080400 (little-endian)
         constexpr uint64_t tblMask = 0x1c1814100c080400ULL;
         m_jit.move64ToDouble(MacroAssembler::TrustedImm64(tblMask), m_regs.vectorTemp4);
+#endif
 
         // ==================== SIMD LOOP ====================
         // Bounds check at bottom, single compare instruction.
@@ -5472,7 +5479,7 @@ class YarrGenerator final : public YarrJITInfo {
         m_jit.loadVector(MacroAssembler::Address(m_regs.regT0, baseOffset + 2), m_regs.vectorInput2);
         m_jit.loadVector(MacroAssembler::Address(m_regs.regT0, baseOffset + 3), m_regs.vectorInput3);
 
-        auto maskAndCompare = [&](uint32_t mask, FPRReg charsFPR, FPRReg maskFPR) {
+        auto maskAndCompareJump = [&](uint32_t mask, FPRReg charsFPR, FPRReg maskFPR) {
             // ALL ANDs first
             auto s0 = m_regs.vectorInput0;
             auto s1 = m_regs.vectorInput1;
@@ -5500,27 +5507,29 @@ class YarrGenerator final : public YarrJITInfo {
             m_jit.vectorOr(SIMDInfo { SIMDLane::v128, SIMDSignMode::None }, m_regs.vectorScratch0, m_regs.vectorScratch1, m_regs.vectorScratch0);
             m_jit.vectorOr(SIMDInfo { SIMDLane::v128, SIMDSignMode::None }, m_regs.vectorScratch2, m_regs.vectorScratch3, m_regs.vectorScratch1);
 
+#if CPU(ARM64)
             // TBL2: extract byte 0 of each 32-bit word from {scratch0, scratch1}
             m_jit.vectorSwizzle2(m_regs.vectorScratch0, m_regs.vectorScratch1, m_regs.vectorTemp4, m_regs.vectorScratch2);
             m_jit.moveDoubleTo64(m_regs.vectorScratch2, m_regs.regT0);
+
+            // Check if pattern matched anywhere - if so, fall through to scalar loop to find exact position
+            // SIMD only tells us there's a match SOMEWHERE in the 16-char window, not WHERE
+            scalarLoop.append(m_jit.branchTest64(MacroAssembler::NonZero, m_regs.regT0));
+#else
+            m_jit.vectorOr(SIMDInfo { SIMDLane::v128, SIMDSignMode::None }, m_regs.vectorScratch0, m_regs.vectorScratch1, m_regs.vectorScratch0);
+            scalarLoop.append(m_jit.branchTest128(MacroAssembler::NonZero, m_regs.vectorScratch0));
+#endif
         };
 
         // ==================== CHECK PATTERN 1 ====================
         // Input data still in vectorInput0-3, pattern constants still in vectorTemp0-1
 
-        maskAndCompare(mask1, m_regs.vectorTemp0, m_regs.vectorTemp1);
-
-        // Check if pattern 1 matched anywhere - if so, fall through to scalar loop to find exact position
-        // SIMD only tells us there's a match SOMEWHERE in the 16-char window, not WHERE
-        scalarLoop.append(m_jit.branchTest64(MacroAssembler::NonZero, m_regs.regT0));
+        maskAndCompareJump(mask1, m_regs.vectorTemp0, m_regs.vectorTemp1);
 
         // ==================== CHECK PATTERN 2 ====================
         // Input data still in vectorInput0-3, pattern constants still in vectorTemp2-3
 
-        maskAndCompare(mask2, m_regs.vectorTemp2, m_regs.vectorTemp3);
-
-        // Check if pattern 2 matched anywhere - if so, fall through to scalar loop to find exact position
-        scalarLoop.append(m_jit.branchTest64(MacroAssembler::NonZero, m_regs.regT0));
+        maskAndCompareJump(mask2, m_regs.vectorTemp2, m_regs.vectorTemp3);
 
         // Neither pattern matched at any of the 16 positions checked.
         // The SIMD loop checked 16 distinct starting positions (P through P+15),

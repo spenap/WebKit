@@ -7829,6 +7829,12 @@ public:
         }
     }
 
+    void compareIntegerVector(RelationalCondition cond, SIMDInfo simdInfo, FPRegisterID left, FPRegisterID right, FPRegisterID dest)
+    {
+        RELEASE_ASSERT(m_allowScratchRegister);
+        compareIntegerVector(cond, simdInfo, left, right, dest, fpTempRegister);
+    }
+
     void compareIntegerVector(RelationalCondition cond, SIMDInfo simdInfo, FPRegisterID left, FPRegisterID right, FPRegisterID dest, FPRegisterID scratch)
     {
         RELEASE_ASSERT(supportsAVX());
@@ -9290,6 +9296,13 @@ public:
     {
         ASSERT(supportsAVX());
         m_assembler.vpextrq_i8rm(imm.m_value, src, address.base, address.offset);
+    }
+
+    Jump branchTest128(ResultCondition cond, FPRegisterID vec)
+    {
+        RELEASE_ASSERT(supportsAVX());
+        m_assembler.vptest_rr(vec, vec);
+        return Jump(m_assembler.jCC(x86Condition(cond)));
     }
 
     void vectorAnyTrue(FPRegisterID vec, RegisterID dest)

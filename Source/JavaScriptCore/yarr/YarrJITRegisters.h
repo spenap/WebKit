@@ -120,6 +120,22 @@ public:
 
     static constexpr GPRReg returnRegister = X86Registers::eax;
     static constexpr GPRReg returnRegister2 = X86Registers::edx;
+
+    // SIMD registers for Boyer-Moore SIMD lookahead (caller-saved, safe to use)
+    // Pattern constants (persistent across loop iterations)
+    static constexpr FPRReg vectorTemp0 = X86Registers::xmm0;
+    static constexpr FPRReg vectorTemp1 = X86Registers::xmm1;
+    static constexpr FPRReg vectorTemp2 = X86Registers::xmm2;
+    static constexpr FPRReg vectorTemp3 = X86Registers::xmm3;
+    static constexpr FPRReg vectorTemp4 = X86Registers::xmm4;
+    static constexpr FPRReg vectorInput0 = X86Registers::xmm5;
+    static constexpr FPRReg vectorInput1 = X86Registers::xmm6;
+    static constexpr FPRReg vectorInput2 = X86Registers::xmm7;
+    static constexpr FPRReg vectorInput3 = X86Registers::xmm8;
+    static constexpr FPRReg vectorScratch0 = X86Registers::xmm9;
+    static constexpr FPRReg vectorScratch1 = X86Registers::xmm10;
+    static constexpr FPRReg vectorScratch2 = X86Registers::xmm11;
+    static constexpr FPRReg vectorScratch3 = X86Registers::xmm12;
 #elif CPU(RISCV64)
     // Argument registers
     static constexpr GPRReg input = RISCV64Registers::x10;
@@ -196,7 +212,6 @@ public:
     GPRReg endOfStringAddress { InvalidGPRReg };
     GPRReg firstCharacterAdditionalReadSize { InvalidGPRReg };
 
-#if CPU(ARM64)
     // SIMD registers for Boyer-Moore SIMD lookahead
     // These are not used for inline JIT, but need to be present for template instantiation.
     static constexpr FPRReg vectorTemp0 = InvalidFPRReg;
@@ -212,7 +227,6 @@ public:
     static constexpr FPRReg vectorScratch1 = InvalidFPRReg;
     static constexpr FPRReg vectorScratch2 = InvalidFPRReg;
     static constexpr FPRReg vectorScratch3 = InvalidFPRReg;
-#endif
 };
 #endif
 
