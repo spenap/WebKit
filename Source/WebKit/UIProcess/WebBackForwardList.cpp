@@ -706,8 +706,19 @@ void WebBackForwardList::backForwardUpdateItem(IPC::Connection& connection, Ref<
             protect(webPageProxy->backForwardCache())->removeEntry(*item);
         }
 
+        auto oldFrameID = frameItem->frameID();
         frameItem->setFrameState(WTF::move(frameState));
+        auto newFrameID = frameItem->frameID();
+
+        if (oldFrameID && newFrameID && oldFrameID != newFrameID)
+            updateAllFrameIDs(*oldFrameID, *newFrameID);
     }
+}
+
+void WebBackForwardList::updateAllFrameIDs(FrameIdentifier oldFrameID, FrameIdentifier newFrameID)
+{
+    for (auto& entry : m_entries)
+        entry->updateFrameID(oldFrameID, newFrameID);
 }
 
 void WebBackForwardList::backForwardGoToItem(BackForwardItemIdentifier itemID, CompletionHandler<void(const WebBackForwardListCounts&)>&& completionHandler)

@@ -109,6 +109,8 @@ private:
     WebBackForwardListCounts counts() const;
     Ref<FrameState> completeFrameStateForNavigation(Ref<FrameState>&&);
 
+    void updateAllFrameIDs(WebCore::FrameIdentifier oldFrameID, WebCore::FrameIdentifier newFrameID);
+
     // IPC messages
     void backForwardAddItem(IPC::Connection&, Ref<FrameState>&&);
     void backForwardSetChildItem(WebCore::BackForwardFrameItemIdentifier, Ref<FrameState>&&);

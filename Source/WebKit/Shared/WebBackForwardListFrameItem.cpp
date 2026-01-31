@@ -143,6 +143,11 @@ void WebBackForwardListFrameItem::setFrameState(Ref<FrameState>&& frameState)
     m_frameState->children.clear();
 }
 
+void WebBackForwardListFrameItem::updateFrameID(FrameIdentifier newFrameID)
+{
+    m_frameState->frameID = newFrameID;
+}
+
 Ref<FrameState> WebBackForwardListFrameItem::copyFrameStateWithChildren()
 {
     Ref frameState = protect(this->frameState())->copy();

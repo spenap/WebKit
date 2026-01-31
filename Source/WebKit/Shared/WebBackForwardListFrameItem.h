@@ -66,6 +66,8 @@ public:
     void setChild(Ref<FrameState>&&);
     void clearChildren() { m_children.clear(); }
 
+    void updateFrameID(WebCore::FrameIdentifier);
+
     void setWasRestoredFromSession();
 
     String loggingString();
