@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2017 Apple Inc. All rights reserved.
+ * Copyright (C) 2012-2026 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,53 +23,50 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "AvailableMemory.h"
+#include "config.h"
+#include <wtf/AvailableMemory.h>
 
-#include "Environment.h"
-#if BPLATFORM(IOS_FAMILY)
-#include "MemoryStatusSPI.h"
-#endif
-#include "Sizes.h"
+#include <algorithm>
 #include <array>
 #include <mutex>
-#if BOS(DARWIN)
-#if BPLATFORM(IOS_FAMILY)
-#import <algorithm>
+
+#if PLATFORM(IOS_FAMILY)
+#include <wtf/spi/darwin/MemoryStatusSPI.h>
 #endif
+
+#if OS(DARWIN)
 #import <dispatch/dispatch.h>
 #import <mach/host_info.h>
 #import <mach/mach.h>
 #import <mach/mach_error.h>
 #import <math.h>
-#elif BOS(UNIX)
-#if BOS(FREEBSD) || BOS(LINUX)
+#elif OS(UNIX)
+#if OS(FREEBSD) || OS(LINUX)
 #include <sys/sysinfo.h>
 #endif
-#if BOS(LINUX)
-#include <algorithm>
+#if OS(LINUX)
 #include <fcntl.h>
-#elif BOS(FREEBSD)
-#include "VMAllocate.h"
+#elif OS(FREEBSD)
 #include <sys/sysctl.h>
 #include <sys/types.h>
 #include <sys/user.h>
 #endif
 #include <unistd.h>
-#elif BOS(WINDOWS)
+#elif OS(WINDOWS)
 #include <windows.h>
 #endif
 
-namespace bmalloc {
+namespace WTF {
 
-static constexpr size_t availableMemoryGuess = 512 * bmalloc::MB;
+static constexpr size_t availableMemoryGuess = 512 * MB;
 
-#if BOS(DARWIN)
+#if OS(DARWIN)
 static size_t memorySizeAccordingToKernel()
 {
-#if BPLATFORM(IOS_FAMILY_SIMULATOR)
-    BUNUSED_PARAM(availableMemoryGuess);
+#if PLATFORM(IOS_FAMILY_SIMULATOR)
+    UNUSED_PARAM(availableMemoryGuess);
     // Pretend we have 1024MB of memory to make cache sizes behave like on device.
-    return 1024 * bmalloc::MB;
+    return 1024 * MB;
 #else
     host_basic_info_data_t hostInfo;
 
@@ -88,20 +85,20 @@ static size_t memorySizeAccordingToKernel()
 }
 #endif
 
-#if BPLATFORM(IOS_FAMILY)
+#if PLATFORM(IOS_FAMILY)
 static size_t jetsamLimit()
 {
     memorystatus_memlimit_properties_t properties;
     pid_t pid = getpid();
     if (memorystatus_control(MEMORYSTATUS_CMD_GET_MEMLIMIT_PROPERTIES, pid, 0, &properties, sizeof(properties)))
-        return 840 * bmalloc::MB;
+        return 840 * MB;
     if (properties.memlimit_active < 0)
         return std::numeric_limits<size_t>::max();
-    return static_cast<size_t>(properties.memlimit_active) * bmalloc::MB;
+    return static_cast<size_t>(properties.memlimit_active) * MB;
 }
 #endif
 
-#if BOS(LINUX)
+#if OS(LINUX)
 struct LinuxMemory {
     static const LinuxMemory& singleton()
     {
@@ -151,28 +148,28 @@ struct LinuxMemory {
 
 static size_t computeAvailableMemory()
 {
-#if BOS(DARWIN)
+#if OS(DARWIN)
     size_t sizeAccordingToKernel = memorySizeAccordingToKernel();
-#if BPLATFORM(IOS_FAMILY)
+#if PLATFORM(IOS_FAMILY)
     sizeAccordingToKernel = std::min(sizeAccordingToKernel, jetsamLimit());
 #endif
-    size_t multiple = 128 * bmalloc::MB;
+    size_t multiple = 128 * MB;
 
     // Round up the memory size to a multiple of 128MB because max_mem may not be exactly 512MB
     // (for example) and we have code that depends on those boundaries.
     return ((sizeAccordingToKernel + multiple - 1) / multiple) * multiple;
-#elif BOS(FREEBSD) || BOS(LINUX)
+#elif OS(FREEBSD) || OS(LINUX)
     struct sysinfo info;
     if (!sysinfo(&info))
         return info.totalram * info.mem_unit;
     return availableMemoryGuess;
-#elif BOS(UNIX) || BOS(HAIKU)
+#elif OS(UNIX) || OS(HAIKU)
     long pages = sysconf(_SC_PHYS_PAGES);
     long pageSize = sysconf(_SC_PAGE_SIZE);
     if (pages == -1 || pageSize == -1)
         return availableMemoryGuess;
     return pages * pageSize;
-#elif BOS(WINDOWS)
+#elif OS(WINDOWS)
     MEMORYSTATUSEX status;
     status.dwLength = sizeof(status);
     bool result = GlobalMemoryStatusEx(&status);
@@ -194,20 +191,20 @@ size_t availableMemory()
     return availableMemory;
 }
 
-#if BPLATFORM(IOS_FAMILY) || BOS(LINUX) || BOS(FREEBSD)
+#if PLATFORM(IOS_FAMILY) || OS(LINUX) || OS(FREEBSD)
 MemoryStatus memoryStatus()
 {
-#if BPLATFORM(IOS_FAMILY)
+#if PLATFORM(IOS_FAMILY)
     task_vm_info_data_t vmInfo;
     mach_msg_type_number_t vmSize = TASK_VM_INFO_COUNT;
-    
+
     size_t memoryFootprint = 0;
     if (KERN_SUCCESS == task_info(mach_task_self(), TASK_VM_INFO, (task_info_t)(&vmInfo), &vmSize))
         memoryFootprint = static_cast<size_t>(vmInfo.phys_footprint);
-#elif BOS(LINUX)
+#elif OS(LINUX)
     auto& memory = LinuxMemory::singleton();
     size_t memoryFootprint = memory.footprint();
-#elif BOS(FREEBSD)
+#elif OS(FREEBSD)
     struct kinfo_proc info;
     size_t infolen = sizeof(info);
 
@@ -228,4 +225,4 @@ MemoryStatus memoryStatus()
 }
 #endif
 
-} // namespace bmalloc
+} // namespace WTF

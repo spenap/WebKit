@@ -26,10 +26,10 @@
 
 #ifdef __cplusplus
 
-#include "BPlatform.h"
 #include <stdint.h>
+#include <wtf/Platform.h>
 
-#if BPLATFORM(IOS_FAMILY)
+#if PLATFORM(IOS_FAMILY)
 
 #if __has_include(<sys/kern_memorystatus.h>)
 #include <sys/kern_memorystatus.h>
@@ -54,6 +54,6 @@ extern "C" {
 int memorystatus_control(uint32_t command, int32_t pid, uint32_t flags, void *buffer, size_t buffersize);
 }
 
-#endif // BPLATFORM(IOS_FAMILY)
+#endif // PLATFORM(IOS_FAMILY)
 
 #endif // __cplusplus

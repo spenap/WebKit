@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2017 Apple Inc. All rights reserved.
+ * Copyright (C) 2012-2026 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -25,16 +25,14 @@
 
 #pragma once
 
-#ifdef __cplusplus
+#include <wtf/Platform.h>
+#include <wtf/StdLibExtras.h>
 
-#include "BPlatform.h"
-#include "Sizes.h"
+namespace WTF {
 
-namespace bmalloc {
+WTF_EXPORT_PRIVATE size_t availableMemory();
 
-BEXPORT size_t availableMemory();
-
-#if BPLATFORM(IOS_FAMILY) || BOS(LINUX) || BOS(FREEBSD)
+#if PLATFORM(IOS_FAMILY) || OS(LINUX) || OS(FREEBSD)
 struct MemoryStatus {
     MemoryStatus(size_t memoryFootprint, double percentAvailableMemoryInUse)
         : memoryFootprint(memoryFootprint)
@@ -46,13 +44,7 @@ struct MemoryStatus {
     double percentAvailableMemoryInUse;
 };
 
-BEXPORT MemoryStatus memoryStatus();
-
-inline size_t memoryFootprint()
-{
-    auto memoryUse = memoryStatus();
-    return memoryUse.memoryFootprint;
-}
+WTF_EXPORT_PRIVATE MemoryStatus memoryStatus();
 
 inline double percentAvailableMemoryInUse()
 {
@@ -63,13 +55,12 @@ inline double percentAvailableMemoryInUse()
 
 inline bool isUnderMemoryPressure()
 {
-#if BPLATFORM(IOS_FAMILY) || BOS(LINUX) || BOS(FREEBSD)
+#if PLATFORM(IOS_FAMILY) || OS(LINUX) || OS(FREEBSD)
+    constexpr double memoryPressureThreshold = 0.75;
     return percentAvailableMemoryInUse() > memoryPressureThreshold;
 #else
     return false;
 #endif
 }
-    
-} // namespace bmalloc
 
-#endif
+} // namespace WTF

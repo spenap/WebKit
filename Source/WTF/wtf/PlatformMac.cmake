@@ -99,6 +99,7 @@ list(APPEND WTF_PUBLIC_HEADERS
     spi/darwin/ReasonSPI.h
     spi/darwin/CodeSignSPI.h
     spi/darwin/DataVaultSPI.h
+    spi/darwin/MemoryStatusSPI.h
     spi/darwin/OSVariantSPI.h
     spi/darwin/ProcessMemoryFootprint.h
     spi/darwin/SandboxSPI.h
