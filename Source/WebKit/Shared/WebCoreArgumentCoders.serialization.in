@@ -2076,6 +2076,7 @@ using WebCore::PlatformColorSpace = sk_sp<SkColorSpace>;
         , LinearSRGB
 #if ENABLE(DESTINATION_COLOR_SPACE_DISPLAY_P3)
         , DisplayP3
+        , LinearDisplayP3
 #endif
 };
 
@@ -8375,9 +8376,11 @@ header: <WebCore/TextAttachmentForSerialization.h>
 
 header: <WebCore/PredefinedColorSpace.h>
 enum class WebCore::PredefinedColorSpace : uint8_t {
-    SRGB
+      SRGB
+    , SRGBLinear
 #if ENABLE(PREDEFINED_COLOR_SPACE_DISPLAY_P3)
     , DisplayP3
+    , DisplayP3Linear
 #endif
 };
 
