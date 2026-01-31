@@ -2020,7 +2020,7 @@ void HTMLMediaElement::loadResource(const URL& initialURL, const ContentType& in
 #if ENABLE(MEDIA_STREAM)
         if (RefPtr mediaStreamSrcObject = protectedThis->m_mediaStreamSrcObject; mediaStreamSrcObject && !protectedThis->m_remotePlaybackConfiguration) {
             ALWAYS_LOG_WITH_THIS(protectedThis, logSiteIdentifier, "loading media stream blob ", mediaStreamSrcObject->logIdentifier());
-            if (!player->load(mediaStreamSrcObject->protectedPrivateStream()))
+            if (!player->load(protect(mediaStreamSrcObject->privateStream())))
                 protectedThis->mediaLoadingFailed(MediaPlayer::NetworkState::FormatError);
             else
                 protectedThis->mediaPlayerRenderingModeChanged();

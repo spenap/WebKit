@@ -345,7 +345,7 @@ static auto convertToBacking(const ComputePipelineDescriptor& descriptor, Conver
         .label = label.data(),
         .layout = descriptor.layout ? convertToBackingContext.convertToBacking(*descriptor.protectedLayout().get()) : nullptr,
         .compute = WGPUProgrammableStageDescriptor {
-            .module = convertToBackingContext.convertToBacking(descriptor.compute.protectedModule().get()),
+            .module = convertToBackingContext.convertToBacking(protect(descriptor.compute.module.get()).get()),
             .entryPoint = entryPoint ? entryPoint->data() : nullptr,
             .constantCount = backingConstantEntries.size(),
             .constants = backingConstantEntries.size() ? backingConstantEntries.span().data() : nullptr,
@@ -498,7 +498,7 @@ static auto convertToBacking(const RenderPipelineDescriptor& descriptor, Convert
     }
 
     WGPUFragmentState fragmentState {
-        .module = descriptor.fragment ? convertToBackingContext.convertToBacking(descriptor.fragment->protectedModule().get()) : nullptr,
+        .module = descriptor.fragment ? convertToBackingContext.convertToBacking(protect(descriptor.fragment->module.get()).get()) : nullptr,
         .entryPoint = fragmentEntryPoint ? fragmentEntryPoint->data() : nullptr,
         .constantCount = fragmentConstantEntries.size(),
         .constants = fragmentConstantEntries.size() ? fragmentConstantEntries.span().data() : nullptr,
@@ -510,7 +510,7 @@ static auto convertToBacking(const RenderPipelineDescriptor& descriptor, Convert
         .label = label.data(),
         .layout = descriptor.layout ? convertToBackingContext.convertToBacking(*descriptor.protectedLayout()) : nullptr,
         .vertex = {
-            .module = convertToBackingContext.convertToBacking(descriptor.vertex.protectedModule().get()),
+            .module = convertToBackingContext.convertToBacking(protect(descriptor.vertex.module.get()).get()),
             .entryPoint = vertexEntryPoint ? vertexEntryPoint->data() : nullptr,
             .constantCount = vertexConstantEntries.size(),
             .constants = vertexConstantEntries.size() ? vertexConstantEntries.span().data() : nullptr,
