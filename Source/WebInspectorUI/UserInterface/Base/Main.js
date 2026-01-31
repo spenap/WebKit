@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2020 Apple Inc. All rights reserved.
+ * Copyright (C) 2013-2026 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -2814,7 +2814,7 @@ WI.linkifyElement = function(linkElement, sourceCodeLocation, options = {}) {
     linkElement.addEventListener("click", showSourceCodeLocation);
     linkElement.addEventListener("contextmenu", (event) => {
         let contextMenu = WI.ContextMenu.createFromEvent(event);
-        WI.appendContextMenuItemsForSourceCode(contextMenu, sourceCodeLocation);
+        WI.appendContextMenuItemsForNetworkResource(contextMenu, sourceCodeLocation);
     });
 };
 

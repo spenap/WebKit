@@ -1722,6 +1722,8 @@ localizedStrings["Subscript @ Font Details Sidebar Property Value"] = "Subscript
 localizedStrings["Subtree Modified @ DOM Breakpoint"] = "Subtree Modified";
 localizedStrings["Suggest property names based on usage"] = "Suggest property names based on usage";
 localizedStrings["Summary"] = "Summary";
+/* Section header for network redirect details. */
+localizedStrings["Summary @ Network Redirect Headers"] = "Summary";
 /* Property value for `font-variant-position: super`. */
 localizedStrings["Superscript @ Font Details Sidebar Property Value"] = "Superscript";
 localizedStrings["Symbol"] = "Symbol";
@@ -1923,6 +1925,8 @@ localizedStrings["Video Details @ Media Sidebar"] = "Video Details";
 localizedStrings["Video Format @ Media Sidebar"] = "Video Format";
 /* Value string for Video Range color in the Media Sidebar */
 localizedStrings["Video range @ Media Sidebar"] = "Video range";
+localizedStrings["View Redirect"] = "View Redirect";
+localizedStrings["View Response"] = "View Response";
 localizedStrings["View Image"] = "View Image";
 localizedStrings["View Recording"] = "View Recording";
 localizedStrings["View Shader"] = "View Shader";
