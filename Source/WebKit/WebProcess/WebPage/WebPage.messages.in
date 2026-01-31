@@ -65,6 +65,10 @@ messages -> WebPage WantsAsyncDispatchMessage {
     MouseEvent(WebCore::FrameIdentifier frameID, WebKit::WebMouseEvent event, std::optional<Vector<WebKit::SandboxExtensionHandle>> sandboxExtensions)
     SetLastKnownMousePosition(WebCore::FrameIdentifier frameID, WebCore::DoublePoint eventPoint, WebCore::DoublePoint globalPoint, enum:uint8_t std::optional<WebCore::LastKnownMousePositionSource> source);
 
+#if PLATFORM(COCOA)
+    SelectWithGesture(WebCore::IntPoint point, enum:uint8_t WebKit::GestureType gestureType, enum:uint8_t WebKit::GestureRecognizerState gestureState, bool isInteractingWithFocusedElement) -> (WebCore::IntPoint point, enum:uint8_t WebKit::GestureType gestureType, enum:uint8_t WebKit::GestureRecognizerState gestureState, OptionSet<WebKit::SelectionFlags> flags)
+#endif
+
 #if PLATFORM(IOS_FAMILY)
     SetSceneIdentifier(String sceneIdentifier)
     SetViewportConfigurationViewLayoutSize(WebCore::FloatSize size, double scaleFactor, double minimumEffectiveDeviceWidth)
@@ -86,7 +90,6 @@ messages -> WebPage WantsAsyncDispatchMessage {
     InspectorNodeSearchMovedToPosition(WebCore::FloatPoint point)
     InspectorNodeSearchEndedAtPosition(WebCore::FloatPoint point)
     BlurFocusedElement()
-    SelectWithGesture(WebCore::IntPoint point, enum:uint8_t WebKit::GestureType gestureType, enum:uint8_t WebKit::GestureRecognizerState gestureState, bool isInteractingWithFocusedElement) -> (WebCore::IntPoint point, enum:uint8_t WebKit::GestureType gestureType, enum:uint8_t WebKit::GestureRecognizerState gestureState, OptionSet<WebKit::SelectionFlags> flags)
     UpdateSelectionWithTouches(WebCore::IntPoint point, enum:uint8_t WebKit::SelectionTouch touches, bool baseIsStart) -> (WebCore::IntPoint point, enum:uint8_t WebKit::SelectionTouch touch, OptionSet<WebKit::SelectionFlags> selectionFlags)
     SelectWithTwoTouches(WebCore::IntPoint from, WebCore::IntPoint to, enum:uint8_t WebKit::GestureType gestureType, enum:uint8_t WebKit::GestureRecognizerState gestureState) -> (WebCore::IntPoint point, enum:uint8_t WebKit::GestureType gestureType, enum:uint8_t WebKit::GestureRecognizerState gestureState, OptionSet<WebKit::SelectionFlags> selectionFlags)
     ExtendSelection(enum:uint8_t WebCore::TextGranularity granularity) -> ()

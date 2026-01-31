@@ -96,8 +96,10 @@
 #import <WebCore/PlatformMediaSessionManager.h>
 #import <WebCore/PrintContext.h>
 #import <WebCore/Range.h>
+#import <WebCore/RenderBoxInlines.h>
 #import <WebCore/RenderElement.h>
 #import <WebCore/RenderLayer.h>
+#import <WebCore/RenderObjectInlines.h>
 #import <WebCore/RenderedDocumentMarker.h>
 #import <WebCore/SVGImage.h>
 #import <WebCore/Settings.h>
@@ -2109,6 +2111,259 @@ bool WebPage::isSpeaking() const
     auto sendResult = const_cast<WebPage*>(this)->sendSync(Messages::WebPageProxy::GetIsSpeaking());
     auto [result] = sendResult.takeReplyOr(false);
     return result;
+}
+
+void WebPage::selectWithGesture(const IntPoint& point, GestureType gestureType, GestureRecognizerState gestureState, bool isInteractingWithFocusedElement, CompletionHandler<void(const WebCore::IntPoint&, GestureType, GestureRecognizerState, OptionSet<SelectionFlags>)>&& completionHandler)
+{
+    if (gestureState == GestureRecognizerState::Began)
+        updateFocusBeforeSelectingTextAtLocation(point);
+
+    RefPtr frame = m_page->focusController().focusedOrMainFrame();
+    if (!frame) {
+        completionHandler({ }, gestureType, gestureState, { });
+        return;
+    }
+
+    VisiblePosition position = visiblePositionInFocusedNodeForPoint(*frame, point, isInteractingWithFocusedElement);
+
+    if (position.isNull()) {
+        completionHandler(point, gestureType, gestureState, { });
+        return;
+    }
+    std::optional<SimpleRange> range;
+    OptionSet<SelectionFlags> flags;
+    GestureRecognizerState wkGestureState = gestureState;
+    switch (gestureType) {
+    case GestureType::PhraseBoundary: {
+        if (!frame->editor().hasComposition())
+            break;
+        auto markedRange = WTF::protect(frame->editor())->compositionRange();
+        auto startPosition = VisiblePosition { makeDeprecatedLegacyPosition(markedRange->start) };
+        position = std::clamp(position, startPosition, VisiblePosition { makeDeprecatedLegacyPosition(markedRange->end) });
+        if (wkGestureState != GestureRecognizerState::Began)
+            flags = distanceBetweenPositions(startPosition, frame->selection().selection().start()) != distanceBetweenPositions(startPosition, position) ? SelectionFlags::PhraseBoundaryChanged : OptionSet<SelectionFlags> { };
+        else
+            flags = SelectionFlags::PhraseBoundaryChanged;
+        range = makeSimpleRange(position);
+        break;
+    }
+
+    case GestureType::OneFingerTap: {
+        auto [adjustedPosition, withinWordBoundary] = wordBoundaryForPositionWithoutCrossingLine(position);
+        if (withinWordBoundary == WithinWordBoundary::Yes)
+            flags = SelectionFlags::WordIsNearTap;
+        range = makeSimpleRange(adjustedPosition);
+        break;
+    }
+
+    case GestureType::Loupe:
+        if (position.rootEditableElement())
+            range = makeSimpleRange(position);
+        else {
+#if !PLATFORM(MACCATALYST)
+            range = wordRangeFromPosition(position);
+#else
+            switch (wkGestureState) {
+            case GestureRecognizerState::Began:
+                m_startingGestureRange = makeSimpleRange(position);
+                break;
+            case GestureRecognizerState::Changed:
+                if (m_startingGestureRange) {
+                    auto& start = m_startingGestureRange->start;
+                    if (makeDeprecatedLegacyPosition(start) < position)
+                        range = makeSimpleRange(start, position);
+                    else
+                        range = makeSimpleRange(position, start);
+                }
+                break;
+            case GestureRecognizerState::Ended:
+            case GestureRecognizerState::Cancelled:
+                m_startingGestureRange = std::nullopt;
+                break;
+            case GestureRecognizerState::Failed:
+            case GestureRecognizerState::Possible:
+                ASSERT_NOT_REACHED();
+                break;
+            }
+#endif
+        }
+        break;
+
+    case GestureType::TapAndAHalf:
+        switch (wkGestureState) {
+        case GestureRecognizerState::Began:
+            range = wordRangeFromPosition(position);
+            if (range)
+                m_currentWordRange = { { *range } };
+            else
+                m_currentWordRange = std::nullopt;
+            break;
+        case GestureRecognizerState::Changed:
+            if (!m_currentWordRange)
+                break;
+            range = m_currentWordRange;
+            if (position < makeDeprecatedLegacyPosition(range->start))
+                range->start = *makeBoundaryPoint(position);
+            if (position > makeDeprecatedLegacyPosition(range->end))
+                range->end = *makeBoundaryPoint(position);
+            break;
+        case GestureRecognizerState::Ended:
+        case GestureRecognizerState::Cancelled:
+            m_currentWordRange = std::nullopt;
+            break;
+        case GestureRecognizerState::Failed:
+        case GestureRecognizerState::Possible:
+            ASSERT_NOT_REACHED();
+            break;
+        }
+        break;
+
+    case GestureType::OneFingerDoubleTap:
+        if (atBoundaryOfGranularity(position, TextGranularity::LineGranularity, SelectionDirection::Forward)) {
+            // Double-tap at end of line only places insertion point there.
+            // This helps to get the callout for pasting at ends of lines,
+            // paragraphs, and documents.
+            range = makeSimpleRange(position);
+        } else
+            range = wordRangeFromPosition(position);
+        break;
+
+    case GestureType::TwoFingerSingleTap:
+        // Single tap with two fingers selects the entire paragraph.
+        range = enclosingTextUnitOfGranularity(position, TextGranularity::ParagraphGranularity, SelectionDirection::Forward);
+        break;
+
+    case GestureType::OneFingerTripleTap:
+        if (atBoundaryOfGranularity(position, TextGranularity::LineGranularity, SelectionDirection::Forward)) {
+            // Triple-tap at end of line only places insertion point there.
+            // This helps to get the callout for pasting at ends of lines, paragraphs, and documents.
+            range = makeSimpleRange(position);
+        } else
+            range = enclosingTextUnitOfGranularity(position, TextGranularity::ParagraphGranularity, SelectionDirection::Forward);
+        break;
+
+    default:
+        break;
+    }
+    if (range)
+        WTF::protect(frame->selection())->setSelectedRange(range, position.affinity(), WebCore::FrameSelection::ShouldCloseTyping::Yes, UserTriggered::Yes);
+
+    completionHandler(point, gestureType, gestureState, flags);
+}
+
+void WebPage::updateFocusBeforeSelectingTextAtLocation(const IntPoint& point)
+{
+    static constexpr OptionSet hitType { HitTestRequest::Type::ReadOnly, HitTestRequest::Type::Active, HitTestRequest::Type::AllowVisibleChildFrameContentOnly };
+    RefPtr localMainFrame = WTF::protect(m_page)->localMainFrame();
+    if (!localMainFrame)
+        return;
+
+    auto result = localMainFrame->eventHandler().hitTestResultAtPoint(point, hitType);
+    RefPtr hitNode = result.innerNode();
+    if (!hitNode || !hitNode->renderer())
+        return;
+
+    RefPtr frame = result.innerNodeFrame();
+    m_page->focusController().setFocusedFrame(frame.get());
+
+    if (!result.isOverWidget())
+        return;
+
+#if ENABLE(PDF_PLUGIN)
+    if (RefPtr pluginView = pluginViewForFrame(frame.get()))
+        pluginView->focusPluginElement();
+#endif
+}
+
+IntRect WebPage::rootViewInteractionBounds(const Node& node)
+{
+    RefPtr frame = node.document().frame();
+    if (!frame)
+        return { };
+
+    RefPtr view = frame->view();
+    if (!view)
+        return { };
+
+    return view->contentsToRootView(absoluteInteractionBounds(node));
+}
+
+IntRect WebPage::absoluteInteractionBounds(const Node& node)
+{
+    RefPtr frame = node.document().frame();
+    if (!frame)
+        return { };
+
+    RefPtr view = frame->view();
+    if (!view)
+        return { };
+
+    CheckedPtr renderer = node.renderer();
+    if (!renderer)
+        return { };
+
+    if (CheckedPtr box = dynamicDowncast<RenderBox>(*renderer)) {
+        FloatRect rect;
+        // FIXME: want borders or not?
+        if (box->style().isOverflowVisible())
+            rect = box->layoutOverflowRect();
+        else
+            rect = box->clientBoxRect();
+        return box->localToAbsoluteQuad(rect).enclosingBoundingBox();
+    }
+
+    CheckedRef style = renderer->style();
+    FloatRect boundingBox = renderer->absoluteBoundingBoxRect(true /* use transforms*/);
+    // This is wrong. It's subtracting borders after converting to absolute coords on something that probably doesn't represent a rectangular element.
+    boundingBox.move(WebCore::Style::evaluate<float>(style->usedBorderLeftWidth(), WebCore::Style::ZoomNeeded { }), WebCore::Style::evaluate<float>(style->usedBorderTopWidth(), WebCore::Style::ZoomNeeded { }));
+    boundingBox.setWidth(boundingBox.width() - WebCore::Style::evaluate<float>(style->usedBorderLeftWidth(), WebCore::Style::ZoomNeeded { }) - WebCore::Style::evaluate<float>(style->usedBorderRightWidth(), WebCore::Style::ZoomNeeded { }));
+    boundingBox.setHeight(boundingBox.height() - WebCore::Style::evaluate<float>(style->usedBorderBottomWidth(), WebCore::Style::ZoomNeeded { }) - WebCore::Style::evaluate<float>(style->usedBorderTopWidth(), WebCore::Style::ZoomNeeded { }));
+    return enclosingIntRect(boundingBox);
+}
+
+static IntRect elementBoundsInFrame(const LocalFrame& frame, const Element& focusedElement)
+{
+    WTF::protect(frame.document())->updateLayout(LayoutOptions::IgnorePendingStylesheets);
+
+    if (focusedElement.hasTagName(HTMLNames::textareaTag) || focusedElement.hasTagName(HTMLNames::inputTag) || focusedElement.hasTagName(HTMLNames::selectTag))
+        return WebPage::absoluteInteractionBounds(focusedElement);
+
+    if (RefPtr rootEditableElement = focusedElement.rootEditableElement())
+        return WebPage::absoluteInteractionBounds(*rootEditableElement);
+
+    return { };
+}
+
+IntPoint WebPage::constrainPoint(const IntPoint& point, const LocalFrame& frame, const Element& focusedElement)
+{
+    ASSERT(&focusedElement.document() == frame.document());
+    const int DEFAULT_CONSTRAIN_INSET = 2;
+    IntRect innerFrame = elementBoundsInFrame(frame, focusedElement);
+    IntPoint constrainedPoint = point;
+
+    int minX = innerFrame.x() + DEFAULT_CONSTRAIN_INSET;
+    int maxX = innerFrame.maxX() - DEFAULT_CONSTRAIN_INSET;
+    int minY = innerFrame.y() + DEFAULT_CONSTRAIN_INSET;
+    int maxY = innerFrame.maxY() - DEFAULT_CONSTRAIN_INSET;
+
+    if (point.x() < minX)
+        constrainedPoint.setX(minX);
+    else if (point.x() > maxX)
+        constrainedPoint.setX(maxX);
+
+    if (point.y() < minY)
+        constrainedPoint.setY(minY);
+    else if (point.y() >= maxY)
+        constrainedPoint.setY(maxY);
+
+    return constrainedPoint;
+}
+
+VisiblePosition WebPage::visiblePositionInFocusedNodeForPoint(const LocalFrame& frame, const IntPoint& point, bool isInteractingWithFocusedElement)
+{
+    IntPoint adjustedPoint(WTF::protect(frame.view())->rootViewToContents(point));
+    IntPoint constrainedPoint = m_focusedElement && isInteractingWithFocusedElement ? WebPage::constrainPoint(adjustedPoint, frame, WTF::protect(*m_focusedElement)) : adjustedPoint;
+    return frame.visiblePositionForPoint(constrainedPoint);
 }
 
 } // namespace WebKit

@@ -25,6 +25,8 @@
 
 #pragma once
 
+#include <wtf/Platform.h>
+
 namespace WebKit {
 
 enum class GestureType : uint8_t {

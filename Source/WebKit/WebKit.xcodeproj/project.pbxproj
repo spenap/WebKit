@@ -141,6 +141,7 @@
 		029D6BB42C407AA30068CF99 /* JSWebExtensionAPISidePanel.h in Headers */ = {isa = PBXBuildFile; fileRef = 029D6BAF2C407AA30068CF99 /* JSWebExtensionAPISidePanel.h */; };
 		0701789E23BE9CFC005F0FAA /* RemoteMediaPlayerMIMETypeCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0701789B23BAE261005F0FAA /* RemoteMediaPlayerMIMETypeCache.cpp */; };
 		071467782DFE84E500F77867 /* WebPage+Transferable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 071467772DFE84E500F77867 /* WebPage+Transferable.swift */; };
+		07187E0B2F2DC28E005FC058 /* GestureTypes.h in Headers */ = {isa = PBXBuildFile; fileRef = 07187E092F2DC276005FC058 /* GestureTypes.h */; };
 		071BC59023CE1EAA00680D7C /* RemoteMediaPlayerProxyMessages.h in Headers */ = {isa = PBXBuildFile; fileRef = 071BC58D23CE1EAA00680D7C /* RemoteMediaPlayerProxyMessages.h */; };
 		07275C612D00CD24002315A5 /* CrossImportOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07275C602D00CD24002315A5 /* CrossImportOverlay.swift */; };
 		07275C632D00D32D002315A5 /* WebPage+SwiftUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07275C622D00D32D002315A5 /* WebPage+SwiftUI.swift */; };
@@ -880,7 +881,6 @@
 		2DA049B8180CCD0A00AAFA9E /* GraphicsLayerCARemote.h in Headers */ = {isa = PBXBuildFile; fileRef = 2DA049B6180CCD0A00AAFA9E /* GraphicsLayerCARemote.h */; };
 		2DA6731A20C754B1003CB401 /* DynamicViewportSizeUpdate.h in Headers */ = {isa = PBXBuildFile; fileRef = 2DA6731920C754B1003CB401 /* DynamicViewportSizeUpdate.h */; };
 		2DA944A01884E4F000ED86DB /* WebIOSEventFactory.h in Headers */ = {isa = PBXBuildFile; fileRef = 2DA944991884E4F000ED86DB /* WebIOSEventFactory.h */; };
-		2DA944A41884E4F000ED86DB /* GestureTypes.h in Headers */ = {isa = PBXBuildFile; fileRef = 2DA9449D1884E4F000ED86DB /* GestureTypes.h */; };
 		2DAADA8F2298C21000E36B0C /* DeviceManagementSPI.h in Headers */ = {isa = PBXBuildFile; fileRef = 2DAADA8E2298C21000E36B0C /* DeviceManagementSPI.h */; };
 		2DABA7721A817B1700EF0F1A /* WKPageRenderingProgressEventsInternal.h in Headers */ = {isa = PBXBuildFile; fileRef = 2DABA7711A817B1700EF0F1A /* WKPageRenderingProgressEventsInternal.h */; };
 		2DABA7741A817EE600EF0F1A /* WKPluginLoadPolicy.h in Headers */ = {isa = PBXBuildFile; fileRef = 2DABA7731A817EE600EF0F1A /* WKPluginLoadPolicy.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -3304,6 +3304,8 @@
 		0701789C23BAE262005F0FAA /* RemoteMediaPlayerMIMETypeCache.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RemoteMediaPlayerMIMETypeCache.h; sourceTree = "<group>"; };
 		070259BE2522841C00153405 /* UserMediaPermissionRequestManagerProxy.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = UserMediaPermissionRequestManagerProxy.mm; sourceTree = "<group>"; };
 		071467772DFE84E500F77867 /* WebPage+Transferable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WebPage+Transferable.swift"; sourceTree = "<group>"; };
+		07187E092F2DC276005FC058 /* GestureTypes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GestureTypes.h; sourceTree = "<group>"; };
+		07187E0A2F2DC284005FC058 /* GestureTypes.serialization.in */ = {isa = PBXFileReference; lastKnownFileType = text; path = GestureTypes.serialization.in; sourceTree = "<group>"; };
 		071BC57723C93BB700680D7C /* AudioTrackPrivateRemote.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AudioTrackPrivateRemote.h; sourceTree = "<group>"; };
 		071BC57923C93BB900680D7C /* AudioTrackPrivateRemote.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = AudioTrackPrivateRemote.cpp; sourceTree = "<group>"; };
 		071BC57B23CA532400680D7C /* TrackPrivateRemoteConfiguration.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TrackPrivateRemoteConfiguration.h; sourceTree = "<group>"; };
@@ -5119,7 +5121,6 @@
 		2DA944981884E4F000ED86DB /* NativeWebTouchEventIOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = NativeWebTouchEventIOS.mm; path = ios/NativeWebTouchEventIOS.mm; sourceTree = "<group>"; };
 		2DA944991884E4F000ED86DB /* WebIOSEventFactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = WebIOSEventFactory.h; path = ios/WebIOSEventFactory.h; sourceTree = "<group>"; };
 		2DA9449A1884E4F000ED86DB /* WebIOSEventFactory.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = WebIOSEventFactory.mm; path = ios/WebIOSEventFactory.mm; sourceTree = "<group>"; };
-		2DA9449D1884E4F000ED86DB /* GestureTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GestureTypes.h; path = ios/GestureTypes.h; sourceTree = "<group>"; };
 		2DA944A91884E9BA00ED86DB /* TextCheckerIOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = TextCheckerIOS.mm; sourceTree = "<group>"; };
 		2DA944AB1884E9BA00ED86DB /* WebPageProxyIOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = WebPageProxyIOS.mm; sourceTree = "<group>"; };
 		2DA944AC1884E9BA00ED86DB /* WebProcessProxyIOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = WebProcessProxyIOS.mm; sourceTree = "<group>"; };
@@ -12227,7 +12228,6 @@
 				FAD05DAE2DCBD89800330C10 /* DragInitiationResult.h */,
 				FAD05DAF2DCBD8E100330C10 /* DragInitiationResult.serialization.in */,
 				2DA6731920C754B1003CB401 /* DynamicViewportSizeUpdate.h */,
-				2DA9449D1884E4F000ED86DB /* GestureTypes.h */,
 				2DA301AD2B0385F700F3B129 /* GestureTypes.serialization.in */,
 				E50F80F42BD648620079DBDE /* HardwareKeyboardState.cpp */,
 				E50F80F52BD648620079DBDE /* HardwareKeyboardState.h */,
@@ -13108,6 +13108,8 @@
 				86AA5252293674E30065399E /* DataDetectionResult.serialization.in */,
 				49DAA38D24CBA1BD00793D75 /* DefaultWebBrowserChecks.h */,
 				49DAA38B24CBA1A800793D75 /* DefaultWebBrowserChecks.mm */,
+				07187E092F2DC276005FC058 /* GestureTypes.h */,
+				07187E0A2F2DC284005FC058 /* GestureTypes.serialization.in */,
 				CE550E12228373C800D28791 /* InsertTextOptions.h */,
 				86E0787C2ACE0AE400B8FADC /* InsertTextOptions.serialization.in */,
 				E385F3682E86D6DB00461B0C /* LaunchLogHook.h */,
@@ -17966,7 +17968,7 @@
 				BC06F44A12DBD1F5002D78DE /* GeolocationPermissionRequestManagerProxy.h in Headers */,
 				BC06F43A12DBCCFB002D78DE /* GeolocationPermissionRequestProxy.h in Headers */,
 				F4CF1E9D25E40DCC000F9D73 /* GestureRecognizerConsistencyEnforcer.h in Headers */,
-				2DA944A41884E4F000ED86DB /* GestureTypes.h in Headers */,
+				07187E0B2F2DC28E005FC058 /* GestureTypes.h in Headers */,
 				46C71AC92A942E2900E459AF /* GoToBackForwardItemParameters.h in Headers */,
 				07E065152F19E03900ECDA2E /* GPUConnectionToWebProcess.h in Headers */,
 				4614F13225DED875007006E7 /* GPUProcessConnectionParameters.h in Headers */,

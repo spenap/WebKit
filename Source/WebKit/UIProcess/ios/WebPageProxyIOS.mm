@@ -386,14 +386,6 @@ bool WebPageProxy::updateLayoutViewportParameters(const MainFrameData& mainFrame
     return true;
 }
 
-void WebPageProxy::selectWithGesture(IntPoint point, GestureType gestureType, GestureRecognizerState gestureState, bool isInteractingWithFocusedElement, CompletionHandler<void(const IntPoint&, GestureType, GestureRecognizerState, OptionSet<SelectionFlags>)>&& callback)
-{
-    if (!hasRunningProcess())
-        return callback({ }, GestureType::Loupe, GestureRecognizerState::Possible, { });
-
-    legacyMainFrameProcess().sendWithAsyncReply(Messages::WebPage::SelectWithGesture(point, gestureType, gestureState, isInteractingWithFocusedElement), WTF::move(callback), webPageIDInMainFrameProcess());
-}
-
 void WebPageProxy::updateSelectionWithTouches(IntPoint point, SelectionTouch touches, bool baseIsStart, CompletionHandler<void(const WebCore::IntPoint&, SelectionTouch, OptionSet<SelectionFlags>)>&& callback)
 {
     if (!hasRunningProcess())

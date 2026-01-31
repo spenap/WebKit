@@ -698,7 +698,7 @@ def conditions_for_header(header):
         '"DataDetectionResult.h"': ["PLATFORM(COCOA)"],
         '"DynamicViewportSizeUpdate.h"': ["PLATFORM(IOS_FAMILY)"],
         '"RendererBufferFormat.h"': ["PLATFORM(GTK)", "PLATFORM(WPE)"],
-        '"GestureTypes.h"': ["PLATFORM(IOS_FAMILY)"],
+        '"GestureTypes.h"': ["PLATFORM(COCOA)"],
         '"InputMethodState.h"': ["PLATFORM(GTK)", "PLATFORM(WPE)"],
         '"MediaPlaybackTargetContextSerialized.h"': ["ENABLE(WIRELESS_PLAYBACK_TARGET)"],
         '"MediaPlayerPrivateRemote.h"': ["ENABLE(GPU_PROCESS) && ENABLE(VIDEO)"],

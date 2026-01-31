@@ -93,7 +93,6 @@
 
 #if PLATFORM(IOS_FAMILY)
 #include "DynamicViewportSizeUpdate.h"
-#include "GestureTypes.h"
 #include <WebCore/InspectorOverlay.h>
 #include <WebCore/IntPoint.h>
 #include <WebCore/WKContentObservation.h>
@@ -126,6 +125,7 @@
 #endif
 
 #if PLATFORM(COCOA)
+#include "GestureTypes.h"
 #include <WebCore/VisibleSelection.h>
 #include <wtf/RetainPtr.h>
 
@@ -1054,6 +1054,12 @@ public:
     void removeTextPlaceholder(const WebCore::ElementContext&, CompletionHandler<void()>&&);
 #endif
 
+#if PLATFORM(COCOA)
+    void selectWithGesture(const WebCore::IntPoint&, GestureType, GestureRecognizerState, bool isInteractingWithFocusedElement, CompletionHandler<void(const WebCore::IntPoint&, GestureType, GestureRecognizerState, OptionSet<SelectionFlags>)>&&);
+    void updateFocusBeforeSelectingTextAtLocation(const WebCore::IntPoint&);
+    WebCore::VisiblePosition visiblePositionInFocusedNodeForPoint(const WebCore::LocalFrame&, const WebCore::IntPoint&, bool isInteractingWithFocusedElement);
+#endif
+
 #if PLATFORM(IOS_FAMILY)
     void textInputContextsInRect(WebCore::FloatRect, CompletionHandler<void(const Vector<WebCore::ElementContext>&)>&&);
     void focusTextInputContextAndPlaceCaret(const WebCore::ElementContext&, const WebCore::IntPoint&, CompletionHandler<void(bool)>&&);
@@ -1096,7 +1102,6 @@ public:
     void blurFocusedElement();
     void requestFocusedElementInformation(CompletionHandler<void(const std::optional<FocusedElementInformation>&)>&&);
     void updateFocusedElementInformation();
-    void selectWithGesture(const WebCore::IntPoint&, GestureType, GestureRecognizerState, bool isInteractingWithFocusedElement, CompletionHandler<void(const WebCore::IntPoint&, GestureType, GestureRecognizerState, OptionSet<SelectionFlags>)>&&);
     void updateSelectionWithTouches(const WebCore::IntPoint&, SelectionTouch, bool baseIsStart, CompletionHandler<void(const WebCore::IntPoint&, SelectionTouch, OptionSet<SelectionFlags>)>&&);
     void selectWithTwoTouches(const WebCore::IntPoint& from, const WebCore::IntPoint& to, GestureType, GestureRecognizerState, CompletionHandler<void(const WebCore::IntPoint&, GestureType, GestureRecognizerState, OptionSet<SelectionFlags>)>&&);
     void extendSelection(WebCore::TextGranularity, CompletionHandler<void()>&&);
@@ -1815,12 +1820,17 @@ public:
 
     static void adjustSettingsForLockdownMode(WebCore::Settings&, const WebPreferencesStore*);
 
-#if PLATFORM(IOS_FAMILY)
-    // This excludes layout overflow, includes borders.
-    static WebCore::IntRect rootViewBounds(const WebCore::Node&);
+#if PLATFORM(COCOA)
     // These include layout overflow for overflow:visible elements, but exclude borders.
     static WebCore::IntRect absoluteInteractionBounds(const WebCore::Node&);
     static WebCore::IntRect rootViewInteractionBounds(const WebCore::Node&);
+
+    static WebCore::IntPoint constrainPoint(const WebCore::IntPoint&, const WebCore::LocalFrame&, const WebCore::Element& focusedElement);
+#endif
+
+#if PLATFORM(IOS_FAMILY)
+    // This excludes layout overflow, includes borders.
+    static WebCore::IntRect rootViewBounds(const WebCore::Node&);
 
     InteractionInformationAtPosition positionInformation(const InteractionInformationRequest&);
 
@@ -2158,9 +2168,7 @@ private:
     void handleSyntheticClick(std::optional<WebCore::FrameIdentifier>, WebCore::Node& nodeRespondingToClick, const WebCore::FloatPoint& location, OptionSet<WebKit::WebEventModifier>, WebCore::PointerID = WebCore::mousePointerID);
     void completeSyntheticClick(std::optional<WebCore::FrameIdentifier>, WebCore::Node& nodeRespondingToClick, const WebCore::FloatPoint& location, OptionSet<WebKit::WebEventModifier>, WebCore::SyntheticClickType, WebCore::PointerID = WebCore::mousePointerID);
     void sendTapHighlightForNodeIfNecessary(WebKit::TapIdentifier, WebCore::Node*, WebCore::FloatPoint);
-    WebCore::VisiblePosition visiblePositionInFocusedNodeForPoint(const WebCore::LocalFrame&, const WebCore::IntPoint&, bool isInteractingWithFocusedElement);
     std::optional<WebCore::SimpleRange> rangeForGranularityAtPoint(WebCore::LocalFrame&, const WebCore::IntPoint&, WebCore::TextGranularity, bool isInteractingWithFocusedElement);
-    void updateFocusBeforeSelectingTextAtLocation(const WebCore::IntPoint&);
     void setSelectedRangeDispatchingSyntheticMouseEventsIfNeeded(const WebCore::SimpleRange&, WebCore::Affinity);
     void dispatchSyntheticMouseEventsForSelectionGesture(SelectionTouch, const WebCore::IntPoint&);
     void invokePendingSyntheticClickCallback(WebCore::SyntheticClickResult);
@@ -3001,8 +3009,11 @@ private:
     bool m_forceAlwaysUserScalable { false };
 #endif
 
-#if PLATFORM(IOS_FAMILY)
+#if PLATFORM(COCOA)
     std::optional<WebCore::SimpleRange> m_currentWordRange;
+#endif
+
+#if PLATFORM(IOS_FAMILY)
     RefPtr<WebCore::Node> m_interactionNode;
     WebCore::DoublePoint m_lastInteractionLocation;
 

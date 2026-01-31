@@ -1801,6 +1801,14 @@ void WebPageProxy::clearAccessibilityIsolatedTree()
 #endif
 #endif // PLATFORM(MAC)
 
+void WebPageProxy::selectWithGesture(IntPoint point, GestureType gestureType, GestureRecognizerState gestureState, bool isInteractingWithFocusedElement, CompletionHandler<void(const IntPoint&, GestureType, GestureRecognizerState, OptionSet<SelectionFlags>)>&& callback)
+{
+    if (!hasRunningProcess())
+        return callback({ }, GestureType::Loupe, GestureRecognizerState::Possible, { });
+
+    WTF::protect(legacyMainFrameProcess())->sendWithAsyncReply(Messages::WebPage::SelectWithGesture(point, gestureType, gestureState, isInteractingWithFocusedElement), WTF::move(callback), webPageIDInMainFrameProcess());
+}
+
 } // namespace WebKit
 
 #undef MESSAGE_CHECK_COMPLETION

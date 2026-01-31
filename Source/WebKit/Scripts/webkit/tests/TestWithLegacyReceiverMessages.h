@@ -29,7 +29,7 @@
 
 #include "ArgumentCoders.h"
 #include "Connection.h"
-#if PLATFORM(IOS_FAMILY)
+#if PLATFORM(COCOA)
 #include "GestureTypes.h"
 #endif
 #include "MessageNames.h"
