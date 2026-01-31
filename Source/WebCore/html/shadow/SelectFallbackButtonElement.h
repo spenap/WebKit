@@ -26,30 +26,38 @@
 #pragma once
 
 #include "HTMLDivElement.h"
+#include "RenderPtr.h"
 
 namespace WebCore {
 
 class HTMLSelectElement;
+class RenderSelectFallbackButton;
 
-class SelectButtonTextElement final : public HTMLDivElement {
-    WTF_MAKE_TZONE_ALLOCATED(SelectButtonTextElement);
-    WTF_OVERRIDE_DELETE_FOR_CHECKED_PTR(SelectButtonTextElement);
+class SelectFallbackButtonElement final : public HTMLDivElement {
+    WTF_MAKE_TZONE_ALLOCATED(SelectFallbackButtonElement);
+    WTF_OVERRIDE_DELETE_FOR_CHECKED_PTR(SelectFallbackButtonElement);
 public:
-    static Ref<SelectButtonTextElement> create(Document&);
-
-private:
-    explicit SelectButtonTextElement(Document&);
-
-    bool isSelectButtonTextElement() const final { return true; }
+    static Ref<SelectFallbackButtonElement> create(Document&);
 
     HTMLSelectElement& selectElement() const;
+    void updateText();
+#if !PLATFORM(COCOA)
+    void setTextFromOption(int optionIndex);
+#endif
+
+private:
+    explicit SelectFallbackButtonElement(Document&);
+
+    bool isSelectFallbackButtonElement() const final { return true; }
+
     std::optional<Style::UnadjustedStyle> resolveCustomStyle(const Style::ResolutionContext&, const RenderStyle* hostStyle) final;
+    RenderPtr<RenderElement> createElementRenderer(RenderStyle&&, const RenderTreePosition&) final;
 };
 
 } // namespace WebCore
 
-SPECIALIZE_TYPE_TRAITS_BEGIN(WebCore::SelectButtonTextElement)
-    static bool isType(const WebCore::HTMLElement& element) { return element.isSelectButtonTextElement(); }
+SPECIALIZE_TYPE_TRAITS_BEGIN(WebCore::SelectFallbackButtonElement)
+    static bool isType(const WebCore::HTMLElement& element) { return element.isSelectFallbackButtonElement(); }
     static bool isType(const WebCore::Node& node)
     {
         auto* htmlElement = dynamicDowncast<WebCore::HTMLElement>(node);

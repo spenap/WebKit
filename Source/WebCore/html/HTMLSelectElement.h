@@ -115,6 +115,8 @@ public:
     bool popupIsVisible() const { return m_popupIsVisible; }
 #endif
 
+    void didUpdateActiveOption(int optionIndex);
+
     // PopupMenuClient methods
     void valueChanged(unsigned listIndex, bool fireOnChange = true) override;
     void selectionChanged(unsigned, bool) override { }
@@ -238,6 +240,7 @@ private:
     bool platformHandleKeydownEvent(KeyboardEvent*);
     void listBoxDefaultEventHandler(Event&);
     void setOptionsChangedOnRenderer();
+    void updateButtonText();
     size_t searchOptionsForValue(const String&, size_t listIndexStart, size_t listIndexEnd) const;
 
     enum SkipDirection { SkipBackwards = -1, SkipForwards = 1 };
@@ -274,6 +277,8 @@ private:
     bool m_activeSelectionState;
     bool m_allowsNonContiguousSelection;
     mutable bool m_shouldRecalcListItems;
+
+    std::optional<int> m_lastActiveIndex;
 
 #if !PLATFORM(IOS_FAMILY)
     RefPtr<PopupMenu> m_popup;

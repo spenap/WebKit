@@ -24,12 +24,13 @@
  */
 
 #include "config.h"
-#include "SelectButtonTextElement.h"
+#include "SelectFallbackButtonElement.h"
 
 #include "CSSPrimitiveValueMappings.h"
 #include "CSSValueKeywords.h"
 #include "HTMLOptionElement.h"
 #include "HTMLSelectElement.h"
+#include "RenderSelectFallbackButton.h"
 #include "RenderStyle+SettersInlines.h"
 #include "RenderTheme.h"
 #include "ResolvedStyle.h"
@@ -38,24 +39,39 @@
 
 namespace WebCore {
 
-WTF_MAKE_TZONE_ALLOCATED_IMPL(SelectButtonTextElement);
+WTF_MAKE_TZONE_ALLOCATED_IMPL(SelectFallbackButtonElement);
 
-Ref<SelectButtonTextElement> SelectButtonTextElement::create(Document& document)
+Ref<SelectFallbackButtonElement> SelectFallbackButtonElement::create(Document& document)
 {
-    return adoptRef(*new SelectButtonTextElement(document));
+    return adoptRef(*new SelectFallbackButtonElement(document));
 }
 
-SelectButtonTextElement::SelectButtonTextElement(Document& document)
+SelectFallbackButtonElement::SelectFallbackButtonElement(Document& document)
     : HTMLDivElement(HTMLNames::divTag, document, TypeFlag::HasCustomStyleResolveCallbacks)
 {
 }
 
-HTMLSelectElement& SelectButtonTextElement::selectElement() const
+HTMLSelectElement& SelectFallbackButtonElement::selectElement() const
 {
     return downcast<HTMLSelectElement>(*protect(containingShadowRoot())->host());
 }
 
-std::optional<Style::UnadjustedStyle> SelectButtonTextElement::resolveCustomStyle(const Style::ResolutionContext& resolutionContext, const RenderStyle* hostStyle)
+void SelectFallbackButtonElement::updateText()
+{
+    invalidateStyle();
+    if (CheckedPtr buttonTextRenderer = dynamicDowncast<RenderSelectFallbackButton>(renderer()))
+        buttonTextRenderer->updateFromElement();
+}
+
+#if !PLATFORM(COCOA)
+void SelectFallbackButtonElement::setTextFromOption(int optionIndex)
+{
+    if (CheckedPtr buttonTextRenderer = dynamicDowncast<RenderSelectFallbackButton>(renderer()))
+        buttonTextRenderer->setTextFromOption(optionIndex);
+}
+#endif
+
+std::optional<Style::UnadjustedStyle> SelectFallbackButtonElement::resolveCustomStyle(const Style::ResolutionContext& resolutionContext, const RenderStyle* hostStyle)
 {
     if (!hostStyle)
         return std::nullopt;
@@ -102,6 +118,11 @@ std::optional<Style::UnadjustedStyle> SelectButtonTextElement::resolveCustomStyl
     }
 
     return elementStyle;
+}
+
+RenderPtr<RenderElement> SelectFallbackButtonElement::createElementRenderer(RenderStyle&& style, const RenderTreePosition&)
+{
+    return createRenderer<RenderSelectFallbackButton>(*this, WTF::move(style));
 }
 
 } // namespace WebCore

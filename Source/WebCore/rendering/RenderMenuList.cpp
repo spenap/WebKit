@@ -25,66 +25,34 @@
 #include "config.h"
 #include "RenderMenuList.h"
 
-#include "AXObjectCache.h"
 #include "CSSFontSelector.h"
 #include "Chrome.h"
 #include "ColorBlending.h"
 #include "DocumentInlines.h"
 #include "DocumentPage.h"
 #include "ElementInlines.h"
-#include "HTMLNames.h"
 #include "HTMLOptionElement.h"
-#include "HTMLOptGroupElement.h"
 #include "HTMLSelectElement.h"
 #include "LayoutIntegrationLineLayout.h"
 #include "LocalFrame.h"
 #include "LocalFrameView.h"
 #include "NodeRenderStyle.h"
-#include "Page.h"
-#include "PopupMenu.h"
 #include "RenderBoxInlines.h"
 #include "RenderBoxModelObjectInlines.h"
-#include "RenderChildIterator.h"
 #include "RenderElementStyleInlines.h"
 #include "RenderElementInlines.h"
 #include "RenderObjectInlines.h"
 #include "RenderScrollbar.h"
 #include "RenderStyle+SettersInlines.h"
-#include "RenderText.h"
 #include "RenderTheme.h"
-#include "RenderTreeBuilder.h"
 #include "RenderView.h"
-#include "SelectButtonTextElement.h"
-#include "StyleResolver.h"
 #include "TextRun.h"
 #include <math.h>
 #include <wtf/TZoneMallocInlines.h>
 
-#if PLATFORM(IOS_FAMILY)
-#include "LocalizedStrings.h"
-#endif
-
 namespace WebCore {
 
-using namespace HTMLNames;
-
 WTF_MAKE_TZONE_ALLOCATED_IMPL(RenderMenuList);
-
-#if PLATFORM(IOS_FAMILY)
-static size_t selectedOptionCount(const RenderMenuList& renderMenuList)
-{
-    const auto& listItems = renderMenuList.selectElement().listItems();
-    size_t numberOfItems = listItems.size();
-
-    size_t count = 0;
-    for (size_t i = 0; i < numberOfItems; ++i) {
-        auto* option = dynamicDowncast<HTMLOptionElement>(*listItems[i]);
-        if (option && option->selected())
-            ++count;
-    }
-    return count;
-}
-#endif
 
 RenderMenuList::RenderMenuList(HTMLSelectElement& element, RenderStyle&& style)
     : RenderFlexibleBox(Type::MenuList, element, WTF::move(style))
@@ -147,59 +115,10 @@ void RenderMenuList::updateFromElement()
         updateOptionsWidth();
         m_needsOptionsWidthUpdate = false;
     }
-
-#if !PLATFORM(IOS_FAMILY)
-    if (!selectElement().popupIsVisible())
-#endif
-        setTextFromOption(selectElement().selectedIndex());
-}
-
-void RenderMenuList::setTextFromOption(int optionIndex)
-{
-    const auto& listItems = selectElement().listItems();
-    int size = listItems.size();
-
-    int i = selectElement().optionToListIndex(optionIndex);
-    String text = emptyString();
-    if (i >= 0 && i < size) {
-        if (RefPtr option = dynamicDowncast<HTMLOptionElement>(*listItems[i]))
-            text = option->textIndentedToRespectGroupLabel();
-    }
-
 #if PLATFORM(IOS_FAMILY)
-    if (selectElement().popupMultiple()) {
-        size_t count = selectedOptionCount(*this);
-        if (count != 1)
-            text = htmlSelectMultipleItems(count);
-    }
+    // iOS border-radius hack.
+    setNeedsLayout();
 #endif
-
-    setText(text.trim(deprecatedIsSpaceOrNewline));
-    didUpdateActiveOption(optionIndex);
-}
-
-void RenderMenuList::setText(const String& s)
-{
-    String textToUse = s.isEmpty() ? "\n"_str : s;
-
-    if (m_buttonText) {
-        m_buttonText->setText(textToUse.impl(), true);
-        return;
-    }
-
-    auto newButtonText = createRenderer<RenderText>(Type::Text, document(), textToUse);
-    m_buttonText = *newButtonText;
-    for (auto& child : childrenOfType<RenderElement>(*this)) {
-        if (!is<SelectButtonTextElement>(child.element()))
-            continue;
-
-        // FIXME: This mutation should go through the normal RenderTreeBuilder path.
-        if (RenderTreeBuilder::current())
-            RenderTreeBuilder::current()->attach(child, WTF::move(newButtonText));
-        else
-            RenderTreeBuilder(*document().renderView()).attach(child, WTF::move(newButtonText));
-        break;
-    }
 }
 
 LayoutRect RenderMenuList::controlClipRect(const LayoutPoint& additionalOffset) const
@@ -271,31 +190,6 @@ void RenderMenuList::computePreferredLogicalWidths()
     RenderBox::computePreferredLogicalWidths(style().logicalMinWidth(), style().logicalMaxWidth(), writingMode().isHorizontal() ? horizontalBorderAndPaddingExtent() : verticalBorderAndPaddingExtent());
 
     clearNeedsPreferredWidthsUpdate();
-}
-
-void RenderMenuList::didSetSelectedIndex(int listIndex)
-{
-    didUpdateActiveOption(selectElement().listToOptionIndex(listIndex));
-}
-
-void RenderMenuList::didUpdateActiveOption(int optionIndex)
-{
-    if (!AXObjectCache::accessibilityEnabled())
-        return;
-
-    CheckedPtr axCache = document().existingAXObjectCache();
-    if (!axCache)
-        return;
-
-    if (m_lastActiveIndex == optionIndex)
-        return;
-    m_lastActiveIndex = optionIndex;
-
-    int listIndex = selectElement().optionToListIndex(optionIndex);
-    if (listIndex < 0 || listIndex >= static_cast<int>(selectElement().listItems().size()))
-        return;
-
-    axCache->onSelectedOptionChanged(*this, optionIndex);
 }
 
 void RenderMenuList::getItemBackgroundColor(unsigned listIndex, Color& itemBackgroundColor, bool& itemHasCustomBackgroundColor) const

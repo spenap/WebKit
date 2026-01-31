@@ -64,7 +64,7 @@
 #include "RenderScrollbar.h"
 #include "RenderTheme.h"
 #include "ScriptDisallowedScope.h"
-#include "SelectButtonTextElement.h"
+#include "SelectFallbackButtonElement.h"
 #include "Settings.h"
 #include "ShadowRoot.h"
 #include <JavaScriptCore/ConsoleTypes.h>
@@ -135,7 +135,7 @@ void HTMLSelectElement::didAddUserAgentShadowRoot(ShadowRoot& root)
     Ref document = this->document();
 
     ScriptDisallowedScope::EventAllowedScope rootScope { root };
-    root.appendChild(SelectButtonTextElement::create(document));
+    root.appendChild(SelectFallbackButtonElement::create(document));
     root.appendChild(HTMLSlotElement::create(slotTag, document));
 }
 
@@ -483,6 +483,12 @@ void HTMLSelectElement::optionElementChildrenChanged()
     setOptionsChangedOnRenderer();
     invalidateStyleForSubtree();
     updateValidity();
+    updateButtonText();
+}
+
+void HTMLSelectElement::updateButtonText()
+{
+    protect(downcast<SelectFallbackButtonElement>(*protect(userAgentShadowRoot())->firstChild()))->updateText();
 }
 
 void HTMLSelectElement::setSize(unsigned size)
@@ -820,7 +826,6 @@ void HTMLSelectElement::setOptionsChangedOnRenderer()
 #endif
     }
 
-
 #if !PLATFORM(IOS_FAMILY)
     if (!m_popupIsVisible)
         return;
@@ -1010,16 +1015,9 @@ void HTMLSelectElement::selectOption(int optionIndex, SelectOptionFlags flags)
     invalidateSelectedItems();
     updateValidity();
 
-    // Invalidate the button text element's style so it picks up the new selection's
-    // direction and unicode-bidi in resolveCustomStyle.
-    if (usesMenuList()) {
-        ASSERT(is<SelectButtonTextElement>(userAgentShadowRoot()->firstChild()));
-        downcast<Element>(protect(protect(userAgentShadowRoot())->firstChild()))->invalidateStyle();
-    }
-
-    // For the menu list case, this is what makes the selected element appear.
-    if (CheckedPtr renderer = this->renderer())
-        renderer->updateFromElement();
+    // Update the button text element to display the new selection and ensure it picks up the new
+    // selection's direction and unicode-bidi.
+    updateButtonText();
 
     scrollToSelection();
 
@@ -1027,12 +1025,7 @@ void HTMLSelectElement::selectOption(int optionIndex, SelectOptionFlags flags)
         m_isProcessingUserDrivenChange = flags & UserDriven;
         if (flags & DispatchChangeEvent)
             dispatchChangeEventForMenuList();
-        if (CheckedPtr renderer = this->renderer()) {
-            if (auto* renderMenuList = dynamicDowncast<RenderMenuList>(*renderer))
-                renderMenuList->didSetSelectedIndex(listIndex);
-            else
-                downcast<RenderListBox>(*renderer).selectionChanged();
-        }
+        didUpdateActiveOption(optionIndex);
     }
 }
 
@@ -1235,6 +1228,7 @@ void HTMLSelectElement::reset()
     setOptionsChangedOnRenderer();
     invalidateStyleForSubtree();
     updateValidity();
+    updateButtonText();
 }
 
 #if !PLATFORM(WIN)
@@ -1409,7 +1403,6 @@ void HTMLSelectElement::menuListDefaultEventHandler(Event& event)
 
 #if !PLATFORM(IOS_FAMILY)
     if (event.type() == eventNames.blurEvent && !focused()) {
-        CheckedRef menuList = downcast<RenderMenuList>(*renderer());
         if (m_popupIsVisible)
             hidePopup();
     }
@@ -2051,8 +2044,13 @@ bool HTMLSelectElement::itemIsSelected(unsigned listIndex) const
 
 void HTMLSelectElement::setTextFromItem(unsigned listIndex)
 {
-    if (CheckedPtr renderer = dynamicDowncast<RenderMenuList>(this->renderer()))
-        renderer->setTextFromOption(listToOptionIndex(listIndex));
+#if !PLATFORM(COCOA)
+    downcast<SelectFallbackButtonElement>(*protect(userAgentShadowRoot())->firstChild()).setTextFromOption(listToOptionIndex(listIndex));
+#else
+    // FIXME: Remove the setTextFromItem() API and IPC call from Cocoa platforms entirely.
+    UNUSED_PARAM(listIndex);
+    ASSERT_NOT_REACHED();
+#endif
 }
 
 void HTMLSelectElement::listBoxSelectItem(int listIndex, bool allowMultiplySelections, bool shift, bool fireOnChangeNow)
@@ -2085,6 +2083,27 @@ Ref<Scrollbar> HTMLSelectElement::createScrollbar(ScrollableArea& scrollableArea
     if (renderer && renderer->style().usesLegacyScrollbarStyle())
         return RenderScrollbar::createCustomScrollbar(scrollableArea, orientation, this);
     return Scrollbar::createNativeScrollbar(scrollableArea, orientation, widthStyle);
+}
+
+void HTMLSelectElement::didUpdateActiveOption(int optionIndex)
+{
+    if (!AXObjectCache::accessibilityEnabled())
+        return;
+
+    CheckedPtr axCache = protectedDocument()->existingAXObjectCache();
+    if (!axCache)
+        return;
+
+    if (m_lastActiveIndex == optionIndex)
+        return;
+    m_lastActiveIndex = optionIndex;
+
+    int listIndex = optionToListIndex(optionIndex);
+    if (listIndex < 0 || listIndex >= static_cast<int>(listItems().size()))
+        return;
+
+    if (CheckedPtr renderer = this->renderer())
+        axCache->onSelectedOptionChanged(*renderer, optionIndex);
 }
 
 } // namespace WebCore
