@@ -38,7 +38,6 @@ class RenderMenuList final : public RenderFlexibleBox {
     WTF_OVERRIDE_DELETE_FOR_CHECKED_PTR(RenderMenuList);
 public:
     RenderMenuList(HTMLSelectElement&, RenderStyle&&);
-    virtual ~RenderMenuList();
 
     HTMLSelectElement& selectElement() const;
 
@@ -48,13 +47,6 @@ public:
     void incrementCheckedPtrCount() const { RenderFlexibleBox::incrementCheckedPtrCount(); }
     void decrementCheckedPtrCount() const { RenderFlexibleBox::decrementCheckedPtrCount(); }
     void setDidBeginCheckedPtrDeletion() { CanMakeCheckedPtr::setDidBeginCheckedPtrDeletion(); }
-
-#if !PLATFORM(IOS_FAMILY)
-    bool popupIsVisible() const { return m_popupIsVisible; }
-#endif
-    void showPopup();
-    void hidePopup();
-    void popupDidHide();
 
     void setOptionsChanged(bool changed) { m_needsOptionsWidthUpdate = changed; }
 
@@ -66,17 +58,12 @@ public:
 
     void getItemBackgroundColor(unsigned listIndex, Color&, bool& itemHasCustomBackgroundColor) const;
 
-    PopupMenuStyle::Size popupMenuSize(const RenderStyle&);
-
     LayoutUnit clientPaddingLeft() const;
     LayoutUnit clientPaddingRight() const;
 
-    HostWindow* hostWindow() const;
     void setTextFromOption(int optionIndex);
 
 private:
-    void willBeDestroyed() override;
-
     void element() const = delete;
 
     void updateFromElement() override;
@@ -109,11 +96,6 @@ private:
     int m_optionsWidth;
 
     std::optional<int> m_lastActiveIndex;
-
-#if !PLATFORM(IOS_FAMILY)
-    RefPtr<PopupMenu> m_popup;
-    bool m_popupIsVisible;
-#endif
 };
 
 } // namespace WebCore

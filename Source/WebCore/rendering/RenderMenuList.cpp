@@ -90,36 +90,8 @@ RenderMenuList::RenderMenuList(HTMLSelectElement& element, RenderStyle&& style)
     : RenderFlexibleBox(Type::MenuList, element, WTF::move(style))
     , m_needsOptionsWidthUpdate(true)
     , m_optionsWidth(0)
-#if !PLATFORM(IOS_FAMILY)
-    , m_popupIsVisible(false)
-#endif
 {
     ASSERT(isRenderMenuList());
-}
-
-// Do not add any code in below destructor. Add it to willBeDestroyed() instead.
-RenderMenuList::~RenderMenuList() = default;
-
-void RenderMenuList::willBeDestroyed()
-{
-#if !PLATFORM(IOS_FAMILY)
-    if (m_popup)
-        m_popup->disconnectClient();
-    m_popup = nullptr;
-#endif
-
-    RenderFlexibleBox::willBeDestroyed();
-}
-
-PopupMenuStyle::Size RenderMenuList::popupMenuSize(const RenderStyle& style)
-{
-    auto bounds = absoluteBoundingBoxRectIgnoringTransforms();
-    return theme().popupMenuSize(style, bounds);
-}
-
-HostWindow* RenderMenuList::hostWindow() const
-{
-    return RenderFlexibleBox::hostWindow();
 }
 
 HTMLSelectElement& RenderMenuList::selectElement() const
@@ -175,9 +147,7 @@ void RenderMenuList::updateFromElement()
     }
 
 #if !PLATFORM(IOS_FAMILY)
-    if (m_popupIsVisible)
-        m_popup->updateFromElement();
-    else
+    if (!selectElement().popupIsVisible())
 #endif
         setTextFromOption(selectElement().selectedIndex());
 }
@@ -301,39 +271,6 @@ void RenderMenuList::computePreferredLogicalWidths()
     clearNeedsPreferredWidthsUpdate();
 }
 
-#if PLATFORM(IOS_FAMILY)
-NO_RETURN_DUE_TO_ASSERT
-void RenderMenuList::showPopup()
-{
-    ASSERT_NOT_REACHED();
-}
-#else
-void RenderMenuList::showPopup()
-{
-    if (m_popupIsVisible)
-        return;
-
-    if (!m_popup)
-        m_popup = document().page()->chrome().createPopupMenu(selectElement());
-    m_popupIsVisible = true;
-
-    // Compute the top left taking transforms into account, but use
-    // the actual width of the element to size the popup.
-    FloatPoint absTopLeft = localToAbsolute(FloatPoint(), UseTransforms);
-    IntRect absBounds = absoluteBoundingBoxRectIgnoringTransforms();
-    absBounds.setLocation(roundedIntPoint(absTopLeft));
-    m_popup->show(absBounds, view().frameView(), selectElement().optionToListIndex(selectElement().selectedIndex())); // May destroy `this`.
-}
-#endif
-
-void RenderMenuList::hidePopup()
-{
-#if !PLATFORM(IOS_FAMILY)
-    if (m_popup)
-        m_popup->hide();
-#endif
-}
-
 void RenderMenuList::didSetSelectedIndex(int listIndex)
 {
     didUpdateActiveOption(selectElement().listToOptionIndex(listIndex));
@@ -413,14 +350,6 @@ LayoutUnit RenderMenuList::clientPaddingRight() const
         return endOfLinePadding;
 
     return paddingRight();
-}
-
-void RenderMenuList::popupDidHide()
-{
-#if !PLATFORM(IOS_FAMILY)
-    // PopupMenuMac::show in WebKitLegacy can call this callback even when popup had already been dismissed.
-    m_popupIsVisible = false;
-#endif
 }
 
 #if PLATFORM(IOS_FAMILY)

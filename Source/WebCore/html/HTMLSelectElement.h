@@ -42,7 +42,11 @@ namespace WebCore {
 class HTMLOptionsCollection;
 class ShadowRoot;
 
-class HTMLSelectElement : public HTMLFormControlElement, public PopupMenuClient, private TypeAheadDataSource {
+#if !PLATFORM(IOS_FAMILY)
+class PopupMenu;
+#endif
+
+class HTMLSelectElement final : public HTMLFormControlElement, public PopupMenuClient, private TypeAheadDataSource {
     WTF_MAKE_TZONE_ALLOCATED(HTMLSelectElement);
     WTF_OVERRIDE_DELETE_FOR_CHECKED_PTR(HTMLSelectElement);
 public:
@@ -54,6 +58,7 @@ public:
 
     static Ref<HTMLSelectElement> create(const QualifiedName&, Document&, HTMLFormElement*);
     static Ref<HTMLSelectElement> create(Document&);
+    ~HTMLSelectElement();
 
     enum class ExcludeOptGroup : bool { No, Yes };
     static HTMLSelectElement* findOwnerSelect(ContainerNode*, ExcludeOptGroup);
@@ -103,6 +108,12 @@ public:
     ExceptionOr<void> setLength(unsigned);
 
     ExceptionOr<void> showPicker();
+
+    void showPopup();
+#if !PLATFORM(IOS_FAMILY)
+    void hidePopup();
+    bool popupIsVisible() const { return m_popupIsVisible; }
+#endif
 
     // PopupMenuClient methods
     void valueChanged(unsigned listIndex, bool fireOnChange = true) override;
@@ -239,6 +250,8 @@ private:
 
     void childrenChanged(const ChildChange&) final;
 
+    void didDetachRenderers() final;
+
     void didAddUserAgentShadowRoot(ShadowRoot&) final;
 
     // TypeAheadDataSource functions.
@@ -261,6 +274,11 @@ private:
     bool m_activeSelectionState;
     bool m_allowsNonContiguousSelection;
     mutable bool m_shouldRecalcListItems;
+
+#if !PLATFORM(IOS_FAMILY)
+    RefPtr<PopupMenu> m_popup;
+    bool m_popupIsVisible { false };
+#endif
 };
 
 } // namespace
