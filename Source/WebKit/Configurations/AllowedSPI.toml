@@ -256,6 +256,18 @@ selectors = [
 requires = ["HAVE_UIKIT_SCROLLBAR_COLOR_SPI"]
 
 [[temporary-usage]]
+request = "rdar://164431329"
+cleanup = "rdar://164667890"
+classes = [
+    "AVLegibleMediaOptionsMenuController",
+]
+selectors = [
+    { name = "buildMenuOfType:", class = "AVLegibleMediaOptionsMenuController" },
+    { name = "menuWithContents:", class = "AVLegibleMediaOptionsMenuController" },
+]
+requires = ["HAVE_AVLEGIBLEMEDIAOPTIONSMENUCONTROLLER"]
+
+[[temporary-usage]]
 request = "rdar://165789536"
 cleanup = "rdar://165842824"
 selectors = [
