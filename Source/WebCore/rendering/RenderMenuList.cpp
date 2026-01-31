@@ -26,7 +26,6 @@
 #include "RenderMenuList.h"
 
 #include "CSSFontSelector.h"
-#include "Chrome.h"
 #include "ColorBlending.h"
 #include "DocumentInlines.h"
 #include "DocumentPage.h"
@@ -34,18 +33,14 @@
 #include "HTMLOptionElement.h"
 #include "HTMLSelectElement.h"
 #include "LayoutIntegrationLineLayout.h"
-#include "LocalFrame.h"
-#include "LocalFrameView.h"
 #include "NodeRenderStyle.h"
 #include "RenderBoxInlines.h"
 #include "RenderBoxModelObjectInlines.h"
 #include "RenderElementStyleInlines.h"
 #include "RenderElementInlines.h"
 #include "RenderObjectInlines.h"
-#include "RenderScrollbar.h"
 #include "RenderStyle+SettersInlines.h"
 #include "RenderTheme.h"
-#include "RenderView.h"
 #include "TextRun.h"
 #include <math.h>
 #include <wtf/TZoneMallocInlines.h>
