@@ -3787,10 +3787,16 @@ webkit.org/b/240918 [ Debug ] fast/loader/user-style-sheet-resource-load-callbac
 
 webkit.org/b/241253 fast/text/bulgarian-system-language-shaping.html [ Pass ]
 
-# These tests have different results on iOS
-imported/w3c/web-platform-tests/css/css-scroll-anchoring/device-pixel-adjustment.html
-imported/w3c/web-platform-tests/css/css-scroll-anchoring/history-restore-anchors.html
-imported/w3c/web-platform-tests/css/css-scroll-anchoring/infinite-scroll-event.tentative.html
+# These tests have different results or fail on iOS
+webkit.org/b/306639 imported/w3c/web-platform-tests/css/css-scroll-anchoring/adjustments-in-scroll-event-handler.tentative.html
+webkit.org/b/306639 imported/w3c/web-platform-tests/css/css-scroll-anchoring/after-scrollable-range-shrinkage-002.html
+webkit.org/b/306639 imported/w3c/web-platform-tests/css/css-scroll-anchoring/after-scrollable-range-shrinkage-003.html
+webkit.org/b/306639 imported/w3c/web-platform-tests/css/css-scroll-anchoring/contenteditable-insert-line-at-top.tentative.html
+webkit.org/b/306639 imported/w3c/web-platform-tests/css/css-scroll-anchoring/device-pixel-adjustment.html
+webkit.org/b/306639 imported/w3c/web-platform-tests/css/css-scroll-anchoring/history-restore-anchors.html
+webkit.org/b/306639 imported/w3c/web-platform-tests/css/css-scroll-anchoring/infinite-scroll-event.tentative.html
+webkit.org/b/306639 imported/w3c/web-platform-tests/css/css-scroll-anchoring/zero-scroll-offset-001.html
+webkit.org/b/306639 imported/w3c/web-platform-tests/css/css-scroll-anchoring/zero-scroll-offset-002.html
 
 webkit.org/b/258184 [ Debug ] media/track/track-webvtt-no-snap-to-lines-overlap.html [ Pass Crash ]
 
