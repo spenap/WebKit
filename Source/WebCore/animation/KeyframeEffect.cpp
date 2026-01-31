@@ -1940,6 +1940,9 @@ bool KeyframeEffect::canBeAccelerated() const
     if (m_blendingKeyframes.hasDiscreteTransformInterval())
         return false;
 
+    if (!m_needsComputedKeyframeOffsetsUpdate && m_blendingKeyframes.hasKeyframeWithUnresolvedComputedOffset())
+        return false;
+
     if (RefPtr document = this->document()) {
         if (document->quirks().shouldPreventKeyframeEffectAcceleration(*this))
             return false;
