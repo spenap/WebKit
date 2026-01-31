@@ -25,7 +25,7 @@
 
 #pragma once
 
-#include "FreeSpaceScenario.h"
+#include <WebCore/FreeSpaceScenario.h>
 #include <WebCore/GridFormattingContext.h>
 #include <WebCore/GridTypeAliases.h>
 #include <WebCore/StyleGridTrackBreadth.h>
