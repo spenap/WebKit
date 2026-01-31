@@ -29,6 +29,7 @@
 #if PLATFORM(MAC)
 
 #import "APIHitTestResult.h"
+#import "APIPageConfiguration.h"
 #import "AppKitSPI.h"
 #import "DrawingAreaProxy.h"
 #import "Logging.h"
@@ -209,14 +210,16 @@ bool PageClientImpl::isViewVisible(NSView *view, NSWindow *viewWindow)
     if (!viewWindow)
         return false;
 
-    if (!viewWindow.isVisible)
-        return false;
-
     if (view.isHiddenOrHasHiddenAncestor)
         return false;
 
-    if (windowIsOccluded())
-        return false;
+    if (!m_impl || !m_impl->page().configuration().backgroundTextExtractionEnabled()) {
+        if (!viewWindow.isVisible)
+            return false;
+
+        if (windowIsOccluded())
+            return false;
+    }
 
     return true;
 }

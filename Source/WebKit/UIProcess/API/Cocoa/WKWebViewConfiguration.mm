@@ -1570,14 +1570,14 @@ static WebKit::AttributionOverrideTesting toAttributionOverrideTesting(_WKAttrib
 #endif
 }
 
-#if PLATFORM(IOS_FAMILY)
-
 - (void)_setBackgroundTextExtractionEnabled:(BOOL)enabled
 {
+#if PLATFORM(IOS_FAMILY)
     if (enabled && !WebKit::isFullWebBrowserOrRunningTest()) {
         [NSException raise:NSInvalidArgumentException format:@"%s is only available for web browsers", __PRETTY_FUNCTION__];
         return;
     }
+#endif
     _pageConfiguration->setBackgroundTextExtractionEnabled(enabled);
 }
 
@@ -1585,8 +1585,6 @@ static WebKit::AttributionOverrideTesting toAttributionOverrideTesting(_WKAttrib
 {
     return _pageConfiguration->backgroundTextExtractionEnabled();
 }
-
-#endif // PLATFORM(IOS_FAMILY)
 
 #if PLATFORM(VISION)
 - (BOOL)_gamepadAccessRequiresExplicitConsent

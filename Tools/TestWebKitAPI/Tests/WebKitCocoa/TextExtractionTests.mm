@@ -776,8 +776,6 @@ TEST(TextExtractionTests, InjectedBundle)
     EXPECT_TRUE([handle.get().frame _isSameFrame:[webView mainFrame].info]);
 }
 
-#if PLATFORM(IOS_FAMILY)
-
 TEST(TextExtractionTests, ClickInteractionWhileInBackground)
 {
     RetainPtr webView = adoptNS([[TestWKWebView alloc] initWithFrame:CGRectMake(0, 0, 400, 400) configuration:^{
@@ -809,8 +807,12 @@ TEST(TextExtractionTests, ClickInteractionWhileInBackground)
         </html>
     )HTML"];
 
+#if PLATFORM(IOS_FAMILY)
     [NSNotificationCenter.defaultCenter postNotificationName:UIApplicationDidEnterBackgroundNotification object:UIApplication.sharedApplication userInfo:@{@"isSuspendedUnderLock": @NO }];
     [NSNotificationCenter.defaultCenter postNotificationName:UISceneDidEnterBackgroundNotification object:[[webView window] windowScene] userInfo:nil];
+#else
+    [[webView window] orderOut:nil];
+#endif
 
     RetainPtr debugText = [webView synchronouslyGetDebugText:nil];
     RetainPtr buttonID = extractNodeIdentifier(debugText.get(), @"Click Me");
@@ -826,7 +828,5 @@ TEST(TextExtractionTests, ClickInteractionWhileInBackground)
         return [[webView stringByEvaluatingJavaScript:@"document.getElementById('result').textContent"] isEqualToString:@"completed"];
     }, 5, @"Expected result text to become 'completed'.");
 }
-
-#endif // PLATFORM(IOS_FAMILY)
 
 } // namespace TestWebKitAPI
