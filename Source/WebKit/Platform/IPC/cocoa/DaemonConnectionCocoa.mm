@@ -60,6 +60,12 @@ void Connection::sendWithReply(xpc_object_t message, CompletionHandler<void(xpc_
     }).get());
 }
 
+// Workaround a bug in clang static analyer that [[clang::suppress]] doesn't work in some template function.
+static void logMachServiceInterrupted(const CString& machServiceName)
+{
+    RELEASE_LOG(IPC, "Connection to mach service %s is interrupted", machServiceName.data());
+}
+
 template<typename Traits>
 void ConnectionToMachService<Traits>::initializeConnectionIfNeeded() const
 {
@@ -79,7 +85,7 @@ void ConnectionToMachService<Traits>::initializeConnectionIfNeeded() const
 #endif
         }
         if (event == XPC_ERROR_CONNECTION_INTERRUPTED) {
-            RELEASE_LOG(IPC, "Connection to mach service %s is interrupted", weakThis->m_machServiceName.data());
+            logMachServiceInterrupted(weakThis->m_machServiceName);
             // Daemon crashed, we will need to make a new connection to a new instance of the daemon.
             weakThis->m_connection = nullptr;
         }

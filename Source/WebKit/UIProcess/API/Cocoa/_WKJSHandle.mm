@@ -107,14 +107,14 @@
     return YES;
 }
 
-static NSString *identifierObjectKey = @"a";
-static NSString *identifierProcessIdentifierKey = @"b";
-static NSString *worldIdentifierObjectKey = @"c";
-static NSString *worldIdentifierProcessIdentifierKey = @"d";
-static NSString *frameIdentifierKey = @"e";
-static NSString *documentIDProcessIdentifierKey = @"f";
-static NSString *worldIdentifierHighBitsKey = @"g";
-static NSString *worldIdentifierLowBitsKey = @"h";
+static NSString* const identifierObjectKey = @"a";
+static NSString* const identifierProcessIdentifierKey = @"b";
+static NSString* const worldIdentifierObjectKey = @"c";
+static NSString* const worldIdentifierProcessIdentifierKey = @"d";
+static NSString* const frameIdentifierKey = @"e";
+static NSString* const documentIDProcessIdentifierKey = @"f";
+static NSString* const worldIdentifierHighBitsKey = @"g";
+static NSString* const worldIdentifierLowBitsKey = @"h";
 
 - (id)initWithCoder:(NSCoder *)decoder
 {
