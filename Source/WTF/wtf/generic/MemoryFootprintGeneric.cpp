@@ -37,6 +37,4 @@ size_t memoryFootprint()
     return memoryUse.memoryFootprint;
 }
 
-}
-
 } // namespace WTF
