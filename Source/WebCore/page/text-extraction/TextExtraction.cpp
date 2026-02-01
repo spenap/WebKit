@@ -1057,15 +1057,15 @@ Item extractItem(Request&& request, LocalFrame& frame)
 
     {
         ClientNodeAttributesMap clientNodeAttributes;
-        for (auto&& [attribute, values] : request.clientNodeAttributes) {
-            for (auto&& [identifier, value] : WTF::move(values)) {
+        for (auto& [attribute, values] : request.clientNodeAttributes) {
+            for (auto& [identifier, value] : values) {
                 RefPtr node = nodeFromJSHandle(identifier);
                 if (!node)
                     continue;
 
                 clientNodeAttributes.ensure(*node, [] {
                     return HashMap<String, String> { };
-                }).iterator->value.set(attribute, WTF::move(value));
+                }).iterator->value.set(attribute, value);
             }
         }
 
