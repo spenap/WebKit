@@ -112,7 +112,6 @@
 #include "RenderListBox.h"
 #include "RenderListMarker.h"
 #include "RenderMathMLOperator.h"
-#include "RenderMenuList.h"
 #include "RenderMeter.h"
 #include "RenderObjectInlines.h"
 #include "RenderProgress.h"
@@ -672,8 +671,8 @@ Ref<AccessibilityRenderObject> AXObjectCache::createObjectFromRenderer(RenderObj
         return AccessibilityMathMLElement::create(AXID::generate(), renderer, *this, isAnonymousOperator);
 #endif
 
-    if (CheckedPtr renderMenuList = dynamicDowncast<RenderMenuList>(renderer))
-        return AccessibilityMenuList::create(AXID::generate(), *renderMenuList, *this);
+    if (RefPtr select = dynamicDowncast<HTMLSelectElement>(node); select && select->usesMenuList())
+        return AccessibilityMenuList::create(AXID::generate(), renderer, *this);
 
     // Progress indicator.
     if (is<RenderProgress>(renderer) || is<RenderMeter>(renderer)
@@ -2107,9 +2106,9 @@ void AXObjectCache::onSelectedOptionChanged(Element& element)
     handleTabPanelSelected(nullptr, &element);
 }
 
-void AXObjectCache::onSelectedOptionChanged(RenderObject& menuList, int optionIndex)
+void AXObjectCache::onSelectedOptionChanged(HTMLSelectElement& select, int optionIndex)
 {
-    if (RefPtr axMenuList = dynamicDowncast<AccessibilityMenuList>(get(menuList)))
+    if (RefPtr axMenuList = dynamicDowncast<AccessibilityMenuList>(get(select)))
         axMenuList->didUpdateActiveOption(optionIndex);
 }
 
