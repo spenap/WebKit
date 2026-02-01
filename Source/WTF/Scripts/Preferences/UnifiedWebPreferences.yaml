@@ -6392,6 +6392,20 @@ ReadableByteStreamFetchSourceEnabled:
     WebKit:
       default: true
 
+ReadableStreamFromEnabled:
+  type: bool
+  status: testable
+  category: dom
+  humanReadableName: "ReadableStream.from"
+  humanReadableDescription: "Enable ReadableStream.from"
+  defaultValue:
+    WebCore:
+      default: false
+    WebKitLegacy:
+      default: false
+    WebKit:
+      default: false
+
 ReadableStreamIterableEnabled:
   type: bool
   status: stable

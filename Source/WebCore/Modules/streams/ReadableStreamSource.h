@@ -43,6 +43,8 @@ public:
     void start(ReadableStreamDefaultController&&, DOMPromiseDeferred<void>&&);
     void pull(DOMPromiseDeferred<void>&&);
     void cancel(JSC::JSValue);
+
+    void error(const Exception&);
     void error(JSC::JSGlobalObject&, JSC::JSValue);
 
     bool isPulling() const { return !!m_promise; }

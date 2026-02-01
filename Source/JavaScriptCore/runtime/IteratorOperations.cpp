@@ -98,13 +98,23 @@ JSValue iteratorValue(JSGlobalObject* globalObject, JSValue iterResult)
     return iterResult.get(globalObject, globalObject->vm().propertyNames->value);
 }
 
-bool iteratorComplete(JSGlobalObject* globalObject, JSValue iterResult)
+static bool iteratorCompleteImpl(JSGlobalObject* globalObject, JSValue iterResult)
 {
     VM& vm = globalObject->vm();
     auto scope = DECLARE_THROW_SCOPE(vm);
     JSValue done = iterResult.get(globalObject, globalObject->vm().propertyNames->done);
     RETURN_IF_EXCEPTION(scope, true);
     RELEASE_AND_RETURN(scope, done.toBoolean(globalObject));
+}
+
+bool iteratorComplete(JSGlobalObject* globalObject, JSValue iterResult)
+{
+    return iteratorCompleteImpl(globalObject, iterResult);
+}
+
+bool iteratorCompleteExported(JSGlobalObject* globalObject, JSValue iterResult)
+{
+    return iteratorCompleteImpl(globalObject, iterResult);
 }
 
 JSValue iteratorStep(JSGlobalObject* globalObject, IterationRecord iterationRecord)
