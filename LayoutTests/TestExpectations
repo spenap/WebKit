@@ -8205,8 +8205,6 @@ webkit.org/b/301250 ipc/dictionary-callbacks.html [ Skip ]
 
 imported/w3c/web-platform-tests/fetch/security/dangling-markup/dangling-markup-mitigation.tentative.https.html [ Skip ]
 
-webkit.org/b/305054 [ Debug ] ipc/serialized-type-info.html [ Failure ]
-
 webkit.org/b/89153 http/tests/websocket/tests/hybi/workers/close.html [ Pass Failure ]
 
 # webkit.org/b/287997 4X imported/w3c/web-platform-tests/editing/other/insertparagraph-in-child-of-html.tentative.html?designMode=on&white-space= are flaky text failures
