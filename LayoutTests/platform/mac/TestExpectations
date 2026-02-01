@@ -2325,7 +2325,8 @@ imported/w3c/web-platform-tests/svg/pservers/reftests/meshgradient-complex-001.s
 [ Debug ] accessibility/mac/line-boundary-at-br.html [ Skip ]
 
 # Timing is different in debug, thus skip.
-[ Debug ] accessibility/password-notifications-timing.html [ Skip ]
+# webkit.org/b/306573 test is also a flaky failure on release builds possinly due to same timing issue
+accessibility/password-notifications-timing.html [ Skip ]
 
 # The color input only has a swatch overlay on macOS
 fast/forms/color/input-color-swatch-overlay-appearance.html [ Pass ]
