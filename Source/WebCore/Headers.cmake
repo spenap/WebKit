@@ -1,20 +1,9 @@
 set(WebCore_PRIVATE_FRAMEWORK_HEADERS
-    Modules/Model/Implementation/DDMeshImpl.h
+    Modules/Model/Implementation/MeshImpl.h
 
-    Modules/Model/InternalAPI/DDFloat3.h
-    Modules/Model/InternalAPI/DDFloat4x4.h
-    Modules/Model/InternalAPI/DDImageAsset.h
-    Modules/Model/InternalAPI/DDMaterialDescriptor.h
-    Modules/Model/InternalAPI/DDMesh.h
-    Modules/Model/InternalAPI/DDMeshDescriptor.h
-    Modules/Model/InternalAPI/DDMeshPart.h
-    Modules/Model/InternalAPI/DDModel.serialization.in
-    Modules/Model/InternalAPI/DDUpdateMaterialDescriptor.h
-    Modules/Model/InternalAPI/DDUpdateMeshDescriptor.h
-    Modules/Model/InternalAPI/DDUpdateTextureDescriptor.h
-    Modules/Model/InternalAPI/DDVertexAttributeFormat.h
-    Modules/Model/InternalAPI/DDVertexLayout.h
-    Modules/Model/InternalAPI/ModelObjectDescriptorBase.h
+    Modules/Model/InternalAPI/Mesh.h
+    Modules/Model/InternalAPI/WebModel.h
+    Modules/Model/InternalAPI/WebModel.serialization.in
 
     Modules/ShapeDetection/Interfaces/BarcodeDetectorInterface.h
     Modules/ShapeDetection/Interfaces/BarcodeDetectorOptionsInterface.h
@@ -634,7 +623,7 @@ set(WebCore_PRIVATE_FRAMEWORK_HEADERS
     Modules/mediastream/UserMediaRequest.h
     Modules/mediastream/libwebrtc/LibWebRTCUtils.h
 
-    Modules/model-element/DDModelPlayer.h
+    Modules/model-element/WebModelPlayer.h
     Modules/model-element/HTMLModelElement.h
     Modules/model-element/HTMLModelElementCamera.h
     Modules/model-element/ModelPlayer.h
