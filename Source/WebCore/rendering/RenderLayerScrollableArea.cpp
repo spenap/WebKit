@@ -80,6 +80,7 @@
 #include "RenderStyle+GettersInlines.h"
 #include "RenderTheme.h"
 #include "RenderView.h"
+#include "ScrollAnchoringController.h"
 #include "ScrollAnimator.h"
 #include "ScrollbarTheme.h"
 #include "ScrollbarsController.h"
