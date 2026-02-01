@@ -1560,7 +1560,7 @@ struct WebCore::CredentialPropertiesOutput {
 };
 
 [Nested] struct WebCore::AuthenticationExtensionsClientOutputs::PRFValues {
-    RefPtr<JSC::ArrayBuffer> first;
+    Ref<JSC::ArrayBuffer> first;
     RefPtr<JSC::ArrayBuffer> second;
 };
 
