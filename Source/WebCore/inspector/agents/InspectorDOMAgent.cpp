@@ -34,7 +34,6 @@
 #include "AXObjectCacheInlines.h"
 #include "AccessibilityNodeObject.h"
 #include "AccessibilityObjectInlines.h"
-#include "AddEventListenerOptionsInlines.h"
 #include "Attr.h"
 #include "AudioTrack.h"
 #include "AudioTrackConfiguration.h"
@@ -2665,8 +2664,8 @@ void InspectorDOMAgent::addEventListenersToNode(Node& node)
 #if ENABLE(VIDEO)
     auto callback = EventFiredCallback::create(*this);
 
-    auto createEventListener = [&] (const AtomString& eventName) {
-        node.addEventListener(eventName, callback.copyRef(), false);
+    auto createEventListener = [&](const AtomString& eventName) {
+        node.addEventListener(eventName, callback.copyRef());
     };
 
 #if ENABLE(FULLSCREEN_API)

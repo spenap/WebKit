@@ -742,7 +742,7 @@ FocusableElementSearchResult FocusController::findFocusableElementInDocumentOrde
         }
     }
 
-    element->focus({ SelectionRestorationMode::SelectAll, direction, { }, { }, FocusVisibility::Visible });
+    element->focus({ { }, { }, SelectionRestorationMode::SelectAll, direction, { }, { }, FocusVisibility::Visible });
 
     return findResult;
 }
@@ -1327,7 +1327,7 @@ bool FocusController::advanceFocusDirectionallyInContainer(const ContainerNode& 
 
     // We found a new focus node, navigate to it.
     RefPtr element = focusCandidate.focusableNode.get();
-    element->focus({ SelectionRestorationMode::SelectAll, direction });
+    element->focus({ { }, { }, SelectionRestorationMode::SelectAll, direction });
     return true;
 }
 

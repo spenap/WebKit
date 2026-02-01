@@ -23,31 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#pragma once
+#include "config.h"
+#include "AddEventListenerOptions.h"
 
-#include <WebCore/AbortSignal.h>
-#include <WebCore/AddEventListenerOptions.h>
-#include <optional>
+#include "AbortSignal.h"
 
 namespace WebCore {
 
-inline AddEventListenerOptions::AddEventListenerOptions(bool capture, std::optional<bool> passive, bool once, RefPtr<AbortSignal>&& signal, bool webkitTrustedOnly)
-    : EventListenerOptions(capture)
-    , passive(passive)
-    , once(once)
-    , signal(WTF::move(signal))
-    , webkitTrustedOnly(webkitTrustedOnly)
-{
-}
-
-inline AddEventListenerOptions::AddEventListenerOptions(bool capture, std::optional<bool> passive, bool once, bool webkitTrustedOnly)
-    : EventListenerOptions(capture)
-    , passive(passive)
-    , once(once)
-    , webkitTrustedOnly(webkitTrustedOnly)
-{
-}
-
-inline AddEventListenerOptions::~AddEventListenerOptions() = default;
+AddEventListenerOptions::~AddEventListenerOptions() = default;
 
 } // namespace WebCore

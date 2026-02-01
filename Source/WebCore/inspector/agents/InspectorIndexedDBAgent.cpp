@@ -32,7 +32,6 @@
 #include "config.h"
 #include "InspectorIndexedDBAgent.h"
 
-#include "AddEventListenerOptionsInlines.h"
 #include "DOMStringList.h"
 #include "DocumentSecurityOrigin.h"
 #include "DocumentView.h"
@@ -149,7 +148,7 @@ void ExecutableWithDatabase::start(IDBFactory* idbFactory, SecurityOrigin*, cons
     }
 
     // FIXME: This is a safer cpp false positive (rdar://160082559).
-    SUPPRESS_UNCOUNTED_ARG result.releaseReturnValue()->addEventListener(eventNames().successEvent, OpenDatabaseCallback::create(*this), false);
+    SUPPRESS_UNCOUNTED_ARG result.releaseReturnValue()->addEventListener(eventNames().successEvent, OpenDatabaseCallback::create(*this));
 }
 
 
@@ -481,7 +480,7 @@ public:
         }
 
         auto openCursorCallback = OpenCursorCallback::create(m_injectedScript, m_requestCallback.copyRef(), m_skipCount, m_pageSize);
-        idbRequest->addEventListener(eventNames().successEvent, WTF::move(openCursorCallback), false);
+        idbRequest->addEventListener(eventNames().successEvent, WTF::move(openCursorCallback));
     }
 
     BackendDispatcher::CallbackBase& requestCallback() override { return m_requestCallback.get(); }
@@ -711,7 +710,7 @@ public:
             return;
         }
 
-        idbTransaction->addEventListener(eventNames().completeEvent, ClearObjectStoreListener::create(m_requestCallback.copyRef()), false);
+        idbTransaction->addEventListener(eventNames().completeEvent, ClearObjectStoreListener::create(m_requestCallback.copyRef()));
     }
 
     BackendDispatcher::CallbackBase& requestCallback() override { return m_requestCallback.get(); }

@@ -700,7 +700,7 @@ void InputType::handleBlurEvent()
 bool InputType::accessKeyAction(bool)
 {
     ASSERT(element());
-    protectedElement()->focus({ SelectionRestorationMode::SelectAll });
+    protectedElement()->focus({ { }, { }, SelectionRestorationMode::SelectAll });
     return false;
 }
 

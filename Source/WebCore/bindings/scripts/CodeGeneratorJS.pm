@@ -8676,7 +8676,7 @@ sub WriteData
     }
 
     if ($name eq "AddEventListenerOptions" or $name eq "EventTarget") {
-        push @includes, "\"AddEventListenerOptionsInlines.h\"";
+        push @includes, "\"AbortSignal.h\"";
     }
 
     foreach my $include (sort @includes) {

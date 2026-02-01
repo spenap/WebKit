@@ -9264,13 +9264,13 @@ header: <WebCore/FocusOptions.h>
 };
 
 struct WebCore::FocusOptions {
+    bool preventScroll;
+    std::optional<bool> focusVisible;
     WebCore::SelectionRestorationMode selectionRestorationMode;
     WebCore::FocusDirection direction;
     WebCore::FocusRemovalEventsMode removalEventsMode;
     WebCore::FocusTrigger trigger;
     WebCore::FocusVisibility visibility;
-    bool preventScroll;
-    std::optional<bool> focusVisible;
 };
 
 enum class WebKit::CommitTiming : bool;

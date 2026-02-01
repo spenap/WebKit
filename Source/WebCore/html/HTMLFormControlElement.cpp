@@ -250,7 +250,7 @@ bool HTMLFormControlElement::isMouseFocusable() const
 
 void HTMLFormControlElement::runFocusingStepsForAutofocus()
 {
-    focus({ SelectionRestorationMode::PlaceCaretAtStart });
+    focus({ { }, { }, SelectionRestorationMode::PlaceCaretAtStart });
 }
 
 void HTMLFormControlElement::dispatchBlurEvent(RefPtr<Element>&& newFocusedElement)

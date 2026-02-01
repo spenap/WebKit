@@ -35,7 +35,7 @@
 #include "WebFrame.h"
 #include "WebFullScreenManagerProxyMessages.h"
 #include "WebPage.h"
-#include <WebCore/AddEventListenerOptionsInlines.h>
+#include <WebCore/AbortSignal.h>
 #include <WebCore/Color.h>
 #include <WebCore/ContainerNodeInlines.h>
 #include <WebCore/DocumentFullscreen.h>
@@ -219,7 +219,7 @@ void WebFullScreenManager::setElement(WebCore::Element& element)
     m_elementFrameIdentifier = element.document().frame()->frameID();
 
     for (auto& eventName : eventsToObserve())
-        element.addEventListener(eventName, *this, { true });
+        element.addEventListener(eventName, *this, { { true }, std::nullopt, false, nullptr, false });
 }
 
 void WebFullScreenManager::clearElement()
@@ -747,7 +747,7 @@ void WebFullScreenManager::setMainVideoElement(RefPtr<WebCore::HTMLVideoElement>
 
     if (element) {
         for (auto& eventName : eventsToObserve.get())
-            element->addEventListener(eventName, *this, { });
+            element->addEventListener(eventName, *this);
 
 #if ENABLE(IMAGE_ANALYSIS)
         if (element->paused())
