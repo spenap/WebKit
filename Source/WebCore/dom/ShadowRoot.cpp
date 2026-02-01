@@ -145,13 +145,8 @@ Node::InsertedIntoAncestorResult ShadowRoot::insertedIntoAncestor(InsertionType 
         }
     }
     if (!adoptedStyleSheets().empty() && document().frame())
-        checkedStyleScope()->didChangeActiveStyleSheetCandidates();
+        protect(styleScope())->didChangeActiveStyleSheetCandidates();
     return InsertedIntoAncestorResult::Done;
-}
-
-CheckedRef<Style::Scope> ShadowRoot::checkedStyleScope() const
-{
-    return *m_styleScope;
 }
 
 void ShadowRoot::removedFromAncestor(RemovalType removalType, ContainerNode& oldParentOfRemovedTree)
