@@ -504,12 +504,18 @@ void WebModelPlayer::simulate(float elapsedTime)
     model->setRotation(m_yaw, m_pitch);
 }
 
+void WebModelPlayer::setPlaybackRate(double newRate, CompletionHandler<void(double effectivePlaybackRate)>&& completion)
+{
+    m_playbackRate = newRate;
+    completion(newRate);
+}
+
 void WebModelPlayer::update()
 {
     constexpr float elapsedTime = 1.f / 60.f;
     simulate(elapsedTime);
 
-    [m_modelLoader update:elapsedTime];
+    [m_modelLoader update:paused() ? 0.f : (m_playbackRate * elapsedTime)];
     if (m_didFinishLoading) {
         if (RefPtr currentModel = m_currentModel)
             currentModel->render();
