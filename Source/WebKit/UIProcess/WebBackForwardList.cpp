@@ -723,7 +723,7 @@ void WebBackForwardList::updateAllFrameIDs(FrameIdentifier oldFrameID, FrameIden
 
 void WebBackForwardList::backForwardGoToItem(BackForwardItemIdentifier itemID, CompletionHandler<void(const WebBackForwardListCounts&)>&& completionHandler)
 {
-    // On process swap, we tell the previous process to ignore the load, which causes it so restore its current back forward item to its previous
+    // On process swap, we tell the previous process to ignore the load, which causes it to restore its current back forward item to its previous
     // value. Since the load is really going on in a new provisional process, we want to ignore such requests from the committed process.
     // Any real new load in the committed process would have cleared m_provisionalPage.
     if (RefPtr webPageProxy = m_page.get()) {
