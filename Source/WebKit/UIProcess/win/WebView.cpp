@@ -43,7 +43,6 @@
 #include "WebProcessPool.h"
 #include <Commctrl.h>
 #include <WebCore/Cursor.h>
-#include <WebCore/Document.h>
 #include <WebCore/Editor.h>
 #include <WebCore/FloatRect.h>
 #include <WebCore/GDIUtilities.h>

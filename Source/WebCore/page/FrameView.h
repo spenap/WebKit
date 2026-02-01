@@ -31,7 +31,6 @@
 namespace WebCore {
 
 class Frame;
-class RenderElement;
 enum class RenderAsTextFlag : uint16_t;
 
 class FrameView : public ScrollView {
