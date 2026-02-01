@@ -125,7 +125,7 @@ Ref<Node> SerializedNode::deserialize(SerializedNode&& serializedNode, WebCore::
             Ref content = TemplateContentDocumentFragment::create(Ref { document.ensureTemplateDocument() }.get(), result);
             for (auto&& child : std::exchange(element.content->children, { })) {
                 if (RefPtr childNode = deserialize(WTF::move(child), document)) {
-                    childNode->setTreeScopeRecursively(content->protectedTreeScope());
+                    childNode->setTreeScopeRecursively(protect(content->treeScope()));
                     content->appendChildCommon(*childNode);
                 }
             }
@@ -142,7 +142,7 @@ Ref<Node> SerializedNode::deserialize(SerializedNode&& serializedNode, WebCore::
     RefPtr containerNode = dynamicDowncast<WebCore::ContainerNode>(node);
     for (auto&& child : WTF::move(serializedChildren)) {
         Ref childNode = deserialize(WTF::move(child), document);
-        childNode->setTreeScopeRecursively(containerNode->protectedTreeScope());
+        childNode->setTreeScopeRecursively(protect(containerNode->treeScope()));
         containerNode->appendChildCommon(childNode);
     }
 

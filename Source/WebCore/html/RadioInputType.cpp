@@ -64,7 +64,7 @@ bool RadioInputType::valueMissing(const String&) const
 
     bool isRequired = false;
     bool foundCheckedRadio = false;
-    forEachButtonInDetachedGroup(element->protectedRootNode(), name, [&](auto& input) {
+    forEachButtonInDetachedGroup(protect(element->rootNode()), name, [&](auto& input) {
         if (input.checked()) {
             foundCheckedRadio = true;
             return false;

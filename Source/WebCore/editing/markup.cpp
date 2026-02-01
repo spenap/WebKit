@@ -821,7 +821,7 @@ RefPtr<Node> StyledMarkupAccumulator::serializeNodes(const Position& start, cons
         m_highestNodeToBeSerialized = traverseNodesForSerialization(*startNode, pastEnd.get(), NodeTraversalMode::DoNotEmitString);
 
     if (m_highestNodeToBeSerialized && m_highestNodeToBeSerialized->parentNode())
-        m_wrappingStyle = EditingStyle::wrappingStyleForSerialization(*m_highestNodeToBeSerialized->protectedParentNode(), shouldAnnotate(), m_standardFontFamilySerializationMode);
+        m_wrappingStyle = EditingStyle::wrappingStyleForSerialization(*protect(m_highestNodeToBeSerialized->parentNode()), shouldAnnotate(), m_standardFontFamilySerializationMode);
 
     return traverseNodesForSerialization(*startNode, pastEnd.get(), NodeTraversalMode::EmitString);
 }
@@ -1377,8 +1377,8 @@ bool isPlainTextMarkup(Node* node)
     
     if (secondChild->nextSibling())
         return false;
-    
-    return parentTabSpanNode(firstChild->protectedFirstChild().get()) && is<Text>(secondChild);
+
+    return parentTabSpanNode(protect(firstChild->firstChild()).get()) && is<Text>(secondChild);
 }
 
 static bool contextPreservesNewline(const SimpleRange& context)

@@ -2536,7 +2536,7 @@ void Document::setTitle(String&& title)
         if (!m_titleElement) {
             Ref titleElement = SVGTitleElement::create(SVGNames::titleTag, *this);
             m_titleElement = titleElement.copyRef();
-            svgElement->insertBefore(titleElement, svgElement->protectedFirstChild());
+            svgElement->insertBefore(titleElement, protect(svgElement->firstChild()));
         }
         // insertBefore above may have ran scripts which removed m_titleElement.
         if (RefPtr titleElement = m_titleElement)

@@ -1288,7 +1288,7 @@ void RenderThemeMac::createColorWellSwatchSubtree(HTMLElement& swatch)
 
 void RenderThemeMac::setColorWellSwatchBackground(HTMLElement& swatch, Color color)
 {
-    Ref swatchChild = *downcast<HTMLElement>(swatch.protectedFirstChild());
+    Ref swatchChild = *downcast<HTMLElement>(swatch.firstChild());
 
     auto backgroundColor = color.isOpaque() ? color : blendSourceOver(Color::white, color);
     auto foregroundColor = color.isOpaque() ? Color::transparentBlack : blendSourceOver(Color::black, color);

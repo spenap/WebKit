@@ -848,7 +848,7 @@ void WebAutomationSessionProxy::computeElementLayout(WebCore::PageIdentifier pag
     }
 
     auto elementInViewCenterPoint = visiblePortionOfElementRect.center();
-    auto elementList = containerElement->protectedTreeScope()->elementsFromPoint(elementInViewCenterPoint.x(), elementInViewCenterPoint.y(), WebCore::HitTestSource::User);
+    auto elementList = protect(containerElement->treeScope())->elementsFromPoint(elementInViewCenterPoint.x(), elementInViewCenterPoint.y(), WebCore::HitTestSource::User);
     auto index = elementList.findIf([containerElement](auto& item) {
         return item.ptr() == containerElement;
     });

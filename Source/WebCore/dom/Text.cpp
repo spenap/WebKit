@@ -67,7 +67,7 @@ ExceptionOr<Ref<Text>> Text::splitText(unsigned offset)
     dispatchModifiedEvent(oldData);
 
     if (RefPtr parent = parentNode()) {
-        auto insertResult = parent->insertBefore(newText, protectedNextSibling());
+        auto insertResult = parent->insertBefore(newText, protect(nextSibling()));
         if (insertResult.hasException())
             return insertResult.releaseException();
     }

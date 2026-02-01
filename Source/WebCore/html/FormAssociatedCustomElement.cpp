@@ -183,7 +183,7 @@ void FormAssociatedCustomElement::didUpgrade()
 
     setDataListAncestorState(TriState::Indeterminate);
     updateWillValidateAndValidity();
-    syncWithFieldsetAncestors(element->protectedParentNode().get());
+    syncWithFieldsetAncestors(protect(element->parentNode()).get());
     invalidateElementsCollectionCachesInAncestors();
     restoreFormControlStateIfNecessary();
 }

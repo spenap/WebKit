@@ -117,7 +117,7 @@ ALWAYS_INLINE auto ContainerNode::removeAllChildrenWithScriptAssertion(ChildChan
         bool hadElementChild = false;
         while (RefPtr child = m_firstChild.get()) {
             hadElementChild |= is<Element>(*child);
-            removeBetween(nullptr, child->protectedNextSibling().get(), *child);
+            removeBetween(nullptr, protect(child->nextSibling()).get(), *child);
         }
         document().incDOMTreeVersion();
         return { 0, hadElementChild ? DidRemoveElements::Yes : DidRemoveElements::No, CanDelayNodeDeletion::Unknown };
@@ -172,7 +172,7 @@ ALWAYS_INLINE auto ContainerNode::removeAllChildrenWithScriptAssertion(ChildChan
             if (is<Element>(*child))
                 hadElementChild = true;
 
-            removeBetween(nullptr, child->protectedNextSibling().get(), *child);
+            removeBetween(nullptr, protect(child->nextSibling()).get(), *child);
             auto [subTreeSize, subtreeObservability, subtreeCanDelayNodeDeletion] = notifyChildNodeRemoved(*this, *child);
             treeSize += subTreeSize;
             ASSERT(subtreeCanDelayNodeDeletion != CanDelayNodeDeletion::Unknown);
@@ -1158,7 +1158,7 @@ static void dispatchChildInsertionEvents(Node& child)
 
     RefPtr c = child;
     if (c->parentNode() && document->hasListenerType(Document::ListenerType::DOMNodeInserted))
-        c->dispatchScopedEvent(MutationEvent::create(eventNames().DOMNodeInsertedEvent, Event::CanBubble::Yes, c->protectedParentNode().get()));
+        c->dispatchScopedEvent(MutationEvent::create(eventNames().DOMNodeInsertedEvent, Event::CanBubble::Yes, protect(c->parentNode()).get()));
 
     // dispatch the DOMNodeInsertedIntoDocument event to all descendants
     if (c->isConnected() && document->hasListenerType(Document::ListenerType::DOMNodeInsertedIntoDocument)) {
@@ -1178,7 +1178,7 @@ static void dispatchChildRemovalEvents(Ref<Node>& child)
 
     // dispatch pre-removal mutation events
     if (child->parentNode() && document->hasListenerType(Document::ListenerType::DOMNodeRemoved))
-        child->dispatchScopedEvent(MutationEvent::create(eventNames().DOMNodeRemovedEvent, Event::CanBubble::Yes, child->protectedParentNode().get()));
+        child->dispatchScopedEvent(MutationEvent::create(eventNames().DOMNodeRemovedEvent, Event::CanBubble::Yes, protect(child->parentNode()).get()));
 
     // dispatch the DOMNodeRemovedFromDocument event to all descendants
     if (child->isConnected() && document->hasListenerType(Document::ListenerType::DOMNodeRemovedFromDocument)) {

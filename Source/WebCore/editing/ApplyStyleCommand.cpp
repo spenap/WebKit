@@ -507,7 +507,7 @@ RefPtr<HTMLElement> ApplyStyleCommand::splitAncestorsWithUnicodeBidi(Node* node,
     while (currentNode) {
         RefPtr parent = downcast<Element>(currentNode->parentNode());
         if (before ? currentNode->previousSibling() : currentNode->nextSibling())
-            splitElement(*parent, before ? *currentNode : *currentNode->protectedNextSibling());
+            splitElement(*parent, before ? *currentNode : *protect(currentNode->nextSibling()));
         if (parent == highestAncestorWithUnicodeBidi)
             break;
         currentNode = parent;

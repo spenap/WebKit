@@ -536,7 +536,7 @@ Node::InsertedIntoAncestorResult HTMLImageElement::insertedIntoAncestor(Insertio
     Node::InsertedIntoAncestorResult insertNotificationRequest = HTMLElement::insertedIntoAncestor(insertionType, parentOfInsertedTree);
 
     if (insertionType.treeScopeChanged && !m_parsedUsemap.isNull())
-        protectedTreeScope()->addImageElementByUsemap(m_parsedUsemap, *this);
+        protect(treeScope())->addImageElementByUsemap(m_parsedUsemap, *this);
 
     if (auto* parentPicture = dynamicDowncast<HTMLPictureElement>(parentOfInsertedTree); parentPicture && &parentOfInsertedTree == parentElement()) {
         // FIXME: When the hack in HTMLConstructionSite::createHTMLElementOrFindCustomElementInterface to eagerly call setPictureElement is removed, we can just assert !pictureElement().
@@ -557,7 +557,7 @@ Node::InsertedIntoAncestorResult HTMLImageElement::insertedIntoAncestor(Insertio
 void HTMLImageElement::removedFromAncestor(RemovalType removalType, ContainerNode& oldParentOfRemovedTree)
 {
     if (removalType.treeScopeChanged && !m_parsedUsemap.isNull())
-        oldParentOfRemovedTree.protectedTreeScope()->removeImageElementByUsemap(m_parsedUsemap, *this);
+        protect(oldParentOfRemovedTree.treeScope())->removeImageElementByUsemap(m_parsedUsemap, *this);
 
     if (is<HTMLPictureElement>(oldParentOfRemovedTree) && !parentElement()) {
         ASSERT(pictureElement() == &oldParentOfRemovedTree);
@@ -727,7 +727,7 @@ bool HTMLImageElement::matchesUsemap(const AtomString& name) const
 
 RefPtr<HTMLMapElement> HTMLImageElement::associatedMapElement() const
 {
-    return protectedTreeScope()->getImageMap(m_parsedUsemap);
+    return protect(treeScope())->getImageMap(m_parsedUsemap);
 }
 
 int HTMLImageElement::x() const

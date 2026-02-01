@@ -864,7 +864,7 @@ void XMLDocumentParser::startElementNs(const xmlChar* xmlLocalName, const xmlCha
     bool handledAttributes = handleNamespaceAttributes(prefixedAttributes, libxmlNamespaces, numNamespaces, shouldUseNullCustomElementRegistry);
     bool success = handledAttributes ? handleElementAttributes(prefixedAttributes, libxmlAttributes, numAttributes, shouldUseNullCustomElementRegistry) : false;
 
-    RefPtr registry = shouldUseNullCustomElementRegistry ? nullptr : CustomElementRegistry::registryForNodeOrTreeScope(*currentNode, currentNode->protectedTreeScope());
+    RefPtr registry = shouldUseNullCustomElementRegistry ? nullptr : CustomElementRegistry::registryForNodeOrTreeScope(*currentNode, protect(currentNode->treeScope()));
     auto newElement = document->createElement(qName, true, registry.get());
 
     if (!handledAttributes) {

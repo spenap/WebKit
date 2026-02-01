@@ -6001,7 +6001,7 @@ ExceptionOr<Node*> Element::insertAdjacent(const String& where, Ref<Node>&& newC
     }
 
     if (equalLettersIgnoringASCIICase(where, "afterbegin"_s)) {
-        auto result = insertBefore(newChild, protectedFirstChild());
+        auto result = insertBefore(newChild, protect(firstChild()));
         if (result.hasException())
             return result.releaseException();
         return newChild.ptr();
@@ -6018,7 +6018,7 @@ ExceptionOr<Node*> Element::insertAdjacent(const String& where, Ref<Node>&& newC
         RefPtr parent = this->parentNode();
         if (!parent)
             return nullptr;
-        auto result = parent->insertBefore(newChild, protectedNextSibling());
+        auto result = parent->insertBefore(newChild, protect(nextSibling()));
         if (result.hasException())
             return result.releaseException();
         return newChild.ptr();

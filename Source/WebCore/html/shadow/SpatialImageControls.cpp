@@ -208,7 +208,7 @@ void ensureSpatialControls(HTMLImageElement& imageElement)
 #else
         glyphSpan->setIdAttribute("spatial-glyph"_s);
 #endif
-        bottomLabelText->insertBefore(glyphSpan, bottomLabelText->protectedFirstChild());
+        bottomLabelText->insertBefore(glyphSpan, protect(bottomLabelText->firstChild()));
 
         if (CheckedPtr renderImage = dynamicDowncast<RenderImage>(element->renderer()))
             renderImage->setHasShadowControls(true);

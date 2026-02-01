@@ -251,7 +251,7 @@ std::optional<Style::UnadjustedStyle> TextControlPlaceholderElement::resolveCust
     }
 
     if (shadowHostStyle)
-        RenderTheme::singleton().adjustTextControlInnerPlaceholderStyle(styleStyle.get(), *shadowHostStyle, protectedShadowHost().get());
+        RenderTheme::singleton().adjustTextControlInnerPlaceholderStyle(styleStyle.get(), *shadowHostStyle, protect(shadowHost()).get());
 
     return style;
 }

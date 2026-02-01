@@ -80,7 +80,7 @@ ExceptionOr<void> HTMLTableElement::setCaption(RefPtr<HTMLTableCaptionElement>&&
     deleteCaption();
     if (!newCaption)
         return { };
-    return insertBefore(*newCaption, protectedFirstChild());
+    return insertBefore(*newCaption, protect(firstChild()));
 }
 
 RefPtr<HTMLTableSectionElement> HTMLTableElement::tHead() const

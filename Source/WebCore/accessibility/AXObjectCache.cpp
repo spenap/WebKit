@@ -5845,7 +5845,7 @@ bool AXObjectCache::addRelation(Element& origin, const QualifiedName& attribute)
 
     SpaceSplitString ids(value, SpaceSplitString::ShouldFoldCase::No);
     for (auto& id : ids) {
-        RefPtr target = origin.protectedTreeScope()->elementByIdResolvingReferenceTarget(id);
+        RefPtr target = protect(origin.treeScope())->elementByIdResolvingReferenceTarget(id);
         if (!target || target == &origin)
             continue;
 

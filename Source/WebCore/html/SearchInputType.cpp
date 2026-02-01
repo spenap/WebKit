@@ -302,7 +302,7 @@ void SearchInputType::createShadowSubtree()
     m_resultsButton = WTF::move(resultsButton);
 
     Ref cancelButton = SearchFieldCancelButtonElement::create(document);
-    container->insertBefore(cancelButton, textWrapper->protectedNextSibling());
+    container->insertBefore(cancelButton, protect(textWrapper->nextSibling()));
     m_cancelButton = WTF::move(cancelButton);
 }
 

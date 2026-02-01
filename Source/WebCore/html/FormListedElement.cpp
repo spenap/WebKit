@@ -303,7 +303,7 @@ const AtomString& FormListedElement::name() const
 }
 
 FormAttributeTargetObserver::FormAttributeTargetObserver(const AtomString& id, FormListedElement& element)
-    : IdTargetObserver(element.asProtectedHTMLElement()->protectedTreeScope()->idTargetObserverRegistry(), id)
+    : IdTargetObserver(protect(element.asProtectedHTMLElement()->treeScope())->idTargetObserverRegistry(), id)
     , m_element(element)
 {
 }

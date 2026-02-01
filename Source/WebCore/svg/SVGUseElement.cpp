@@ -573,7 +573,7 @@ void SVGUseElement::expandUseElementsInShadowTree() const
         if (target)
             originalClone->cloneTarget(replacementClone.get(), *target);
 
-        originalClone->protectedParentNode()->replaceChild(replacementClone, originalClone);
+        protect(originalClone->parentNode())->replaceChild(replacementClone, originalClone);
 
         // Resume iterating, starting just inside the replacement clone.
         it = descendants.from(replacementClone.get());
@@ -599,7 +599,7 @@ void SVGUseElement::expandSymbolElementsInShadowTree() const
 
         cloneDataAndChildren(replacementClone.get(), originalClone);
 
-        originalClone->protectedParentNode()->replaceChild(replacementClone, originalClone);
+        protect(originalClone->parentNode())->replaceChild(replacementClone, originalClone);
 
         // Resume iterating, starting just inside the replacement clone.
         it = descendants.from(replacementClone.get());

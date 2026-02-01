@@ -183,7 +183,7 @@ void MediaDocument::replaceMediaElementTimerFired()
         if (RefPtr loader = this->loader())
             embedElement->setAttributeWithoutSynchronization(typeAttr, AtomString { loader->writer().mimeType() });
 
-        videoElement->protectedParentNode()->replaceChild(embedElement, *videoElement);
+        protect(videoElement->parentNode())->replaceChild(embedElement, *videoElement);
     }
 }
 

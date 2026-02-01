@@ -941,7 +941,7 @@ Inspector::Protocol::ErrorStringOr<Inspector::Protocol::DOM::NodeId> InspectorDO
 
     // Replace the old node with the new node
     RefPtr<ContainerNode> parent = oldNode->parentNode();
-    if (!m_domEditor->insertBefore(*parent, newElement.copyRef(), oldNode->protectedNextSibling().get(), errorString))
+    if (!m_domEditor->insertBefore(*parent, newElement.copyRef(), protect(oldNode->nextSibling()).get(), errorString))
         return makeUnexpected(errorString);
     if (!m_domEditor->removeChild(*parent, *oldNode, errorString))
         return makeUnexpected(errorString);

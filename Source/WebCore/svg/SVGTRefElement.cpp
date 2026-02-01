@@ -149,7 +149,7 @@ void SVGTRefElement::updateReferencedText(Element* target)
         root->appendChild(Text::create(protect(document()), WTF::move(textContent)));
     else {
         ASSERT(root->firstChild()->isTextNode());
-        root->protectedFirstChild()->setTextContent(WTF::move(textContent));
+        protect(root->firstChild())->setTextContent(WTF::move(textContent));
     }
 }
 
