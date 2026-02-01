@@ -372,7 +372,7 @@ void ImageLoader::didUpdateCachedImage(RelevantMutation relevantMutation, Cached
             // being queued to fire.
             newImage->addClient(*this);
         } else
-            resetLazyImageLoading(element().protectedDocument());
+            resetLazyImageLoading(protect(element().document()));
 
         if (oldImage) {
             oldImage->removeClient(*this);
@@ -448,7 +448,7 @@ void ImageLoader::notifyFinished(CachedResource& resource, const NetworkLoadMetr
     m_pendingURL = { };
 
     if (isDeferred()) {
-        LazyLoadImageObserver::unobserve(protectedElement(), protectedDocument());
+        LazyLoadImageObserver::unobserve(protectedElement(), protect(document()));
         m_lazyImageLoadState = LazyImageLoadState::FullImage;
         LOG_WITH_STREAM(LazyLoading, stream << "ImageLoader " << this << " notifyFinished() for element " << element() << " setting lazy load state to " << m_lazyImageLoadState);
     }
@@ -468,7 +468,7 @@ void ImageLoader::notifyFinished(CachedResource& resource, const NetworkLoadMetr
         loadEventSender().dispatchEventSoon(*this, eventNames().errorEvent);
 
         auto message = makeString("Cannot load image "_s, imageURL.string(), " due to access control checks."_s);
-        protectedDocument()->addConsoleMessage(MessageSource::Security, MessageLevel::Error, message);
+        protect(document())->addConsoleMessage(MessageSource::Security, MessageLevel::Error, message);
 
         if (hasPendingDecodePromises())
             rejectDecodePromises("Access control error."_s);
@@ -493,7 +493,7 @@ void ImageLoader::notifyFinished(CachedResource& resource, const NetworkLoadMetr
         return;
     }
 
-    m_image->protectedImage()->subresourcesAreFinished(protectedDocument().ptr(), [this, protectedThis = Ref { *this }]() mutable {
+    m_image->protectedImage()->subresourcesAreFinished(protect(document()).ptr(), [this, protectedThis = Ref { *this }]() mutable {
         // It is technically possible state changed underneath us.
         if (!m_hasPendingLoadEvent)
             return;

@@ -51,7 +51,7 @@ static RefPtr<Node> selectionShadowAncestor(LocalFrame& frame)
     RefPtr node = frame.selection().selection().base().anchorNode();
     if (!node || !node->isInShadowTree())
         return nullptr;
-    return node->protectedDocument()->ancestorNodeInThisScope(node.get());
+    return protect(node->document())->ancestorNodeInThisScope(node.get());
 }
 
 DOMSelection::DOMSelection(LocalDOMWindow& window)
@@ -424,7 +424,7 @@ String DOMSelection::toString() const
         return String();
 
     OptionSet<TextIteratorBehavior> options;
-    if (!frame->protectedDocument()->quirks().needsToCopyUserSelectNoneQuirk())
+    if (!protect(frame->document())->quirks().needsToCopyUserSelectNoneQuirk())
         options.add(TextIteratorBehavior::IgnoresUserSelectNone);
 
     auto range = frame->selection().selection().range();
@@ -437,7 +437,7 @@ RefPtr<Node> DOMSelection::shadowAdjustedNode(const Position& position) const
         return nullptr;
 
     RefPtr containerNode = position.containerNode();
-    RefPtr adjustedNode = frame()->protectedDocument()->ancestorNodeInThisScope(containerNode.get());
+    RefPtr adjustedNode = protect(frame()->document())->ancestorNodeInThisScope(containerNode.get());
     if (!adjustedNode)
         return nullptr;
 
@@ -453,7 +453,7 @@ unsigned DOMSelection::shadowAdjustedOffset(const Position& position) const
         return 0;
 
     RefPtr containerNode = position.containerNode();
-    RefPtr adjustedNode = frame()->protectedDocument()->ancestorNodeInThisScope(containerNode.get());
+    RefPtr adjustedNode = protect(frame()->document())->ancestorNodeInThisScope(containerNode.get());
     if (!adjustedNode)
         return 0;
 

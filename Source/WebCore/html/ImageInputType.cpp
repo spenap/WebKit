@@ -99,7 +99,7 @@ void ImageInputType::handleDOMActivateEvent(Event& event)
 
     // Update layout before processing form actions in case the style changes
     // the Form or button relationships.
-    element->protectedDocument()->updateLayoutIgnorePendingStylesheets();
+    protect(element->document())->updateLayoutIgnorePendingStylesheets();
 
     if (RefPtr currentForm = element->form())
         currentForm->submitIfPossible(&event, element.ptr()); // Event handlers can run.
@@ -174,7 +174,7 @@ unsigned ImageInputType::height() const
     ASSERT(element());
     Ref element = *this->element();
 
-    element->protectedDocument()->updateLayout({ LayoutOptions::TreatContentVisibilityHiddenAsVisible, LayoutOptions::TreatContentVisibilityAutoAsVisible }, element.ptr());
+    protect(element->document())->updateLayout({ LayoutOptions::TreatContentVisibilityHiddenAsVisible, LayoutOptions::TreatContentVisibilityAutoAsVisible }, element.ptr());
 
     CheckedPtr renderer = element->renderer();
     if (renderer)
@@ -197,7 +197,7 @@ unsigned ImageInputType::width() const
     ASSERT(element());
     Ref element = *this->element();
 
-    element->protectedDocument()->updateLayout({ LayoutOptions::TreatContentVisibilityHiddenAsVisible, LayoutOptions::TreatContentVisibilityAutoAsVisible }, element.ptr());
+    protect(element->document())->updateLayout({ LayoutOptions::TreatContentVisibilityHiddenAsVisible, LayoutOptions::TreatContentVisibilityAutoAsVisible }, element.ptr());
 
     CheckedPtr renderer = element->renderer();
     if (renderer)

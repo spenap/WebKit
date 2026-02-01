@@ -789,7 +789,7 @@ static uint64_t textDistance(const Position& start, const Position& end)
 bool EventHandler::handleMousePressEventSingleClick(const MouseEventWithHitTestResults& event)
 {
     Ref frame = m_frame.get();
-    frame->protectedDocument()->updateLayoutIgnorePendingStylesheets();
+    protect(frame->document())->updateLayoutIgnorePendingStylesheets();
     RefPtr targetNode = event.targetNode();
     if (!targetNode || !targetNode->renderer() || !mouseDownMayStartSelect() || m_mouseDownDelegatedFocus)
         return false;
@@ -885,7 +885,7 @@ bool EventHandler::canMouseDownStartSelect(const MouseEventWithHitTestResults& e
     if (!node || !node->renderer())
         return true;
 
-    if (node->protectedDocument()->quirks().shouldAvoidStartingSelectionOnMouseDownOverPointerCursor(*node))
+    if (protect(node->document())->quirks().shouldAvoidStartingSelectionOnMouseDownOverPointerCursor(*node))
         return false;
 
     if (ImageOverlay::isOverlayText(*node))
@@ -915,7 +915,7 @@ bool EventHandler::handleMousePressEvent(const MouseEventWithHitTestResults& eve
     cancelFakeMouseMoveEvent();
 #endif
 
-    frame->protectedDocument()->updateLayoutIgnorePendingStylesheets();
+    protect(frame->document())->updateLayoutIgnorePendingStylesheets();
 
     RefPtr view = frame->view();
     if (view && view->isPointInScrollbarCorner(flooredIntPoint(event.event().position())))
@@ -948,7 +948,7 @@ bool EventHandler::handleMousePressEvent(const MouseEventWithHitTestResults& eve
     if (event.isOverWidget() && passWidgetMouseDownEventToWidget(event))
         return true;
 
-    if (RefPtr svgDocument = dynamicDowncast<SVGDocument>(*frame->protectedDocument()); svgDocument && svgDocument->zoomAndPanEnabled()) {
+    if (RefPtr svgDocument = dynamicDowncast<SVGDocument>(*protect(frame->document())); svgDocument && svgDocument->zoomAndPanEnabled()) {
         if (event.event().shiftKey() && singleClick) {
             m_svgPan = true;
             svgDocument->startPan(frame->protectedView()->windowToContents(flooredIntPoint(event.event().position())));
@@ -962,7 +962,7 @@ bool EventHandler::handleMousePressEvent(const MouseEventWithHitTestResults& eve
         focusDocumentView();
 
     m_mousePressNode = event.targetNode();
-    frame->protectedDocument()->setFocusNavigationStartingNode(event.protectedTargetNode().get());
+    protect(frame->document())->setFocusNavigationStartingNode(event.protectedTargetNode().get());
 
 #if ENABLE(DRAG_SUPPORT)
     m_dragStartPosition = flooredIntPoint(event.event().position());
@@ -1073,11 +1073,11 @@ bool EventHandler::handleMouseDraggedEvent(const MouseEventWithHitTestResults& e
 
     if (m_selectionInitiationState != ExtendedSelection) {
         HitTestResult result(m_mouseDownContentsPosition);
-        frame->protectedDocument()->hitTest(HitTestRequest(), result);
+        protect(frame->document())->hitTest(HitTestRequest(), result);
 
         updateSelectionForMouseDrag(result);
     } else
-        event.targetNode()->protectedDocument()->updateStyleIfNeeded();
+        protect(event.targetNode()->document())->updateStyleIfNeeded();
     updateSelectionForMouseDrag(event.hitTestResult());
     return true;
 }
@@ -1419,7 +1419,7 @@ HitTestResult EventHandler::hitTestResultAtPoint(const LayoutPoint& point, Optio
     HitTestRequest request(hitType);
     document->hitTest(request, result);
     if (!request.readOnly())
-        frame->protectedDocument()->updateHoverActiveState(request, result.protectedTargetElement().get());
+        protect(frame->document())->updateHoverActiveState(request, result.protectedTargetElement().get());
 
     RefPtr innerNode = result.innerNode();
     if (request.disallowsUserAgentShadowContent()
@@ -1481,7 +1481,7 @@ bool EventHandler::scrollRecursively(ScrollDirection direction, ScrollGranularit
     // The layout needs to be up to date to determine if we can scroll. We may be
     // here because of an onLoad event, in which case the final layout hasn't been performed yet.
     Ref frame = m_frame.get();
-    frame->protectedDocument()->updateLayoutIgnorePendingStylesheets();
+    protect(frame->document())->updateLayoutIgnorePendingStylesheets();
     if (scrollOverflow(direction, granularity, startingNode))
         return true;
 
@@ -1503,7 +1503,7 @@ bool EventHandler::logicalScrollRecursively(ScrollLogicalDirection direction, Sc
 
     // The layout needs to be up to date to determine if we can scroll. We may be
     // here because of an onLoad event, in which case the final layout hasn't been performed yet.
-    frame->protectedDocument()->updateLayoutIgnorePendingStylesheets();
+    protect(frame->document())->updateLayoutIgnorePendingStylesheets();
     if (logicalScrollOverflow(direction, granularity, startingNode))
         return true;    
 
@@ -2011,7 +2011,7 @@ HandleUserInputEventResult EventHandler::handleMousePressEvent(const PlatformMou
         return true;
 #endif
 
-    UserGestureIndicator gestureIndicator(IsProcessingUserGesture::Yes, frame->protectedDocument().get(), userGestureTypeForPlatformEvent(platformMouseEvent), UserGestureIndicator::ProcessInteractionStyle::Immediate, platformMouseEvent.authorizationToken());
+    UserGestureIndicator gestureIndicator(IsProcessingUserGesture::Yes, protect(frame->document()).get(), userGestureTypeForPlatformEvent(platformMouseEvent), UserGestureIndicator::ProcessInteractionStyle::Immediate, platformMouseEvent.authorizationToken());
 
     // FIXME (bug 68185): this call should be made at another abstraction layer
     frame->loader().resetMultipleFormSubmissionProtection();
@@ -2043,7 +2043,7 @@ HandleUserInputEventResult EventHandler::handleMousePressEvent(const PlatformMou
     // Save the document point we generate in case the window coordinate is invalidated by what happens
     // when we dispatch the event.
     DoublePoint documentPoint = documentPointForWindowPoint(frame, platformMouseEvent.position());
-    MouseEventWithHitTestResults mouseEvent = frame->protectedDocument()->prepareMouseEvent(hitType, documentPoint, platformMouseEvent);
+    MouseEventWithHitTestResults mouseEvent = protect(frame->document())->prepareMouseEvent(hitType, documentPoint, platformMouseEvent);
 
     if (!mouseEvent.targetNode()) {
         invalidateClick();
@@ -2051,7 +2051,7 @@ HandleUserInputEventResult EventHandler::handleMousePressEvent(const PlatformMou
     }
 
     m_mousePressNode = mouseEvent.targetNode();
-    frame->protectedDocument()->setFocusNavigationStartingNode(mouseEvent.protectedTargetNode().get());
+    protect(frame->document())->setFocusNavigationStartingNode(mouseEvent.protectedTargetNode().get());
 
     RefPtr scrollbar = scrollbarForMouseEvent(mouseEvent, frame->view());
     updateLastScrollbarUnderMouse(scrollbar.get(), SetOrClearLastScrollbar::Set);
@@ -2130,14 +2130,14 @@ HandleUserInputEventResult EventHandler::handleMousePressEvent(const PlatformMou
     // in case the scrollbar widget was destroyed when the mouse event was handled.
     if (mouseEvent.scrollbar()) {
         const bool wasLastScrollBar = mouseEvent.scrollbar() == m_lastScrollbarUnderMouse;
-        mouseEvent = frame->protectedDocument()->prepareMouseEvent(HitTestRequest(), documentPoint, platformMouseEvent);
+        mouseEvent = protect(frame->document())->prepareMouseEvent(HitTestRequest(), documentPoint, platformMouseEvent);
         if (wasLastScrollBar && mouseEvent.scrollbar() != m_lastScrollbarUnderMouse)
             m_lastScrollbarUnderMouse = nullptr;
     }
 
     if (!swallowEvent) {
         if (shouldRefetchEventTarget(mouseEvent))
-            mouseEvent = frame->protectedDocument()->prepareMouseEvent(HitTestRequest(), documentPoint, platformMouseEvent);
+            mouseEvent = protect(frame->document())->prepareMouseEvent(HitTestRequest(), documentPoint, platformMouseEvent);
     }
 
     if (!swallowEvent) {
@@ -2157,7 +2157,7 @@ bool EventHandler::handleMouseDoubleClickEvent(const PlatformMouseEvent& platfor
 
     frame->selection().setCaretBlinkingSuspended(false);
 
-    UserGestureIndicator gestureIndicator(IsProcessingUserGesture::Yes, frame->protectedDocument().get(), userGestureTypeForPlatformEvent(platformMouseEvent));
+    UserGestureIndicator gestureIndicator(IsProcessingUserGesture::Yes, protect(frame->document()).get(), userGestureTypeForPlatformEvent(platformMouseEvent));
 
 #if ENABLE(POINTER_LOCK)
     if (frame->page()->pointerLockController().isLocked()) {
@@ -2335,7 +2335,7 @@ HandleUserInputEventResult EventHandler::handleMouseMoveEvent(const PlatformMous
 #endif
 
     if (m_svgPan) {
-        downcast<SVGDocument>(*frame->protectedDocument()).updatePan(frame->protectedView()->windowToContents(FloatPoint(valueOrDefault(m_lastKnownMousePosition))));
+        downcast<SVGDocument>(*protect(frame->document())).updatePan(frame->protectedView()->windowToContents(FloatPoint(valueOrDefault(m_lastKnownMousePosition))));
         return true;
     }
 
@@ -2539,7 +2539,7 @@ HandleUserInputEventResult EventHandler::handleMouseReleaseEvent(const PlatformM
         return true;
 #endif
 
-    UserGestureIndicator gestureIndicator(IsProcessingUserGesture::Yes, frame->protectedDocument().get(), userGestureTypeForPlatformEvent(platformMouseEvent), UserGestureIndicator::ProcessInteractionStyle::Immediate, platformMouseEvent.authorizationToken());
+    UserGestureIndicator gestureIndicator(IsProcessingUserGesture::Yes, protect(frame->document()).get(), userGestureTypeForPlatformEvent(platformMouseEvent), UserGestureIndicator::ProcessInteractionStyle::Immediate, platformMouseEvent.authorizationToken());
 
 #if ENABLE(PAN_SCROLLING)
     m_autoscrollController->handleMouseReleaseEvent(platformMouseEvent);
@@ -2550,7 +2550,7 @@ HandleUserInputEventResult EventHandler::handleMouseReleaseEvent(const PlatformM
 
     if (m_svgPan) {
         m_svgPan = false;
-        downcast<SVGDocument>(*frame->protectedDocument()).updatePan(frame->protectedView()->windowToContents(FloatPoint(valueOrDefault(m_lastKnownMousePosition))));
+        downcast<SVGDocument>(*protect(frame->document())).updatePan(frame->protectedView()->windowToContents(FloatPoint(valueOrDefault(m_lastKnownMousePosition))));
         return true;
     }
 
@@ -2770,7 +2770,7 @@ static bool findDropZone(Node& target, DataTransfer& dataTransfer)
                 if (!dragOperation)
                     dragOperation = operationFromKeyword;
             } else
-                matched = matched || hasDropZoneType(target.protectedDocument(), dataTransfer, keyword.string());
+                matched = matched || hasDropZoneType(protect(target.document()), dataTransfer, keyword.string());
             if (matched && dragOperation)
                 break;
         }
@@ -2784,7 +2784,7 @@ static bool findDropZone(Node& target, DataTransfer& dataTransfer)
 
 EventHandler::DragTargetResponse EventHandler::dispatchDragEnterOrDragOverEvent(const AtomString& eventType, Element& target, const PlatformMouseEvent& event, std::unique_ptr<Pasteboard>&& pasteboard, OptionSet<DragOperation> sourceOperationMask, bool draggingFiles)
 {
-    auto dataTransfer = DataTransfer::createForUpdatingDropTarget(target.protectedDocument(), WTF::move(pasteboard), sourceOperationMask, draggingFiles);
+    auto dataTransfer = DataTransfer::createForUpdatingDropTarget(protect(target.document()), WTF::move(pasteboard), sourceOperationMask, draggingFiles);
     bool accept = dispatchDragEvent(eventType, target, event, dataTransfer.get());
     if (!accept)
         accept = findDropZone(target, dataTransfer);
@@ -2835,7 +2835,7 @@ EventHandler::DragTargetResponse EventHandler::updateDragAndDrop(const PlatformM
             if (RefPtr localTargetFrame = dynamicDowncast<LocalFrame>(targetFrame))
                 response = localTargetFrame->eventHandler().updateDragAndDrop(event, makePasteboard, sourceOperationMask, draggingFiles);
         } else if (RefPtr dragTarget = m_dragTarget) {
-            auto dataTransfer = DataTransfer::createForUpdatingDropTarget(dragTarget->protectedDocument(), makePasteboard(), sourceOperationMask, draggingFiles);
+            auto dataTransfer = DataTransfer::createForUpdatingDropTarget(protect(dragTarget->document()), makePasteboard(), sourceOperationMask, draggingFiles);
             dispatchDragEvent(eventNames().dragleaveEvent, *dragTarget, event, dataTransfer.get());
             dataTransfer->makeInvalidForSecurity();
         }
@@ -2871,7 +2871,7 @@ void EventHandler::cancelDragAndDrop(const PlatformMouseEvent& event, std::uniqu
     } else if (RefPtr dragTarget = m_dragTarget) {
         dispatchEventToDragSourceElement(eventNames().dragEvent, event);
 
-        auto dataTransfer = DataTransfer::createForUpdatingDropTarget(dragTarget->protectedDocument(), WTF::move(pasteboard), sourceOperationMask, draggingFiles);
+        auto dataTransfer = DataTransfer::createForUpdatingDropTarget(protect(dragTarget->document()), WTF::move(pasteboard), sourceOperationMask, draggingFiles);
         dispatchDragEvent(eventNames().dragleaveEvent, *dragTarget, event, dataTransfer.get());
         dataTransfer->makeInvalidForSecurity();
     }
@@ -2905,7 +2905,7 @@ DragEventTargetData EventHandler::performDragAndDrop(const PlatformMouseEvent& e
         }
 #endif
     } else if (RefPtr dragTarget = m_dragTarget) {
-        Ref dataTransfer = DataTransfer::createForDrop(dragTarget->protectedDocument(), WTF::move(pasteboard), sourceOperationMask, draggingFiles);
+        Ref dataTransfer = DataTransfer::createForDrop(protect(dragTarget->document()), WTF::move(pasteboard), sourceOperationMask, draggingFiles);
         preventedDefault = dispatchDragEvent(eventNames().dropEvent, *dragTarget, event, dataTransfer);
         dataTransfer->makeInvalidForSecurity();
     }
@@ -2957,7 +2957,7 @@ MouseEventWithHitTestResults EventHandler::prepareMouseEvent(const HitTestReques
     m_lastPlatformMouseEvent = mouseEvent;
     Ref frame = m_frame.get();
     ASSERT(frame->document());
-    return frame->protectedDocument()->prepareMouseEvent(request, documentPointForWindowPoint(frame, mouseEvent.position()), mouseEvent);
+    return protect(frame->document())->prepareMouseEvent(request, documentPointForWindowPoint(frame, mouseEvent.position()), mouseEvent);
 }
 
 static bool hierarchyHasCapturingEventListeners(Element* element, const AtomString& pointerEventName, const AtomString& compatibilityMouseEventName)
@@ -3327,7 +3327,7 @@ bool EventHandler::dispatchMouseEvent(const AtomString& eventType, Node* targetN
         return true;
 
     // The layout needs to be up to date to determine if an element is focusable.
-    frame->protectedDocument()->updateLayoutIgnorePendingStylesheets();
+    protect(frame->document())->updateLayoutIgnorePendingStylesheets();
 
     // Remove focus from the currently focused element when a link or button is clicked.
     // This is expected by some sites that rely on change event handlers running
@@ -3369,7 +3369,7 @@ bool EventHandler::dispatchMouseEvent(const AtomString& eventType, Node* targetN
     // which makes us behave differently than other browsers when a button is clicked,
     // because the button is not actually focused so we don't set the latest FocusTrigger.
     if (m_elementUnderMouse && !m_elementUnderMouse->isMouseFocusable() && is<HTMLFormControlElement>(m_elementUnderMouse))
-        frame->protectedDocument()->setLatestFocusTrigger(FocusTrigger::Click);
+        protect(frame->document())->setLatestFocusTrigger(FocusTrigger::Click);
 #endif
 
     // If focus shift is blocked, we eat the event.
@@ -4094,7 +4094,7 @@ bool EventHandler::handleAccessKey(const PlatformKeyboardEvent& event)
 
     if ((event.modifiers() - PlatformEvent::Modifier::ShiftKey) != accessKeyModifiers())
         return false;
-    RefPtr element = frame->protectedDocument()->elementForAccessKey(event.unmodifiedText());
+    RefPtr element = protect(frame->document())->elementForAccessKey(event.unmodifiedText());
     if (!element)
         return false;
     element->accessKeyAction(false);
@@ -4153,7 +4153,7 @@ bool EventHandler::keyEvent(const PlatformKeyboardEvent& keyEvent)
     }
 
     if (!wasHandled && frame->document())
-        frame->protectedDocument()->updateLastHandledUserGestureTimestamp(savedLastHandledUserGestureTimestamp);
+        protect(frame->document())->updateLastHandledUserGestureTimestamp(savedLastHandledUserGestureTimestamp);
 
     return wasHandled;
 }
@@ -4228,14 +4228,14 @@ bool EventHandler::internalKeyEvent(const PlatformKeyboardEvent& initialKeyEvent
 
     // Check for cases where we are too early for events -- possible unmatched key up
     // from pressing return in the location bar.
-    RefPtr<Element> element = eventTargetElementForDocument(frame->protectedDocument().get());
+    RefPtr<Element> element = eventTargetElementForDocument(protect(frame->document()).get());
     if (!element)
         return false;
 
     UserGestureType gestureType = userGestureTypeForPlatformEvent(initialKeyEvent);
 
-    auto canRequestDOMPaste = frame->protectedDocument()->quirks().needsDisableDOMPasteAccessQuirk() ? CanRequestDOMPaste::No : CanRequestDOMPaste::Yes;
-    UserGestureIndicator gestureIndicator(IsProcessingUserGesture::Yes, frame->protectedDocument().get(), gestureType, UserGestureIndicator::ProcessInteractionStyle::Delayed, initialKeyEvent.authorizationToken(), canRequestDOMPaste);
+    auto canRequestDOMPaste = protect(frame->document())->quirks().needsDisableDOMPasteAccessQuirk() ? CanRequestDOMPaste::No : CanRequestDOMPaste::Yes;
+    UserGestureIndicator gestureIndicator(IsProcessingUserGesture::Yes, protect(frame->document()).get(), gestureType, UserGestureIndicator::ProcessInteractionStyle::Delayed, initialKeyEvent.authorizationToken(), canRequestDOMPaste);
     UserTypingGestureIndicator typingGestureIndicator(frame);
 
     // FIXME (bug 68185): this call should be made at another abstraction layer
@@ -4325,7 +4325,7 @@ bool EventHandler::internalKeyEvent(const PlatformKeyboardEvent& initialKeyEvent
     // Focus may have changed during keydown handling, so refetch element.
     // But if we are dispatching a fake backward compatibility keypress, then we pretend that the keypress happened on the original element.
     if (!keydownResult) {
-        element = eventTargetElementForDocument(frame->protectedDocument().get());
+        element = eventTargetElementForDocument(protect(frame->document()).get());
         if (!element)
             return false;
         setHasFocusVisibleIfNeeded(*element);
@@ -4699,7 +4699,7 @@ bool EventHandler::handleDrag(const MouseEventWithHitTestResults& event, CheckDr
 
         // Try to find an element that wants to be dragged.
         HitTestResult result(m_mouseDownContentsPosition);
-        frame->protectedDocument()->hitTest(OptionSet<HitTestRequest::Type> { HitTestRequest::Type::ReadOnly, HitTestRequest::Type::DisallowUserAgentShadowContent }, result);
+        protect(frame->document())->hitTest(OptionSet<HitTestRequest::Type> { HitTestRequest::Type::ReadOnly, HitTestRequest::Type::DisallowUserAgentShadowContent }, result);
         if (RefPtr page = frame->page())
             setDragStateSource(page->dragController().draggableElement(frame.ptr(), result.protectedTargetElement().get(), m_mouseDownContentsPosition, dragState()).get());
 
@@ -4775,14 +4775,14 @@ bool EventHandler::handleDrag(const MouseEventWithHitTestResults& event, CheckDr
     
     if (dragState().shouldDispatchEvents) {
         ASSERT(draggedElement());
-        auto dragStartDataTransfer = DataTransfer::createForDragStartEvent(draggedElement()->protectedDocument());
+        auto dragStartDataTransfer = DataTransfer::createForDragStartEvent(protect(draggedElement()->document()));
         m_mouseDownMayStartDrag = dispatchDragStartEventOnSourceElement(dragStartDataTransfer);
         if (downcast<StaticPasteboard>(dragStartDataTransfer->pasteboard()).hasNonDefaultData())
             hasNonDefaultPasteboardData = HasNonDefaultPasteboardData::Yes;
         dragState().dataTransfer->moveDragState(WTF::move(dragStartDataTransfer));
 
         if (RefPtr draggedElement = this->draggedElement(); draggedElement && dragState().type == DragSourceAction::DHTML && !dragState().dataTransfer->hasDragImage()) {
-            draggedElement->protectedDocument()->updateStyleIfNeeded();
+            protect(draggedElement->document())->updateStyleIfNeeded();
             if (auto* renderer = draggedElement->renderer()) {
                 auto absolutePosition = renderer->localToAbsolute();
                 auto delta = m_mouseDownContentsPosition - roundedIntPoint(absolutePosition);
@@ -4869,7 +4869,7 @@ bool EventHandler::handleTextInputEvent(const String& text, Event* underlyingEve
     if (underlyingEvent)
         target = underlyingEvent->target();
     else
-        target = eventTargetElementForDocument(frame->protectedDocument().get());
+        target = eventTargetElementForDocument(protect(frame->document()).get());
     if (!target)
         return false;
 
@@ -5192,7 +5192,7 @@ bool EventHandler::keyboardScrollRecursively(std::optional<ScrollDirection> dire
 
     Ref frame = m_frame.get();
 
-    frame->protectedDocument()->updateLayoutIgnorePendingStylesheets();
+    protect(frame->document())->updateLayoutIgnorePendingStylesheets();
 
     if (startKeyboardScrollAnimationOnEnclosingScrollableContainer(*direction, *granularity, startingNode, isKeyRepeat))
         return true;
@@ -5218,7 +5218,7 @@ bool EventHandler::keyboardScroll(std::optional<ScrollDirection> direction, std:
 
     Ref frame = m_frame.get();
 
-    frame->protectedDocument()->updateLayoutIgnorePendingStylesheets();
+    protect(frame->document())->updateLayoutIgnorePendingStylesheets();
 
     if (startKeyboardScrollAnimationOnEnclosingScrollableContainer(*direction, *granularity, startingNode, isKeyRepeat))
         return true;
@@ -5370,7 +5370,7 @@ static HitTestResult hitTestResultInFrame(LocalFrame* frame, const LayoutPoint& 
         if (!rect.contains(roundedIntPoint(point)))
             return result;
     }
-    frame->protectedDocument()->hitTest(hitType, result);
+    protect(frame->document())->hitTest(hitType, result);
     return result;
 }
 
@@ -5401,7 +5401,7 @@ Expected<bool, RemoteFrameGeometryTransformer> EventHandler::handleTouchEvent(co
     std::array<Touches, PlatformTouchPoint::TouchStateEnd> changedTouches;
 
     const Vector<PlatformTouchPoint>& points = event.touchPoints();
-    UserGestureIndicator gestureIndicator(IsProcessingUserGesture::Yes, frame->protectedDocument().get(), userGestureTypeForPlatformEvent(event), UserGestureIndicator::ProcessInteractionStyle::Immediate, event.authorizationToken());
+    UserGestureIndicator gestureIndicator(IsProcessingUserGesture::Yes, protect(frame->document()).get(), userGestureTypeForPlatformEvent(event), UserGestureIndicator::ProcessInteractionStyle::Immediate, event.authorizationToken());
 
     bool freshTouchEvents = true;
     bool allTouchReleased = true;
@@ -5486,7 +5486,7 @@ Expected<bool, RemoteFrameGeometryTransformer> EventHandler::handleTouchEvent(co
         } else if (pointState == PlatformTouchPoint::TouchReleased || pointState == PlatformTouchPoint::TouchCancelled) {
             // No need to perform a hit-test since we only need to unset :hover and :active states.
             if (!shouldGesturesTriggerActive() && allTouchReleased)
-                frame->protectedDocument()->updateHoverActiveState(hitType, 0);
+                protect(frame->document())->updateHoverActiveState(hitType, 0);
             if (touchPointTargetKey == m_originatingTouchPointTargetKey)
                 m_originatingTouchPointTargetKey = 0;
 

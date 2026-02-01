@@ -349,7 +349,7 @@ void HTMLVideoElement::mediaPlayerFirstVideoFrameAvailable()
 
     if (CheckedPtr renderer = this->renderer()) {
         renderer->updateFromElement();
-        protectedDocument()->didPaintImage(*this, nullptr, renderer->videoBox());
+        protect(document())->didPaintImage(*this, nullptr, renderer->videoBox());
     }
 }
 
@@ -514,7 +514,7 @@ URL HTMLVideoElement::posterImageURL() const
     auto url = imageSourceURL().string().trim(isASCIIWhitespace);
     if (url.isEmpty())
         return URL();
-    return protectedDocument()->completeURL(url);
+    return protect(document())->completeURL(url);
 }
 
 #if ENABLE(VIDEO_PRESENTATION_MODE)

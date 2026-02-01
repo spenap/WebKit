@@ -201,7 +201,7 @@ void removeOverlaySoonIfNeeded(HTMLElement& element)
     if (!hasOverlay(element))
         return;
 
-    element.protectedDocument()->checkedEventLoop()->queueTask(TaskSource::InternalAsyncTask, [weakElement = WeakPtr { element }] {
+    protect(element.document())->checkedEventLoop()->queueTask(TaskSource::InternalAsyncTask, [weakElement = WeakPtr { element }] {
         RefPtr element = weakElement.get();
         if (!element)
             return;
@@ -237,7 +237,7 @@ IntRect containerRect(HTMLElement& element)
 static void installImageOverlayStyleSheet(ShadowRoot& shadowRoot)
 {
     static MainThreadNeverDestroyed<const String> shadowStyle(StringImpl::createWithoutCopying(imageOverlayUserAgentStyleSheet));
-    Ref style = HTMLStyleElement::create(HTMLNames::styleTag, shadowRoot.protectedDocument(), false);
+    Ref style = HTMLStyleElement::create(HTMLNames::styleTag, protect(shadowRoot.document()), false);
     style->setTextContent(String { shadowStyle });
     shadowRoot.appendChild(WTF::move(style));
 }

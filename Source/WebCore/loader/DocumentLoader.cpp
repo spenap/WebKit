@@ -608,7 +608,7 @@ void DocumentLoader::matchRegistration(const URL& url, SWClientConnection::Regis
     }
 
     RefPtr frame = m_frame.get();
-    auto origin = (!frame->isMainFrame() && frame->document()) ? frame->protectedDocument()->topOrigin().data() : SecurityOriginData::fromURL(url);
+    auto origin = (!frame->isMainFrame() && frame->document()) ? protect(frame->document())->topOrigin().data() : SecurityOriginData::fromURL(url);
     if (!ServiceWorkerProvider::singleton().protectedServiceWorkerConnection()->mayHaveServiceWorkerRegisteredForOrigin(origin)) {
         callback(std::nullopt);
         return;
@@ -685,7 +685,7 @@ void DocumentLoader::willSendRequest(ResourceRequest&& newRequest, const Resourc
             DOCUMENTLOADER_RELEASE_LOG("willSendRequest: canceling - redirecting URL scheme is not allowed");
             loadErrorDocument();
             if (frame && frame->document())
-                frame->protectedDocument()->addConsoleMessage(MessageSource::Security, MessageLevel::Error, makeString("Not allowed to redirect to "_s, newRequest.url().stringCenterEllipsizedToLength(), " due to its scheme"_s));
+                protect(frame->document())->addConsoleMessage(MessageSource::Security, MessageLevel::Error, makeString("Not allowed to redirect to "_s, newRequest.url().stringCenterEllipsizedToLength(), " due to its scheme"_s));
 
             if (RefPtr frameLoader = this->frameLoader())
                 cancelMainResourceLoad(frameLoader->blockedError(newRequest));
@@ -977,7 +977,7 @@ void DocumentLoader::responseReceived(ResourceResponse&& response, CompletionHan
             if (!frameOptions.isNull()) {
                 if (protectedFrameLoader()->shouldInterruptLoadForXFrameOptions(frameOptions, url, identifier)) {
                     auto message = makeString("Refused to display '"_s, url.stringCenterEllipsizedToLength(), "' in a frame because it set 'X-Frame-Options' to '"_s, frameOptions, "'."_s);
-                    frame->protectedDocument()->addConsoleMessage(MessageSource::Security, MessageLevel::Error, message, identifier.toUInt64());
+                    protect(frame->document())->addConsoleMessage(MessageSource::Security, MessageLevel::Error, message, identifier.toUInt64());
                     stopLoadingAfterXFrameOptionsOrContentSecurityPolicyDenied(identifier, response);
                     return;
                 }
@@ -1380,7 +1380,7 @@ void DocumentLoader::commitData(const SharedBuffer& data)
 
 #if ENABLE(CONTENT_EXTENSIONS)
     if (!m_pendingNamedContentExtensionStyleSheets.isEmpty() || !m_pendingContentExtensionDisplayNoneSelectors.isEmpty()) {
-        CheckedRef extensionStyleSheets = m_frame->protectedDocument()->extensionStyleSheets();
+        CheckedRef extensionStyleSheets = protect(m_frame->document())->extensionStyleSheets();
         for (auto& pendingStyleSheet : m_pendingNamedContentExtensionStyleSheets)
             extensionStyleSheets->maybeAddContentExtensionSheet(pendingStyleSheet.key, Ref { pendingStyleSheet.value });
         for (auto& pendingSelectorEntry : m_pendingContentExtensionDisplayNoneSelectors) {
@@ -1457,7 +1457,7 @@ void DocumentLoader::checkLoadComplete()
         return;
 
     ASSERT(this == frameLoader()->activeDocumentLoader());
-    m_frame->protectedDocument()->protectedWindow()->finishedLoading();
+    protect(m_frame->document())->protectedWindow()->finishedLoading();
 }
 
 void DocumentLoader::applyPoliciesToSettings()
@@ -2287,7 +2287,7 @@ void DocumentLoader::loadMainResource(ResourceRequest&& request)
     CachedResourceRequest mainResourceRequest(WTF::move(request), mainResourceLoadOptions);
     if (!frame->isMainFrame() && frame->document()) {
         // If we are loading the main resource of a subframe, use the cache partition of the main document.
-        mainResourceRequest.setDomainForCachePartition(*frame->protectedDocument());
+        mainResourceRequest.setDomainForCachePartition(*protect(frame->document()));
     } else {
         if (protectedFrameLoader()->frame().settings().storageBlockingPolicy() != StorageBlockingPolicy::BlockThirdParty)
             mainResourceRequest.setDomainForCachePartition(emptyString());
@@ -2596,12 +2596,12 @@ PreviewConverter* DocumentLoader::previewConverter() const
 
 void DocumentLoader::addConsoleMessage(MessageSource messageSource, MessageLevel messageLevel, const String& message, unsigned long requestIdentifier)
 {
-    protectedFrame()->protectedDocument()->addConsoleMessage(messageSource, messageLevel, message, requestIdentifier);
+    protect(protectedFrame()->document())->addConsoleMessage(messageSource, messageLevel, message, requestIdentifier);
 }
 
 void DocumentLoader::enqueueSecurityPolicyViolationEvent(SecurityPolicyViolationEventInit&& eventInit)
 {
-    protectedFrame()->protectedDocument()->enqueueSecurityPolicyViolationEvent(WTF::move(eventInit));
+    protect(protectedFrame()->document())->enqueueSecurityPolicyViolationEvent(WTF::move(eventInit));
 }
 
 #if ENABLE(CONTENT_FILTERING)

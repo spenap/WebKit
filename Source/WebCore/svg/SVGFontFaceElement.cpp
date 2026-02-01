@@ -296,7 +296,7 @@ void SVGFontFaceElement::rebuildFontFace()
         }
     }
 
-    protectedDocument()->styleScope().didChangeStyleSheetEnvironment();
+    protect(document())->styleScope().didChangeStyleSheetEnvironment();
 }
 
 Node::InsertedIntoAncestorResult SVGFontFaceElement::insertedIntoAncestor(InsertionType insertionType, ContainerNode& parentOfInsertedTree)
@@ -306,7 +306,7 @@ Node::InsertedIntoAncestorResult SVGFontFaceElement::insertedIntoAncestor(Insert
         ASSERT(!m_fontElement);
         return InsertedIntoAncestorResult::Done;
     }
-    protectedDocument()->svgExtensions().registerSVGFontFaceElement(*this);
+    protect(document())->svgExtensions().registerSVGFontFaceElement(*this);
 
     rebuildFontFace();
     return result;

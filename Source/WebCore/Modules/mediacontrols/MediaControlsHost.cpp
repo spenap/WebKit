@@ -227,7 +227,7 @@ MediaControlTextTrackContainerElement* MediaControlsHost::ensureTextTrackContain
 {
     if (!m_textTrackContainer) {
         Ref mediaElement = m_mediaElement.get();
-        m_textTrackContainer = MediaControlTextTrackContainerElement::create(mediaElement->protectedDocument().get(), mediaElement);
+        m_textTrackContainer = MediaControlTextTrackContainerElement::create(protect(mediaElement->document()).get(), mediaElement);
     }
 
     return m_textTrackContainer.get();
@@ -340,7 +340,7 @@ bool MediaControlsHost::supportsRewind() const
 
 bool MediaControlsHost::needsChromeMediaControlsPseudoElement() const
 {
-    return protectedMediaElement()->protectedDocument()->quirks().needsChromeMediaControlsPseudoElement();
+    return protect(protectedMediaElement()->document())->quirks().needsChromeMediaControlsPseudoElement();
 }
 
 bool MediaControlsHost::isMediaControlsMacInlineSizeSpecsEnabled() const

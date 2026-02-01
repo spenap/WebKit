@@ -297,7 +297,7 @@ bool ScriptElement::prepareScript(const TextPosition& scriptStartPosition)
     case ScriptType::SpeculationRules: {
         // If the element has a source attribute, queue a task to fire an event named error at the element, and return.
         if (hasSourceAttribute()) {
-            element->protectedDocument()->checkedEventLoop()->queueTask(TaskSource::DOMManipulation, [protectedThis = Ref { *this }] {
+            protect(element->document())->checkedEventLoop()->queueTask(TaskSource::DOMManipulation, [protectedThis = Ref { *this }] {
                 protectedThis->dispatchErrorEvent();
             });
             return false;
@@ -567,7 +567,7 @@ void ScriptElement::executeScriptAndDispatchEvent(LoadableScript& loadableScript
             // When the script is "null" due to a fetch error, an error event
             // should be dispatched for the script element.
             if (std::optional<LoadableScript::ConsoleMessage> message = error->consoleMessage)
-                element().protectedDocument()->addConsoleMessage(message->source, message->level, message->message);
+                protect(element().document())->addConsoleMessage(message->source, message->level, message->message);
             dispatchErrorEvent();
             break;
         }

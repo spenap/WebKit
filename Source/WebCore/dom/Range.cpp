@@ -756,7 +756,7 @@ ExceptionOr<Ref<DocumentFragment>> Range::createContextualFragment(Variant<RefPt
     else
         element = node->parentElement();
     if (!element || (element->document().isHTMLDocument() && is<HTMLHtmlElement>(*element)))
-        element = HTMLBodyElement::create(node->protectedDocument());
+        element = HTMLBodyElement::create(protect(node->document()));
     return WebCore::createContextualFragment(*element, stringValueHolder.releaseReturnValue(), { ParserContentPolicy::AllowScriptingContent, ParserContentPolicy::DoNotMarkAlreadyStarted });
 }
 
@@ -1094,7 +1094,7 @@ ExceptionOr<void> Range::expand(const String& unit)
 
 Ref<DOMRectList> Range::getClientRects() const
 {
-    startContainer().protectedDocument()->updateLayout();
+    protect(startContainer().document())->updateLayout();
     return DOMRectList::create(RenderObject::clientBorderAndTextRects(makeSimpleRange(*this)));
 }
 
@@ -1105,7 +1105,7 @@ Ref<DOMRect> Range::getBoundingClientRect() const
 
 Ref<DOMRect> Range::boundingClientRect(const SimpleRange& simpleRange)
 {
-    simpleRange.startContainer().protectedDocument()->updateLayout();
+    protect(simpleRange.startContainer().document())->updateLayout();
     return DOMRect::create(unionRectIgnoringZeroRects(RenderObject::clientBorderAndTextRects(simpleRange)));
 }
 

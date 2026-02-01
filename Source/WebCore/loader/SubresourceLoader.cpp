@@ -117,7 +117,7 @@ SubresourceLoader::SubresourceLoader(LocalFrame& frame, CachedResource& resource
     : ResourceLoader(frame, options)
     , m_resource(resource)
     , m_state(Uninitialized)
-    , m_requestCountTracker(std::in_place, frame.protectedDocument()->cachedResourceLoader(), resource)
+    , m_requestCountTracker(std::in_place, protect(frame.document())->cachedResourceLoader(), resource)
 {
 #if ENABLE(CONTENT_EXTENSIONS)
     m_resourceType = ContentExtensions::toResourceType(resource.type(), resource.resourceRequest().requester(), frame.isMainFrame());
@@ -252,7 +252,7 @@ void SubresourceLoader::willSendRequestInternal(ResourceRequest&& newRequest, co
                 ResourceError error { errorDomainWebKitInternal, 0, request().url(), makeString("Not allowed to follow a redirection while loading "_s, request().url().string()), ResourceError::Type::AccessControl };
 
                 if (RefPtr frame = m_frame.get(); frame && frame->document())
-                    frame->protectedDocument()->addConsoleMessage(MessageSource::Security, MessageLevel::Error, error.localizedDescription());
+                    protect(frame->document())->addConsoleMessage(MessageSource::Security, MessageLevel::Error, error.localizedDescription());
 
                 SUBRESOURCELOADER_RELEASE_LOG(SUBRESOURCELOADER_WILLSENDREQUESTINTERNAL_RESOURCELOAD_CANCELLED_REDIRECT_NOT_ALLOWED);
 
@@ -316,7 +316,7 @@ void SubresourceLoader::willSendRequestInternal(ResourceRequest&& newRequest, co
         if (!accessControlCheckResult) {
             auto errorMessage = makeString("Cross-origin redirection to "_s, newRequest.url().string(), " denied by Cross-Origin Resource Sharing policy: "_s, accessControlCheckResult.error());
             if (RefPtr frame = m_frame.get(); frame && frame->document())
-                frame->protectedDocument()->addConsoleMessage(MessageSource::Security, MessageLevel::Error, errorMessage);
+                protect(frame->document())->addConsoleMessage(MessageSource::Security, MessageLevel::Error, errorMessage);
             SUBRESOURCELOADER_RELEASE_LOG(SUBRESOURCELOADER_WILLSENDREQUESTINTERNAL_RESOURCE_LOAD_CANCELLED_AFTER_REDIRECT_DENIED_BY_CORS_POLICY);
             cancel(ResourceError(String(), 0, request().url(), errorMessage, ResourceError::Type::AccessControl));
             return completionHandler(WTF::move(newRequest));
@@ -452,7 +452,7 @@ void SubresourceLoader::didReceiveResponse(ResourceResponse&& response, Completi
     auto accessControlCheckResult = checkResponseCrossOriginAccessControl(response);
     if (!accessControlCheckResult) {
         if (frame && frame->document())
-            frame->protectedDocument()->addConsoleMessage(MessageSource::Security, MessageLevel::Error, accessControlCheckResult.error());
+            protect(frame->document())->addConsoleMessage(MessageSource::Security, MessageLevel::Error, accessControlCheckResult.error());
         SUBRESOURCELOADER_RELEASE_LOG(SUBRESOURCELOADER_DIDRECEIVERESPONSE_CANCELING_LOAD_BECAUSE_OF_CROSS_ORIGIN_ACCESS_CONTROL);
         cancel(ResourceError(String(), 0, request().url(), accessControlCheckResult.error(), ResourceError::Type::AccessControl));
         return;
@@ -500,7 +500,7 @@ void SubresourceLoader::didReceiveResponse(ResourceResponse&& response, Completi
 
     bool isResponseMultipart = response.isMultipart();
     if (options().mode != FetchOptions::Mode::Navigate && frame && frame->document())
-        LinkLoader::loadLinksFromHeader(response.httpHeaderField(HTTPHeaderName::Link), protectedDocumentLoader()->url(), *frame->protectedDocument(), LinkLoader::MediaAttributeCheck::SkipMediaAttributeCheck);
+        LinkLoader::loadLinksFromHeader(response.httpHeaderField(HTTPHeaderName::Link), protectedDocumentLoader()->url(), *protect(frame->document()), LinkLoader::MediaAttributeCheck::SkipMediaAttributeCheck);
 
     // https://wicg.github.io/nav-speculation/prefetch.html#clear-prefetch-cache
     if (frame && frame->settings().clearSiteDataHTTPHeaderEnabled()) {
@@ -815,7 +815,7 @@ void SubresourceLoader::didFail(const ResourceError& error)
 
     RefPtr frame = m_frame.get();
     if (frame && frame->document() && error.isAccessControl() && error.domain() != InspectorNetworkAgent::errorDomain() && resource->type() != CachedResource::Type::Ping)
-        frame->protectedDocument()->addConsoleMessage(MessageSource::Security, MessageLevel::Error, error.localizedDescription());
+        protect(frame->document())->addConsoleMessage(MessageSource::Security, MessageLevel::Error, error.localizedDescription());
 
     Ref protectedThis { *this };
     m_state = Finishing;

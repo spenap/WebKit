@@ -327,7 +327,7 @@ void MediaResource::responseReceived(const CachedResource& resource, const Resou
     Ref protectedThis { *this };
     if (m_resource->resourceError().isAccessControl()) {
         static NeverDestroyed<const String> consoleMessage("Cross-origin media resource load denied by Cross-Origin Resource Sharing policy."_s);
-        m_loader->protectedDocument()->addConsoleMessage(MessageSource::Security, MessageLevel::Error, consoleMessage.get());
+        protect(m_loader->document())->addConsoleMessage(MessageSource::Security, MessageLevel::Error, consoleMessage.get());
         m_didPassAccessControlCheck.store(false);
         if (RefPtr client = this->client())
             client->accessControlCheckFailed(*this, ResourceError(errorDomainWebKitInternal, 0, response.url(), consoleMessage.get()));
@@ -337,7 +337,7 @@ void MediaResource::responseReceived(const CachedResource& resource, const Resou
 
     if (!m_loader->verifyMediaResponse(resource.url(), response, resource.protectedOrigin().get())) {
         static NeverDestroyed<const String> consoleMessage("Media response origin validation failed."_s);
-        m_loader->protectedDocument()->addConsoleMessage(MessageSource::Security, MessageLevel::Error, consoleMessage.get());
+        protect(m_loader->document())->addConsoleMessage(MessageSource::Security, MessageLevel::Error, consoleMessage.get());
         if (RefPtr client = this->client())
             client->loadFailed(*this, ResourceError(errorDomainWebKitInternal, 0, response.url(), consoleMessage.get()));
         ensureShutdown();

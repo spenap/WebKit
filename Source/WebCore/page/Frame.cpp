@@ -334,8 +334,8 @@ std::optional<OwnerPermissionsPolicyData> Frame::ownerPermissionsPolicy() const
     if (!owner)
         return std::nullopt;
 
-    auto documentOrigin = owner->protectedDocument()->securityOrigin().data();
-    auto documentPolicy = owner->protectedDocument()->permissionsPolicy();
+    auto documentOrigin = protect(owner->document())->securityOrigin().data();
+    auto documentPolicy = protect(owner->document())->permissionsPolicy();
 
     RefPtr iframe = dynamicDowncast<HTMLIFrameElement>(owner);
     auto containerPolicy = iframe ? PermissionsPolicy::processPermissionsPolicyAttribute(*iframe) : PermissionsPolicy::PolicyDirective { };

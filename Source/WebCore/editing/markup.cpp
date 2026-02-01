@@ -1595,7 +1595,7 @@ static inline bool hasMutationEventListeners(const Document& document)
 static inline bool canUseSetDataOptimization(const Text& containerChild, const ChildListMutationScope& mutationScope)
 {
     bool authorScriptMayHaveReference = containerChild.refCount();
-    return !authorScriptMayHaveReference && !mutationScope.canObserve() && !hasMutationEventListeners(containerChild.protectedDocument());
+    return !authorScriptMayHaveReference && !mutationScope.canObserve() && !hasMutationEventListeners(protect(containerChild.document()));
 }
 
 ExceptionOr<void> replaceChildrenWithFragment(ContainerNode& container, Ref<DocumentFragment>&& fragment)

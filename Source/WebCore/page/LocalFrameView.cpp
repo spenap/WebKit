@@ -3171,7 +3171,7 @@ void LocalFrameView::maintainScrollPositionAtScrollToTextFragmentRange(SimpleRan
 
 void LocalFrameView::scrollElementToRect(const Element& element, const IntRect& rect)
 {
-    m_frame->protectedDocument()->updateLayoutIgnorePendingStylesheets();
+    protect(m_frame->document())->updateLayoutIgnorePendingStylesheets();
 
     LayoutRect bounds;
     if (RenderElement* renderer = element.renderer())
@@ -3452,7 +3452,7 @@ TemporarySelectionChange LocalFrameView::revealRangeWithTemporarySelection(const
         TemporarySelectionOption::UserTriggered,
         TemporarySelectionOption::ForceCenterScroll
     };
-    return { range.startContainer().protectedDocument(), { range }, defaultOptions | extraOptions };
+    return { protect(range.startContainer().document()), { range }, defaultOptions | extraOptions };
 }
 
 static ScrollPositionChangeOptions scrollPositionChangeOptionsForElement(const LocalFrameView& frameView, Element* element, const ScrollRectToVisibleOptions& options)
@@ -5322,7 +5322,7 @@ void LocalFrameView::updateScrollCorner()
         m_scrollCorner = nullptr;
     else {
         if (!m_scrollCorner) {
-            m_scrollCorner = createRenderer<RenderScrollbarPart>(renderer->protectedDocument(), WTF::move(*cornerStyle));
+            m_scrollCorner = createRenderer<RenderScrollbarPart>(protect(renderer->document()), WTF::move(*cornerStyle));
             m_scrollCorner->initializeStyle();
         } else
             m_scrollCorner->setStyle(WTF::move(*cornerStyle));

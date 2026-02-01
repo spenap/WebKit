@@ -726,7 +726,7 @@ static FetchMetadataSite computeFetchMetadataSiteInternal(const ResourceRequest&
     if (mode == FetchOptions::Mode::Navigate && type == CachedResource::Type::MainResource && isDirectlyUserInitiatedRequest)
         return FetchMetadataSite::None;
 
-    Ref contextOrigin = originalOrigin ? *originalOrigin : frame->protectedDocument()->securityOrigin();
+    Ref contextOrigin = originalOrigin ? *originalOrigin : protect(frame->document())->securityOrigin();
     if (type == CachedResource::Type::MainResource && frame && frame->loader().activeDocumentLoader()) {
         if (auto& request = frame->loader().activeDocumentLoader()->triggeringAction().requester())
             contextOrigin = request->securityOrigin;
@@ -947,7 +947,7 @@ CachedResourceHandle<CachedResource> CachedResourceLoader::updateCachedResourceW
     // TODO: we're using the caching policy as a flag to signal that this is a prefetch match. We'd be better off with an explicit prefetch match flag.
     if (resource.options().cachingPolicy == CachingPolicy::AllowCachingMainResourcePrefetch)
         request.setCachingPolicy(CachingPolicy::AllowCachingMainResourcePrefetch);
-    CachedResourceHandle resourceHandle = createResource(resource.type(), WTF::move(request), sessionID, &cookieJar, settings, protectedDocument().get());
+    CachedResourceHandle resourceHandle = createResource(resource.type(), WTF::move(request), sessionID, &cookieJar, settings, protect(document()).get());
     resourceHandle->loadFrom(resource);
     return resourceHandle;
 }
@@ -980,7 +980,7 @@ void CachedResourceLoader::updateHTTPRequestHeaders(FrameLoader& frameLoader, Ca
     // ability it is best to not set any FetchMetadata headers as sites generally expect
     // all of them or none.
     Ref frame = frameLoader.frame();
-    if (frame->document() && !frame->protectedDocument()->quirks().shouldDisableFetchMetadata()) {
+    if (frame->document() && !protect(frame->document())->quirks().shouldDisableFetchMetadata()) {
         auto site = computeFetchMetadataSite(request.resourceRequest(), type, request.options().mode, frame, frame->isMainFrame() && m_documentLoader && m_documentLoader->isRequestFromClientOrUserInput());
         updateRequestFetchMetadataHeaders(request.resourceRequest(), request.options(), site);
     }
@@ -1395,7 +1395,7 @@ CachedResourceHandle<CachedResource> CachedResourceLoader::revalidateResource(Ca
     ASSERT(!resource.resourceToRevalidate());
     ASSERT(resource.allowsCaching());
 
-    CachedResourceHandle newResource = createResource(WTF::move(request), resource, protectedDocument().get());
+    CachedResourceHandle newResource = createResource(WTF::move(request), resource, protect(document()).get());
 
     LOG(ResourceLoading, "Resource %p created to revalidate %p", newResource.get(), &resource);
     newResource->setResourceToRevalidate(&resource);
@@ -1416,7 +1416,7 @@ CachedResourceHandle<CachedResource> CachedResourceLoader::loadResource(CachedRe
 
     LOG(ResourceLoading, "Loading CachedResource for '%s'.", request.resourceRequest().url().stringCenterEllipsizedToLength().latin1().data());
 
-    CachedResourceHandle resource = createResource(type, WTF::move(request), sessionID, &cookieJar, settings, protectedDocument().get());
+    CachedResourceHandle resource = createResource(type, WTF::move(request), sessionID, &cookieJar, settings, protect(document()).get());
 
     if (resource->allowsCaching() && mayAddToMemoryCache == MayAddToMemoryCache::Yes)
         memoryCache->add(*resource);
@@ -1893,7 +1893,7 @@ Vector<CachedResourceHandle<CachedResource>> CachedResourceLoader::visibleResour
             continue;
         if (!cachedImage->loader())
             continue;
-        if (!cachedImage->isVisibleInViewport(*protectedDocument()))
+        if (!cachedImage->isVisibleInViewport(*protect(document())))
             continue;
         toPrioritize.append(WTF::move(cachedImage));
     }

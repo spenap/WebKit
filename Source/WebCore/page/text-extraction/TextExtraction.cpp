@@ -431,7 +431,7 @@ static inline Variant<SkipExtraction, ItemData, URL, Editable> extractItemData(N
 
     if (element->isLink()) {
         if (auto href = element->attributeWithoutSynchronization(HTMLNames::hrefAttr); !href.isEmpty()) {
-            if (auto url = element->protectedDocument()->completeURL(href); !url.isEmpty()) {
+            if (auto url = protect(element->document())->completeURL(href); !url.isEmpty()) {
                 if (context.mergeParagraphs)
                     return { WTF::move(url) };
 
@@ -476,7 +476,7 @@ static inline Variant<SkipExtraction, ItemData, URL, Editable> extractItemData(N
 
         return { ContentEditableData {
             .isPlainTextOnly = !element->hasRichlyEditableStyle(),
-            .isFocused = element->protectedDocument()->activeElement() == element,
+            .isFocused = protect(element->document())->activeElement() == element,
         } };
     }
 
@@ -513,7 +513,7 @@ static inline Variant<SkipExtraction, ItemData, URL, Editable> extractItemData(N
             labelText(*control),
             input ? input->placeholder() : nullString(),
             shouldTreatAsPasswordField(element.get()),
-            element->protectedDocument()->activeElement() == control
+            protect(element->document())->activeElement() == control
         };
 
         if (context.mergeParagraphs && control->isTextField())
@@ -862,7 +862,7 @@ static inline void extractRecursive(Node& node, Item& parentItem, TraversalConte
 
         if (RefPtr iframe = dynamicDowncast<HTMLIFrameElement>(node); iframe && item) {
             if (RefPtr frame = dynamicDowncast<LocalFrame>(iframe->contentFrame())) {
-                if (RefPtr document = frame->document(); document && areSameOrigin(*document, node.protectedDocument()))
+                if (RefPtr document = frame->document(); document && areSameOrigin(*document, protect(node.document())))
                     item->children.appendVector(extractItem(Request { context.originalRequest }, *frame).children);
             }
         }
@@ -1446,7 +1446,7 @@ static void dispatchSimulatedClick(Node& targetNode, const String& searchText, C
         return dispatchSimulatedClick(*frame, centerInRootView, WTF::move(completion));
     }
 
-    UserGestureIndicator indicator { IsProcessingUserGesture::Yes, element->protectedDocument().ptr() };
+    UserGestureIndicator indicator { IsProcessingUserGesture::Yes, protect(element->document()).ptr() };
 
     // Fall back to dispatching a programmatic click.
     if (element->dispatchSimulatedClick(nullptr, SendMouseUpDownEvents))
@@ -1586,7 +1586,7 @@ static void simulateKeyPress(LocalFrame& targetFrame, std::optional<NodeIdentifi
         if (!focusTarget)
             return completion(false, makeString(identifier->loggingString()));
 
-        if (focusTarget != focusTarget->protectedDocument()->activeElement())
+        if (focusTarget != protect(focusTarget->document())->activeElement())
             focusTarget->focus();
     }
 

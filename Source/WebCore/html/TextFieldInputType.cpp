@@ -474,7 +474,7 @@ void TextFieldInputType::createDataListDropdownIndicator()
         return;
     
     ScriptDisallowedScope::EventAllowedScope allowedScope(*m_container);
-    Ref dataListDropdownIndicator = DataListButtonElement::create(element()->protectedDocument().get(), *this);
+    Ref dataListDropdownIndicator = DataListButtonElement::create(protect(element()->document()).get(), *this);
     m_dataListDropdownIndicator = dataListDropdownIndicator.copyRef();
     RefPtr { m_container }->appendChild(dataListDropdownIndicator);
     dataListDropdownIndicator->setUserAgentPart(UserAgentParts::webkitListButton());
@@ -645,7 +645,7 @@ void TextFieldInputType::updatePlaceholderText()
         return;
     }
     if (!m_placeholder) {
-        Ref placeholder = TextControlPlaceholderElement::create(element->protectedDocument());
+        Ref placeholder = TextControlPlaceholderElement::create(protect(element->document()));
         m_placeholder = placeholder.copyRef();
         if (RefPtr container = m_container)
             element->protectedUserAgentShadowRoot()->insertBefore(placeholder, container);
@@ -851,7 +851,7 @@ void TextFieldInputType::createAutoFillButton(AutoFillButtonType autoFillButtonT
         return;
 
     ASSERT(element());
-    Ref autoFillButton = AutoFillButtonElement::create(element()->protectedDocument().get(), *this);
+    Ref autoFillButton = AutoFillButtonElement::create(protect(element()->document()).get(), *this);
     m_autoFillButton = autoFillButton.copyRef();
     RefPtr { m_container }->appendChild(autoFillButton);
 
@@ -934,7 +934,7 @@ IntRect TextFieldInputType::elementRectInRootViewCoordinates() const
     if (!element()->renderer())
         return IntRect();
     Ref element = *this->element();
-    return element->protectedDocument()->protectedView()->contentsToRootView(element->checkedRenderer()->absoluteBoundingBoxRect());
+    return protect(element->document())->protectedView()->contentsToRootView(element->checkedRenderer()->absoluteBoundingBoxRect());
 }
 
 Vector<DataListSuggestion> TextFieldInputType::suggestions()

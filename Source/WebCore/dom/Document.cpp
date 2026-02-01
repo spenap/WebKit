@@ -3119,7 +3119,7 @@ auto Document::updateLayout(OptionSet<LayoutOptions> layoutOptions, const Elemen
         ScriptDisallowedScope::InMainThread scriptDisallowedScope;
 
         if (!layoutOptions.contains(LayoutOptions::DoNotLayoutAncestorDocuments)) {
-            if (ownerElement() && ownerElement()->protectedDocument()->updateLayout(layoutOptions, context) == UpdateLayoutResult::ChangesDone)
+            if (ownerElement() && protect(ownerElement()->document())->updateLayout(layoutOptions, context) == UpdateLayoutResult::ChangesDone)
                 result = UpdateLayoutResult::ChangesDone;
         }
 
@@ -3270,7 +3270,7 @@ bool Document::updateLayoutIfDimensionsOutOfDate(Element& element, OptionSet<Dim
 
     // Mimic the structure of updateLayout(), but at each step, see if we have been forced into doing a full layout.
     if (RefPtr owner = ownerElement()) {
-        if (owner->protectedDocument()->updateLayoutIfDimensionsOutOfDate(*owner)) {
+        if (protect(owner->document())->updateLayoutIfDimensionsOutOfDate(*owner)) {
             updateLayout(layoutOptions, &element);
             return true;
         }
@@ -4172,7 +4172,7 @@ bool Document::isFullyActive() const
     RefPtr parentFrame = dynamicDowncast<LocalFrame>(frame->tree().parent());
     if (!parentFrame)
         return true;
-    return parentFrame->document() && parentFrame->protectedDocument()->isFullyActive();
+    return parentFrame->document() && protect(parentFrame->document())->isFullyActive();
 }
 
 void Document::detachParser()
@@ -6539,7 +6539,7 @@ void Document::invalidateEventRegionsForFrame(HTMLFrameOwnerElement& element)
             return;
     }
     if (RefPtr ownerElement = this->ownerElement())
-        ownerElement->protectedDocument()->invalidateEventRegionsForFrame(*ownerElement);
+        protect(ownerElement->document())->invalidateEventRegionsForFrame(*ownerElement);
 }
 
 void Document::invalidateEventListenerRegions()
@@ -8573,7 +8573,7 @@ void Document::initSecurityContext()
     }
 
     CheckedPtr contentSecurityPolicy = this->contentSecurityPolicy();
-    contentSecurityPolicy->copyStateFrom(ownerFrame->protectedDocument()->checkedContentSecurityPolicy().get());
+    contentSecurityPolicy->copyStateFrom(protect(ownerFrame->document())->checkedContentSecurityPolicy().get());
     contentSecurityPolicy->updateSourceSelf(ownerFrame->document()->protectedSecurityOrigin());
 
     setCrossOriginEmbedderPolicy(ownerFrame->document()->crossOriginEmbedderPolicy());
@@ -8612,7 +8612,7 @@ void Document::initContentSecurityPolicy()
         return;
     RefPtr parentFrame = dynamicDowncast<LocalFrame>(m_frame->tree().parent());
     if (parentFrame)
-        checkedContentSecurityPolicy()->copyUpgradeInsecureRequestStateFrom(*parentFrame->protectedDocument()->checkedContentSecurityPolicy());
+        checkedContentSecurityPolicy()->copyUpgradeInsecureRequestStateFrom(*protect(parentFrame->document())->checkedContentSecurityPolicy());
 
     // FIXME: Remove this special plugin document logic. We are stricter than the CSP 3 spec. with regards to plugins: we prefer to
     // inherit the full policy unless the plugin document is opened in a new window. The CSP 3 spec. implies that only plugin documents
@@ -8625,9 +8625,9 @@ void Document::initContentSecurityPolicy()
         return;
     setContentSecurityPolicy(makeUnique<ContentSecurityPolicy>(URL { m_url }, *this));
     if (openerFrame)
-        checkedContentSecurityPolicy()->createPolicyForPluginDocumentFrom(*openerFrame->protectedDocument()->checkedContentSecurityPolicy());
+        checkedContentSecurityPolicy()->createPolicyForPluginDocumentFrom(*protect(openerFrame->document())->checkedContentSecurityPolicy());
     else
-        checkedContentSecurityPolicy()->copyStateFrom(parentFrame->protectedDocument()->checkedContentSecurityPolicy().get());
+        checkedContentSecurityPolicy()->copyStateFrom(protect(parentFrame->document())->checkedContentSecurityPolicy().get());
 }
 
 void Document::inheritPolicyContainerFrom(const PolicyContainer& policyContainer)
@@ -9669,7 +9669,7 @@ void Document::updateLastHandledUserGestureTimestamp(MonotonicTime time)
     didChangeTimerAlignmentInterval();
 
     if (RefPtr element = ownerElement())
-        element->protectedDocument()->updateLastHandledUserGestureTimestamp(time);
+        protect(element->document())->updateLastHandledUserGestureTimestamp(time);
 }
 
 bool Document::mainFrameDocumentHasHadUserInteraction() const
@@ -11074,7 +11074,7 @@ Vector<Ref<WebAnimation>> Document::matchingAnimations(NOESCAPE const Function<b
     // such as updates to CSS Animations and CSS Transitions. This requires updating layout as
     // well since resolving layout-dependent media queries could yield animations.
     if (RefPtr owner = ownerElement())
-        owner->protectedDocument()->updateLayout();
+        protect(owner->document())->updateLayout();
     updateStyleIfNeeded();
 
     Vector<Ref<WebAnimation>> animations;

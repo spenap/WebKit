@@ -314,7 +314,7 @@ private:
 template <typename ElementType>
 static Ref<ElementType> createContainedElement(HTMLElement& container, const AtomString& id, String&& textContent = { })
 {
-    Ref<ElementType> element = ElementType::create(container.protectedDocument());
+    Ref<ElementType> element = ElementType::create(protect(container.document()));
     element->setIdAttribute(id);
     if (!textContent.isEmpty())
         element->setTextContent(WTF::move(textContent));

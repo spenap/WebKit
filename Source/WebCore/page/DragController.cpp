@@ -341,7 +341,7 @@ Variant<std::optional<DragOperation>, RemoteUserInputEventData> DragController::
         return std::nullopt;
     }
 
-    mouseMovedIntoDocument(hitTestResult.innerNode() ? RefPtr { hitTestResult.innerNode()->protectedDocument() } : nullptr);
+    mouseMovedIntoDocument(hitTestResult.innerNode() ? RefPtr { protect(hitTestResult.innerNode()->document()) } : nullptr);
 
     m_dragDestinationActionMask = dragData.dragDestinationActionMask();
     if (m_dragDestinationActionMask.isEmpty()) {
@@ -1038,7 +1038,7 @@ bool DragController::startDrag(LocalFrame& src, const DragState& state, OptionSe
 
     Ref dataTransfer = *state.dataTransfer;
     if (state.type == DragSourceAction::DHTML) {
-        dragImage = DragImage { dataTransfer->createDragImage(src.protectedDocument().get(), dragImageOffset) };
+        dragImage = DragImage { dataTransfer->createDragImage(protect(src.document()).get(), dragImageOffset) };
         // We allow DHTML/JS to set the drag image, even if its a link, image or text we're dragging.
         // This is in the spirit of the IE API, which allows overriding of pasteboard data and DragOp.
         if (dragImage) {
@@ -1136,7 +1136,7 @@ bool DragController::startDrag(LocalFrame& src, const DragState& state, OptionSe
     }
 
     if (!src.document()->protectedSecurityOrigin()->canDisplay(linkURL, OriginAccessPatternsForWebProcess::singleton())) {
-        src.protectedDocument()->addConsoleMessage(MessageSource::Security, MessageLevel::Error, makeString("Not allowed to drag local resource: "_s, linkURL.stringCenterEllipsizedToLength()));
+        protect(src.document())->addConsoleMessage(MessageSource::Security, MessageLevel::Error, makeString("Not allowed to drag local resource: "_s, linkURL.stringCenterEllipsizedToLength()));
         return false;
     }
 
@@ -1584,7 +1584,7 @@ void DragController::insertDroppedImagePlaceholdersAtCaret(const Vector<IntSize>
 
 void DragController::finalizeDroppedImagePlaceholder(HTMLImageElement& placeholder, CompletionHandler<void()>&& completion)
 {
-    placeholder.protectedDocument()->checkedEventLoop()->queueTask(TaskSource::InternalAsyncTask, [completion = WTF::move(completion), placeholder = Ref { placeholder }] () mutable {
+    protect(placeholder.document())->checkedEventLoop()->queueTask(TaskSource::InternalAsyncTask, [completion = WTF::move(completion), placeholder = Ref { placeholder }] () mutable {
         if (placeholder->isDroppedImagePlaceholder()) {
             placeholder->removeAttribute(HTMLNames::heightAttr);
             placeholder->removeInlineStyleProperty(CSSPropertyBackgroundColor);

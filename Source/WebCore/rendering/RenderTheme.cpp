@@ -868,7 +868,7 @@ bool RenderTheme::paint(const RenderBox& box, ControlPart& part, const PaintInfo
 
     updateControlPartForRenderer(part, box);
 
-    float deviceScaleFactor = box.protectedDocument()->deviceScaleFactor();
+    float deviceScaleFactor = protect(box.document())->deviceScaleFactor();
     auto zoomedRect = snapRectToDevicePixels(rect, deviceScaleFactor);
     auto borderShape = BorderShape::shapeForBorderRect(box.checkedStyle().get(), LayoutRect(zoomedRect));
     auto controlStyle = extractControlStyleForRenderer(box);
@@ -896,7 +896,7 @@ bool RenderTheme::paint(const RenderBox& box, const PaintInfo& paintInfo, const 
     if (!canPaint(paintInfo, box.settings(), appearance)) [[unlikely]]
         return false;
 
-    float deviceScaleFactor = box.protectedDocument()->deviceScaleFactor();
+    float deviceScaleFactor = protect(box.document())->deviceScaleFactor();
     FloatRect devicePixelSnappedRect = snapRectToDevicePixels(rect, deviceScaleFactor);
 
     switch (appearance) {
@@ -1019,7 +1019,7 @@ void RenderTheme::paintDecorations(const RenderBox& box, const PaintInfo& paintI
     if (paintInfo.context().paintingDisabled())
         return;
 
-    FloatRect devicePixelSnappedRect = snapRectToDevicePixels(rect, box.protectedDocument()->deviceScaleFactor());
+    FloatRect devicePixelSnappedRect = snapRectToDevicePixels(rect, protect(box.document())->deviceScaleFactor());
 
     // Call the appropriate paint method based off the appearance value.
     switch (box.style().usedAppearance()) {

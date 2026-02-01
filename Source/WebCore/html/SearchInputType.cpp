@@ -164,7 +164,7 @@ LayoutUnit SearchInputType::clientPaddingRight() const
 
 FontSelector* SearchInputType::fontSelector() const
 {
-    return &protectedElement()->protectedDocument()->fontSelector();
+    return &protect(protectedElement()->document())->fontSelector();
 }
 
 HostWindow* SearchInputType::hostWindow() const

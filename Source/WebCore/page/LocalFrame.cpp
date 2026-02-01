@@ -250,7 +250,7 @@ LocalFrame::~LocalFrame()
     if (!loader->isComplete())
         loader->closeURL();
 
-    loader->clear(protectedDocument(), false);
+    loader->clear(protect(document()), false);
     checkedScript()->updatePlatformScriptObjects();
 
     // FIXME: We should not be doing all this work inside the destructor
@@ -299,7 +299,7 @@ void LocalFrame::setView(RefPtr<LocalFrameView>&& view)
     // notified. If we wait until the view is destroyed, then things won't be hooked up enough for
     // these calls to work.
     if (!view && m_doc && m_doc->backForwardCacheState() != Document::InBackForwardCache)
-        protectedDocument()->willBeRemovedFromFrame();
+        protect(document())->willBeRemovedFromFrame();
     
     if (RefPtr view = m_view)
         view->checkedLayoutContext()->unscheduleLayout();
@@ -438,7 +438,7 @@ void LocalFrame::invalidateContentEventRegionsIfNeeded(InvalidateContentEventReg
         return;
 
     if (RefPtr ownerElement = this->ownerElement())
-        ownerElement->protectedDocument()->invalidateEventRegionsForFrame(*ownerElement);
+        protect(ownerElement->document())->invalidateEventRegionsForFrame(*ownerElement);
 }
 
 #if ENABLE(ORIENTATION_EVENTS)
@@ -878,7 +878,7 @@ void LocalFrame::clearTimers(LocalFrameView *view, Document *document)
 
 void LocalFrame::clearTimers()
 {
-    clearTimers(protectedView().get(), protectedDocument().get());
+    clearTimers(protectedView().get(), protect(document()).get());
 }
 
 CheckedRef<ScriptController> LocalFrame::checkedScript()
@@ -1351,7 +1351,7 @@ void LocalFrame::frameWasDisconnectedFromOwner() const
     if (RefPtr window = m_doc->window())
         window->willDetachDocumentFromFrame();
 
-    protectedDocument()->detachFromFrame();
+    protect(document())->detachFromFrame();
 }
 
 void LocalFrame::storageAccessExceptionReceivedForDomain(const RegistrableDomain& domain)

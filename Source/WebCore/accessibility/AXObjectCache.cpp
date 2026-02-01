@@ -528,7 +528,7 @@ AccessibilityObject* AXObjectCache::focusedImageMapUIElement(HTMLAreaElement& ar
     if (!imageElement)
         return nullptr;
 
-    RefPtr axRenderImage = areaElement.protectedDocument()->axObjectCache()->getOrCreate(*imageElement);
+    RefPtr axRenderImage = protect(areaElement.document())->axObjectCache()->getOrCreate(*imageElement);
     if (!axRenderImage)
         return nullptr;
 
@@ -838,7 +838,7 @@ AccessibilityObject* AXObjectCache::getOrCreateSlow(Node& node, IsPartOfRelation
     // Fallback content is only focusable as long as the canvas is displayed and visible.
     // Update the style before Element::isFocusable() gets called.
     if (inCanvasSubtree)
-        node.protectedDocument()->updateStyleIfNeeded();
+        protect(node.document())->updateStyleIfNeeded();
 
     RefPtr newObject = createFromNode(node);
 
@@ -1138,7 +1138,7 @@ void AXObjectCache::handleTextChanged(AccessibilityObject* object)
             postLiveRegionChangeNotification(*ancestor);
 
         if (!notifiedNonNativeTextControl && ancestor->isNonNativeTextControl()) {
-            postNotification(ancestor.get(), ancestor->protectedDocument().get(), AXNotification::ValueChanged);
+            postNotification(ancestor.get(), protect(ancestor->document()).get(), AXNotification::ValueChanged);
             notifiedNonNativeTextControl = true;
         }
 
@@ -1160,7 +1160,7 @@ void AXObjectCache::handleTextChanged(AccessibilityObject* object)
         }
     }
 
-    postNotification(object, object->protectedDocument().get(), AXNotification::TextChanged);
+    postNotification(object, protect(object->document()).get(), AXNotification::TextChanged);
     object->recomputeIsIgnored();
 }
 
@@ -1398,7 +1398,7 @@ void AXObjectCache::handleChildrenChanged(AccessibilityObject& object)
 
         // If this object is an ARIA text control, notify that its value changed.
         if (parent->isNonNativeTextControl()) {
-            postNotification(parent.get(), parent->protectedDocument().get(), AXNotification::ValueChanged);
+            postNotification(parent.get(), protect(parent->document()).get(), AXNotification::ValueChanged);
 
             // Do not let any ancestor of an editable object update its children.
             shouldUpdateParent = false;
@@ -1740,7 +1740,7 @@ void AXObjectCache::postNotification(RenderObject* renderer, AXNotification noti
     if (!renderer)
         return;
 
-    postNotification(object.get(), renderer->protectedDocument().ptr(), notification, postTarget);
+    postNotification(object.get(), protect(renderer->document()).ptr(), notification, postTarget);
 }
 
 void AXObjectCache::postNotification(Node* node, AXNotification notification, PostTarget postTarget)
@@ -1762,7 +1762,7 @@ void AXObjectCache::postNotification(Node* node, AXNotification notification, Po
     if (!axNode)
         return;
 
-    postNotification(object.get(), axNode->protectedDocument().ptr(), notification, postTarget);
+    postNotification(object.get(), protect(axNode->document()).ptr(), notification, postTarget);
 }
 
 void AXObjectCache::postNotification(AccessibilityObject* object, Document* document, AXNotification notification, PostTarget postTarget)
@@ -1893,7 +1893,7 @@ void AXObjectCache::handleTabPanelSelected(Element* oldElement, Element* newElem
 
         auto controllers = controlPanel->controllers();
         for (auto& controller : controllers)
-            postNotification(dynamicDowncast<AccessibilityObject>(controller.get()), element.protectedDocument().ptr(), AXNotification::SelectedStateChanged);
+            postNotification(dynamicDowncast<AccessibilityObject>(controller.get()), protect(element.document()).ptr(), AXNotification::SelectedStateChanged);
     };
 
 
@@ -2099,7 +2099,7 @@ void AXObjectCache::onSelectedOptionChanged(Element& element)
             return object.canHaveSelectedChildren();
         })) {
             selectedChildrenChanged(ancestor->node());
-            postNotification(axObject.get(), element.protectedDocument().ptr(), AXNotification::SelectedStateChanged);
+            postNotification(axObject.get(), protect(element.document()).ptr(), AXNotification::SelectedStateChanged);
         }
     }
 
@@ -2134,7 +2134,7 @@ void AXObjectCache::onRadioGroupMembershipChanged(HTMLElement& radio)
                 continue;
 
             if (RefPtr axObject = get(sibling.ptr()))
-                postNotification(axObject.get(), sibling->protectedDocument().ptr(), AXNotification::RadioGroupMembershipChanged);
+                postNotification(axObject.get(), protect(sibling->document()).ptr(), AXNotification::RadioGroupMembershipChanged);
         }
     }
 }
@@ -2369,13 +2369,13 @@ void AXObjectCache::onTextCompositionChange(Node& node, CompositionState composi
 #endif // ENABLE(ACCESSIBILITY_ISOLATED_TREE)
 
     if (compositionState == CompositionState::Started)
-        postNotification(object.get(), node.protectedDocument().ptr(), AXNotification::TextCompositionBegan);
+        postNotification(object.get(), protect(node.document()).ptr(), AXNotification::TextCompositionBegan);
 
     if (valueChanged)
-        postNotification(object.get(), node.protectedDocument().ptr(), AXNotification::ValueChanged);
+        postNotification(object.get(), protect(node.document()).ptr(), AXNotification::ValueChanged);
 
     if (compositionState == CompositionState::Ended)
-        postNotification(object.get(), node.protectedDocument().ptr(), AXNotification::TextCompositionEnded);
+        postNotification(object.get(), protect(node.document()).ptr(), AXNotification::TextCompositionEnded);
 #else
     UNUSED_PARAM(node);
     UNUSED_PARAM(compositionState);
@@ -2728,7 +2728,7 @@ void AXObjectCache::liveRegionChangedNotificationPostTimerFired()
         return;
 
     for (auto& object : m_changedLiveRegions)
-        postNotification(object.ptr(), object->protectedDocument().get(), AXNotification::LiveRegionChanged);
+        postNotification(object.ptr(), protect(object->document()).get(), AXNotification::LiveRegionChanged);
     m_changedLiveRegions.clear();
 }
 
@@ -3119,7 +3119,7 @@ void AXObjectCache::handleAttributeChange(Element* element, const QualifiedName&
         postNotification(element, AXNotification::ValueChanged);
     else if (attrName == aria_labelAttr && element->elementName() == ElementName::HTML_html) {
         // When aria-label changes on an <html> element, it's the web area who needs to re-compute its accessibility text.
-        handleTextChanged(get(element->protectedDocument().ptr()));
+        handleTextChanged(get(protect(element->document()).ptr()));
     } else if (attrName == aria_labelAttr || attrName == aria_labeledbyAttr || attrName == aria_labelledbyAttr) {
         RefPtr axObject = get(*element);
         if (!axObject)
@@ -3241,7 +3241,7 @@ void AXObjectCache::handleAttributeChange(Element* element, const QualifiedName&
     else if (attrName == aria_roledescriptionAttr)
         handleARIARoleDescriptionChanged(*element);
     else if (attrName == aria_rowcountAttr)
-        handleRowCountChanged(get(*element), element->protectedDocument().ptr());
+        handleRowCountChanged(get(*element), protect(element->document()).ptr());
     else if (attrName == aria_rowspanAttr) {
         deferRowspanChange(get(*element));
         recomputeParentTableProperties(element, { TableProperty::CellSlots, TableProperty::Exposed });
@@ -4293,7 +4293,7 @@ CharacterOffset AXObjectCache::previousBoundary(const CharacterOffset& character
     unsigned suffixLength = 0;
 
     if (needsContextAtParagraphStart == NeedsContextAtParagraphStart::Yes && startCharacterOffsetOfParagraph(characterOffset).isEqual(characterOffset)) {
-        auto forwardsScanRange = makeRangeSelectingNodeContents(boundary->protectedDocument());
+        auto forwardsScanRange = makeRangeSelectingNodeContents(protect(boundary->document()));
         auto endOfCurrentParagraph = endCharacterOffsetOfParagraph(characterOffset);
         if (!setRangeStartOrEndWithCharacterOffset(forwardsScanRange, characterOffset, true))
             return { };
@@ -4303,7 +4303,7 @@ CharacterOffset AXObjectCache::previousBoundary(const CharacterOffset& character
             append(string, forwardsIterator.text());
         suffixLength = string.size();
     } else if (requiresContextForWordBoundary(characterBefore(characterOffset))) {
-        auto forwardsScanRange = makeRangeSelectingNodeContents(boundary->protectedDocument());
+        auto forwardsScanRange = makeRangeSelectingNodeContents(protect(boundary->document()));
         auto afterBoundary = makeBoundaryPointAfterNode(*boundary);
         if (!afterBoundary)
             return { };

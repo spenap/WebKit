@@ -572,7 +572,7 @@ void BaseDateAndTimeInputType::didChangeValueFromControl()
     InputType::setValue(value, valueChanged, DispatchNoEvent, DoNotSet);
 
     if (!valueChanged) {
-        if (CheckedPtr cache = input->protectedDocument()->existingAXObjectCache()) {
+        if (CheckedPtr cache = protect(input->document())->existingAXObjectCache()) {
             // This method is called when a sub-field of a date or time input changes. An HTML input's DOM value
             // only changes when all fields are filled out, but accessibility needs to represent the partial value
             // for assistive technologies, so notify accessibility here so it can take the appropriate actions, e.g.

@@ -66,7 +66,7 @@ static inline bool canReferToParentFrameEncoding(const LocalFrame* frame, const 
     RefPtr document = frame->document();
     if (is<XMLDocument>(document))
         return false;
-    return parentFrame && parentFrame->protectedDocument()->protectedSecurityOrigin()->isSameOriginDomain(document->protectedSecurityOrigin());
+    return parentFrame && protect(parentFrame->document())->protectedSecurityOrigin()->isSameOriginDomain(document->protectedSecurityOrigin());
 }
     
 // This is only called by ScriptController::executeIfJavaScriptURL
@@ -94,7 +94,7 @@ void DocumentWriter::replaceDocumentWithResultOfExecutingJavascriptURL(const Str
     if (!source.isNull()) {
         if (!m_hasReceivedSomeData) {
             m_hasReceivedSomeData = true;
-            frame->protectedDocument()->setCompatibilityMode(DocumentCompatibilityMode::NoQuirksMode);
+            protect(frame->document())->setCompatibilityMode(DocumentCompatibilityMode::NoQuirksMode);
         }
 
         if (RefPtr parser = frame->document()->parser())
@@ -187,7 +187,7 @@ bool DocumentWriter::begin(const URL& urlReference, bool dispatch, Document* own
 
     Function<void()> handleDOMWindowCreation = [document, frame, shouldReuseDefaultView] {
         if (shouldReuseDefaultView)
-            document->takeDOMWindowFrom(*frame->protectedDocument());
+            document->takeDOMWindowFrom(*protect(frame->document()));
         else
             document->createDOMWindow();
     };
@@ -235,7 +235,7 @@ bool DocumentWriter::begin(const URL& urlReference, bool dispatch, Document* own
             RefPtr parentFrame = dynamicDowncast<LocalFrame>(frame->tree().parent());
             if (parentFrame && parentFrame->document()) {
                 document->inheritPolicyContainerFrom(parentFrame->document()->policyContainer());
-                document->checkedContentSecurityPolicy()->updateSourceSelf(parentFrame->protectedDocument()->protectedSecurityOrigin());
+                document->checkedContentSecurityPolicy()->updateSourceSelf(protect(parentFrame->document())->protectedSecurityOrigin());
             }
         } else if (triggeringAction && triggeringAction->requester() && !isLoadingBrowserControlledHTML()) {
             document->inheritPolicyContainerFrom(triggeringAction->requester()->policyContainer);
@@ -291,7 +291,7 @@ TextResourceDecoder& DocumentWriter::decoder()
             decoder->setEncoding(m_encoding,
                 m_encodingWasChosenByUser ? TextResourceDecoder::UserChosenEncoding : TextResourceDecoder::EncodingFromHTTPHeader);
         }
-        frame->protectedDocument()->setDecoder(WTF::move(decoder));
+        protect(frame->document())->setDecoder(WTF::move(decoder));
     }
     return *m_decoder;
 }

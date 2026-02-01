@@ -90,7 +90,7 @@ static Ref<WebCore::Node> protectedImpl(WKDOMNode *node)
 
 - (WKDOMDocument *)document
 {
-    return WebKit::toWKDOMDocument(protectedImpl(self)->protectedDocument().ptr());
+    return WebKit::toWKDOMDocument(protect(protectedImpl(self)->document()).ptr());
 }
 
 - (WKDOMNode *)parentNode
@@ -121,7 +121,7 @@ static Ref<WebCore::Node> protectedImpl(WKDOMNode *node)
 - (NSArray *)textRects
 {
     Ref impl = *_impl;
-    impl->protectedDocument()->updateLayout(WebCore::LayoutOptions::IgnorePendingStylesheets);
+    protect(impl->document())->updateLayout(WebCore::LayoutOptions::IgnorePendingStylesheets);
     if (!impl->renderer())
         return nil;
     return createNSArray(WebCore::RenderObject::absoluteTextRects(WebCore::makeRangeSelectingNodeContents(impl))).autorelease();

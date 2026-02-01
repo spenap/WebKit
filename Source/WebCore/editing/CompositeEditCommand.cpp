@@ -913,7 +913,7 @@ RefPtr<Text> CompositeEditCommand::textNodeForRebalance(const Position& position
     if (!textNode || !textNode->length())
         return nullptr;
 
-    textNode->protectedDocument()->updateStyleIfNeeded();
+    protect(textNode->document())->updateStyleIfNeeded();
 
     ScriptDisallowedScope::InMainThread scriptDisallowedScope;
 

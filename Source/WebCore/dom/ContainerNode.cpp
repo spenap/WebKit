@@ -579,7 +579,7 @@ ExceptionOr<void> ContainerNode::insertBefore(Node& newChild, RefPtr<Node>&& ref
         }
     }
 
-    InspectorInstrumentation::willInsertDOMNode(protectedDocument(), *this);
+    InspectorInstrumentation::willInsertDOMNode(protect(document()), *this);
 
     ChildListMutationScope mutation(*this);
     for (auto& child : targets) {
@@ -716,7 +716,7 @@ ExceptionOr<void> ContainerNode::replaceChild(Node& newChild, Node& oldChild)
         }
     }
 
-    InspectorInstrumentation::willInsertDOMNode(protectedDocument(), *this);
+    InspectorInstrumentation::willInsertDOMNode(protect(document()), *this);
 
     // Add the new child(ren).
     for (auto& child : targets) {
@@ -839,7 +839,7 @@ void ContainerNode::replaceAll(Node* node)
         ? ReplacedAllChildren::YesIncludingElements : ReplacedAllChildren::YesNotIncludingElements;
 
     executeNodeInsertionWithScriptAssertion(*this, *node, nullptr, ChildChange::Source::API, replacedAllChildren, [&] {
-        InspectorInstrumentation::willInsertDOMNode(protectedDocument(), *this);
+        InspectorInstrumentation::willInsertDOMNode(protect(document()), *this);
         node->setTreeScopeRecursively(treeScope());
         appendChildCommon(*node);
     });
@@ -913,7 +913,7 @@ ExceptionOr<void> ContainerNode::appendChildWithoutPreInsertionValidityCheck(Nod
         }
     }
 
-    InspectorInstrumentation::willInsertDOMNode(protectedDocument(), *this);
+    InspectorInstrumentation::willInsertDOMNode(protect(document()), *this);
 
     // Now actually add the child(ren)
     ChildListMutationScope mutation(*this);
@@ -958,7 +958,7 @@ ExceptionOr<void> ContainerNode::insertChildrenBeforeWithoutPreInsertionValidity
         }
     }
 
-    InspectorInstrumentation::willInsertDOMNode(protectedDocument(), *this);
+    InspectorInstrumentation::willInsertDOMNode(protect(document()), *this);
 
     ChildListMutationScope mutation(*this);
     for (auto& child : newChildren) {
@@ -1189,7 +1189,7 @@ static void dispatchChildRemovalEvents(Ref<Node>& child)
 
 ExceptionOr<Element*> ContainerNode::querySelector(const String& selectors)
 {
-    auto query = protectedDocument()->selectorQueryForString(selectors);
+    auto query = protect(document())->selectorQueryForString(selectors);
     if (query.hasException())
         return query.releaseException();
     return query.releaseReturnValue().queryFirst(*this);

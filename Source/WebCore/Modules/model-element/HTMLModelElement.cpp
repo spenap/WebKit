@@ -130,7 +130,7 @@ HTMLModelElement::~HTMLModelElement()
     }
 #endif
 
-    LazyLoadModelObserver::unobserve(*this, protectedDocument());
+    LazyLoadModelObserver::unobserve(*this, protect(document()));
 
     m_loadModelTimer = nullptr;
 
@@ -441,7 +441,7 @@ RefPtr<GraphicsLayer> HTMLModelElement::graphicsLayer() const
 
 bool HTMLModelElement::isVisible() const
 {
-    bool isVisibleInline = !protectedDocument()->hidden() && m_isIntersectingViewport;
+    bool isVisibleInline = !protect(document())->hidden() && m_isIntersectingViewport;
 #if ENABLE(MODEL_ELEMENT_IMMERSIVE)
     return isVisibleInline || m_detachedForImmersive;
 #else
@@ -453,7 +453,7 @@ void HTMLModelElement::logWarning(ModelPlayer& modelPlayer, const String& warnin
 {
     ASSERT_UNUSED(modelPlayer, &modelPlayer == m_modelPlayer);
 
-    protectedDocument()->addConsoleMessage(MessageSource::Other, MessageLevel::Warning, warningMessage);
+    protect(document())->addConsoleMessage(MessageSource::Other, MessageLevel::Warning, warningMessage);
 }
 
 // MARK: - ModelPlayer support
@@ -618,7 +618,7 @@ void HTMLModelElement::reloadModelPlayer()
     ASSERT(animationState && transformState);
 
     if (!m_modelPlayerProvider)
-        m_modelPlayerProvider = protectedDocument()->protectedPage()->modelPlayerProvider();
+        m_modelPlayerProvider = protect(document())->protectedPage()->modelPlayerProvider();
     if (RefPtr modelPlayerProvider = m_modelPlayerProvider.get()) {
         modelPlayer = modelPlayerProvider->createModelPlayer(*this);
         m_modelPlayer = modelPlayer.copyRef();
@@ -1545,7 +1545,7 @@ void HTMLModelElement::stop()
 {
     RELEASE_LOG(ModelElement, "%p - HTMLModelElement::stop()", this);
 
-    LazyLoadModelObserver::unobserve(*this, protectedDocument());
+    LazyLoadModelObserver::unobserve(*this, protect(document()));
 
     m_loadModelTimer = nullptr;
 
@@ -1701,7 +1701,7 @@ void HTMLModelElement::sourceRequestResource()
         return triggerModelPlayerCreationCallbacksIfNeeded(Exception { ExceptionCode::AbortError, "The source URL is empty"_s });
 
     auto request = createResourceRequest(m_sourceURL, FetchOptions::Destination::Model);
-    auto resource = protectedDocument()->protectedCachedResourceLoader()->requestModelResource(WTF::move(request));
+    auto resource = protect(document())->protectedCachedResourceLoader()->requestModelResource(WTF::move(request));
     if (!resource.has_value()) {
         ActiveDOMObject::queueTaskToDispatchEvent(*this, TaskSource::DOMManipulation, Event::create(eventNames().errorEvent, Event::CanBubble::No, Event::IsCancelable::No));
         if (!m_readyPromise->isFulfilled())

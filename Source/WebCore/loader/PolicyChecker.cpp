@@ -88,8 +88,8 @@ static bool isAllowedByContentSecurityPolicy(const URL& url, const Element* owne
 
     ASSERT(ownerElement->document().contentSecurityPolicy());
     if (is<HTMLPlugInElement>(ownerElement))
-        return ownerElement->protectedDocument()->checkedContentSecurityPolicy()->allowObjectFromSource(url, redirectResponseReceived);
-    return ownerElement->protectedDocument()->checkedContentSecurityPolicy()->allowChildFrameFromSource(url, redirectResponseReceived);
+        return protect(ownerElement->document())->checkedContentSecurityPolicy()->allowObjectFromSource(url, redirectResponseReceived);
+    return protect(ownerElement->document())->checkedContentSecurityPolicy()->allowChildFrameFromSource(url, redirectResponseReceived);
 }
 
 static bool shouldExecuteJavaScriptURLSynchronously(const URL& url)
@@ -127,7 +127,7 @@ void PolicyChecker::checkNavigationPolicy(ResourceRequest&& request, const Resou
     NavigationAction action = loader->triggeringAction();
     Ref frame = m_frame.get();
     if (action.isEmpty()) {
-        action = NavigationAction { frame->protectedDocument().releaseNonNull(), request, InitiatedByMainFrame::Unknown, loader->isRequestFromClientOrUserInput(), NavigationType::Other, loader->shouldOpenExternalURLsPolicyToPropagate() };
+        action = NavigationAction { protect(frame->document()).releaseNonNull(), request, InitiatedByMainFrame::Unknown, loader->isRequestFromClientOrUserInput(), NavigationType::Other, loader->shouldOpenExternalURLsPolicyToPropagate() };
         action.setIsContentRuleListRedirect(loader->isContentRuleListRedirect());
         if (navigationAPIType)
             action.setNavigationAPIType(*navigationAPIType);
@@ -217,7 +217,7 @@ void PolicyChecker::checkNavigationPolicy(ResourceRequest&& request, const Resou
     frameLoader->clearProvisionalLoadForPolicyCheck();
 
     RefPtr formState = formSubmission ? formSubmission->protectedState(): nullptr;
-    auto blobURLLifetimeExtension = extendBlobURLLifetimeIfNecessary(request, *frame->protectedDocument(), policyDecisionMode);
+    auto blobURLLifetimeExtension = extendBlobURLLifetimeIfNecessary(request, *protect(frame->document()), policyDecisionMode);
     bool requestIsJavaScriptURL = request.url().protocolIsJavaScript();
     bool isInitialEmptyDocumentLoad = !frameLoader->stateMachine().committedFirstRealDocumentLoad() && request.url().protocolIsAbout() && !substituteData.isValid();
     m_delegateIsDecidingNavigationPolicy = true;

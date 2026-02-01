@@ -138,10 +138,10 @@ Node::InsertedIntoAncestorResult ShadowRoot::insertedIntoAncestor(InsertionType 
         }
     }
     if (insertionType.connectedToDocument) {
-        protectedDocument()->didInsertInDocumentShadowRoot(*this);
+        protect(document())->didInsertInDocumentShadowRoot(*this);
         if (m_hasScopedCustomElementRegistry) {
             if (RefPtr registry = customElementRegistry())
-                registry->didAssociateWithDocument(protectedDocument());
+                registry->didAssociateWithDocument(protect(document()));
         }
     }
     if (!adoptedStyleSheets().empty() && document().frame())
@@ -158,7 +158,7 @@ void ShadowRoot::removedFromAncestor(RemovalType removalType, ContainerNode& old
 {
     DocumentFragment::removedFromAncestor(removalType, oldParentOfRemovedTree);
     if (removalType.disconnectedFromDocument)
-        protectedDocument()->didRemoveInDocumentShadowRoot(*this);
+        protect(document())->didRemoveInDocumentShadowRoot(*this);
 }
 
 void ShadowRoot::childrenChanged(const ChildChange& childChange)

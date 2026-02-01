@@ -154,7 +154,7 @@ void HTMLOptGroupElement::recalcSelectOptions()
 
 String HTMLOptGroupElement::groupLabelText() const
 {
-    String itemText = protectedDocument()->displayStringModifiedByEncoding(attributeWithoutSynchronization(labelAttr));
+    String itemText = protect(document())->displayStringModifiedByEncoding(attributeWithoutSynchronization(labelAttr));
     
     // In WinIE, leading and trailing whitespace is ignored in options and optgroups. We match this behavior.
     itemText = itemText.trim(deprecatedIsSpaceOrNewline);

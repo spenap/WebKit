@@ -370,7 +370,7 @@ TextIterator::TextIterator(const SimpleRange& range, TextIteratorBehaviors behav
 {
     ASSERT(!m_behaviors.contains(TextIteratorBehavior::EmitsObjectReplacementCharacters) || !m_behaviors.contains(TextIteratorBehavior::EmitsObjectReplacementCharactersForImages));
 
-    range.start.protectedDocument()->updateLayoutIgnorePendingStylesheets();
+    protect(range.start.document())->updateLayoutIgnorePendingStylesheets();
 
     m_startContainer = range.start.container.ptr();
     m_startOffset = range.start.offset;
@@ -387,7 +387,7 @@ TextIterator::TextIterator(const SimpleRange& range, TextIteratorBehaviors behav
 void TextIterator::init()
 {
     RefPtr currentNode = m_currentNode;
-    if (isClippedByFrameAncestor(currentNode->protectedDocument(), m_behaviors))
+    if (isClippedByFrameAncestor(protect(currentNode->document()), m_behaviors))
         return;
 
     setUpFullyClippedStack(m_fullyClippedStack, *currentNode, m_behaviors);
@@ -1253,7 +1253,7 @@ void TextIterator::showTreeForThis() const
 
 SimplifiedBackwardsTextIterator::SimplifiedBackwardsTextIterator(const SimpleRange& range)
 {
-    range.start.protectedDocument()->updateLayoutIgnorePendingStylesheets();
+    protect(range.start.document())->updateLayoutIgnorePendingStylesheets();
 
     RefPtr startNode = range.start.container.ptr();
     RefPtr endNode = range.end.container.ptr();

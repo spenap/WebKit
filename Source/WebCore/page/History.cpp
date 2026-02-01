@@ -66,7 +66,7 @@ History::History(LocalDOMWindow& window)
 
 static bool isDocumentFullyActive(LocalFrame* frame)
 {
-    return frame && frame->protectedDocument()->isFullyActive();
+    return frame && protect(frame->document())->isFullyActive();
 }
 
 static Exception documentNotFullyActive()

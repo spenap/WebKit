@@ -250,7 +250,7 @@ void HTMLImageElement::setBestFitURLAndDPRFromImageCandidate(const ImageCandidat
 
     auto& sourceURL = imageSourceURL();
     // Only complete the URL if it's non-empty to avoid resolving "" to the document base URL.
-    m_currentURL = sourceURL.isEmpty() ? URL() : protectedDocument()->completeURL(sourceURL);
+    m_currentURL = sourceURL.isEmpty() ? URL() : protect(document())->completeURL(sourceURL);
 
     m_currentSrc = { };
     if (candidate.density >= 0)
@@ -332,7 +332,7 @@ void HTMLImageElement::setIsUserAgentShadowRootResource()
 void HTMLImageElement::evaluateDynamicMediaQueryDependencies()
 {
     RefPtr documentElement = document().documentElement();
-    MQ::MediaQueryEvaluator evaluator { protectedDocument()->printing() ? printAtom() : screenAtom(), document(), documentElement ? documentElement->computedStyle() : nullptr };
+    MQ::MediaQueryEvaluator evaluator { protect(document())->printing() ? printAtom() : screenAtom(), document(), documentElement ? documentElement->computedStyle() : nullptr };
 
     auto hasChanges = [&] {
         for (auto& results : m_dynamicMediaQueryResults) {
@@ -582,7 +582,7 @@ void HTMLImageElement::setPictureElement(HTMLPictureElement* pictureElement)
 unsigned HTMLImageElement::width()
 {
     if (inRenderedDocument())
-        protectedDocument()->updateLayoutIgnorePendingStylesheets({ LayoutOptions::TreatContentVisibilityHiddenAsVisible, LayoutOptions::TreatContentVisibilityAutoAsVisible }, this);
+        protect(document())->updateLayoutIgnorePendingStylesheets({ LayoutOptions::TreatContentVisibilityHiddenAsVisible, LayoutOptions::TreatContentVisibilityAutoAsVisible }, this);
 
     if (!renderer()) {
         // check the attribute first for an explicit pixel value
@@ -605,7 +605,7 @@ unsigned HTMLImageElement::width()
 unsigned HTMLImageElement::height()
 {
     if (inRenderedDocument())
-        protectedDocument()->updateLayoutIgnorePendingStylesheets({ LayoutOptions::TreatContentVisibilityHiddenAsVisible, LayoutOptions::TreatContentVisibilityAutoAsVisible }, this);
+        protect(document())->updateLayoutIgnorePendingStylesheets({ LayoutOptions::TreatContentVisibilityHiddenAsVisible, LayoutOptions::TreatContentVisibilityAutoAsVisible }, this);
 
     if (!renderer()) {
         // check the attribute first for an explicit pixel value
@@ -732,7 +732,7 @@ RefPtr<HTMLMapElement> HTMLImageElement::associatedMapElement() const
 
 int HTMLImageElement::x() const
 {
-    protectedDocument()->updateLayoutIgnorePendingStylesheets({ LayoutOptions::TreatContentVisibilityHiddenAsVisible, LayoutOptions::TreatContentVisibilityAutoAsVisible }, this);
+    protect(document())->updateLayoutIgnorePendingStylesheets({ LayoutOptions::TreatContentVisibilityHiddenAsVisible, LayoutOptions::TreatContentVisibilityAutoAsVisible }, this);
     CheckedPtr renderer = this->renderer();
     if (!renderer)
         return 0;
@@ -743,7 +743,7 @@ int HTMLImageElement::x() const
 
 int HTMLImageElement::y() const
 {
-    protectedDocument()->updateLayoutIgnorePendingStylesheets({ LayoutOptions::TreatContentVisibilityHiddenAsVisible, LayoutOptions::TreatContentVisibilityAutoAsVisible }, this);
+    protect(document())->updateLayoutIgnorePendingStylesheets({ LayoutOptions::TreatContentVisibilityHiddenAsVisible, LayoutOptions::TreatContentVisibilityAutoAsVisible }, this);
     CheckedPtr renderer = this->renderer();
     if (!renderer)
         return 0;
@@ -830,7 +830,7 @@ bool HTMLImageElement::isServerMap() const
     if (usemap.string()[0] == '#')
         return false;
 
-    return protectedDocument()->completeURL(usemap).isEmpty();
+    return protect(document())->completeURL(usemap).isEmpty();
 }
 
 String HTMLImageElement::crossOrigin() const

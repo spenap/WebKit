@@ -1768,7 +1768,7 @@ RefPtr<EditingStyle> EditingStyle::styleAtSelectionStart(const VisibleSelection&
         return nullptr;
 
     Ref style = EditingStyle::create(element.get(), propertiesToInclude);
-    style->mergeTypingStyle(element->protectedDocument());
+    style->mergeTypingStyle(protect(element->document()));
 
     // If background color is transparent, traverse parent nodes until we hit a different value or document root
     // Also, if the selection is a range, ignore the background color at the start of selection,

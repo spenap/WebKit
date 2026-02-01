@@ -184,7 +184,7 @@ void ResourceLoader::init(ResourceRequest&& clientRequest, CompletionHandler<voi
         if (RefPtr document = frame->document())
             clientRequest.setFirstPartyForCookies(document->firstPartyForCookies());
     }
-    FrameLoader::addSameSiteInfoToRequestIfNeeded(clientRequest, frame->protectedDocument().get());
+    FrameLoader::addSameSiteInfoToRequestIfNeeded(clientRequest, protect(frame->document()).get());
 
     willSendRequestInternal(WTF::move(clientRequest), ResourceResponse(), [this, protectedThis = Ref { *this }, completionHandler = WTF::move(completionHandler)](ResourceRequest&& request) mutable {
 
@@ -571,7 +571,7 @@ void ResourceLoader::didBlockAuthenticationChallenge()
         return;
     RefPtr frame = m_frame.get();
     if (frame && !shouldAllowResourceToAskForCredentials())
-        frame->protectedDocument()->addConsoleMessage(MessageSource::Security, MessageLevel::Error, makeString("Blocked "_s, m_request.url().stringCenterEllipsizedToLength(), " from asking for credentials because it is a cross-origin request."_s));
+        protect(frame->document())->addConsoleMessage(MessageSource::Security, MessageLevel::Error, makeString("Blocked "_s, m_request.url().stringCenterEllipsizedToLength(), " from asking for credentials because it is a cross-origin request."_s));
 }
 
 void ResourceLoader::didReceiveResponse(ResourceResponse&& r, CompletionHandler<void()>&& policyCompletionHandler)

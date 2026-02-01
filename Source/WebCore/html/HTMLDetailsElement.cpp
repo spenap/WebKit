@@ -75,7 +75,7 @@ void DetailsSlotAssignment::hostChildElementDidChange(const Element& childElemen
         didChangeSlot(summarySlotName(), shadowRoot);
 
         if (RefPtr associatedDetails = dynamicDowncast<HTMLDetailsElement>(shadowRoot.host())) {
-            if (CheckedPtr cache = associatedDetails->protectedDocument()->existingAXObjectCache())
+            if (CheckedPtr cache = protect(associatedDetails->document())->existingAXObjectCache())
                 cache->onDetailsSummarySlotChange(*associatedDetails);
         }
     } else

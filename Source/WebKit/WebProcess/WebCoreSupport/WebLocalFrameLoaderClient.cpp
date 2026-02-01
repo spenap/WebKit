@@ -573,7 +573,7 @@ void WebLocalFrameLoaderClient::dispatchDidStartProvisionalLoad()
         RefPtr element = fullScreenManager->element();
         fullScreenManager->exitFullScreenForElement(element.get(), [element] {
             if (element)
-                element->protectedDocument()->protectedFullscreen()->didExitFullscreen([](auto) { });
+                protect(element->document())->protectedFullscreen()->didExitFullscreen([](auto) { });
         });
     }
 #endif

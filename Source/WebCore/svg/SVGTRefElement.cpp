@@ -147,7 +147,7 @@ void SVGTRefElement::updateReferencedText(Element* target)
     ASSERT(root);
     ScriptDisallowedScope::EventAllowedScope allowedScope(*root);
     if (!root->firstChild())
-        root->appendChild(Text::create(protectedDocument(), WTF::move(textContent)));
+        root->appendChild(Text::create(protect(document()), WTF::move(textContent)));
     else {
         ASSERT(root->firstChild()->isTextNode());
         root->protectedFirstChild()->setTextContent(WTF::move(textContent));
@@ -168,7 +168,7 @@ void SVGTRefElement::detachTarget()
         return;
 
     // Mark the referenced ID as pending.
-    auto target = SVGURIReference::targetElementFromIRIString(href(), protectedDocument());
+    auto target = SVGURIReference::targetElementFromIRIString(href(), protect(document()));
     if (!target.identifier.isEmpty())
         treeScopeForSVGReferences().addPendingSVGResource(target.identifier, *this);
 }

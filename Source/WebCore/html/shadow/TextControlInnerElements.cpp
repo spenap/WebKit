@@ -311,7 +311,7 @@ void SearchFieldResultsButtonElement::defaultEventHandler(Event& event)
             input->focus();
             input->select();
 #if !PLATFORM(IOS_FAMILY)
-            protectedDocument()->updateStyleIfNeeded();
+            protect(document())->updateStyleIfNeeded();
 
             if (CheckedPtr searchFieldRenderer = dynamicDowncast<RenderSearchField>(input->renderer())) {
                 if (searchFieldRenderer->popupIsVisible())

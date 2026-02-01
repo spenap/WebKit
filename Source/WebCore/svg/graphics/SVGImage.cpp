@@ -97,7 +97,7 @@ RefPtr<SVGSVGElement> SVGImage::rootElement() const
     if (!localMainFrame)
         return nullptr;
 
-    return DocumentSVG::rootElement(*localMainFrame->protectedDocument());
+    return DocumentSVG::rootElement(*protect(localMainFrame->document()));
 }
 
 bool SVGImage::renderingTaintsOrigin() const
@@ -532,7 +532,7 @@ EncodedDataStatus SVGImage::dataChanged(bool allDataReceived)
         });
         activeDocumentLoader->writer().end();
 
-        localMainFrame->protectedDocument()->updateLayoutIgnorePendingStylesheets();
+        protect(localMainFrame->document())->updateLayoutIgnorePendingStylesheets();
 
         // Set the intrinsic size before a container size is available.
         m_intrinsicSize = containerSize();

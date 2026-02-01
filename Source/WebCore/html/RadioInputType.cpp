@@ -158,7 +158,7 @@ auto RadioInputType::handleKeydownEvent(KeyboardEvent& event) -> ShouldCallBaseE
         if (inputElement->form() != element->form())
             break;
         if (inputElement->isRadioButton() && inputElement->name() == element->name() && inputElement->isFocusable()) {
-            inputElement->protectedDocument()->setFocusedElement(inputElement.get());
+            protect(inputElement->document())->setFocusedElement(inputElement.get());
             // If the focused radio button is not visible (e.g., during arrow key navigation), scroll it into view.
             inputElement->scrollIntoViewIfNotVisible(false);
             inputElement->dispatchSimulatedClick(&event, SendNoEvents, DoNotShowPressedLook);

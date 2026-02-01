@@ -75,7 +75,7 @@ using namespace HTMLNames;
 static bool canLoadJavaScriptURL(HTMLFrameOwnerElement& ownerElement, const URL& url)
 {
     ASSERT(url.protocolIsJavaScript());
-    if (!ownerElement.protectedDocument()->checkedContentSecurityPolicy()->allowJavaScriptURLs(aboutBlankURL().string(), { }, url.string(), &ownerElement))
+    if (!protect(ownerElement.document())->checkedContentSecurityPolicy()->allowJavaScriptURLs(aboutBlankURL().string(), { }, url.string(), &ownerElement))
         return false;
     if (!ownerElement.canLoadScriptURL(url))
         return false;
@@ -357,7 +357,7 @@ RefPtr<LocalFrame> FrameLoader::SubframeLoader::loadSubframe(HTMLFrameOwnerEleme
     if ((url.isAboutBlank() || url.isAboutSrcDoc()) && userContentProvider) {
         userContentProvider->userContentExtensionBackend().forEach([&] (const String& identifier, ContentExtensions::ContentExtension& extension) {
             if (RefPtr styleSheetContents = extension.globalDisplayNoneStyleSheet())
-                subFrame->protectedDocument()->extensionStyleSheets().maybeAddContentExtensionSheet(identifier, *styleSheetContents);
+                protect(subFrame->document())->extensionStyleSheets().maybeAddContentExtensionSheet(identifier, *styleSheetContents);
         });
     }
 #endif
@@ -455,7 +455,7 @@ bool FrameLoader::SubframeLoader::loadPlugin(HTMLPlugInElement& pluginElement, c
 URL FrameLoader::SubframeLoader::completeURL(const String& url) const
 {
     ASSERT(m_frame->document());
-    return m_frame->protectedDocument()->completeURL(url);
+    return protect(m_frame->document())->completeURL(url);
 }
 
 bool FrameLoader::SubframeLoader::shouldConvertInvalidURLsToBlank() const

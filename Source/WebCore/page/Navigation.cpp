@@ -139,7 +139,7 @@ void Navigation::initializeForNewWindow(std::optional<NavigationNavigationType> 
             if (!previousNavigation->m_entries.size())
                 return false;
 
-            if (!frame()->protectedDocument()->protectedSecurityOrigin()->isSameOriginAs(previousWindow->protectedDocument()->protectedSecurityOrigin()))
+            if (!protect(frame()->document())->protectedSecurityOrigin()->isSameOriginAs(protect(previousWindow->document())->protectedSecurityOrigin()))
                 return false;
 
             return true;
@@ -198,7 +198,7 @@ void Navigation::setActivation(HistoryItem* previousItem, std::optional<Navigati
     if (wasAboutBlank) // FIXME: For navigations on the initial about blank this should already be the type.
         type = NavigationNavigationType::Replace;
 
-    bool isSameOrigin = frame()->document() && previousItem && SecurityOrigin::create(previousItem->url())->isSameOriginAs(frame()->protectedDocument()->protectedSecurityOrigin());
+    bool isSameOrigin = frame()->document() && previousItem && SecurityOrigin::create(previousItem->url())->isSameOriginAs(protect(frame()->document())->protectedSecurityOrigin());
     auto previousEntryIndex = previousItem ? getEntryIndexOfHistoryItem(m_entries, *previousItem) : std::nullopt;
 
     RefPtr<NavigationHistoryEntry> previousEntry = nullptr;
@@ -220,7 +220,7 @@ RefPtr<NavigationActivation> Navigation::createForPageswapEvent(HistoryItem* new
         return nullptr;
 
     // Skip cross-origin requests, or if any cross-origin redirects have been made.
-    bool isSameOrigin = SecurityOrigin::create(documentLoader->documentURL())->isSameOriginAs(protectedWindow()->protectedDocument()->protectedSecurityOrigin());
+    bool isSameOrigin = SecurityOrigin::create(documentLoader->documentURL())->isSameOriginAs(protect(protectedWindow()->document())->protectedSecurityOrigin());
     if (!isSameOrigin || (!documentLoader->request().isSameSite() && !fromBackForwardCache))
         return nullptr;
 
@@ -382,7 +382,7 @@ Navigation::Result Navigation::reload(ReloadOptions&& options, Ref<DeferredPromi
         state = currentEntry()->associatedHistoryItem().navigationAPIStateObject();
 
     RefPtr window = this->window();
-    if (!window->protectedDocument()->isFullyActive() || window->document()->unloadCounter())
+    if (!protect(window->document())->isFullyActive() || window->document()->unloadCounter())
         return createErrorResult(WTF::move(committed), WTF::move(finished), ExceptionCode::InvalidStateError, "Invalid state"_s);
 
     RefPtr apiMethodTracker = maybeSetUpcomingNonTraversalTracker(WTF::move(committed), WTF::move(finished), WTF::move(options.info), WTF::move(state));
@@ -406,7 +406,7 @@ Navigation::Result Navigation::reload(ReloadOptions&& options, Ref<DeferredPromi
 Navigation::Result Navigation::navigate(const String& url, NavigateOptions&& options, Ref<DeferredPromise>&& committed, Ref<DeferredPromise>&& finished)
 {
     RefPtr window = this->window();
-    auto newURL = window->protectedDocument()->completeURL(url, ScriptExecutionContext::ForceUTF8::Yes);
+    auto newURL = protect(window->document())->completeURL(url, ScriptExecutionContext::ForceUTF8::Yes);
     const URL& currentURL = protectedScriptExecutionContext()->url();
 
     if (!newURL.isValid())
@@ -423,7 +423,7 @@ Navigation::Result Navigation::navigate(const String& url, NavigateOptions&& opt
     if (serializedState.hasException())
         return createErrorResult(WTF::move(committed), WTF::move(finished), serializedState.releaseException());
 
-    if (!window->protectedDocument()->isFullyActive() || window->document()->unloadCounter())
+    if (!protect(window->document())->isFullyActive() || window->document()->unloadCounter())
         return createErrorResult(WTF::move(committed), WTF::move(finished), ExceptionCode::InvalidStateError, "Invalid state"_s);
 
     RefPtr apiMethodTracker = maybeSetUpcomingNonTraversalTracker(WTF::move(committed), WTF::move(finished), WTF::move(options.info), serializedState.releaseReturnValue());
@@ -449,14 +449,14 @@ Navigation::Result Navigation::navigate(const String& url, NavigateOptions&& opt
 Navigation::Result Navigation::performTraversal(const String& key, Navigation::Options options, Ref<DeferredPromise>&& committed, Ref<DeferredPromise>&& finished)
 {
     RefPtr window = this->window();
-    if (!window->protectedDocument()->isFullyActive() || window->document()->unloadCounter())
+    if (!protect(window->document())->isFullyActive() || window->document()->unloadCounter())
         return createErrorResult(WTF::move(committed), WTF::move(finished), ExceptionCode::InvalidStateError, "Invalid state"_s);
 
     if (!hasEntryWithKey(key))
         createErrorResult(WTF::move(committed), WTF::move(finished), ExceptionCode::AbortError, "Navigation aborted"_s);
 
     RefPtr frame = this->frame();
-    if (!frame->isMainFrame() && window->protectedDocument()->canNavigate(&frame->protectedPage()->protectedMainFrame().get()) != CanNavigateState::Able)
+    if (!frame->isMainFrame() && protect(window->document())->canNavigate(&frame->protectedPage()->protectedMainFrame().get()) != CanNavigateState::Able)
         return createErrorResult(WTF::move(committed), WTF::move(finished), ExceptionCode::SecurityError, "Invalid state"_s);
 
     RefPtr current = currentEntry();

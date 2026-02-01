@@ -487,7 +487,7 @@ static bool shouldAllowExternalLoad(const URL& url)
     RefPtr currentCachedResourceLoader = XMLDocumentParserScope::currentCachedResourceLoader().get();
     if (!currentCachedResourceLoader || !currentCachedResourceLoader->document())
         return false;
-    if (!currentCachedResourceLoader->protectedDocument()->protectedSecurityOrigin()->canRequest(url, OriginAccessPatternsForWebProcess::singleton())) {
+    if (!protect(currentCachedResourceLoader->document())->protectedSecurityOrigin()->canRequest(url, OriginAccessPatternsForWebProcess::singleton())) {
         currentCachedResourceLoader->printAccessDeniedMessage(url);
         return false;
     }
@@ -709,7 +709,7 @@ void XMLDocumentParser::doWrite(const String& parseString)
         // keep this alive until this function is done.
         Ref<XMLDocumentParser> protectedThis(*this);
 
-        XMLDocumentParserScope scope(&protectedDocument()->cachedResourceLoader());
+        XMLDocumentParserScope scope(&protect(document())->cachedResourceLoader());
 
         // FIXME: Can we parse 8-bit strings directly as Latin-1 instead of upconverting to UTF-16?
         switchToUTF16(context->context());
@@ -1026,7 +1026,7 @@ void XMLDocumentParser::processingInstruction(const xmlChar* target, const xmlCh
     if (!updateLeafTextNode())
         return;
 
-    auto result = m_currentNode->protectedDocument()->createProcessingInstruction(toString(target), toString(data));
+    auto result = protect(m_currentNode->document())->createProcessingInstruction(toString(target), toString(data));
     if (result.hasException())
         return;
     auto pi = result.releaseReturnValue();
@@ -1060,7 +1060,7 @@ void XMLDocumentParser::cdataBlock(std::span<const xmlChar> s)
     if (!updateLeafTextNode())
         return;
 
-    RefPtr { *m_currentNode }->parserAppendChild(CDATASection::create(m_currentNode->protectedDocument(), toString(s)));
+    RefPtr { *m_currentNode }->parserAppendChild(CDATASection::create(protect(m_currentNode->document()), toString(s)));
 }
 
 void XMLDocumentParser::comment(const xmlChar* s)
@@ -1076,7 +1076,7 @@ void XMLDocumentParser::comment(const xmlChar* s)
     if (!updateLeafTextNode())
         return;
 
-    RefPtr { *m_currentNode }->parserAppendChild(Comment::create(m_currentNode->protectedDocument(), toString(s)));
+    RefPtr { *m_currentNode }->parserAppendChild(Comment::create(protect(m_currentNode->document()), toString(s)));
 }
 
 enum StandaloneInfo {
@@ -1095,9 +1095,9 @@ void XMLDocumentParser::startDocument(const xmlChar* version, const xmlChar* enc
     }
 
     if (version)
-        protectedDocument()->setXMLVersion(toString(version));
+        protect(document())->setXMLVersion(toString(version));
     if (standalone != StandaloneUnspecified)
-        protectedDocument()->setXMLStandalone(standaloneInfo == StandaloneYes);
+        protect(document())->setXMLStandalone(standaloneInfo == StandaloneYes);
     if (encoding)
         document()->setXMLEncoding(toString(encoding));
     document()->setHasXMLDeclaration(true);
@@ -1381,7 +1381,7 @@ void XMLDocumentParser::doEnd()
         if (m_context) {
             // Tell libxml we're done.
             {
-                XMLDocumentParserScope scope(&protectedDocument()->cachedResourceLoader());
+                XMLDocumentParserScope scope(&protect(document())->cachedResourceLoader());
                 xmlParseChunk(context(), nullptr, 0, 1);
             }
 
@@ -1510,7 +1510,7 @@ bool XMLDocumentParser::appendFragmentSource(const String& chunk)
         return false;
 
     initializeParserContext(chunkAsUTF8);
-    XMLDocumentParserScope scope(&protectedDocument()->cachedResourceLoader());
+    XMLDocumentParserScope scope(&protect(document())->cachedResourceLoader());
     xmlParseContent(context());
     endDocument(); // Close any open text nodes.
 

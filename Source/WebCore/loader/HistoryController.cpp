@@ -287,7 +287,7 @@ void HistoryController::restoreDocumentState()
     documentLoader->setShouldOpenExternalURLsPolicy(currentItem->shouldOpenExternalURLsPolicy());
 
     LOG(Loading, "WebCoreLoading frame %" PRIu64 ": restoring form state from %p", m_frame->frameID().toUInt64(), currentItem.get());
-    m_frame->protectedDocument()->setStateForNewFormElements(currentItem->documentState());
+    protect(m_frame->document())->setStateForNewFormElements(currentItem->documentState());
 }
 
 void HistoryController::invalidateCurrentItemCachedPage()
