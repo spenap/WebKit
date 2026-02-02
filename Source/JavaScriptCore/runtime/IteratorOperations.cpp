@@ -317,7 +317,7 @@ static IterationRecord getAsyncIteratorImpl(JSGlobalObject& globalObject, JSValu
     }
 
     CallData callData;
-    auto method = iterableObject->getMethod(&globalObject, callData, vm->propertyNames->asyncIteratorSymbol, "asyncIteratorSymbol property should be callable"_s);
+    auto method = iterableObject->getMethod(&globalObject, callData, vm.propertyNames->asyncIteratorSymbol, "asyncIteratorSymbol property should be callable"_s);
     RETURN_IF_EXCEPTION(throwScope, { });
 
     if (method.isUndefined()) {
