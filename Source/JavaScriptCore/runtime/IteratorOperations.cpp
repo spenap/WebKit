@@ -307,7 +307,7 @@ IterationRecord iteratorDirect(JSGlobalObject* globalObject, JSValue object)
 // https://tc39.es/ecma262/multipage/abstract-operations.html#sec-getiterator, ASYNC kind
 static IterationRecord getAsyncIteratorImpl(JSGlobalObject& globalObject, JSValue iterable)
 {
-    Ref vm = globalObject.vm();
+    auto& vm = globalObject.vm();
     auto throwScope = DECLARE_THROW_SCOPE(vm);
 
     auto* iterableObject = iterable.getObject();
