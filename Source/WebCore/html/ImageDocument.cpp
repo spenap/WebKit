@@ -159,7 +159,7 @@ void ImageDocument::updateDuringParsing()
     if (!frame())
         return;
 
-    if (RefPtr buffer = protectedLoader()->mainResourceData()) {
+    if (RefPtr buffer = protect(loader())->mainResourceData()) {
         if (CachedResourceHandle cachedImage = Ref { *m_imageElement }->cachedImage())
             cachedImage->updateBuffer(*buffer);
     }

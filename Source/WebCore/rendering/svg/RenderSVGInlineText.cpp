@@ -26,6 +26,7 @@
 #include "RenderSVGInlineText.h"
 
 #include "CSSFontSelector.h"
+#include "DocumentInlines.h"
 #include "FloatConversion.h"
 #include "FloatQuad.h"
 #include "InlineIteratorSVGTextBox.h"
@@ -275,7 +276,7 @@ bool RenderSVGInlineText::computeNewScaledFontForStyle(const RenderObject& rende
         fontDescription.setOrientation(FontOrientation::Horizontal);
 
     scaledFont = FontCascade(WTF::move(fontDescription));
-    scaledFont.update(renderer.document().protectedFontSelector().ptr());
+    scaledFont.update(protect(renderer.document().fontSelector()).ptr());
     return true;
 }
 

@@ -90,14 +90,7 @@ inline ScriptModuleLoader& Document::moduleLoader()
     return *m_moduleLoader;
 }
 
-inline CSSFontSelector& Document::fontSelector()
-{
-    if (!m_fontSelector)
-        return ensureFontSelector();
-    return *m_fontSelector;
-}
-
-inline const CSSFontSelector& Document::fontSelector() const
+inline CSSFontSelector& Document::fontSelector() const
 {
     if (!m_fontSelector)
         return const_cast<Document&>(*this).ensureFontSelector();
@@ -135,11 +128,6 @@ inline bool Document::wasLastFocusByClick() const { return m_latestFocusTrigger 
 inline RefPtr<DocumentParser> Document::protectedParser() const
 {
     return m_parser;
-}
-
-inline RefPtr<Element> Document::protectedDocumentElement() const
-{
-    return m_documentElement;
 }
 
 inline UndoManager& Document::undoManager() const

@@ -719,7 +719,7 @@ void HTMLTextFormControlElement::setInnerTextValue(String&& value)
 
         {
             // Events dispatched on the inner text element cannot execute arbitrary author scripts.
-            ScriptDisallowedScope::EventAllowedScope allowedScope(*protectedUserAgentShadowRoot());
+            ScriptDisallowedScope::EventAllowedScope allowedScope(*protect(userAgentShadowRoot()));
 
             bool endsWithNewLine = value.endsWith('\n') || value.endsWith('\r');
             innerText->setInnerText(WTF::move(value));

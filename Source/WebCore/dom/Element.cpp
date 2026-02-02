@@ -3510,11 +3510,6 @@ ShadowRoot* Element::userAgentShadowRoot() const
     return shadowRoot();
 }
 
-RefPtr<ShadowRoot> Element::protectedUserAgentShadowRoot() const
-{
-    return userAgentShadowRoot();
-}
-
 ShadowRoot& Element::ensureUserAgentShadowRoot()
 {
     if (auto* shadow = userAgentShadowRoot())
@@ -5018,11 +5013,6 @@ DOMTokenList& Element::classList()
     if (!data.classList())
         data.setClassList(makeUniqueWithoutRefCountedCheck<DOMTokenList>(*this, HTMLNames::classAttr));
     return *data.classList();
-}
-
-Ref<DOMTokenList> Element::protectedClassList()
-{
-    return classList();
 }
 
 SpaceSplitString Element::partNames() const

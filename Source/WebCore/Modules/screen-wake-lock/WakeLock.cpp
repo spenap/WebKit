@@ -97,7 +97,7 @@ void WakeLock::request(WakeLockType lockType, Ref<DeferredPromise>&& promise)
             }
             auto lock = WakeLockSentinel::create(document, lockType);
             promise->resolve<IDLInterface<WakeLockSentinel>>(lock.get());
-            document->protectedWakeLockManager()->addWakeLock(WTF::move(lock), document->pageID());
+            protect(document->wakeLockManager())->addWakeLock(WTF::move(lock), document->pageID());
         });
     });
 }

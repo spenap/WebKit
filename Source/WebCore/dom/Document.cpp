@@ -2753,11 +2753,6 @@ WakeLockManager& Document::wakeLockManager()
     return *m_wakeLockManager;
 }
 
-Ref<WakeLockManager> Document::protectedWakeLockManager()
-{
-    return wakeLockManager();
-}
-
 FormController& Document::formController()
 {
     if (!m_formController)
@@ -4266,8 +4261,8 @@ ExceptionOr<void> Document::setBodyOrFrameset(RefPtr<HTMLElement>&& newBody)
         return Exception { ExceptionCode::HierarchyRequestError };
 
     if (currentBody)
-        return protectedDocumentElement()->replaceChild(*newBody, *currentBody);
-    return protectedDocumentElement()->appendChild(*newBody);
+        return protect(documentElement())->replaceChild(*newBody, *currentBody);
+    return protect(documentElement())->appendChild(*newBody);
 }
 
 Location* Document::location() const
@@ -6556,7 +6551,7 @@ void Document::invalidateEventListenerRegions()
     if (changed)
         scheduleFullStyleRebuild();
     else
-        protectedDocumentElement()->invalidateStyleInternal();
+        protect(documentElement())->invalidateStyleInternal();
 }
 
 void Document::invalidateRenderingDependentRegions()
@@ -9749,11 +9744,6 @@ DocumentLoader* Document::loader() const
     return loader;
 }
 
-RefPtr<DocumentLoader> Document::protectedLoader() const
-{
-    return loader();
-}
-
 bool Document::allowsContentJavaScript() const
 {
     // FIXME: Get all SPI clients off of this potentially dangerous Setting.
@@ -10079,7 +10069,7 @@ Ref<DocumentFragment> Document::documentFragmentForInnerOuterHTML()
 
 Ref<FontFaceSet> Document::fonts()
 {
-    return protectedFontSelector()->fontFaceSet();
+    return protect(fontSelector())->fontFaceSet();
 }
 
 EditingBehavior Document::editingBehavior() const
@@ -12181,13 +12171,6 @@ String Document::mediaKeysStorageDirectory()
 CheckedPtr<RenderView> Document::checkedRenderView() const
 {
     return m_renderView.get();
-}
-
-Ref<CSSFontSelector> Document::protectedFontSelector() const
-{
-    if (!m_fontSelector)
-        return const_cast<Document&>(*this).ensureFontSelector();
-    return *m_fontSelector;
 }
 
 PermissionsPolicy Document::permissionsPolicy() const

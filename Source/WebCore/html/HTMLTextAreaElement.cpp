@@ -529,14 +529,14 @@ void HTMLTextAreaElement::updatePlaceholderText()
     auto& placeholderText = attributeWithoutSynchronization(placeholderAttr);
     if (placeholderText.isEmpty()) {
         if (RefPtr placeholder = m_placeholder) {
-            protectedUserAgentShadowRoot()->removeChild(*placeholder);
+            protect(userAgentShadowRoot())->removeChild(*placeholder);
             m_placeholder = nullptr;
         }
         return;
     }
     if (!m_placeholder) {
         m_placeholder = TextControlPlaceholderElement::create(protect(document()));
-        protectedUserAgentShadowRoot()->insertBefore(*protectedPlaceholderElement(), protect(innerTextElement()->nextSibling()));
+        protect(userAgentShadowRoot())->insertBefore(*protectedPlaceholderElement(), protect(innerTextElement()->nextSibling()));
     }
     protectedPlaceholderElement()->setInnerText(String { placeholderText });
 }

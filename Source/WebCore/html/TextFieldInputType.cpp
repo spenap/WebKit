@@ -648,9 +648,9 @@ void TextFieldInputType::updatePlaceholderText()
         Ref placeholder = TextControlPlaceholderElement::create(protect(element->document()));
         m_placeholder = placeholder.copyRef();
         if (RefPtr container = m_container)
-            element->protectedUserAgentShadowRoot()->insertBefore(placeholder, container);
+            protect(element->userAgentShadowRoot())->insertBefore(placeholder, container);
         else
-            element->protectedUserAgentShadowRoot()->insertBefore(placeholder, innerTextElement());
+            protect(element->userAgentShadowRoot())->insertBefore(placeholder, innerTextElement());
     }
     RefPtr { m_placeholder }->setInnerText(WTF::move(placeholderText));
 }
