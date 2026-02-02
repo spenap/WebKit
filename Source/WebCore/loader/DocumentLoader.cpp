@@ -609,7 +609,7 @@ void DocumentLoader::matchRegistration(const URL& url, SWClientConnection::Regis
 
     RefPtr frame = m_frame.get();
     auto origin = (!frame->isMainFrame() && frame->document()) ? protect(frame->document())->topOrigin().data() : SecurityOriginData::fromURL(url);
-    if (!ServiceWorkerProvider::singleton().protectedServiceWorkerConnection()->mayHaveServiceWorkerRegisteredForOrigin(origin)) {
+    if (!protect(ServiceWorkerProvider::singleton().serviceWorkerConnection())->mayHaveServiceWorkerRegisteredForOrigin(origin)) {
         callback(std::nullopt);
         return;
     }

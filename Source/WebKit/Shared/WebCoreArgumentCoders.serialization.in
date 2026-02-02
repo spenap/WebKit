@@ -6184,7 +6184,7 @@ struct WebCore::ServiceWorkerImportedScript {
 };
 
 class WebCore::ScriptBuffer {
-    RefPtr<const WebCore::FragmentedSharedBuffer> protectedBuffer();
+    RefPtr<const WebCore::FragmentedSharedBuffer> bufferForSerialization();
 };
 
 header: <wtf/RobinHoodHashTable.h>
