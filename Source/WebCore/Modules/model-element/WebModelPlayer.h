@@ -101,6 +101,7 @@ private:
     bool paused() const final;
     void play(bool);
     void simulate(float elapsedTime);
+    double duration() const final;
 
     void ensureOnMainThreadWithProtectedThis(Function<void(Ref<WebModelPlayer>)>&& task);
     void setStageMode(WebCore::StageModeOperation) final;

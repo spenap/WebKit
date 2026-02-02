@@ -1103,6 +1103,14 @@ final class USDModelLoader: _Proto_UsdStageSession_v1.Delegate {
         }
     }
 
+    func duration() -> Double {
+        if timeCodePerSecond > 0 {
+            return (endTime - startTime) / timeCodePerSecond
+        }
+
+        return 0.0
+    }
+
     func loadModel(from data: Data) {
     }
 
@@ -1162,6 +1170,14 @@ extension WebBridgeModelLoader {
     @objc
     func requestCompleted(_ request: NSObject) {
         retainedRequests.remove(request)
+    }
+
+    @objc
+    func duration() -> Double {
+        guard let loader else {
+            return 0.0
+        }
+        return loader.duration()
     }
 
     fileprivate func updateMesh(webRequest: WebBridgeUpdateMesh) {
@@ -1351,6 +1367,11 @@ extension WebBridgeModelLoader {
 
     @objc
     func requestCompleted(_ request: NSObject) {
+    }
+
+    @objc
+    func duration() -> Double {
+        0.0
     }
 }
 #endif

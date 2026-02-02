@@ -141,6 +141,11 @@ void WebModelPlayer::ensureOnMainThreadWithProtectedThis(Function<void(Ref<WebMo
     });
 }
 
+double WebModelPlayer::duration() const
+{
+    return [m_modelLoader duration];
+}
+
 static Vector<uint8_t> loadData(RetainPtr<CFStringRef> filename)
 {
     RetainPtr<NSBundle> myBundle = [NSBundle bundleWithIdentifier:@"com.apple.WebCore"];
@@ -419,8 +424,9 @@ void WebModelPlayer::setIsLoopingAnimation(bool, CompletionHandler<void(bool suc
 {
 }
 
-void WebModelPlayer::animationDuration(CompletionHandler<void(std::optional<Seconds>&&)>&&)
+void WebModelPlayer::animationDuration(CompletionHandler<void(std::optional<Seconds>&&)>&& completion)
 {
+    completion(Seconds(duration()));
 }
 
 void WebModelPlayer::animationCurrentTime(CompletionHandler<void(std::optional<Seconds>&&)>&&)
