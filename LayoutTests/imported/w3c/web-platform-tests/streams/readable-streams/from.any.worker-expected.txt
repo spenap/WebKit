@@ -36,15 +36,15 @@ PASS ReadableStream.from: stream errors when next() returns a non-object
 PASS ReadableStream.from: stream errors when next() fulfills with a non-object
 PASS ReadableStream.from: stream stalls when next() never settles
 PASS ReadableStream.from: calls next() after first read()
-FAIL ReadableStream.from: cancelling the returned stream calls and awaits return() assert_equals: return() should be called expected 1 but got 0
+PASS ReadableStream.from: cancelling the returned stream calls and awaits return()
 PASS ReadableStream.from: return() is not called when iterator completes normally
 PASS ReadableStream.from: cancel() resolves when return() method is missing
-FAIL ReadableStream.from: cancel() rejects when return() is not a method assert_unreached: Should have rejected: cancel() should reject with a TypeError Reached unreachable code
-FAIL ReadableStream.from: cancel() rejects when return() rejects assert_unreached: Should have rejected: cancel() should reject with error from return() Reached unreachable code
-FAIL ReadableStream.from: cancel() rejects when return() throws synchronously assert_unreached: Should have rejected: cancel() should reject with error from return() Reached unreachable code
-FAIL ReadableStream.from: cancel() rejects when return() fulfills with a non-object assert_unreached: Should have rejected: cancel() should reject with a TypeError Reached unreachable code
+PASS ReadableStream.from: cancel() rejects when return() is not a method
+PASS ReadableStream.from: cancel() rejects when return() rejects
+PASS ReadableStream.from: cancel() rejects when return() throws synchronously
+PASS ReadableStream.from: cancel() rejects when return() fulfills with a non-object
 PASS ReadableStream.from: reader.read() inside next()
 PASS ReadableStream.from: reader.cancel() inside next()
-FAIL ReadableStream.from: reader.cancel() inside return() assert_equals: return() should be called once expected 1 but got 0
+PASS ReadableStream.from: reader.cancel() inside return()
 PASS ReadableStream.from(array), push() to array while reading
 

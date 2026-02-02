@@ -213,8 +213,20 @@ private:
 
     void doCancel(JSC::JSValue reason) final
     {
-        // FIXME: To do.
-        UNUSED_PARAM(reason);
+        m_iterator->callReturn(reason, [weakThis = WeakPtr { *this }](auto* globalObject, bool isOK, auto value) {
+            RefPtr protectedThis = weakThis.get();
+            if (!protectedThis || !globalObject)
+                return;
+            if (!isOK) {
+                protectedThis->cancelFinishedWithError(value ? value : JSC::jsUndefined());
+                return;
+            }
+            if (value && !value.getObject()) {
+                protectedThis->cancelFinished(Exception { ExceptionCode::TypeError, "return result is not an object"_s });
+                return;
+            }
+            protectedThis->cancelFinished();
+        });
     }
 
     const Ref<DOMAsyncIterator> m_iterator;
