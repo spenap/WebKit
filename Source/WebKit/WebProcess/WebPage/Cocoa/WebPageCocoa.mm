@@ -199,11 +199,6 @@ void WebPage::platformInitialize(const WebPageCreationParameters& parameters)
         WebCore::setAdditionalSupportedImageTypes(parameters.additionalSupportedImageTypes);
         WebCore::setImageSourceAllowableTypes(WebCore::allowableImageTypes());
     }
-
-#if PLATFORM(MAC)
-    // Unless the accent color is valid, we should not have initialized NSApplication at this point, for performance reasons.
-    ASSERT(!NSApp || parameters.accentColor.isValid());
-#endif
 }
 
 #if HAVE(SANDBOX_STATE_FLAGS)
