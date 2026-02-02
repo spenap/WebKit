@@ -1928,7 +1928,8 @@ sub GetDictionaryMemberDefaultValueFunctor
 {
     my ($interface, $member) = @_;
 
-    if (!$member->isRequired && defined $member->default && !WillConvertUndefinedToDefaultParameterValue($member->type, $member->default)) {
+    my $effectivelyRequired = $member->isRequired || $member->extendedAttributes->{ImplementationRequired};
+    if (!$effectivelyRequired && defined $member->default && !WillConvertUndefinedToDefaultParameterValue($member->type, $member->default)) {
         my $IDLType = GetIDLType($interface, $member->type);
         my $defaultValue = GenerateDefaultValue($interface, $member, $member->type, $member->default);
         return "[&] -> ConversionResult<${IDLType}> { return ${defaultValue}; }";
@@ -2913,7 +2914,8 @@ sub GenerateDictionaryImplementationMemberConversion
     }
 
     my $defaultValueFunctor = GetDictionaryMemberDefaultValueFunctor($typeScope, $member);
-    my $optional = !$member->isRequired && ((defined($member->default) && !WillConvertUndefinedToDefaultParameterValue($member->type, $member->default)) || !defined($member->default));
+    my $effectivelyRequired = $member->isRequired || $member->extendedAttributes->{ImplementationRequired};
+    my $optional = !$effectivelyRequired && ((defined($member->default) && !WillConvertUndefinedToDefaultParameterValue($member->type, $member->default)) || !defined($member->default));
 
     my $conversion;
     if ($member->extendedAttributes->{PermissiveInvalidValue} && $codeGenerator->IsEnumType($type)) {
@@ -3222,7 +3224,8 @@ sub GenerateConvertDictionaryToJS
                 $indent = "    ";
             }
 
-            if (!$member->isRequired && not defined $member->default) {
+            my $effectivelyRequired = $member->isRequired || $member->extendedAttributes->{ImplementationRequired};
+            if (!$effectivelyRequired && not defined $member->default) {
                 my $IDLType = GetIDLType($typeScope, $member->type);
                 my $conversionExpression = NativeToJSValueUsingReferences($member, $typeScope, "${IDLType}::extractValueFromNullable(${valueExpression})", "globalObject");
 
@@ -3313,7 +3316,8 @@ sub GenerateConvertDictionaryToJSForLegacyNativeDictionaryRequiredInterfaceNulla
                 $indent = "    ";
             }
 
-            if (!$member->isRequired && not defined $member->default) {
+            my $effectivelyRequired = $member->isRequired || $member->extendedAttributes->{ImplementationRequired};
+            if (!$effectivelyRequired && not defined $member->default) {
                 my $IDLType = GetIDLType($typeScope, $member->type);
                 my $conversionExpression = NativeToJSValueUsingReferences($member, $typeScope, "${IDLType}::extractValueFromNullable(${valueExpression})", "globalObject");
 
@@ -8135,7 +8139,8 @@ sub GetIDLTypeForDictionaryMember
     my ($interface, $member) = @_;
 
     my $defaultValueFunctor = GetDictionaryMemberDefaultValueFunctor($interface, $member);
-    my $optional = !$member->isRequired && ((defined($member->default) && !WillConvertUndefinedToDefaultParameterValue($member->type, $member->default)) || !defined($member->default));
+    my $effectivelyRequired = $member->isRequired || $member->extendedAttributes->{ImplementationRequired};
+    my $optional = !$effectivelyRequired && ((defined($member->default) && !WillConvertUndefinedToDefaultParameterValue($member->type, $member->default)) || !defined($member->default));
 
     my $IDLType = GetIDLType($interface, $member->type);
     $IDLType = "IDLOptional<" . $IDLType . ">" if $optional && !$defaultValueFunctor;
