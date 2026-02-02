@@ -296,11 +296,6 @@ TextResourceDecoder& DocumentWriter::decoder()
     return *m_decoder;
 }
 
-Ref<TextResourceDecoder> DocumentWriter::protectedDecoder()
-{
-    return decoder();
-}
-
 void DocumentWriter::reportDataReceived()
 {
     ASSERT(m_decoder);
@@ -313,11 +308,6 @@ void DocumentWriter::reportDataReceived()
     document->resolveStyle(Document::ResolveStyleType::Rebuild);
 }
 
-RefPtr<DocumentParser> DocumentWriter::protectedParser() const
-{
-    return m_parser;
-}
-
 void DocumentWriter::addData(const SharedBuffer& data)
 {
     // FIXME: Change these to ASSERT once https://bugs.webkit.org/show_bug.cgi?id=80427 has been resolved.
@@ -327,7 +317,7 @@ void DocumentWriter::addData(const SharedBuffer& data)
         return;
     }
     ASSERT(m_parser);
-    protectedParser()->appendBytes(*this, data.span());
+    protect(m_parser)->appendBytes(*this, data.span());
 }
 
 void DocumentWriter::insertDataSynchronously(const String& markup)
@@ -335,7 +325,7 @@ void DocumentWriter::insertDataSynchronously(const String& markup)
     ASSERT(m_state != State::NotStarted);
     ASSERT(m_state != State::Finished);
     ASSERT(m_parser);
-    protectedParser()->insert(markup);
+    protect(m_parser)->insert(markup);
 }
 
 void DocumentWriter::end()
@@ -355,10 +345,10 @@ void DocumentWriter::end()
     if (!m_parser)
         return;
     // FIXME: m_parser->finish() should imply m_parser->flush().
-    protectedParser()->flush(*this);
+    protect(m_parser)->flush(*this);
     if (!m_parser)
         return;
-    protectedParser()->finish();
+    protect(m_parser)->finish();
     m_parser = nullptr;
 }
 
@@ -376,7 +366,7 @@ void DocumentWriter::setFrame(LocalFrame& frame)
 void DocumentWriter::setDocumentWasLoadedAsPartOfNavigation()
 {
     ASSERT(m_parser && !m_parser->isStopped());
-    protectedParser()->setDocumentWasLoadedAsPartOfNavigation();
+    protect(m_parser)->setDocumentWasLoadedAsPartOfNavigation();
 }
 
 } // namespace WebCore

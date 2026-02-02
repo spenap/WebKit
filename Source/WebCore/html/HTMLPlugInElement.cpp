@@ -659,7 +659,7 @@ void HTMLPlugInElement::didAttachRenderers()
         if (CheckedPtr renderImage = dynamicDowncast<RenderImage>(renderer())) {
             CheckedRef renderImageResource = renderImage->imageResource();
             if (!renderImageResource->cachedImage())
-                renderImageResource->setCachedImage(m_imageLoader->protectedImage());
+                renderImageResource->setCachedImage(protect(m_imageLoader->image()));
         }
     }
 

@@ -3529,7 +3529,7 @@ enum class WebCore::WasPrivateRelayed : bool;
 
 #if PLATFORM(COCOA)
 [RefCounted, CreateUsing=createWithData] class WebCore::ArchiveResource {
-    Ref<WebCore::FragmentedSharedBuffer> protectedData();
+    Ref<WebCore::FragmentedSharedBuffer> dataForSerialization();
     URL url();
     String mimeType();
     String textEncoding();
@@ -3539,7 +3539,7 @@ enum class WebCore::WasPrivateRelayed : bool;
 };
 
 [RefCounted, CreateUsing=create] class WebCore::LegacyWebArchive {
-    Ref<WebCore::ArchiveResource> protectedMainResource();
+    Ref<WebCore::ArchiveResource> mainResourceForSerialization();
     Vector<Ref<WebCore::ArchiveResource>> subresources();
     Vector<WebCore::FrameIdentifier> subframeIdentifiers();
     std::optional<WebCore::FrameIdentifier> frameIdentifier();
@@ -5158,7 +5158,7 @@ struct WebCore::PolicyContainer {
 [Nested] enum class WebCore::SubstituteData::SessionHistoryVisibility : bool
 
 class WebCore::SubstituteData {
-    RefPtr<WebCore::FragmentedSharedBuffer> protectedContent();
+    RefPtr<WebCore::FragmentedSharedBuffer> contentForSerialization();
     URL failingURL();
     WebCore::ResourceResponse response();
     WebCore::SubstituteData::SessionHistoryVisibility shouldRevealToSessionHistory();

@@ -134,7 +134,7 @@ void HTMLVideoElement::didAttachRenderers()
             lazyInitialize(m_imageLoader, makeUniqueWithoutRefCountedCheck<HTMLImageLoader>(*this));
         m_imageLoader->updateFromElement();
         if (CheckedPtr renderer = this->renderer())
-            renderer->checkedImageResource()->setCachedImage(m_imageLoader->protectedImage());
+            renderer->checkedImageResource()->setCachedImage(protect(m_imageLoader->image()));
     }
 }
 

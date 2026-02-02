@@ -146,7 +146,7 @@ void ImageInputType::attach()
         return;
 
     CheckedRef imageResource = renderer->imageResource();
-    imageResource->setCachedImage(imageLoader->protectedImage());
+    imageResource->setCachedImage(protect(imageLoader->image()));
 
     // If we have no image at all because we have no src attribute, set
     // image height and width for the alt text instead.

@@ -209,7 +209,7 @@ void SubresourceLoader::willSendRequestInternal(ResourceRequest&& newRequest, co
     }
 
     if (newRequest.requester() != ResourceRequestRequester::Main) {
-        ResourceLoadObserver::singleton().logSubresourceLoading(protectedFrame().get(), newRequest, redirectResponse,
+        ResourceLoadObserver::singleton().logSubresourceLoading(protect(frame()).get(), newRequest, redirectResponse,
             (isScriptLikeDestination(options().destination) ? ResourceLoadObserver::FetchDestinationIsScriptLike::Yes : ResourceLoadObserver::FetchDestinationIsScriptLike::No));
     }
 
@@ -237,7 +237,7 @@ void SubresourceLoader::willSendRequestInternal(ResourceRequest&& newRequest, co
             }
 
             if (m_resource->type() == CachedResource::Type::MainResource && !redirectResponse.isNull())
-                protectedDocumentLoader()->willContinueMainResourceLoadAfterRedirect(request);
+                protect(documentLoader())->willContinueMainResourceLoadAfterRedirect(request);
 
             SUBRESOURCELOADER_RELEASE_LOG(SUBRESOURCELOADER_WILLSENDREQUESTINTERNAL_RESOURCELOAD_FINISHED);
             completionHandler(WTF::move(request));
@@ -341,7 +341,7 @@ void SubresourceLoader::didSendData(unsigned long long bytesSent, unsigned long 
 {
     ASSERT(m_state == Initialized);
     Ref protectedThis { *this };
-    protectedCachedResource()->didSendData(bytesSent, totalBytesToBeSent);
+    protect(cachedResource())->didSendData(bytesSent, totalBytesToBeSent);
 }
 
 #if USE(QUICK_LOOK)
@@ -363,7 +363,7 @@ void SubresourceLoader::didReceivePreviewResponse(ResourceResponse&& response)
     ASSERT(!response.isNull());
     ASSERT(m_resource);
     ResourceLoader::didReceivePreviewResponse(ResourceResponse { response });
-    protectedCachedResource()->previewResponseReceived(WTF::move(response));
+    protect(cachedResource())->previewResponseReceived(WTF::move(response));
 }
 
 #endif
@@ -395,7 +395,7 @@ void SubresourceLoader::didReceiveResponse(ResourceResponse&& response, Completi
 #endif
     // Implementing step 10 of https://fetch.spec.whatwg.org/#main-fetch for service worker responses.
     if (response.source() == ResourceResponse::Source::ServiceWorker && response.url() != request().url()) {
-        Ref loader = protectedDocumentLoader()->cachedResourceLoader();
+        Ref loader = protect(documentLoader())->cachedResourceLoader();
         if (!loader->allowedByContentSecurityPolicy(m_resource->type(), response.url(), options(), ContentSecurityPolicy::RedirectResponseReceived::Yes)) {
             SUBRESOURCELOADER_RELEASE_LOG(SUBRESOURCELOADER_DIDRECEIVERESPONSE_CANCELING_LOAD_BLOCKED_BY_CONTENT_POLICY);
             cancel(ResourceError({ }, 0, response.url(), { }, ResourceError::Type::General));
@@ -481,7 +481,7 @@ void SubresourceLoader::didReceiveResponse(ResourceResponse&& response, Completi
             if (resource) {
                 resource->responseReceived(WTF::move(m_previousPartResponse));
                 // The resource data will change as the next part is loaded, so we need to make a copy.
-                resource->finishLoading(protectedResourceData()->copy().ptr(), { });
+                resource->finishLoading(protect(resourceData())->copy().ptr(), { });
             }
         }
         clearResourceData();
@@ -489,7 +489,7 @@ void SubresourceLoader::didReceiveResponse(ResourceResponse&& response, Completi
         // Since a subresource loader does not load multipart sections progressively, data was delivered to the loader all at once.
         // After the first multipart section is complete, signal to delegates that this load is "finished"
         NetworkLoadMetrics emptyMetrics;
-        protectedDocumentLoader()->subresourceLoaderFinishedLoadingOnePart(*this);
+        protect(documentLoader())->subresourceLoaderFinishedLoadingOnePart(*this);
         didFinishLoadingOnePart(emptyMetrics);
     } else {
         if (resource)
@@ -500,7 +500,7 @@ void SubresourceLoader::didReceiveResponse(ResourceResponse&& response, Completi
 
     bool isResponseMultipart = response.isMultipart();
     if (options().mode != FetchOptions::Mode::Navigate && frame && frame->document())
-        LinkLoader::loadLinksFromHeader(response.httpHeaderField(HTTPHeaderName::Link), protectedDocumentLoader()->url(), *protect(frame->document()), LinkLoader::MediaAttributeCheck::SkipMediaAttributeCheck);
+        LinkLoader::loadLinksFromHeader(response.httpHeaderField(HTTPHeaderName::Link), protect(documentLoader())->url(), *protect(frame->document()), LinkLoader::MediaAttributeCheck::SkipMediaAttributeCheck);
 
     // https://wicg.github.io/nav-speculation/prefetch.html#clear-prefetch-cache
     if (frame && frame->settings().clearSiteDataHTTPHeaderEnabled()) {
@@ -662,21 +662,16 @@ Expected<void, String> SubresourceLoader::checkResponseCrossOriginAccessControl(
 
     ASSERT(m_origin);
 
-    return passesAccessControlCheck(response, options().credentials == FetchOptions::Credentials::Include ? StoredCredentialsPolicy::Use : StoredCredentialsPolicy::DoNotUse, *protectedOrigin(), &CrossOriginAccessControlCheckDisabler::singleton());
-}
-
-RefPtr<SecurityOrigin> SubresourceLoader::protectedOrigin() const
-{
-    return m_origin;
+    return passesAccessControlCheck(response, options().credentials == FetchOptions::Credentials::Include ? StoredCredentialsPolicy::Use : StoredCredentialsPolicy::DoNotUse, *protect(m_origin), &CrossOriginAccessControlCheckDisabler::singleton());
 }
 
 Expected<void, String> SubresourceLoader::checkRedirectionCrossOriginAccessControl(const ResourceRequest& previousRequest, const ResourceResponse& redirectResponse, ResourceRequest& newRequest)
 {
     bool crossOriginFlag = m_resource->isCrossOrigin();
-    bool isNextRequestCrossOrigin = m_origin && !protectedOrigin()->canRequest(newRequest.url(), OriginAccessPatternsForWebProcess::singleton());
+    bool isNextRequestCrossOrigin = m_origin && !protect(m_origin)->canRequest(newRequest.url(), OriginAccessPatternsForWebProcess::singleton());
 
     if (isNextRequestCrossOrigin)
-        protectedCachedResource()->setCrossOrigin();
+        protect(cachedResource())->setCrossOrigin();
     bool newCrossOriginFlag = m_resource->isCrossOrigin();
 
     ASSERT(options().mode != FetchOptions::Mode::SameOrigin || !newCrossOriginFlag);
@@ -692,7 +687,7 @@ Expected<void, String> SubresourceLoader::checkRedirectionCrossOriginAccessContr
 
         ASSERT(m_origin);
         if (crossOriginFlag) {
-            auto accessControlCheckResult = passesAccessControlCheck(redirectResponse, options().storedCredentialsPolicy, *protectedOrigin(), &CrossOriginAccessControlCheckDisabler::singleton());
+            auto accessControlCheckResult = passesAccessControlCheck(redirectResponse, options().storedCredentialsPolicy, *protect(m_origin), &CrossOriginAccessControlCheckDisabler::singleton());
             if (!accessControlCheckResult)
                 return accessControlCheckResult;
         }
@@ -717,12 +712,12 @@ Expected<void, String> SubresourceLoader::checkRedirectionCrossOriginAccessContr
 
     if (options().mode == FetchOptions::Mode::Cors && redirectingToNewOrigin) {
         cleanHTTPRequestHeadersForAccessControl(newRequest, options().httpHeadersToKeep);
-        updateRequestForAccessControl(newRequest, *protectedOrigin(), options().storedCredentialsPolicy);
+        updateRequestForAccessControl(newRequest, *protect(m_origin), options().storedCredentialsPolicy);
     }
 
     updateRequestReferrer(newRequest, referrerPolicy(), URL { previousRequest.httpReferrer() }, OriginAccessPatternsForWebProcess::singleton());
 
-    FrameLoader::addHTTPOriginIfNeeded(newRequest, m_origin ? protectedOrigin()->toString() : String());
+    FrameLoader::addHTTPOriginIfNeeded(newRequest, m_origin ? protect(m_origin)->toString() : String());
 
     return { };
 }
@@ -758,7 +753,7 @@ void SubresourceLoader::didFinishLoading(const NetworkLoadMetrics& networkLoadMe
     // FIXME (129394): We should cancel the load when a decode error occurs instead of continuing the load to completion.
     ASSERT(!resource->errorOccurred() || resource->status() == CachedResource::DecodeError || !resource->isLoading());
     LOG(ResourceLoading, "Received '%s'.", resource->url().string().latin1().data());
-    logResourceLoaded(protectedFrame().get(), resource->type());
+    logResourceLoaded(protect(frame()).get(), resource->type());
 
     m_loadTiming.markEndTime();
 
@@ -778,7 +773,7 @@ void SubresourceLoader::didFinishLoading(const NetworkLoadMetrics& networkLoadMe
     m_state = Finishing;
     if (m_loadingMultipartContent && !m_previousPartResponse.isNull())
         resource->responseReceived(ResourceResponse { m_previousPartResponse });
-    resource->finishLoading(protectedResourceData().get(), networkLoadMetrics);
+    resource->finishLoading(protect(resourceData()).get(), networkLoadMetrics);
 
     if (wasCancelled()) {
         SUBRESOURCELOADER_RELEASE_LOG(SUBRESOURCELOADER_DIDFINISHLOADING_CANCELED);
@@ -895,7 +890,7 @@ void SubresourceLoader::notifyDone(LoadCompletionType type)
         shouldPerformPostLoadActions = false;
 #endif
     if (RefPtr documentLoader = this->documentLoader())
-        documentLoader->protectedCachedResourceLoader()->loadDone(type, shouldPerformPostLoadActions);
+        protect(documentLoader->cachedResourceLoader())->loadDone(type, shouldPerformPostLoadActions);
     else
         SUBRESOURCELOADER_RELEASE_LOG_ERROR("notifyDone: document loader is null. Could not call loadDone()");
 
@@ -916,7 +911,7 @@ void SubresourceLoader::releaseResources()
 #else
     if (m_state != Uninitialized)
 #endif
-        protectedCachedResource()->clearLoader();
+        protect(cachedResource())->clearLoader();
     m_resource = nullptr;
     ResourceLoader::releaseResources();
 }
@@ -946,7 +941,7 @@ void SubresourceLoader::reportResourceTiming(const NetworkLoadMetrics& networkLo
     }
 
     ASSERT(options().initiatorContext == InitiatorContext::Document);
-    documentLoader->protectedCachedResourceLoader()->resourceTimingInformation().addResourceTiming(*protectedCachedResource(), *document, WTF::move(resourceTiming));
+    protect(documentLoader->cachedResourceLoader())->resourceTimingInformation().addResourceTiming(*protect(cachedResource()), *document, WTF::move(resourceTiming));
 }
 
 const HTTPHeaderMap* SubresourceLoader::originalHeaders() const

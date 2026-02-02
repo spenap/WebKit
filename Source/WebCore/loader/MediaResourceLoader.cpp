@@ -194,11 +194,6 @@ Document* MediaResourceLoader::document()
     return m_document.get();
 }
 
-RefPtr<Document> MediaResourceLoader::protectedDocument()
-{
-    return document();
-}
-
 const String& MediaResourceLoader::crossOriginMode() const
 {
     assertIsMainThread();
@@ -287,12 +282,7 @@ MediaResource::MediaResource(MediaResourceLoader& loader, CachedResourceHandle<C
     assertIsMainThread();
 
     ASSERT(resource);
-    protectedResource()->addClient(*this);
-}
-
-CachedResourceHandle<CachedRawResource> MediaResource::protectedResource() const
-{
-    return m_resource;
+    protect(m_resource)->addClient(*this);
 }
 
 MediaResource::~MediaResource()
@@ -300,7 +290,7 @@ MediaResource::~MediaResource()
     assertIsMainThread();
 
     if (m_resource)
-        protectedResource()->removeClient(*this);
+        protect(m_resource)->removeClient(*this);
     m_loader->removeResource(*this);
 }
 
@@ -335,7 +325,7 @@ void MediaResource::responseReceived(const CachedResource& resource, const Resou
         return;
     }
 
-    if (!m_loader->verifyMediaResponse(resource.url(), response, resource.protectedOrigin().get())) {
+    if (!m_loader->verifyMediaResponse(resource.url(), response, protect(resource.origin()).get())) {
         static NeverDestroyed<const String> consoleMessage("Media response origin validation failed."_s);
         protect(m_loader->document())->addConsoleMessage(MessageSource::Security, MessageLevel::Error, consoleMessage.get());
         if (RefPtr client = this->client())

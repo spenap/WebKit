@@ -126,8 +126,6 @@ private:
     void deliverResourceData(const SharedBuffer&);
     void deliverStoredResourceData();
 
-    Ref<ContentFilterClient> protectedClient() const;
-    
     URL url();
 
     Container m_contentFilters;

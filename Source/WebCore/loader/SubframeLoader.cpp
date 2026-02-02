@@ -87,11 +87,6 @@ FrameLoader::SubframeLoader::SubframeLoader(LocalFrame& frame)
 {
 }
 
-Ref<LocalFrame> FrameLoader::SubframeLoader::protectedFrame() const
-{
-    return m_frame;
-}
-
 void FrameLoader::SubframeLoader::clear()
 {
     m_containsPlugins = false;
@@ -115,7 +110,7 @@ void FrameLoader::SubframeLoader::createFrameIfNecessary(HTMLFrameOwnerElement& 
         return;
     if (!canCreateSubFrame())
         return;
-    protectedFrame()->loader().client().createFrame(frameName, ownerElement);
+    protect(m_frame)->loader().client().createFrame(frameName, ownerElement);
     if (!ownerElement.contentFrame())
         return;
 
@@ -157,16 +152,16 @@ bool FrameLoader::SubframeLoader::pluginIsLoadable(const URL& url, const HTMLPlu
 
         Ref securityOrigin = document->securityOrigin();
         if (!securityOrigin->canDisplay(url, OriginAccessPatternsForWebProcess::singleton())) {
-            FrameLoader::reportLocalLoadFailed(protectedFrame().ptr(), url.string());
+            FrameLoader::reportLocalLoadFailed(protect(m_frame).ptr(), url.string());
             return false;
         }
 
         if (!portAllowed(url) || isIPAddressDisallowed(url)) {
-            FrameLoader::reportBlockedLoadFailed(protectedFrame(), url);
+            FrameLoader::reportBlockedLoadFailed(protect(m_frame), url);
             return false;
         }
 
-        if (MixedContentChecker::shouldBlockRequest(protectedFrame(), url))
+        if (MixedContentChecker::shouldBlockRequest(protect(m_frame), url))
             return false;
     }
 

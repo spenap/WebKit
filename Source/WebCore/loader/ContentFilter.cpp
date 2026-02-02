@@ -361,15 +361,10 @@ void ContentFilter::didDecide(State state)
     client->cancelMainResourceLoadForContentFilter(m_blockedError);
 }
 
-Ref<ContentFilterClient> ContentFilter::protectedClient() const
-{
-    return m_client.get();
-}
-
 void ContentFilter::deliverResourceData(const SharedBuffer& buffer)
 {
     ASSERT(m_state == State::Allowed);
-    protectedClient()->dataReceivedThroughContentFilter(buffer);
+    protect(m_client)->dataReceivedThroughContentFilter(buffer);
 }
 
 URL ContentFilter::url()
@@ -425,7 +420,7 @@ void ContentFilter::handleProvisionalLoadFailure(const ResourceError& error)
     ResourceResponse response { URL(), "text/html"_s, static_cast<long long>(replacementData->size()), "UTF-8"_s };
     SubstituteData substituteData { WTF::move(replacementData), URL { error.failingURL() }, WTF::move(response), SubstituteData::SessionHistoryVisibility::Hidden };
     SetForScope loadingBlockedPage { m_isLoadingBlockedPage, true };
-    protectedClient()->handleProvisionalLoadFailureFromContentFilter(blockedPageURL(), WTF::move(substituteData));
+    protect(m_client)->handleProvisionalLoadFailureFromContentFilter(blockedPageURL(), WTF::move(substituteData));
 }
 
 void ContentFilter::deliverStoredResourceData()

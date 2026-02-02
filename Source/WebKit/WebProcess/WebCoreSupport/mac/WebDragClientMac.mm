@@ -136,7 +136,7 @@ void WebDragClient::declareAndWriteDragImage(const String& pasteboardName, Eleme
 
     String extension;
     if (image) {
-        extension = image->protectedImage()->filenameExtension();
+        extension = protect(image->image())->filenameExtension();
         if (extension.isEmpty())
             return;
     }

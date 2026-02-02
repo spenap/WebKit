@@ -154,7 +154,7 @@ void Navigation::initializeForNewWindow(std::optional<NavigationNavigationType> 
             if (navigationType == NavigationNavigationType::Traverse) {
                 m_currentEntryIndex = getEntryIndexOfHistoryItem(m_entries, *currentItem);
                 if (m_currentEntryIndex) {
-                    setActivation(frame()->loader().history().protectedPreviousItem().get(), navigationType);
+                    setActivation(protect(frame()->loader().history().previousItem()).get(), navigationType);
                     return;
                 }
                 // We are doing a cross document traversal, we can't rely on previous window, so clear
@@ -180,7 +180,7 @@ void Navigation::initializeForNewWindow(std::optional<NavigationNavigationType> 
     m_entries.append(NavigationHistoryEntry::create(*this, *currentItem));
     m_currentEntryIndex = m_entries.size() - 1;
 
-    setActivation(frame()->loader().history().protectedPreviousItem().get(), navigationType);
+    setActivation(protect(frame()->loader().history().previousItem()).get(), navigationType);
 }
 
 // https://html.spec.whatwg.org/multipage/nav-history-apis.html#navigation-activation

@@ -116,7 +116,7 @@ void TextTrackLoader::deprecatedDidReceiveCachedResource(CachedResource& resourc
     if (!m_resource->resourceBuffer())
         return;
 
-    processNewCueData(*protectedResource());
+    processNewCueData(*protect(m_resource));
 }
 
 void TextTrackLoader::corsPolicyPreventedLoad()
@@ -243,11 +243,6 @@ Vector<String> TextTrackLoader::getNewStyleSheets()
     if (!m_cueParser)
         return { };
     return m_cueParser->takeStyleSheets();
-}
-
-CachedResourceHandle<CachedTextTrack> TextTrackLoader::protectedResource() const
-{
-    return m_resource.get();
 }
 
 } // namespace WebCore

@@ -142,12 +142,12 @@ NavigationAction::NavigationAction(Document& requester, const ResourceRequest& o
 
 NavigationAction::NavigationAction(FrameLoadRequest& request, NavigationType type, Event* event)
     : FrameLoadRequestBase(request)
-    , m_requester { NavigationRequester::from(request.protectedRequester().get()) }
+    , m_requester { NavigationRequester::from(protect(request.requester()).get()) }
     , m_originalRequest { request.resourceRequest() }
     , m_keyStateEventData { keyStateDataForFirstEventWithKeyState(event) }
     , m_mouseEventData { mouseEventDataForFirstMouseEvent(event) }
     , m_type { type }
-    , m_treatAsSameOriginNavigation { shouldTreatAsSameOriginNavigation(request.protectedRequester().get(), request.resourceRequest().url()) }
+    , m_treatAsSameOriginNavigation { shouldTreatAsSameOriginNavigation(protect(request.requester()).get(), request.resourceRequest().url()) }
 {
 }
 
