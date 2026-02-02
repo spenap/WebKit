@@ -85,6 +85,7 @@
 #include "RenderWidget.h"
 #include "RenderedPosition.h"
 #include "SVGRenderSupport.h"
+#include "ScrollAnchoringController.h"
 #include "SelectionGeometry.h"
 #include "Settings.h"
 #include "StyleResolver.h"
@@ -2329,14 +2330,14 @@ ScrollAnchoringController* RenderObject::searchParentChainForScrollAnchoringCont
     if (renderer.hasLayer()) {
         if (auto* scrollableArea = downcast<RenderLayerModelObject>(renderer).layer()->scrollableArea()) {
             auto* controller = scrollableArea->scrollAnchoringController();
-            if (controller && controller->anchorElement())
+            if (controller && controller->hasAnchorElement())
                 return controller;
         }
     }
     for (CheckedPtr enclosingLayer = renderer.enclosingLayer(); enclosingLayer; enclosingLayer = enclosingLayer->parent()) {
         if (RenderLayerScrollableArea* scrollableArea = enclosingLayer->scrollableArea()) {
             auto* controller = scrollableArea->scrollAnchoringController();
-            if (controller && controller->anchorElement())
+            if (controller && controller->hasAnchorElement())
                 return controller;
         }
     }
