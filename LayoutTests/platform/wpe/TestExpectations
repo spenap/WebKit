@@ -1306,3 +1306,5 @@ webkit.org/b/306384 imported/w3c/web-platform-tests/css/css-scroll-snap/scroll-t
 webkit.org/b/306384 imported/w3c/web-platform-tests/css/css-scroll-snap/scroll-target-padding-002.html [ ImageOnlyFailure ]
 
 webkit.org/b/306469 imported/w3c/web-platform-tests/encrypted-media/clearkey-update-non-ascii-input.https.html [ Pass Failure ]
+
+webkit.org/b/306758 media/event-attributes.html [ Pass Failure ]
