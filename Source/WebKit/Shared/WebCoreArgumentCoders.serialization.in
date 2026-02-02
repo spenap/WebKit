@@ -4366,6 +4366,7 @@ struct WebCore::MediaSelectionOption {
     WebCore::MediaSelectionOption::MediaType mediaType;
     String displayName;
     WebCore::MediaSelectionOption::LegibleType legibleType;
+    String languageTag;
 };
 
 [Nested] enum class WebCore::MediaSelectionOption::MediaType : uint8_t {
@@ -4379,6 +4380,7 @@ struct WebCore::MediaSelectionOption {
 [Nested] enum class WebCore::MediaSelectionOption::LegibleType : uint8_t {
     Regular,
     LegibleOff,
+    LegibleOn,
     LegibleAuto,
 };
 
