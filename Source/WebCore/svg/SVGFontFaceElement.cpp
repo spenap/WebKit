@@ -72,11 +72,6 @@ Ref<SVGFontFaceElement> SVGFontFaceElement::create(const QualifiedName& tagName,
     return adoptRef(*new SVGFontFaceElement(tagName, document));
 }
 
-Ref<StyleRuleFontFace> SVGFontFaceElement::protectedFontFaceRule() const
-{
-    return m_fontFaceRule;
-}
-
 void SVGFontFaceElement::attributeChanged(const QualifiedName& name, const AtomString& oldValue, const AtomString& newValue, AttributeModificationReason attributeModificationReason)
 {
     auto propertyId = cssPropertyIdForSVGAttributeName(name, document().settings());
@@ -248,7 +243,7 @@ int SVGFontFaceElement::descent() const
 
 String SVGFontFaceElement::fontFamily() const
 {
-    return protectedFontFaceRule()->properties().getPropertyValue(CSSPropertyFontFamily);
+    return protect(fontFaceRule())->properties().getPropertyValue(CSSPropertyFontFamily);
 }
 
 SVGFontElement* SVGFontFaceElement::associatedFontElement() const
@@ -256,11 +251,6 @@ SVGFontElement* SVGFontFaceElement::associatedFontElement() const
     ASSERT(parentNode() == m_fontElement);
     ASSERT(!parentNode() || is<SVGFontElement>(*parentNode()));
     return m_fontElement.get();
-}
-
-RefPtr<SVGFontElement> SVGFontFaceElement::protectedFontElement() const
-{
-    return associatedFontElement();
 }
 
 void SVGFontFaceElement::rebuildFontFace()
@@ -286,7 +276,7 @@ void SVGFontFaceElement::rebuildFontFace()
         return;
 
     // Parse in-memory CSS rules
-    protectedFontFaceRule()->mutableProperties().addParsedProperty(CSSProperty(CSSPropertySrc, list.releaseNonNull()));
+    protect(fontFaceRule())->mutableProperties().addParsedProperty(CSSProperty(CSSPropertySrc, list.releaseNonNull()));
 
     if (describesParentFont) {
         // Traverse parsed CSS values and associate CSSFontFaceSrcLocalValue elements with ourselves.

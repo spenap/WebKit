@@ -204,7 +204,7 @@ ImageDrawResult SVGImage::drawForContainer(GraphicsContext& context, const Float
     adjustedSrcSize.scale(roundedContainerSize.width() / containerSize.width(), roundedContainerSize.height() / containerSize.height());
     scaledSrc.setSize(adjustedSrcSize);
 
-    protectedFrameView()->scrollToFragment(initialFragmentURL);
+    protect(frameView())->scrollToFragment(initialFragmentURL);
 
     ImageDrawResult result = draw(context, dstRect, scaledSrc, options);
 
@@ -371,11 +371,6 @@ LocalFrameView* SVGImage::frameView() const
         return nullptr;
 
     return localMainFrame->view();
-}
-
-RefPtr<LocalFrameView> SVGImage::protectedFrameView() const
-{
-    return frameView();
 }
 
 bool SVGImage::hasRelativeWidth() const
