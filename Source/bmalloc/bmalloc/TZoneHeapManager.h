@@ -197,10 +197,10 @@ private:
 
     BINLINE pas_heap_ref* heapRefForTZoneType(const TZoneSpecification&, LockHolder&);
 
-    inline static unsigned bucketCountForSizeClass(TZoneDescriptor);
+    inline static unsigned bucketCountForSizeClass(unsigned sizeClass);
 
     inline unsigned bucketForKey(const TZoneSpecification&, unsigned bucketCountForSize, LockHolder&);
-    Group* populateGroupBuckets(LockHolder&, TZoneDescriptor);
+    Group* populateGroupBuckets(LockHolder&, const TZoneSpecification&);
 
     static TZoneHeapManager::State s_state;
     Mutex m_mutex;
