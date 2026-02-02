@@ -8465,3 +8465,5 @@ webkit.org/b/306570 http/tests/webcodecs/video-decoder-callbacks-do-not-leak.htm
 
 webkit.org/b/306678 [ Release ] compositing/rtl/rtl-scrolling-with-transformed-descendants.html [ Pass Failure ]
 
+webkit.org/b/306776 imported/w3c/web-platform-tests/html/semantics/forms/the-select-element/customizable-select/select-base-appearance-computed-style.html [ Pass Failure ]
+
