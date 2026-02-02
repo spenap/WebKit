@@ -916,6 +916,8 @@ static void addPartsForText(const TextExtraction::TextItemData& textItem, Vector
                     auto escapedText = escapeStringForMarkdown(trimmedContent);
                     if (isStrikethrough)
                         escapedText = makeString("~~"_s, WTF::move(escapedText), "~~"_s);
+                    else if (valueOrDefault(urlString).containsIgnoringASCIICase(escapedText))
+                        escapedText = { };
                     textParts.append(urlString ? makeString('[', WTF::move(escapedText), "]("_s, WTF::move(*urlString), ')') : escapedText);
                 } else
                     textParts.append(makeString('\'', escapeString(trimmedContent), '\''));
@@ -1331,6 +1333,9 @@ static void addTextRepresentationRecursive(const TextExtraction::Item& item, std
     });
 
     bool omitChildTextNode = [&] {
+        if (aggregator.useMarkdownOutput())
+            return false;
+
         if (item.children.size() != 1)
             return false;
 
