@@ -731,10 +731,6 @@ AcceleratedSurface::SwapChain::SwapChain(uint64_t surfaceID, RenderingPurpose re
     case PlatformDisplay::Type::Default:
         break;
 #endif // PLATFORM(GTK) || OS(ANDROID)
-#if PLATFORM(PLAYSTATION)
-    case PlatformDisplay::Type::Surfaceless:
-        break;
-#endif // PLATFORM(PLAYSTATION)
     }
 }
 
