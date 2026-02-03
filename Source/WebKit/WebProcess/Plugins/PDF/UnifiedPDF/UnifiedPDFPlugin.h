@@ -350,8 +350,8 @@ private:
     [[maybe_unused]] bool performCopyEditingOperation() const;
     void performCopyLinkOperation(const WebCore::IntPoint& contextMenuEventRootViewPoint) const;
 
-    void setDisplayMode(PDFDocumentLayout::DisplayMode);
-    void setDisplayModeAndUpdateLayout(PDFDocumentLayout::DisplayMode);
+    void setDisplayMode(PDFDisplayMode);
+    void setDisplayModeAndUpdateLayout(PDFDisplayMode);
 
     // Context Menu
 #if ENABLE(CONTEXT_MENUS)
@@ -388,8 +388,8 @@ private:
     static ContextMenuItemTag toContextMenuItemTag(int tagValue);
     void performContextMenuAction(ContextMenuItemTag, const WebCore::IntPoint& contextMenuEventRootViewPoint);
 
-    ContextMenuItemTag contextMenuItemTagFromDisplayMode(const PDFDocumentLayout::DisplayMode&) const;
-    PDFDocumentLayout::DisplayMode displayModeFromContextMenuItemTag(const ContextMenuItemTag&) const;
+    ContextMenuItemTag contextMenuItemTagFromDisplayMode(const PDFDisplayMode&) const;
+    PDFDisplayMode displayModeFromContextMenuItemTag(const ContextMenuItemTag&) const;
 #endif
 
     // Autoscroll
