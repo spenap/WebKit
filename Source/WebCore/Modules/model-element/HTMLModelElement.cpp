@@ -560,7 +560,7 @@ void HTMLModelElement::deleteModelPlayer()
 
 #if ENABLE(MODEL_ELEMENT_IMMERSIVE)
     if (immersive())
-        return document().protectedImmersive()->exitRemovedImmersiveElement(this, WTF::move(deleteModelPlayerBlock));
+        return protect(document().immersive())->exitRemovedImmersiveElement(this, WTF::move(deleteModelPlayerBlock));
 #endif
 
     deleteModelPlayerBlock();
@@ -1426,7 +1426,7 @@ bool HTMLModelElement::immersive() const
 
 void HTMLModelElement::requestImmersive(DOMPromiseDeferred<void>&& promise)
 {
-    document().protectedImmersive()->requestImmersive(this, [promise = WTF::move(promise)](ExceptionOr<void> result) mutable {
+    protect(document().immersive())->requestImmersive(this, [promise = WTF::move(promise)](ExceptionOr<void> result) mutable {
         if (result.hasException()) {
             promise.reject(result.releaseException());
             return;

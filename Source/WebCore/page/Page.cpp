@@ -2300,7 +2300,7 @@ void Page::updateRendering()
 
 #if ENABLE(MODEL_ELEMENT_IMMERSIVE)
     runProcessingStep(RenderingUpdateStep::Immersive, [] (Document& document) {
-        document.protectedImmersive()->dispatchPendingEvents();
+        protect(document.immersive())->dispatchPendingEvents();
     });
 #endif
 
