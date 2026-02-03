@@ -91,7 +91,7 @@ void PingLoader::loadImage(LocalFrame& frame, URL&& url)
     ASSERT(frame.document());
     Ref document = *frame.document();
 
-    if (!document->protectedSecurityOrigin()->canDisplay(url, OriginAccessPatternsForWebProcess::singleton())) {
+    if (!protect(document->securityOrigin())->canDisplay(url, OriginAccessPatternsForWebProcess::singleton())) {
         FrameLoader::reportLocalLoadFailed(&frame, url.string());
         return;
     }
@@ -156,7 +156,7 @@ void PingLoader::sendPing(LocalFrame& frame, URL&& sendPingURL, const URL& desti
     frame.loader().updateRequestAndAddExtraFields(request, IsMainResource::No);
 
     // https://html.spec.whatwg.org/multipage/links.html#hyperlink-auditing
-    if (document->protectedSecurityOrigin()->isSameOriginAs(SecurityOrigin::create(pingURL).get())
+    if (protect(document->securityOrigin())->isSameOriginAs(SecurityOrigin::create(pingURL).get())
         || !document->url().protocolIs("https"_s))
         request.setHTTPHeaderField(HTTPHeaderName::PingFrom, document->url().string());
     request.setHTTPHeaderField(HTTPHeaderName::PingTo, destinationURL.string());
@@ -202,7 +202,7 @@ void PingLoader::sendViolationReport(LocalFrame& frame, URL&& violationReportURL
     }
 
     bool removeCookies = true;
-    if (document->protectedSecurityOrigin()->isSameSchemeHostPort(SecurityOrigin::create(reportURL).get()))
+    if (protect(document->securityOrigin())->isSameSchemeHostPort(SecurityOrigin::create(reportURL).get()))
         removeCookies = false;
     if (removeCookies)
         request.setAllowCookies(false);
@@ -262,7 +262,7 @@ void PingLoader::startPingLoad(LocalFrame& frame, ResourceRequest& request, HTTP
     }
 
     CachedResourceRequest cachedResourceRequest { ResourceRequest { request }, options };
-    std::ignore = protect(frame.document())->protectedCachedResourceLoader()->requestPingResource(WTF::move(cachedResourceRequest));
+    std::ignore = protect(protect(frame.document())->cachedResourceLoader())->requestPingResource(WTF::move(cachedResourceRequest));
 }
 
 // // https://html.spec.whatwg.org/multipage/origin.html#sanitize-url-report

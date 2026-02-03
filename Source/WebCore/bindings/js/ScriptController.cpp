@@ -437,7 +437,7 @@ WindowProxy& ScriptController::windowProxy()
 
 JSWindowProxy& ScriptController::jsWindowProxy(DOMWrapperWorld& world)
 {
-    auto* jsWindowProxy = protectedFrame()->protectedWindowProxy()->jsWindowProxy(world);
+    auto* jsWindowProxy = protect(protectedFrame()->windowProxy())->jsWindowProxy(world);
     ASSERT_WITH_MESSAGE(jsWindowProxy, "The JSWindowProxy can only be null if the frame has been destroyed");
     return *jsWindowProxy;
 }
@@ -456,7 +456,7 @@ TextPosition ScriptController::eventHandlerPosition() const
 
 void ScriptController::setEvalEnabled(bool value, const String& errorMessage)
 {
-    auto* jsWindowProxy = protectedWindowProxy()->existingJSWindowProxy(mainThreadNormalWorldSingleton());
+    auto* jsWindowProxy = protect(windowProxy())->existingJSWindowProxy(mainThreadNormalWorldSingleton());
     if (!jsWindowProxy)
         return;
     jsWindowProxy->window()->setEvalEnabled(value, errorMessage);
@@ -464,7 +464,7 @@ void ScriptController::setEvalEnabled(bool value, const String& errorMessage)
 
 void ScriptController::setWebAssemblyEnabled(bool value, const String& errorMessage)
 {
-    auto* jsWindowProxy = protectedWindowProxy()->existingJSWindowProxy(mainThreadNormalWorldSingleton());
+    auto* jsWindowProxy = protect(windowProxy())->existingJSWindowProxy(mainThreadNormalWorldSingleton());
     if (!jsWindowProxy)
         return;
     jsWindowProxy->window()->setWebAssemblyEnabled(value, errorMessage);
@@ -472,7 +472,7 @@ void ScriptController::setWebAssemblyEnabled(bool value, const String& errorMess
 
 void ScriptController::setTrustedTypesEnforcement(JSC::TrustedTypesEnforcement enforcement)
 {
-    auto* proxy = protectedWindowProxy()->existingJSWindowProxy(mainThreadNormalWorldSingleton());
+    auto* proxy = protect(windowProxy())->existingJSWindowProxy(mainThreadNormalWorldSingleton());
     if (!proxy)
         return;
     proxy->window()->setTrustedTypesEnforcement(enforcement);
@@ -485,7 +485,7 @@ bool ScriptController::canAccessFromCurrentOrigin(LocalFrame* frame, Document& a
     // If the current lexicalGlobalObject is null we should use the accessing document for the security check.
     if (!lexicalGlobalObject) {
         RefPtr targetDocument = frame ? frame->document() : nullptr;
-        return targetDocument && accessingDocument.protectedSecurityOrigin()->isSameOriginDomain(targetDocument->protectedSecurityOrigin());
+        return targetDocument && protect(accessingDocument.securityOrigin())->isSameOriginDomain(protect(targetDocument->securityOrigin()));
     }
 
     return BindingSecurity::shouldAllowAccessToFrame(lexicalGlobalObject, frame);
@@ -493,7 +493,7 @@ bool ScriptController::canAccessFromCurrentOrigin(LocalFrame* frame, Document& a
 
 void ScriptController::updateDocument()
 {
-    for (auto& jsWindowProxy : protectedWindowProxy()->jsWindowProxiesAsVector()) {
+    for (auto& jsWindowProxy : protect(windowProxy())->jsWindowProxiesAsVector()) {
         JSLockHolder lock(jsWindowProxy->world().vm());
         jsCast<JSDOMWindow*>(jsWindowProxy->window())->updateDocument();
     }
@@ -542,7 +542,7 @@ Ref<Bindings::RootObject> ScriptController::createRootObject(void* nativeHandle)
 
 void ScriptController::collectIsolatedContexts(Vector<std::pair<JSC::JSGlobalObject*, RefPtr<SecurityOrigin>>>& result)
 {
-    for (auto& jsWindowProxy : protectedWindowProxy()->jsWindowProxiesAsVector()) {
+    for (auto& jsWindowProxy : protect(windowProxy())->jsWindowProxiesAsVector()) {
         auto* lexicalGlobalObject = jsWindowProxy->window();
         RefPtr origin = downcast<LocalDOMWindow>(jsWindowProxy->protectedWrapped())->protectedDocument()->securityOrigin();
         result.append(std::make_pair(lexicalGlobalObject, WTF::move(origin)));
@@ -853,7 +853,7 @@ void ScriptController::executeJavaScriptURL(const URL& url, const NavigationActi
     RefPtr ownerDocument = m_frame->document();
 
     RefPtr requesterSecurityOrigin = action.requester() ? action.requester()->securityOrigin.ptr() : nullptr;
-    if (requesterSecurityOrigin && !requesterSecurityOrigin->isSameOriginDomain(ownerDocument->protectedSecurityOrigin()))
+    if (requesterSecurityOrigin && !requesterSecurityOrigin->isSameOriginDomain(protect(ownerDocument->securityOrigin())))
         return;
 
     if (!frame->page())

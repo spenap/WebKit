@@ -1245,7 +1245,7 @@ void DocumentLoader::stopLoadingForPolicyChange(LoadWillContinueInAnotherProcess
 // https://w3c.github.io/ServiceWorker/#control-and-use-window-client
 static inline bool shouldUseActiveServiceWorkerFromParent(const Document& document, const Document& parent)
 {
-    return !document.url().protocolIsInHTTPFamily() && !document.securityOrigin().isOpaque() && parent.protectedSecurityOrigin()->isSameOriginDomain(document.protectedSecurityOrigin());
+    return !document.url().protocolIsInHTTPFamily() && !document.securityOrigin().isOpaque() && protect(parent.securityOrigin())->isSameOriginDomain(protect(document.securityOrigin()));
 }
 
 #if ENABLE(CONTENT_EXTENSIONS)
@@ -1286,7 +1286,7 @@ void DocumentLoader::commitData(const SharedBuffer& data)
             URL url = documentURL();
 
             if (!url.isEmpty() && url.protocolIsInHTTPFamily())
-                document->protectedResourceMonitor()->setDocumentURL(WTF::move(url));
+                protect(document->resourceMonitor())->setDocumentURL(WTF::move(url));
         }
 #endif
 
@@ -1295,7 +1295,7 @@ void DocumentLoader::commitData(const SharedBuffer& data)
             // load local resources. See https://bugs.webkit.org/show_bug.cgi?id=16756
             // and https://bugs.webkit.org/show_bug.cgi?id=19760 for further
             // discussion.
-            document->protectedSecurityOrigin()->grantLoadLocalResources();
+            protect(document->securityOrigin())->grantLoadLocalResources();
         }
 
         if (protect(frameLoader())->stateMachine().creatingInitialEmptyDocument())
@@ -1320,7 +1320,7 @@ void DocumentLoader::commitData(const SharedBuffer& data)
                     document->createNewIdentifier();
             }
 
-            if (m_frame->document()->activeServiceWorker() || document->url().protocolIsInHTTPFamily() || (document->page() && document->page()->isServiceWorkerPage()) || (document->parentDocument() && shouldUseActiveServiceWorkerFromParent(document, *document->protectedParentDocument())))
+            if (m_frame->document()->activeServiceWorker() || document->url().protocolIsInHTTPFamily() || (document->page() && document->page()->isServiceWorkerPage()) || (document->parentDocument() && shouldUseActiveServiceWorkerFromParent(document, *protect(document->parentDocument()))))
                 document->setServiceWorkerConnection(&ServiceWorkerProvider::singleton().serviceWorkerConnection());
 
             if (m_resultingClientId) {
@@ -1452,7 +1452,7 @@ void DocumentLoader::checkLoadComplete()
         return;
 
     ASSERT(this == frameLoader()->activeDocumentLoader());
-    protect(m_frame->document())->protectedWindow()->finishedLoading();
+    protect(protect(m_frame->document())->window())->finishedLoading();
 }
 
 void DocumentLoader::applyPoliciesToSettings()
@@ -2167,7 +2167,7 @@ void DocumentLoader::startLoadingMainResource()
 
 #if ENABLE(CONTENT_FILTERING)
     // Always filter in WK1
-    contentFilterInDocumentLoader() = frame && frame->view() && frame->protectedView()->platformWidget();
+    contentFilterInDocumentLoader() = frame && frame->view() && protect(frame->view())->platformWidget();
     if (contentFilterInDocumentLoader())
         m_contentFilter = !m_substituteData.isValid() ? ContentFilter::create(*this) : nullptr;
 #endif
@@ -2528,7 +2528,7 @@ bool DocumentLoader::navigationCanTriggerCrossDocumentViewTransition(Document& o
         return false;
 
     Ref newOrigin = SecurityOrigin::create(documentURL());
-    if (!newOrigin->isSameOriginAs(oldDocument.protectedSecurityOrigin()))
+    if (!newOrigin->isSameOriginAs(protect(oldDocument.securityOrigin())))
         return false;
 
     if (const auto* metrics = response().deprecatedNetworkLoadMetricsOrNull(); metrics && !fromBackForwardCache) {

@@ -190,7 +190,7 @@ bool RenderLayerScrollableArea::isUserScrollInProgress() const
     if (!scrollsOverflow())
         return false;
 
-    if (RefPtr scrollingCoordinator = m_layer.protectedPage()->scrollingCoordinator()) {
+    if (RefPtr scrollingCoordinator = protect(m_layer.page())->scrollingCoordinator()) {
         if (scrollingCoordinator->isUserScrollInProgress(scrollingNodeID()))
             return true;
     }
@@ -207,7 +207,7 @@ bool RenderLayerScrollableArea::isRubberBandInProgress() const
     if (!scrollsOverflow())
         return false;
 
-    if (RefPtr scrollingCoordinator = m_layer.protectedPage()->scrollingCoordinator()) {
+    if (RefPtr scrollingCoordinator = protect(m_layer.page())->scrollingCoordinator()) {
         if (scrollingCoordinator->isRubberBandInProgress(scrollingNodeID()))
             return true;
     }
@@ -271,7 +271,7 @@ bool RenderLayerScrollableArea::requestScrollToPosition(const ScrollPosition& po
 #if ENABLE(ASYNC_SCROLLING)
     LOG_WITH_STREAM(Scrolling, stream << "RenderLayerScrollableArea::requestScrollToPosition " << position << " options  " << options);
 
-    if (RefPtr scrollingCoordinator = m_layer.protectedPage()->scrollingCoordinator())
+    if (RefPtr scrollingCoordinator = protect(m_layer.page())->scrollingCoordinator())
         return scrollingCoordinator->requestScrollToPosition(*this, position, options);
 #else
     UNUSED_PARAM(position);
@@ -282,7 +282,7 @@ bool RenderLayerScrollableArea::requestScrollToPosition(const ScrollPosition& po
 
 bool RenderLayerScrollableArea::requestStartKeyboardScrollAnimation(const KeyboardScroll& scrollData)
 {
-    if (RefPtr scrollingCoordinator = m_layer.protectedPage()->scrollingCoordinator())
+    if (RefPtr scrollingCoordinator = protect(m_layer.page())->scrollingCoordinator())
         return scrollingCoordinator->requestStartKeyboardScrollAnimation(*this, scrollData);
 
     return false;
@@ -290,7 +290,7 @@ bool RenderLayerScrollableArea::requestStartKeyboardScrollAnimation(const Keyboa
 
 bool RenderLayerScrollableArea::requestStopKeyboardScrollAnimation(bool immediate)
 {
-    if (RefPtr scrollingCoordinator = m_layer.protectedPage()->scrollingCoordinator())
+    if (RefPtr scrollingCoordinator = protect(m_layer.page())->scrollingCoordinator())
         return scrollingCoordinator->requestStopKeyboardScrollAnimation(*this, immediate);
 
     return false;
@@ -301,7 +301,7 @@ void RenderLayerScrollableArea::stopAsyncAnimatedScroll()
 #if ENABLE(ASYNC_SCROLLING)
     LOG_WITH_STREAM(Scrolling, stream << m_layer << " stopAsyncAnimatedScroll");
 
-    if (RefPtr scrollingCoordinator = m_layer.protectedPage()->scrollingCoordinator())
+    if (RefPtr scrollingCoordinator = protect(m_layer.page())->scrollingCoordinator())
         return scrollingCoordinator->stopAnimatedScroll(*this);
 #endif
 }
@@ -440,7 +440,7 @@ void RenderLayerScrollableArea::scrollTo(const ScrollPosition& position)
         view.frameView().didChangeScrollOffset();
 
     view.frameView().viewportContentsChanged();
-    frame->protectedEditor()->renderLayerDidScroll(m_layer);
+    protect(frame->editor())->renderLayerDidScroll(m_layer);
 }
 
 void RenderLayerScrollableArea::scrollDidEnd()
@@ -550,7 +550,7 @@ bool RenderLayerScrollableArea::handleWheelEventForScrolling(const PlatformWheel
 
 #if ENABLE(ASYNC_SCROLLING)
     if (usesAsyncScrolling() && scrollingNodeID()) {
-        if (RefPtr scrollingCoordinator = m_layer.protectedPage()->scrollingCoordinator()) {
+        if (RefPtr scrollingCoordinator = protect(m_layer.page())->scrollingCoordinator()) {
             auto result = scrollingCoordinator->handleWheelEventForScrolling(wheelEvent, *scrollingNodeID(), gestureState);
             if (!result.needsMainThreadProcessing())
                 return result.wasHandled;
@@ -865,7 +865,7 @@ bool RenderLayerScrollableArea::canShowNonOverlayScrollbars() const
 
 void RenderLayerScrollableArea::createScrollbarsController()
 {
-    m_layer.page().chrome().client().ensureScrollbarsController(m_layer.protectedPage(), *this);
+    m_layer.page().chrome().client().ensureScrollbarsController(protect(m_layer.page()), *this);
 }
 
 static inline RenderElement* rendererForScrollbar(RenderLayerModelObject& renderer)
@@ -1679,7 +1679,7 @@ void RenderLayerScrollableArea::updateSnapOffsets()
         clearSnapOffsets();
         return;
     }
-    updateSnapOffsetsForScrollableArea(*this, *box, box->style(), box->paddingBoxRect(), box->style().writingMode(), m_layer.renderer().document().protectedFocusedElement().get());
+    updateSnapOffsetsForScrollableArea(*this, *box, box->style(), box->paddingBoxRect(), box->style().writingMode(), protect(m_layer.renderer().document().focusedElement()).get());
 }
 
 bool RenderLayerScrollableArea::isScrollSnapInProgress() const
@@ -1687,7 +1687,7 @@ bool RenderLayerScrollableArea::isScrollSnapInProgress() const
     if (!scrollsOverflow())
         return false;
 
-    if (RefPtr scrollingCoordinator = m_layer.protectedPage()->scrollingCoordinator()) {
+    if (RefPtr scrollingCoordinator = protect(m_layer.page())->scrollingCoordinator()) {
         if (scrollingCoordinator->isScrollSnapInProgress(scrollingNodeID()))
             return true;
     }
@@ -2052,7 +2052,7 @@ String RenderLayerScrollableArea::debugDescription() const
 
 void RenderLayerScrollableArea::didStartScrollAnimation()
 {
-    m_layer.protectedPage()->scheduleRenderingUpdate({ RenderingUpdateStep::Scroll });
+    protect(m_layer.page())->scheduleRenderingUpdate({ RenderingUpdateStep::Scroll });
 }
 
 void RenderLayerScrollableArea::animatedScrollDidEnd()

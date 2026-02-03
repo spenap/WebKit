@@ -601,7 +601,7 @@ void DocumentThreadableLoader::loadRequest(ResourceRequest&& request, SecurityCh
         if (CachedResourceHandle resource = std::exchange(m_resource, nullptr))
             resource->removeClient(*this);
 
-        auto cachedResource = protect(*m_document)->protectedCachedResourceLoader()->requestRawResource(WTF::move(newRequest));
+        auto cachedResource = protect(protect(*m_document)->cachedResourceLoader())->requestRawResource(WTF::move(newRequest));
         m_resource = cachedResource.value_or(nullptr);
         if (CachedResourceHandle resource = m_resource)
             resource->addClient(*this);

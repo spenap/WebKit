@@ -507,7 +507,7 @@ void HTMLModelElement::createModelPlayer()
 #endif
 
     if (!m_modelPlayerProvider)
-        m_modelPlayerProvider = document().protectedPage()->modelPlayerProvider();
+        m_modelPlayerProvider = protect(document().page())->modelPlayerProvider();
     if (RefPtr modelPlayerProvider = m_modelPlayerProvider.get()) {
         modelPlayer = modelPlayerProvider->createModelPlayer(*this);
         m_modelPlayer = modelPlayer.copyRef();
@@ -618,7 +618,7 @@ void HTMLModelElement::reloadModelPlayer()
     ASSERT(animationState && transformState);
 
     if (!m_modelPlayerProvider)
-        m_modelPlayerProvider = protect(document())->protectedPage()->modelPlayerProvider();
+        m_modelPlayerProvider = protect(protect(document())->page())->modelPlayerProvider();
     if (RefPtr modelPlayerProvider = m_modelPlayerProvider.get()) {
         modelPlayer = modelPlayerProvider->createModelPlayer(*this);
         m_modelPlayer = modelPlayer.copyRef();
@@ -1147,7 +1147,7 @@ URL HTMLModelElement::selectEnvironmentMapURL() const
 void HTMLModelElement::environmentMapRequestResource()
 {
     auto request = createResourceRequest(m_environmentMapURL, FetchOptions::Destination::Environmentmap);
-    auto resource = document().protectedCachedResourceLoader()->requestEnvironmentMapResource(WTF::move(request));
+    auto resource = protect(document().cachedResourceLoader())->requestEnvironmentMapResource(WTF::move(request));
     if (!resource.has_value()) {
         if (!m_environmentMapReadyPromise->isFulfilled())
             m_environmentMapReadyPromise->reject(Exception { ExceptionCode::NetworkError });
@@ -1633,7 +1633,7 @@ Node::InsertedIntoAncestorResult HTMLModelElement::insertedIntoAncestor(Insertio
 #if ENABLE(MODEL_PROCESS)
         document->incrementModelElementCount();
 #endif
-        m_modelPlayerProvider = document->protectedPage()->modelPlayerProvider();
+        m_modelPlayerProvider = protect(document->page())->modelPlayerProvider();
         LazyLoadModelObserver::observe(*this);
     }
 
@@ -1701,7 +1701,7 @@ void HTMLModelElement::sourceRequestResource()
         return triggerModelPlayerCreationCallbacksIfNeeded(Exception { ExceptionCode::AbortError, "The source URL is empty"_s });
 
     auto request = createResourceRequest(m_sourceURL, FetchOptions::Destination::Model);
-    auto resource = protect(document())->protectedCachedResourceLoader()->requestModelResource(WTF::move(request));
+    auto resource = protect(protect(document())->cachedResourceLoader())->requestModelResource(WTF::move(request));
     if (!resource.has_value()) {
         ActiveDOMObject::queueTaskToDispatchEvent(*this, TaskSource::DOMManipulation, Event::create(eventNames().errorEvent, Event::CanBubble::No, Event::IsCancelable::No));
         if (!m_readyPromise->isFulfilled())

@@ -849,9 +849,9 @@ void HTMLVideoElement::setVideoFullscreenStandby(bool value)
         return;
 
     if (videoFullscreenStandby())
-        document().protectedPage()->chrome().client().enterVideoFullscreenForVideoElement(*this, VideoFullscreenModeNone, true);
+        protect(document().page())->chrome().client().enterVideoFullscreenForVideoElement(*this, VideoFullscreenModeNone, true);
     else {
-        document().protectedPage()->chrome().client().exitVideoFullscreenForVideoElement(*this, [this, protectedThis = Ref { *this }](auto success) mutable {
+        protect(document().page())->chrome().client().exitVideoFullscreenForVideoElement(*this, [this, protectedThis = Ref { *this }](auto success) mutable {
             setVideoFullscreenStandbyInternal(!success);
         });
     }

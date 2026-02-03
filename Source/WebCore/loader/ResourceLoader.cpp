@@ -154,7 +154,7 @@ void ResourceLoader::init(ResourceRequest&& clientRequest, CompletionHandler<voi
         return completionHandler(false);
     m_defersLoading = m_options.defersLoadingPolicy == DefersLoadingPolicy::AllowDefersLoading && frame->page()->defersLoading();
 
-    if (m_options.securityCheck == SecurityCheckPolicy::DoSecurityCheck && !frame->document()->protectedSecurityOrigin()->canDisplay(clientRequest.url(), OriginAccessPatternsForWebProcess::singleton())) {
+    if (m_options.securityCheck == SecurityCheckPolicy::DoSecurityCheck && !protect(protect(frame->document())->securityOrigin())->canDisplay(clientRequest.url(), OriginAccessPatternsForWebProcess::singleton())) {
         RESOURCELOADER_RELEASE_LOG("init: Cancelling load because it violates security policy.");
         FrameLoader::reportLocalLoadFailed(frame.get(), clientRequest.url().string());
         releaseResources();
@@ -527,7 +527,7 @@ static void logResourceResponseSource(LocalFrame* frame, ResourceResponse::Sourc
         return;
     }
 
-    frame->protectedPage()->diagnosticLoggingClient().logDiagnosticMessage(DiagnosticLoggingKeys::resourceResponseSourceKey(), sourceKey, ShouldSample::Yes);
+    protect(frame->page())->diagnosticLoggingClient().logDiagnosticMessage(DiagnosticLoggingKeys::resourceResponseSourceKey(), sourceKey, ShouldSample::Yes);
 }
 
 bool ResourceLoader::shouldAllowResourceToAskForCredentials() const
@@ -841,7 +841,7 @@ bool ResourceLoader::isAllowedToAskUserForCredentials() const
     if (!shouldAllowResourceToAskForCredentials())
         return false;
     RefPtr frame = m_frame.get();
-    return m_options.credentials == FetchOptions::Credentials::Include || (m_options.credentials == FetchOptions::Credentials::SameOrigin && frame && frame->document()->protectedSecurityOrigin()->canRequest(originalRequest().url(), OriginAccessPatternsForWebProcess::singleton()));
+    return m_options.credentials == FetchOptions::Credentials::Include || (m_options.credentials == FetchOptions::Credentials::SameOrigin && frame && protect(protect(frame->document())->securityOrigin())->canRequest(originalRequest().url(), OriginAccessPatternsForWebProcess::singleton()));
 }
 
 bool ResourceLoader::shouldIncludeCertificateInfo() const

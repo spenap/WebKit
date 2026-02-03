@@ -1948,8 +1948,8 @@ void HTMLMediaElement::loadResource(const URL& initialURL, const ContentType& in
         ALWAYS_LOG(logSiteIdentifier, "loading generic blob");
         if (!m_blobURLForReading.isEmpty())
             ThreadableBlobRegistry::unregisterBlobURL(m_blobURLForReading);
-        m_blobURLForReading = { BlobURL::createPublicURL(protect(document())->protectedSecurityOrigin().ptr()), protect(document())->topOrigin().data() };
-        ThreadableBlobRegistry::registerBlobURL(protect(document())->protectedSecurityOrigin().ptr(), protect(document())->policyContainer(), m_blobURLForReading, m_blob->url());
+        m_blobURLForReading = { BlobURL::createPublicURL(protect(protect(document())->securityOrigin()).ptr()), protect(document())->topOrigin().data() };
+        ThreadableBlobRegistry::registerBlobURL(protect(protect(document())->securityOrigin()).ptr(), protect(document())->policyContainer(), m_blobURLForReading, m_blob->url());
 
         url = m_blobURLForReading;
         if (contentType.isEmpty())
@@ -2787,7 +2787,7 @@ bool HTMLMediaElement::isSafeToLoadURL(const URL& url, InvalidURLAction actionIf
     }
 
     RefPtr frame = protect(document())->frame();
-    if (!frame || !protect(document())->protectedSecurityOrigin()->canDisplay(url, OriginAccessPatternsForWebProcess::singleton())) {
+    if (!frame || !protect(protect(document())->securityOrigin())->canDisplay(url, OriginAccessPatternsForWebProcess::singleton())) {
         if (actionIfInvalid == InvalidURLAction::Complain) {
             FrameLoader::reportLocalLoadFailed(frame.get(), url.stringCenterEllipsizedToLength());
             if (shouldLog)
@@ -3025,7 +3025,7 @@ void HTMLMediaElement::mediaLoadingFailed(MediaPlayer::NetworkState error)
     else if ((error == MediaPlayer::NetworkState::FormatError || error == MediaPlayer::NetworkState::NetworkError) && m_loadState == LoadingFromSrcAttr)
         noneSupported();
 
-    logMediaLoadRequest(document().protectedPage().get(), String(), convertEnumerationToString(error), false);
+    logMediaLoadRequest(protect(document().page()).get(), String(), convertEnumerationToString(error), false);
 
     Ref mediaSession = this->mediaSession();
     mediaSession->clientCharacteristicsChanged(false);
@@ -3313,7 +3313,7 @@ void HTMLMediaElement::setReadyState(MediaPlayer::ReadyState state)
             if (RefPtr mediaDocument = dynamicDowncast<MediaDocument>(document()))
                 mediaDocument->mediaElementNaturalSizeChanged(expandedIntSize(player->naturalSize()));
 
-            logMediaLoadRequest(document().protectedPage().get(), player->engineDescription(), String(), true);
+            logMediaLoadRequest(protect(document().page()).get(), player->engineDescription(), String(), true);
 
 #if ENABLE(WIRELESS_PLAYBACK_TARGET)
             scheduleUpdateMediaState();
@@ -5140,7 +5140,7 @@ void HTMLMediaElement::mediaPlayerDidReportGPUMemoryFootprint(size_t footPrint)
     RefPtr frame = document().frame();
 
     if (frame && !frame->isMainFrame())
-        protect(document())->protectedFrameMemoryMonitor()->setUsage(footPrint);
+        protect(protect(document())->frameMemoryMonitor())->setUsage(footPrint);
 }
 
 void HTMLMediaElement::addAudioTrack(Ref<AudioTrack>&& track)
@@ -7279,7 +7279,7 @@ void HTMLMediaElement::dispatchEvent(Event& event)
     // to change the position/size back *before* exiting fullscreen.
     // Otherwise, the exit fullscreen animation will be incorrect.
     if (!m_videoFullscreenStandby && m_videoFullscreenMode == VideoFullscreenModeNone && event.type() == eventNames().webkitendfullscreenEvent)
-        document().protectedPage()->chrome().client().exitVideoFullscreenForVideoElement(downcast<HTMLVideoElement>(*this));
+        protect(document().page())->chrome().client().exitVideoFullscreenForVideoElement(downcast<HTMLVideoElement>(*this));
 }
 
 bool HTMLMediaElement::addEventListener(const AtomString& eventType, Ref<EventListener>&& listener, const AddEventListenerOptions& options)
@@ -7491,7 +7491,7 @@ void HTMLMediaElement::enterFullscreen(VideoFullscreenMode mode)
         m_waitingToEnterFullscreen = true;
         auto fullscreenCheckType = m_ignoreFullscreenPermissionsPolicy ? DocumentFullscreen::ExemptIFrameAllowFullscreenRequirement : DocumentFullscreen::EnforceIFrameAllowFullscreenRequirement;
         m_ignoreFullscreenPermissionsPolicy = false;
-        protect(document())->protectedFullscreen()->requestFullscreen(*this, fullscreenCheckType, [weakThis = WeakPtr { *this }](ExceptionOr<void> result) {
+        protect(protect(document())->fullscreen())->requestFullscreen(*this, fullscreenCheckType, [weakThis = WeakPtr { *this }](ExceptionOr<void> result) {
             RefPtr protectedThis = weakThis.get();
             if (!protectedThis || !result.hasException())
                 return;
@@ -7595,12 +7595,12 @@ void HTMLMediaElement::exitFullscreen()
 
     if (isSuspended()) {
         setFullscreenMode(VideoFullscreenModeNone);
-        document().protectedPage()->chrome().client().exitVideoFullscreenToModeWithoutAnimation(*videoElement, VideoFullscreenModeNone);
-    } else if (document().protectedPage()->chrome().client().supportsVideoFullscreen(oldVideoFullscreenMode)) {
+        protect(document().page())->chrome().client().exitVideoFullscreenToModeWithoutAnimation(*videoElement, VideoFullscreenModeNone);
+    } else if (protect(document().page())->chrome().client().supportsVideoFullscreen(oldVideoFullscreenMode)) {
         if (m_videoFullscreenStandby) {
             setFullscreenMode(VideoFullscreenModeNone);
             m_changingVideoFullscreenMode = true;
-            document().protectedPage()->chrome().client().enterVideoFullscreenForVideoElement(*videoElement, m_videoFullscreenMode, m_videoFullscreenStandby);
+            protect(document().page())->chrome().client().enterVideoFullscreenForVideoElement(*videoElement, m_videoFullscreenMode, m_videoFullscreenStandby);
             return;
         }
 
@@ -7625,7 +7625,7 @@ void HTMLMediaElement::prepareForVideoFullscreenStandby()
     if (!document().page())
         return;
 
-    document().protectedPage()->chrome().client().prepareForVideoFullscreen();
+    protect(document().page())->chrome().client().prepareForVideoFullscreen();
 #endif
 }
 
@@ -8156,7 +8156,7 @@ void HTMLMediaElement::createMediaPlayer() WTF_IGNORES_THREAD_SAFETY_ANALYSIS
     RefPtr player = m_player;
     player->setMessageClientForTesting(m_internalMessageClient.get());
     player->setBufferingPolicy(m_bufferingPolicy);
-    player->setPreferredDynamicRangeMode(m_overrideDynamicRangeMode.value_or(preferredDynamicRangeMode(document().protectedView().get())));
+    player->setPreferredDynamicRangeMode(m_overrideDynamicRangeMode.value_or(preferredDynamicRangeMode(protect(document().view()).get())));
     player->setShouldDisableHDR(shouldDisableHDR());
     player->setPlatformDynamicRangeLimit(computePlayerDynamicRangeLimit());
     player->setVolumeLocked(m_volumeLocked);
@@ -9925,7 +9925,7 @@ void HTMLMediaElement::setShowingStats(bool shouldShowStats)
 
 bool HTMLMediaElement::shouldDisableHDR() const
 {
-    return !screenSupportsHighDynamicRange(document().protectedView().get());
+    return !screenSupportsHighDynamicRange(protect(document().view()).get());
 }
 
 auto HTMLMediaElement::sourceType() const -> std::optional<SourceType>
@@ -10091,7 +10091,7 @@ void HTMLMediaElement::logTextTrackDiagnostics(Ref<TextTrack> track, double numb
     textTrackDictionary.set(DiagnosticLoggingKeys::textTrackModeKey(), static_cast<uint64_t>(track->mode()));
     textTrackDictionary.set(DiagnosticLoggingKeys::secondsKey(), numberOfSeconds);
 
-    document().protectedPage()->checkedDiagnosticLoggingClient()->logDiagnosticMessageWithValueDictionary(DiagnosticLoggingKeys::mediaTextTrackWatchTimeKey(), "Media Watchtime Interval By Enabled Text Track"_s, textTrackDictionary, ShouldSample::Yes);
+    protect(document().page())->checkedDiagnosticLoggingClient()->logDiagnosticMessageWithValueDictionary(DiagnosticLoggingKeys::mediaTextTrackWatchTimeKey(), "Media Watchtime Interval By Enabled Text Track"_s, textTrackDictionary, ShouldSample::Yes);
 }
 
 void HTMLMediaElement::watchtimeTimerFired()

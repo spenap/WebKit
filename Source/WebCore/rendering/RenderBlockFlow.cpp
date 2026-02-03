@@ -3758,7 +3758,7 @@ PositionWithAffinity RenderBlockFlow::positionForPointWithInlineChildren(const L
         }
     }
 
-    bool moveCaretToBoundary = protectedFrame()->protectedEditor()->behavior().shouldMoveCaretToHorizontalBoundaryWhenPastTopOrBottom();
+    bool moveCaretToBoundary = protect(protectedFrame()->editor())->behavior().shouldMoveCaretToHorizontalBoundaryWhenPastTopOrBottom();
 
     if (!moveCaretToBoundary && !closestBox && lastLineBoxWithChildren) {
         // y coordinate is below last root line box, pretend we hit it

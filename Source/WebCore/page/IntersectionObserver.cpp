@@ -640,7 +640,7 @@ auto IntersectionObserver::updateObservations(const Frame& hostFrame) -> NeedNot
 
         bool isSameOriginObservation = [&] () {
             if (RefPtr hostFrameSecurityOrigin = hostFrame.frameDocumentSecurityOrigin())
-                return target->document().protectedSecurityOrigin()->isSameOriginDomain(*hostFrameSecurityOrigin);
+                return protect(target->document().securityOrigin())->isSameOriginDomain(*hostFrameSecurityOrigin);
 
             return false;
         }();

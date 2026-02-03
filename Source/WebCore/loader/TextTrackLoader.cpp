@@ -173,7 +173,7 @@ bool TextTrackLoader::load(const URL& url, HTMLTrackElement& element)
         resourceRequest.setInspectorInitiatorNodeIdentifier(InspectorInstrumentation::identifierForNode(*mediaElement));
 
     auto cueRequest = createPotentialAccessControlRequest(WTF::move(resourceRequest), WTF::move(options), *document, element.mediaElementCrossOriginAttribute());
-    m_resource = document->protectedCachedResourceLoader()->requestTextTrack(WTF::move(cueRequest)).value_or(nullptr);
+    m_resource = protect(document->cachedResourceLoader())->requestTextTrack(WTF::move(cueRequest)).value_or(nullptr);
     if (CachedResourceHandle resource = m_resource) {
         resource->addClient(*this);
         return true;

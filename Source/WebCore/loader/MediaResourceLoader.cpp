@@ -159,7 +159,7 @@ RefPtr<PlatformMediaResource> MediaResourceLoader::requestResource(ResourceReque
     if (RefPtr element = m_element.get())
         cachedRequest.setInitiator(*element);
 
-    auto resource = document->protectedCachedResourceLoader()->requestMedia(WTF::move(cachedRequest)).value_or(nullptr);
+    auto resource = protect(document->cachedResourceLoader())->requestMedia(WTF::move(cachedRequest)).value_or(nullptr);
     if (!resource)
         return nullptr;
 

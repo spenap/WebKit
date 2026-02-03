@@ -862,7 +862,7 @@ unsigned WebFrame::pendingUnloadCount() const
     if (!localFrame)
         return 0;
 
-    return localFrame->protectedDocument()->protectedWindow()->pendingUnloadEventListeners();
+    return protect(protect(localFrame->document())->window())->pendingUnloadEventListeners();
 }
 
 bool WebFrame::allowsFollowingLink(const URL& url) const

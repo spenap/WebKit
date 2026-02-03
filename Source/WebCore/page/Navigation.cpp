@@ -139,7 +139,7 @@ void Navigation::initializeForNewWindow(std::optional<NavigationNavigationType> 
             if (!previousNavigation->m_entries.size())
                 return false;
 
-            if (!protect(frame()->document())->protectedSecurityOrigin()->isSameOriginAs(protect(previousWindow->document())->protectedSecurityOrigin()))
+            if (!protect(protect(frame()->document())->securityOrigin())->isSameOriginAs(protect(protect(previousWindow->document())->securityOrigin())))
                 return false;
 
             return true;
@@ -198,7 +198,7 @@ void Navigation::setActivation(HistoryItem* previousItem, std::optional<Navigati
     if (wasAboutBlank) // FIXME: For navigations on the initial about blank this should already be the type.
         type = NavigationNavigationType::Replace;
 
-    bool isSameOrigin = frame()->document() && previousItem && SecurityOrigin::create(previousItem->url())->isSameOriginAs(protect(frame()->document())->protectedSecurityOrigin());
+    bool isSameOrigin = frame()->document() && previousItem && SecurityOrigin::create(previousItem->url())->isSameOriginAs(protect(protect(frame()->document())->securityOrigin()));
     auto previousEntryIndex = previousItem ? getEntryIndexOfHistoryItem(m_entries, *previousItem) : std::nullopt;
 
     RefPtr<NavigationHistoryEntry> previousEntry = nullptr;
@@ -220,7 +220,7 @@ RefPtr<NavigationActivation> Navigation::createForPageswapEvent(HistoryItem* new
         return nullptr;
 
     // Skip cross-origin requests, or if any cross-origin redirects have been made.
-    bool isSameOrigin = SecurityOrigin::create(documentLoader->documentURL())->isSameOriginAs(protect(protectedWindow()->document())->protectedSecurityOrigin());
+    bool isSameOrigin = SecurityOrigin::create(documentLoader->documentURL())->isSameOriginAs(protect(protect(protectedWindow()->document())->securityOrigin()));
     if (!isSameOrigin || (!documentLoader->request().isSameSite() && !fromBackForwardCache))
         return nullptr;
 
@@ -456,7 +456,7 @@ Navigation::Result Navigation::performTraversal(const String& key, Navigation::O
         createErrorResult(WTF::move(committed), WTF::move(finished), ExceptionCode::AbortError, "Navigation aborted"_s);
 
     RefPtr frame = this->frame();
-    if (!frame->isMainFrame() && protect(window->document())->canNavigate(&frame->protectedPage()->protectedMainFrame().get()) != CanNavigateState::Able)
+    if (!frame->isMainFrame() && protect(window->document())->canNavigate(&protect(frame->page())->protectedMainFrame().get()) != CanNavigateState::Able)
         return createErrorResult(WTF::move(committed), WTF::move(finished), ExceptionCode::SecurityError, "Invalid state"_s);
 
     RefPtr current = currentEntry();
@@ -1028,7 +1028,7 @@ Navigation::DispatchResult Navigation::innerDispatchNavigateEvent(NavigationNavi
         // Log a warning once per window when the limit is reached.
         if (!m_rateLimiter.wasReported()) {
             m_rateLimiter.markReported();
-            if (RefPtr document = protectedWindow()->document())
+            if (RefPtr document = protect(window())->document())
                 document->addConsoleMessage(MessageSource::JS, MessageLevel::Warning, "Excessive navigation attempts blocked."_s);
         }
 
@@ -1041,7 +1041,7 @@ Navigation::DispatchResult Navigation::innerDispatchNavigateEvent(NavigationNavi
         return DispatchResult::Aborted;
     }
 
-    RefPtr document = protectedWindow()->document();
+    RefPtr document = protect(window())->document();
 
     RefPtr<NavigationAPIMethodTracker> apiMethodTracker;
     {

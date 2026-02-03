@@ -951,7 +951,7 @@ bool EventHandler::handleMousePressEvent(const MouseEventWithHitTestResults& eve
     if (RefPtr svgDocument = dynamicDowncast<SVGDocument>(*protect(frame->document())); svgDocument && svgDocument->zoomAndPanEnabled()) {
         if (event.event().shiftKey() && singleClick) {
             m_svgPan = true;
-            svgDocument->startPan(frame->protectedView()->windowToContents(flooredIntPoint(event.event().position())));
+            svgDocument->startPan(protect(frame->view())->windowToContents(flooredIntPoint(event.event().position())));
             return true;
         }
     }
@@ -2241,7 +2241,7 @@ HandleUserInputEventResult EventHandler::mouseMoved(const PlatformMouseEvent& ev
     RefPtr protectedView { frame->view() };
     MaximumDurationTracker maxDurationTracker(&m_maxMouseMovedDuration);
 
-    if (frame->page() && frame->protectedPage()->pageOverlayController().handleMouseEvent(event))
+    if (frame->page() && protect(frame->page())->pageOverlayController().handleMouseEvent(event))
         return true;
 
     HitTestResult hitTestResult;
@@ -2318,7 +2318,7 @@ HandleUserInputEventResult EventHandler::handleMouseMoveEvent(const PlatformMous
 
 #if ENABLE(POINTER_LOCK)
     if (frame->page()->pointerLockController().isLocked()) {
-        frame->protectedPage()->pointerLockController().dispatchLockedMouseEvent(platformMouseEvent, eventNames().mousemoveEvent);
+        protect(frame->page())->pointerLockController().dispatchLockedMouseEvent(platformMouseEvent, eventNames().mousemoveEvent);
         return true;
     }
 #endif
@@ -2335,7 +2335,7 @@ HandleUserInputEventResult EventHandler::handleMouseMoveEvent(const PlatformMous
 #endif
 
     if (m_svgPan) {
-        downcast<SVGDocument>(*protect(frame->document())).updatePan(frame->protectedView()->windowToContents(FloatPoint(valueOrDefault(m_lastKnownMousePosition))));
+        downcast<SVGDocument>(*protect(frame->document())).updatePan(protect(frame->view())->windowToContents(FloatPoint(valueOrDefault(m_lastKnownMousePosition))));
         return true;
     }
 
@@ -2358,7 +2358,7 @@ HandleUserInputEventResult EventHandler::handleMouseMoveEvent(const PlatformMous
         m_resizeLayer->resize(platformMouseEvent, m_offsetFromResizeCorner);
 
         if (m_resizeLayer->renderer().shouldPlaceVerticalScrollbarOnLeft()) {
-            auto absolutePoint = frame->protectedView()->windowToContents(flooredIntPoint(platformMouseEvent.position()));
+            auto absolutePoint = protect(frame->view())->windowToContents(flooredIntPoint(platformMouseEvent.position()));
             auto localPoint = roundedIntPoint(m_resizeLayer->absoluteToContents(absolutePoint));
             m_offsetFromResizeCorner.setWidth(m_resizeLayer->offsetFromResizeCorner(localPoint).width());
         }
@@ -2550,7 +2550,7 @@ HandleUserInputEventResult EventHandler::handleMouseReleaseEvent(const PlatformM
 
     if (m_svgPan) {
         m_svgPan = false;
-        downcast<SVGDocument>(*protect(frame->document())).updatePan(frame->protectedView()->windowToContents(FloatPoint(valueOrDefault(m_lastKnownMousePosition))));
+        downcast<SVGDocument>(*protect(frame->document())).updatePan(protect(frame->view())->windowToContents(FloatPoint(valueOrDefault(m_lastKnownMousePosition))));
         return true;
     }
 
@@ -2707,7 +2707,7 @@ void EventHandler::setDragStateSource(Element* element) const
 bool EventHandler::canDropCurrentlyDraggedImageAsFile() const
 {
     auto sourceOrigin = dragState().restrictedOriginForImageData;
-    return !sourceOrigin || m_frame->document()->protectedSecurityOrigin()->canReceiveDragData(*sourceOrigin);
+    return !sourceOrigin || protect(protect(m_frame->document())->securityOrigin())->canReceiveDragData(*sourceOrigin);
 }
 
 static std::pair<bool, RefPtr<Frame>> contentFrameForNode(Node* target)
@@ -3354,7 +3354,7 @@ bool EventHandler::dispatchMouseEvent(const AtomString& eventType, Node* targetN
     // will set a selection inside it, which will also set the focused element.
     if (element && frame->selection().isRange()) {
         if (auto range = frame->selection().selection().toNormalizedRange()) {
-            if (contains<ComposedTree>(*range, *element) && element->isDescendantOf(frame->document()->protectedFocusedElement().get()))
+            if (contains<ComposedTree>(*range, *element) && element->isDescendantOf(protect(frame->document()->focusedElement()).get()))
                 return true;
         }
     }
@@ -3529,7 +3529,7 @@ HandleUserInputEventResult EventHandler::handleWheelEventInternal(const Platform
 
 #if ENABLE(POINTER_LOCK)
     if (frame->page()->pointerLockController().isLocked()) {
-        frame->protectedPage()->pointerLockController().dispatchLockedWheelEvent(event);
+        protect(frame->page())->pointerLockController().dispatchLockedWheelEvent(event);
         return true;
     }
 #endif
@@ -3928,7 +3928,7 @@ bool EventHandler::sendContextMenuEventForKey()
             kContextMenuMargin);
     }
 
-    frame->protectedView()->setCursor(pointerCursor());
+    protect(frame->view())->setCursor(pointerCursor());
 
     IntPoint position = view->contentsToRootView(location);
     IntPoint globalPosition = view->hostWindow()->rootViewToScreen(IntRect(position, IntSize())).location();
@@ -4175,7 +4175,7 @@ bool EventHandler::internalKeyEvent(const PlatformKeyboardEvent& initialKeyEvent
 
 #if ENABLE(POINTER_LOCK)
     if (initialKeyEvent.type() == PlatformEvent::Type::KeyDown && initialKeyEvent.windowsVirtualKeyCode() == VK_ESCAPE && frame->page()->pointerLockController().element()) {
-        frame->protectedPage()->pointerLockController().requestPointerUnlockAndForceCursorVisible();
+        protect(frame->page())->pointerLockController().requestPointerUnlockAndForceCursorVisible();
     }
 #endif
 
@@ -4318,7 +4318,7 @@ bool EventHandler::internalKeyEvent(const PlatformKeyboardEvent& initialKeyEvent
     // If frame changed as a result of keydown dispatch, then return early to avoid sending a subsequent keypress message to the new frame.
     bool changedFocusedFrame = frame->page() && frame.ptr() != frame->page()->focusController().focusedOrMainFrame();
     bool keydownResult = keydown->defaultHandled() || keydown->defaultPrevented() || changedFocusedFrame;
-    bool requiresKeyPressEvent = backwardCompatibilityMode || frame->protectedEditor()->hasDeadKeyComposition();
+    bool requiresKeyPressEvent = backwardCompatibilityMode || protect(frame->editor())->hasDeadKeyComposition();
     if (keydownResult && !requiresKeyPressEvent)
         return keydownResult;
 
@@ -5065,7 +5065,7 @@ void EventHandler::stopKeyboardScrolling()
 bool EventHandler::beginKeyboardScrollGesture(KeyboardScrollingAnimator* animator, ScrollDirection direction, ScrollGranularity granularity, bool isKeyRepeat)
 {
     if (animator && animator->beginKeyboardScrollGesture(direction, granularity, isKeyRepeat)) {
-        m_frame->protectedPage()->setCurrentKeyboardScrollingAnimator(animator);
+        protect(m_frame->page())->setCurrentKeyboardScrollingAnimator(animator);
         return true;
     }
 
@@ -5528,7 +5528,7 @@ Expected<bool, RemoteFrameGeometryTransformer> EventHandler::handleTouchEvent(co
             cancelEventPoints.at(index) = PlatformTouchPoint(
                 point.id(), PlatformTouchPoint::State::TouchCancelled, point.screenPos(), point.pos());
             cancelEvent.setTouchPoints(cancelEventPoints);
-            document->protectedPage()->pointerCaptureController().dispatchEventForTouchAtIndex(
+            protect(document->page())->pointerCaptureController().dispatchEventForTouchAtIndex(
                 *touchTarget, cancelEvent, index, !index, *document->windowProxy(), { 0, 0 });
         }
 #endif
@@ -5536,7 +5536,7 @@ Expected<bool, RemoteFrameGeometryTransformer> EventHandler::handleTouchEvent(co
 #if PLATFORM(WPE) || PLATFORM(GTK)
         // FIXME: Pass the touch delta for pointermove events by remembering the position per pointerID similar to
         // Apple's m_touchLastGlobalPositionAndDeltaMap
-        document->protectedPage()->pointerCaptureController().dispatchEventForTouchAtIndex(
+        protect(document->page())->pointerCaptureController().dispatchEventForTouchAtIndex(
             pointerTarget ? *pointerTarget : *touchTarget, event, index, !index, *document->windowProxy(), { 0, 0 });
 #endif
 

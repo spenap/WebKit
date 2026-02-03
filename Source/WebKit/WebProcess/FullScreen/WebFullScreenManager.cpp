@@ -413,7 +413,7 @@ void WebFullScreenManager::willEnterFullScreen(Element& element, CompletionHandl
 
     m_page->isInFullscreenChanged(WebPage::IsInFullscreenMode::Yes);
 
-    auto result = protect(element.document())->protectedFullscreen()->willEnterFullscreen(element, mode);
+    auto result = protect(protect(element.document())->fullscreen())->willEnterFullscreen(element, mode);
     if (result.hasException())
         close();
     willEnterFullscreenCallback(result);
@@ -504,7 +504,7 @@ void WebFullScreenManager::willExitFullScreen(CompletionHandler<void()>&& comple
 #endif
 
     m_finalFrame = screenRectOfContents(*element);
-    if (!protect(element->document())->protectedFullscreen()->willExitFullscreen()) {
+    if (!protect(protect(element->document())->fullscreen())->willExitFullscreen()) {
         close();
         return completionHandler();
     }
@@ -525,7 +525,7 @@ static Vector<Ref<Element>> collectFullscreenElementsFromElement(Element* rawEle
 
     RefPtr document = rawElement->document();
 
-    if (rawElement != document->protectedFullscreen()->fullscreenElement())
+    if (rawElement != protect(document->fullscreen())->fullscreenElement())
         return { };
 
     RefPtr element = rawElement;
@@ -539,7 +539,7 @@ static Vector<Ref<Element>> collectFullscreenElementsFromElement(Element* rawEle
         if (!document)
             break;
 
-        element = document->protectedFullscreen()->fullscreenElement();
+        element = protect(document->fullscreen())->fullscreenElement();
         if (!element)
             break;
     }
@@ -591,7 +591,7 @@ void WebFullScreenManager::setAnimatingFullScreen(bool animating)
 {
     if (!m_element)
         return;
-    protect(m_element->document())->protectedFullscreen()->setAnimatingFullscreen(animating);
+    protect(protect(m_element->document())->fullscreen())->setAnimatingFullscreen(animating);
 }
 
 void WebFullScreenManager::requestRestoreFullScreen(CompletionHandler<void(bool)>&& completionHandler)
@@ -608,7 +608,7 @@ void WebFullScreenManager::requestRestoreFullScreen(CompletionHandler<void(bool)
 
     ALWAYS_LOG(LOGIDENTIFIER, "<", element->tagName(), " id=\"", element->getIdAttribute(), "\">");
     WebCore::UserGestureIndicator gestureIndicator(WebCore::IsProcessingUserGesture::Yes, &element->document());
-    protect(element->document())->protectedFullscreen()->requestFullscreen(*element, WebCore::DocumentFullscreen::ExemptIFrameAllowFullscreenRequirement, [completionHandler = WTF::move(completionHandler)] (auto result) mutable {
+    protect(protect(element->document())->fullscreen())->requestFullscreen(*element, WebCore::DocumentFullscreen::ExemptIFrameAllowFullscreenRequirement, [completionHandler = WTF::move(completionHandler)] (auto result) mutable {
         completionHandler(!result.hasException());
     });
 }
@@ -623,14 +623,14 @@ void WebFullScreenManager::requestExitFullScreen()
 
     RefPtr localMainFrame = m_page->localMainFrame();
     RefPtr topDocument = localMainFrame ? localMainFrame->document() : nullptr;
-    if (!topDocument || !topDocument->protectedFullscreen()->fullscreenElement()) {
+    if (!topDocument || !protect(topDocument->fullscreen())->fullscreenElement()) {
         ALWAYS_LOG(LOGIDENTIFIER, "top document not in fullscreen, closing");
         close();
         return;
     }
 
     ALWAYS_LOG(LOGIDENTIFIER);
-    protect(m_element->document())->protectedFullscreen()->fullyExitFullscreen();
+    protect(protect(m_element->document())->fullscreen())->fullyExitFullscreen();
 }
 
 void WebFullScreenManager::close()
@@ -662,7 +662,7 @@ void WebFullScreenManager::handleEvent(WebCore::ScriptExecutionContext& context,
         return;
 
     Ref document = m_element->document();
-    if (&context != document.ptr() || !document->protectedFullscreen()->isFullscreen())
+    if (&context != document.ptr() || !protect(document->fullscreen())->isFullscreen())
         return;
 
     if (targetElement == m_element) {
@@ -690,7 +690,7 @@ void WebFullScreenManager::handleEvent(WebCore::ScriptExecutionContext& context,
 #if ENABLE(IMAGE_ANALYSIS)
 void WebFullScreenManager::mainVideoElementTextRecognitionTimerFired()
 {
-    if (!m_element || !protect(m_element->document())->protectedFullscreen()->isFullscreen())
+    if (!m_element || !protect(protect(m_element->document())->fullscreen())->isFullscreen())
         return;
 
     updateMainVideoElement();

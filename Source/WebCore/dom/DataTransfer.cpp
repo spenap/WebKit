@@ -238,7 +238,7 @@ String DataTransfer::readStringFromPasteboard(Document& document, const String& 
     }
 
     if (!is<StaticPasteboard>(*m_pasteboard) && lowercaseType == "text/uri-list"_s) {
-        return readURLsFromPasteboardAsString(document.protectedPage().get(), *m_pasteboard, [] (auto&) {
+        return readURLsFromPasteboardAsString(protect(document.page()).get(), *m_pasteboard, [] (auto&) {
             return true;
         });
     }

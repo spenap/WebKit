@@ -613,7 +613,7 @@ void InspectorIndexedDBAgent::requestDatabase(const String& securityOrigin, cons
         return;
 
     Ref databaseLoader = DatabaseLoader::create(document, WTF::move(callback));
-    databaseLoader->start(idbFactory, document->protectedSecurityOrigin().ptr(), databaseName);
+    databaseLoader->start(idbFactory, protect(document->securityOrigin()).ptr(), databaseName);
 }
 
 void InspectorIndexedDBAgent::requestData(const String& securityOrigin, const String& databaseName, const String& objectStoreName, const String& indexName, int skipCount, int pageSize, RefPtr<JSON::Object>&& keyRange, Ref<RequestDataCallback>&& callback)
@@ -635,7 +635,7 @@ void InspectorIndexedDBAgent::requestData(const String& securityOrigin, const St
 
     auto injectedScript = m_injectedScriptManager->injectedScriptFor(&mainWorldGlobalObject(*frame));
     auto dataLoader = DataLoader::create(document, WTF::move(callback), injectedScript, objectStoreName, indexName, WTF::move(idbKeyRange), skipCount, pageSize);
-    dataLoader->start(idbFactory, document->protectedSecurityOrigin().ptr(), databaseName);
+    dataLoader->start(idbFactory, protect(document->securityOrigin()).ptr(), databaseName);
 }
 
 namespace {
@@ -730,7 +730,7 @@ void InspectorIndexedDBAgent::clearObjectStore(const String& securityOrigin, con
         return;
 
     Ref<ClearObjectStore> clearObjectStore = ClearObjectStore::create(document, objectStoreName, WTF::move(callback));
-    clearObjectStore->start(idbFactory, document->protectedSecurityOrigin().ptr(), databaseName);
+    clearObjectStore->start(idbFactory, protect(document->securityOrigin()).ptr(), databaseName);
 }
 
 } // namespace WebCore

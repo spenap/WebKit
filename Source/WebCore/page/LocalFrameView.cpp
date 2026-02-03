@@ -907,7 +907,7 @@ void LocalFrameView::updateSnapOffsets()
     LayoutRect viewport = LayoutRect(IntPoint(), baseLayoutViewportSize());
     viewport.move(-rootRenderer->marginLeft(), -rootRenderer->marginTop());
 
-    updateSnapOffsetsForScrollableArea(*this, *rootRenderer, *styleToUse, viewport, rootRenderer->style().writingMode(), m_frame->document()->protectedFocusedElement().get());
+    updateSnapOffsetsForScrollableArea(*this, *rootRenderer, *styleToUse, viewport, rootRenderer->style().writingMode(), protect(m_frame->document()->focusedElement()).get());
 }
 
 bool LocalFrameView::isScrollSnapInProgress() const
@@ -4428,7 +4428,7 @@ bool LocalFrameView::safeToPropagateScrollToParent() const
     if (!parentDocument)
         return false;
 
-    return document->protectedSecurityOrigin()->isSameOriginDomain(parentDocument->protectedSecurityOrigin());
+    return protect(document->securityOrigin())->isSameOriginDomain(protect(parentDocument->securityOrigin()));
 }
 
 void LocalFrameView::scheduleScrollToAnchorAndTextFragment()
@@ -4576,9 +4576,9 @@ void LocalFrameView::scrollToPendingTextFragmentRange()
                 return;
         }
         if (m_haveCreatedTextIndicator)
-            document->protectedPage()->chrome().client().updateTextIndicator(WTF::move(textIndicator));
+            protect(document->page())->chrome().client().updateTextIndicator(WTF::move(textIndicator));
         else {
-            document->protectedPage()->chrome().client().setTextIndicator(WTF::move(textIndicator));
+            protect(document->page())->chrome().client().setTextIndicator(WTF::move(textIndicator));
             m_haveCreatedTextIndicator = true;
         }
     }

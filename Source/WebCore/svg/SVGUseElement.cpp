@@ -685,7 +685,7 @@ void SVGUseElement::updateExternalDocument()
         options.sniffContent = ContentSniffingPolicy::DoNotSniffContent;
         CachedResourceRequest request { ResourceRequest { WTF::move(externalDocumentURL) }, options };
         request.setInitiator(*this);
-        m_externalDocument = document->protectedCachedResourceLoader()->requestSVGDocument(WTF::move(request)).value_or(nullptr);
+        m_externalDocument = protect(document->cachedResourceLoader())->requestSVGDocument(WTF::move(request)).value_or(nullptr);
         if (CachedResourceHandle externalDocument = m_externalDocument)
             externalDocument->addClient(*this);
     }

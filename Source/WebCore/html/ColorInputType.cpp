@@ -355,12 +355,12 @@ IntRect ColorInputType::elementRectRelativeToRootView() const
     CheckedPtr renderer = element->renderer();
     if (!renderer)
         return IntRect();
-    return protect(element->document())->protectedView()->contentsToRootView(renderer->absoluteBoundingBoxRect());
+    return protect(protect(element->document())->view())->contentsToRootView(renderer->absoluteBoundingBoxRect());
 }
 
 std::optional<FrameIdentifier> ColorInputType::rootFrameID() const
 {
-    return protect(element()->document())->protectedView()->rootFrameID();
+    return protect(protect(element()->document())->view())->rootFrameID();
 }
 
 bool ColorInputType::supportsAlpha() const

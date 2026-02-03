@@ -677,7 +677,7 @@ static inline bool shouldIncludeNodeIdentifier(NodeIdentifierInclusion inclusion
 
 static bool areSameOrigin(Document& document, Document& other)
 {
-    return document.protectedSecurityOrigin()->isSameOriginAs(other.protectedSecurityOrigin());
+    return protect(document.securityOrigin())->isSameOriginAs(protect(other.securityOrigin()));
 }
 
 static inline void extractRecursive(Node& node, Item& parentItem, TraversalContext& context)
@@ -1654,7 +1654,7 @@ static void focusAndInsertText(NodeIdentifier identifier, String&& text, bool re
 
         UserTypingGestureIndicator indicator { *frame };
 
-        document->protectedEditor()->pasteAsPlainText(text, false);
+        protect(document->editor())->pasteAsPlainText(text, false);
         completion(true, "Inserted text by simulating paste with plain text"_s);
     });
 }

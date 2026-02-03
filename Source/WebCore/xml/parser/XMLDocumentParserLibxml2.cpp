@@ -487,7 +487,7 @@ static bool shouldAllowExternalLoad(const URL& url)
     RefPtr currentCachedResourceLoader = XMLDocumentParserScope::currentCachedResourceLoader().get();
     if (!currentCachedResourceLoader || !currentCachedResourceLoader->document())
         return false;
-    if (!protect(currentCachedResourceLoader->document())->protectedSecurityOrigin()->canRequest(url, OriginAccessPatternsForWebProcess::singleton())) {
+    if (!protect(protect(currentCachedResourceLoader->document())->securityOrigin())->canRequest(url, OriginAccessPatternsForWebProcess::singleton())) {
         currentCachedResourceLoader->printAccessDeniedMessage(url);
         return false;
     }
@@ -506,7 +506,7 @@ static void* openFunc(const char* uri)
 
     RefPtr document = cachedResourceLoader->document();
     // Same logic as Document::completeURL(). Keep them in sync.
-    auto* encoding = (document && document->decoder()) ? document->protectedDecoder()->encodingForURLParsing() : nullptr;
+    auto* encoding = (document && document->decoder()) ? protect(document->decoder())->encodingForURLParsing() : nullptr;
     URL url(document ? document->fallbackBaseURL() : URL(), String::fromLatin1(uri), encoding);
 
     if (!shouldAllowExternalLoad(url))
@@ -1399,7 +1399,7 @@ void XMLDocumentParser::doEnd()
         XMLTreeViewer xmlTreeViewer(*document);
         xmlTreeViewer.transformDocumentToTreeView();
     } else if (m_sawXSLTransform) {
-        xmlDocPtr doc = xmlDocPtrForString(document->protectedCachedResourceLoader(), m_originalSourceForTransform.toString(), document->url().string());
+        xmlDocPtr doc = xmlDocPtrForString(protect(document->cachedResourceLoader()), m_originalSourceForTransform.toString(), document->url().string());
         document->setTransformSource(makeUnique<TransformSource>(doc));
 
         document->setParsing(false); // Make the document think it's done, so it will apply XSL stylesheets.

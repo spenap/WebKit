@@ -334,7 +334,7 @@ void LocalFrame::setDocument(RefPtr<Document>&& newDocument)
     if (RefPtr previousDocument = m_doc) {
 #if ENABLE(ATTACHMENT_ELEMENT)
         for (Ref attachment : previousDocument->attachmentElementsByIdentifier().values())
-            protectedEditor()->didRemoveAttachmentElement(attachment);
+            protect(editor())->didRemoveAttachmentElement(attachment);
 #endif
 
         if (previousDocument->backForwardCacheState() != Document::InBackForwardCache)
@@ -696,7 +696,7 @@ void LocalFrame::setPrinting(bool printing, FloatSize pageSize, FloatSize origin
     // See https://bugs.webkit.org/show_bug.cgi?id=43704
     ResourceCacheValidationSuppressor validationSuppressor(document->cachedResourceLoader());
 
-    protectedView()->adjustMediaTypeForPrinting(printing);
+    protect(view())->adjustMediaTypeForPrinting(printing);
 
     // FIXME: Consider invoking Page::updateRendering or an equivalent.
     document->styleScope().didChangeStyleSheetEnvironment();
@@ -878,7 +878,7 @@ void LocalFrame::clearTimers(LocalFrameView *view, Document *document)
 
 void LocalFrame::clearTimers()
 {
-    clearTimers(protectedView().get(), protect(document()).get());
+    clearTimers(protect(view()).get(), protect(document()).get());
 }
 
 CheckedRef<ScriptController> LocalFrame::checkedScript()
@@ -946,7 +946,7 @@ VisiblePosition LocalFrame::visiblePositionForPoint(const IntPoint& framePoint) 
 
 HitTestResult LocalFrame::hitTestResultAtPoint(IntPoint point, OptionSet<HitTestRequest::Type> hitType)
 {
-    IntPoint pointInContents = protectedView()->windowToContents(point);
+    IntPoint pointInContents = protect(view())->windowToContents(point);
 
     if (hitType.isEmpty())
         return HitTestResult { pointInContents };
@@ -978,12 +978,12 @@ std::optional<SimpleRange> LocalFrame::rangeForPoint(const IntPoint& framePoint)
         return std::nullopt;
 
     if (auto previousCharacterRange = makeSimpleRange(position.previous(), position)) {
-        if (protectedEditor()->firstRectForRange(*previousCharacterRange).contains(framePoint))
+        if (protect(editor())->firstRectForRange(*previousCharacterRange).contains(framePoint))
             return *previousCharacterRange;
     }
 
     if (auto nextCharacterRange = makeSimpleRange(position, position.next())) {
-        if (protectedEditor()->firstRectForRange(*nextCharacterRange).contains(framePoint))
+        if (protect(editor())->firstRectForRange(*nextCharacterRange).contains(framePoint))
             return *nextCharacterRange;
     }
 
@@ -997,7 +997,7 @@ void LocalFrame::createView(const IntSize& viewportSize, const std::optional<Col
     bool isRootFrame = this->isRootFrame();
 
     if (isRootFrame && view())
-        protectedView()->setParentVisible(false);
+        protect(view())->setParentVisible(false);
 
     setView(nullptr);
 
@@ -1021,7 +1021,7 @@ void LocalFrame::createView(const IntSize& viewportSize, const std::optional<Col
     if (CheckedPtr ownerRenderer = this->ownerRenderer())
         ownerRenderer->setWidget(frameView);
 
-    protectedView()->setCanHaveScrollbars(scrollingMode() != ScrollbarMode::AlwaysOff);
+    protect(view())->setCanHaveScrollbars(scrollingMode() != ScrollbarMode::AlwaysOff);
 }
 
 LocalDOMWindow* LocalFrame::window() const
@@ -1072,7 +1072,7 @@ String LocalFrame::trackedRepaintRectsAsText() const
 {
     if (!m_view)
         return String();
-    return protectedView()->trackedRepaintRectsAsText();
+    return protect(view())->trackedRepaintRectsAsText();
 }
 
 void LocalFrame::setPageZoomFactor(float factor)
@@ -1098,7 +1098,7 @@ void LocalFrame::setPageAndTextZoomFactors(float pageZoomFactor, float textZoomF
     if (!document)
         return;
 
-    protectedEditor()->dismissCorrectionPanelAsIgnored();
+    protect(editor())->dismissCorrectionPanelAsIgnored();
 
     // Respect SVGs zoomAndPan="disabled" property in standalone SVG documents.
     // FIXME: How to handle compound documents + zoomAndPan="disabled"? Needs SVG WG clarification.
@@ -1209,7 +1209,7 @@ FloatSize LocalFrame::screenSize() const
     if (m_overrideScreenSize)
         return m_overrideScreenSize->size;
 
-    auto defaultSize = screenRect(protectedView().get()).size();
+    auto defaultSize = screenRect(protect(view()).get()).size();
     RefPtr document = this->document();
     if (!document)
         return defaultSize;
@@ -1321,7 +1321,7 @@ void LocalFrame::documentURLOrOriginDidChange()
     RefPtr page = this->page();
     RefPtr document = this->document();
     if (page && document)
-        page->setMainFrameURLAndOrigin(document->url(), document->protectedSecurityOrigin());
+        page->setMainFrameURLAndOrigin(document->url(), protect(document->securityOrigin()));
 }
 
 void LocalFrame::dispatchLoadEventToParent()

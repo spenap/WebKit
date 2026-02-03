@@ -976,7 +976,7 @@ void LocalDOMWindow::processPostMessage(JSC::JSGlobalObject& lexicalGlobalObject
         Ref frame = *localFrame();
         if (targetOrigin) {
             // Check target origin now since the target document may have changed since the timer was scheduled.
-            if (!targetOrigin->isSameSchemeHostPort(document->protectedSecurityOrigin())) {
+            if (!targetOrigin->isSameSchemeHostPort(protect(document->securityOrigin()))) {
                 if (CheckedPtr frameConsole = console()) {
                     auto message = makeString("Unable to post message to "_s, targetOrigin->toString(), ". Recipient has origin "_s, document->securityOrigin().toString(), ".\n"_s);
                     if (stackTrace)
@@ -2045,7 +2045,7 @@ bool LocalDOMWindow::isSameSecurityOriginAsMainFrame() const
 
     RefPtr mainFrameDocument = localFrame->document();
 
-    if (mainFrameDocument && document()->protectedSecurityOrigin()->isSameOriginDomain(mainFrameDocument->protectedSecurityOrigin()))
+    if (mainFrameDocument && protect(document()->securityOrigin())->isSameOriginDomain(protect(mainFrameDocument->securityOrigin())))
         return true;
 
     return false;
@@ -2294,7 +2294,7 @@ void LocalDOMWindow::incrementScrollEventListenersCount()
     RefPtr document = this->document();
     if (++m_scrollEventListenerCount == 1 && document->isTopDocument()) {
         if (RefPtr frame = localFrame(); frame && frame->page())
-            frame->protectedPage()->chrome().client().setNeedsScrollNotifications(*frame, true);
+            protect(frame->page())->chrome().client().setNeedsScrollNotifications(*frame, true);
     }
 }
 
@@ -2303,7 +2303,7 @@ void LocalDOMWindow::decrementScrollEventListenersCount()
     RefPtr document = this->document();
     if (!--m_scrollEventListenerCount && document->isTopDocument()) {
         if (RefPtr frame = localFrame(); frame && frame->page() && document->backForwardCacheState() == Document::NotInBackForwardCache)
-            frame->protectedPage()->chrome().client().setNeedsScrollNotifications(*frame, false);
+            protect(frame->page())->chrome().client().setNeedsScrollNotifications(*frame, false);
     }
 }
 
@@ -2664,7 +2664,7 @@ void LocalDOMWindow::queueEventTimingCandidateForDispatch(PerformanceEventTiming
     if (!document)
         return;
 
-    RefPtr page { document->protectedPage() };
+    RefPtr page { protect(document->page()) };
     if (!page)
         return;
 
@@ -2818,7 +2818,7 @@ void LocalDOMWindow::setLocation(LocalDOMWindow& activeWindow, const URL& comple
     // We want a new history item if we are processing a user gesture.
     LockHistory lockHistory = (locking != SetLocationLocking::LockHistoryBasedOnGestureState || !UserGestureIndicator::processingUserGesture()) ? LockHistory::Yes : LockHistory::No;
     LockBackForwardList lockBackForwardList = (locking != SetLocationLocking::LockHistoryBasedOnGestureState) ? LockBackForwardList::Yes : LockBackForwardList::No;
-    frame->protectedNavigationScheduler()->scheduleLocationChange(*activeDocument, activeDocument->protectedSecurityOrigin(),
+    frame->protectedNavigationScheduler()->scheduleLocationChange(*activeDocument, protect(activeDocument->securityOrigin()),
         // FIXME: What if activeDocument()->frame() is 0?
         completedURL, activeDocument->frame()->loader().outgoingReferrer(),
         lockHistory, lockBackForwardList,
@@ -2849,7 +2849,7 @@ ExceptionOr<RefPtr<Frame>> LocalDOMWindow::createWindow(const String& urlString,
     RefPtr openerDocumentLoader = openerFrame.document() ? openerFrame.document()->loader() : nullptr;
     if (openerDocumentLoader)
         resourceRequest.setIsAppInitiated(openerDocumentLoader->lastNavigationWasAppInitiated());
-    FrameLoadRequest frameLoadRequest { *activeDocument, activeDocument->protectedSecurityOrigin(), WTF::move(resourceRequest), frameName, initiatedByMainFrame };
+    FrameLoadRequest frameLoadRequest { *activeDocument, protect(activeDocument->securityOrigin()), WTF::move(resourceRequest), frameName, initiatedByMainFrame };
     frameLoadRequest.setShouldOpenExternalURLsPolicy(activeDocument->shouldOpenExternalURLsPolicyToPropagate());
 
     // https://html.spec.whatwg.org/#the-rules-for-choosing-a-browsing-context-given-a-browsing-context-name (Step 8.2)
@@ -2859,7 +2859,7 @@ ExceptionOr<RefPtr<Frame>> LocalDOMWindow::createWindow(const String& urlString,
     }
 
     RefPtr openerDocument = openerFrame.document();
-    if (frameLoadRequest.resourceRequest().url().protocolIsBlob() && !openerDocument->protectedSecurityOrigin()->isSameOriginAs(openerDocument->protectedTopOrigin())) {
+    if (frameLoadRequest.resourceRequest().url().protocolIsBlob() && !protect(openerDocument->securityOrigin())->isSameOriginAs(protect(openerDocument->topOrigin()))) {
         frameLoadRequest.setFrameName(blankTargetFrameName());
         windowFeatures.noopener = true;
     }
@@ -2884,21 +2884,21 @@ ExceptionOr<RefPtr<Frame>> LocalDOMWindow::createWindow(const String& urlString,
     }
 
     RefPtr localNewFrame = dynamicDowncast<LocalFrame>(newFrame);
-    if (localNewFrame && localNewFrame->document()->protectedWindow()->isInsecureScriptAccess(activeWindow, completedURL.string()))
+    if (localNewFrame && protect(localNewFrame->document()->window())->isInsecureScriptAccess(activeWindow, completedURL.string()))
         return noopener ? RefPtr<Frame> { nullptr } : newFrame;
 
     if (prepareDialogFunction && localNewFrame)
-        prepareDialogFunction(*localNewFrame->document()->protectedWindow());
+        prepareDialogFunction(*protect(localNewFrame->document()->window()));
 
     if (created == CreatedNewPage::Yes) {
         ResourceRequest resourceRequest { WTF::move(completedURL), referrer, ResourceRequestCachePolicy::UseProtocolCachePolicy };
         FrameLoader::addSameSiteInfoToRequestIfNeeded(resourceRequest, openerDocument.get());
-        FrameLoadRequest frameLoadRequest { protect(activeWindow.document()).releaseNonNull(), activeWindow.document()->protectedSecurityOrigin(), WTF::move(resourceRequest), selfTargetFrameName(), initiatedByMainFrame };
+        FrameLoadRequest frameLoadRequest { protect(activeWindow.document()).releaseNonNull(), protect(protect(activeWindow.document())->securityOrigin()), WTF::move(resourceRequest), selfTargetFrameName(), initiatedByMainFrame };
         frameLoadRequest.setShouldOpenExternalURLsPolicy(activeDocument->shouldOpenExternalURLsPolicyToPropagate());
         newFrame->changeLocation(WTF::move(frameLoadRequest));
     } else if (!urlString.isEmpty()) {
         LockHistory lockHistory = UserGestureIndicator::processingUserGesture() ? LockHistory::No : LockHistory::Yes;
-        newFrame->protectedNavigationScheduler()->scheduleLocationChange(*activeDocument, activeDocument->protectedSecurityOrigin(), completedURL, referrer, lockHistory, LockBackForwardList::No);
+        newFrame->protectedNavigationScheduler()->scheduleLocationChange(*activeDocument, protect(activeDocument->securityOrigin()), completedURL, referrer, lockHistory, LockBackForwardList::No);
     }
 
     // Navigating the new frame could result in it being detached from its page by a navigation policy delegate.
@@ -2982,7 +2982,7 @@ ExceptionOr<RefPtr<WindowProxy>> LocalDOMWindow::open(LocalDOMWindow& activeWind
         URL completedURL = protect(firstFrame->document())->completeURL(urlString);
 
         RefPtr localTargetFrame = dynamicDowncast<LocalFrame>(targetFrame.get());
-        if (localTargetFrame && localTargetFrame->document()->protectedWindow()->isInsecureScriptAccess(activeWindow, completedURL.string()))
+        if (localTargetFrame && protect(localTargetFrame->document()->window())->isInsecureScriptAccess(activeWindow, completedURL.string()))
             return &targetFrame->windowProxy();
 
         if (urlString.isEmpty())
@@ -2991,7 +2991,7 @@ ExceptionOr<RefPtr<WindowProxy>> LocalDOMWindow::open(LocalDOMWindow& activeWind
         // For whatever reason, Firefox uses the first window rather than the active window to
         // determine the outgoing referrer. We replicate that behavior here.
         LockHistory lockHistory = UserGestureIndicator::processingUserGesture() ? LockHistory::No : LockHistory::Yes;
-        targetFrame->protectedNavigationScheduler()->scheduleLocationChange(*activeDocument, activeDocument->protectedSecurityOrigin(), completedURL, firstFrame->loader().outgoingReferrer(),
+        targetFrame->protectedNavigationScheduler()->scheduleLocationChange(*activeDocument, protect(activeDocument->securityOrigin()), completedURL, firstFrame->loader().outgoingReferrer(),
             lockHistory, LockBackForwardList::No);
         return &targetFrame->windowProxy();
     }
@@ -3030,7 +3030,7 @@ void LocalDOMWindow::showModalDialog(const String& urlString, const String& dial
     if (!canShowModalDialog(*frame) || !firstWindow.allowPopUp())
         return;
 
-    auto dialogFrameOrException = createWindow(urlString, emptyAtom(), parseDialogFeatures(dialogFeaturesString, screenAvailableRect(frame->protectedView().get())), activeWindow, *firstFrame, *frame, prepareDialogFunction);
+    auto dialogFrameOrException = createWindow(urlString, emptyAtom(), parseDialogFeatures(dialogFeaturesString, screenAvailableRect(protect(frame->view()).get())), activeWindow, *firstFrame, *frame, prepareDialogFunction);
     if (dialogFrameOrException.hasException())
         return;
     if (RefPtr dialogFrame = dialogFrameOrException.releaseReturnValue())

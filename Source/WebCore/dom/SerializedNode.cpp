@@ -109,7 +109,7 @@ Ref<Node> SerializedNode::deserialize(SerializedNode&& serializedNode, WebCore::
             document,
             RefPtr { document.securityOriginPolicy() }.get(),
             serializedDocument.contentType,
-            document.protectedDecoder().get()
+            protect(document.decoder()).get()
         );
     }, [&] (SerializedNode::Element&& element) -> Ref<Node> {
         constexpr bool createdByParser { false };

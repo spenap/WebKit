@@ -1735,7 +1735,7 @@ void RenderElement::notifyFinished(CachedResource& resource, const NetworkLoadMe
     if (auto* cachedImage = dynamicDowncast<CachedImage>(resource))
         imageContentChanged(*cachedImage);
 
-    document().protectedCachedResourceLoader()->notifyFinished(resource);
+    protect(document().cachedResourceLoader())->notifyFinished(resource);
 }
 
 bool RenderElement::allowsAnimation() const

@@ -138,7 +138,7 @@ Frame::Frame(Page& page, FrameIdentifier frameID, FrameType frameType, HTMLFrame
 
 Frame::~Frame()
 {
-    protectedWindowProxy()->detachFromFrame();
+    protect(windowProxy())->detachFromFrame();
     protectedNavigationScheduler()->cancel();
 
 #if ASSERT_ENABLED
@@ -177,10 +177,10 @@ void Frame::takeWindowProxyAndOpenerFrom(Frame& frame)
 {
     ASSERT(is<LocalDOMWindow>(window()) != is<LocalDOMWindow>(frame.window()) || page() != frame.page());
     ASSERT(m_windowProxy->frame() == this);
-    protectedWindowProxy()->detachFromFrame();
+    protect(windowProxy())->detachFromFrame();
     m_windowProxy = frame.windowProxy();
     frame.resetWindowProxy();
-    protectedWindowProxy()->replaceFrame(*this);
+    protect(windowProxy())->replaceFrame(*this);
 
     ASSERT(!m_opener);
     m_opener = frame.m_opener;

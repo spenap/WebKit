@@ -463,7 +463,7 @@ public:
         Ref requestingDocument = m_submission->state()->sourceDocument();
         if (requestingDocument->canNavigate(&frame) != CanNavigateState::Able)
             return;
-        FrameLoadRequest frameLoadRequest { requestingDocument.copyRef(), requestingDocument->protectedSecurityOrigin(), { }, { }, initiatedByMainFrame() };
+        FrameLoadRequest frameLoadRequest { requestingDocument.copyRef(), protect(requestingDocument->securityOrigin()), { }, { }, initiatedByMainFrame() };
         frameLoadRequest.setLockHistory(lockHistory());
         frameLoadRequest.setLockBackForwardList(lockBackForwardList());
         frameLoadRequest.setReferrerPolicy(m_submission->referrerPolicy());
@@ -547,7 +547,7 @@ public:
         ResourceRequest resourceRequest { URL { originDocument->url() }, emptyString(), ResourceRequestCachePolicy::ReloadIgnoringCacheData };
         if (RefPtr documentLoader = originDocument->loader())
             resourceRequest.setIsAppInitiated(documentLoader->lastNavigationWasAppInitiated());
-        FrameLoadRequest frameLoadRequest { originDocument.copyRef(), originDocument->protectedSecurityOrigin(), WTF::move(resourceRequest), { }, initiatedByMainFrame() };
+        FrameLoadRequest frameLoadRequest { originDocument.copyRef(), protect(originDocument->securityOrigin()), WTF::move(resourceRequest), { }, initiatedByMainFrame() };
         frameLoadRequest.setLockHistory(lockHistory());
         frameLoadRequest.setLockBackForwardList(lockBackForwardList());
         frameLoadRequest.setSubstituteData(WTF::move(replacementData));
@@ -609,7 +609,7 @@ void NavigationScheduler::scheduleRedirect(Document& initiatingDocument, double 
     // We want a new back/forward list item if the refresh timeout is > 1 second.
     if (!m_redirect || delay <= m_redirect->delay()) {
         auto lockBackForwardList = delay <= 1 ? LockBackForwardList::Yes : LockBackForwardList::No;
-        schedule(makeUnique<ScheduledRedirect>(initiatingDocument, delay, downcast<LocalFrame>(m_frame.get()).document()->protectedSecurityOrigin().ptr(), url, LockHistory::Yes, lockBackForwardList, isMetaRefresh));
+        schedule(makeUnique<ScheduledRedirect>(initiatingDocument, delay, protect(downcast<LocalFrame>(m_frame.get()).document()->securityOrigin()).ptr(), url, LockHistory::Yes, lockBackForwardList, isMetaRefresh));
     }
 }
 
@@ -733,7 +733,7 @@ void NavigationScheduler::scheduleRefresh(Document& initiatingDocument)
     if (url.isEmpty())
         return;
 
-    schedule(makeUnique<ScheduledRefresh>(initiatingDocument, frame->document()->protectedSecurityOrigin().ptr(), url, frame->loader().outgoingReferrer()));
+    schedule(makeUnique<ScheduledRefresh>(initiatingDocument, protect(protect(frame->document())->securityOrigin()).ptr(), url, frame->loader().outgoingReferrer()));
 }
 
 void NavigationScheduler::scheduleHistoryNavigation(int steps)

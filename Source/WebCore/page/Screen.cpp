@@ -110,7 +110,7 @@ unsigned Screen::colorDepth() const
         return 24;
     if (frame->settings().webAPIStatisticsEnabled())
         ResourceLoadObserver::singleton().logScreenAPIAccessed(*protect(frame->document()), ScreenAPIsAccessed::ColorDepth);
-    return static_cast<unsigned>(screenDepth(frame->protectedView().get()));
+    return static_cast<unsigned>(screenDepth(protect(frame->view()).get()));
 }
 
 int Screen::availLeft() const
@@ -125,7 +125,7 @@ int Screen::availLeft() const
     if (shouldApplyScreenFingerprintingProtections(*frame))
         return 0;
 
-    return static_cast<int>(screenAvailableRect(frame->protectedView().get()).x());
+    return static_cast<int>(screenAvailableRect(protect(frame->view()).get()).x());
 }
 
 int Screen::availTop() const
@@ -140,7 +140,7 @@ int Screen::availTop() const
     if (shouldApplyScreenFingerprintingProtections(*frame))
         return 0;
 
-    return static_cast<int>(screenAvailableRect(frame->protectedView().get()).y());
+    return static_cast<int>(screenAvailableRect(protect(frame->view()).get()).y());
 }
 
 int Screen::availHeight() const
@@ -155,7 +155,7 @@ int Screen::availHeight() const
     if (shouldApplyScreenFingerprintingProtections(*frame))
         return static_cast<int>(frame->screenSize().height());
 
-    return static_cast<int>(screenAvailableRect(frame->protectedView().get()).height());
+    return static_cast<int>(screenAvailableRect(protect(frame->view()).get()).height());
 }
 
 int Screen::availWidth() const
@@ -170,7 +170,7 @@ int Screen::availWidth() const
     if (shouldApplyScreenFingerprintingProtections(*frame))
         return static_cast<int>(frame->screenSize().width());
 
-    return static_cast<int>(screenAvailableRect(frame->protectedView().get()).width());
+    return static_cast<int>(screenAvailableRect(protect(frame->view()).get()).width());
 }
 
 ScreenOrientation& Screen::orientation()

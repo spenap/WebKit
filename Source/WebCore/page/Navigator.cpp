@@ -288,7 +288,7 @@ void Navigator::initializePluginAndMimeTypeArrays()
 
     // macOS uses a PDF Plugin (which may be disabled). Other ports handle PDF's through native
     // platform views outside the engine, or use pdf.js.
-    PluginInfo pdfPluginInfo = frame->protectedPage()->pluginData().builtInPDFPlugin().value_or(PluginData::dummyPDFPluginInfo());
+    PluginInfo pdfPluginInfo = protect(frame->page())->pluginData().builtInPDFPlugin().value_or(PluginData::dummyPDFPluginInfo());
 
     Vector<Ref<DOMPlugin>> domPlugins;
     Vector<Ref<DOMMimeType>> domMimeTypes;

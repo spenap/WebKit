@@ -565,7 +565,7 @@ void HTMLAnchorElement::handleClick(Event& event)
     AtomString downloadAttribute;
     if (document->settings().downloadAttributeEnabled()) {
         // Ignore the download attribute completely if the href URL is cross origin.
-        bool isSameOrigin = completedURL.protocolIsData() || document->protectedSecurityOrigin()->canRequest(completedURL, OriginAccessPatternsForWebProcess::singleton());
+        bool isSameOrigin = completedURL.protocolIsData() || protect(document->securityOrigin())->canRequest(completedURL, OriginAccessPatternsForWebProcess::singleton());
         if (isSameOrigin)
             downloadAttribute = AtomString { ResourceResponse::sanitizeSuggestedFilename(attributeWithoutSynchronization(downloadAttr)) };
         else if (hasAttributeWithoutSynchronization(downloadAttr))

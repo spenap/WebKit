@@ -1033,7 +1033,7 @@ bool DOMWindow::isInsecureScriptAccess(const LocalDOMWindow& activeWindow, const
 
         // This check only makes sense with LocalDOMWindows as RemoteDOMWindows necessarily have different origins
         RefPtr localDocument = documentIfLocal();
-        if (localDocument && protect(activeWindow.document())->protectedSecurityOrigin()->isSameOriginDomain(localDocument->protectedSecurityOrigin()))
+        if (localDocument && protect(protect(activeWindow.document())->securityOrigin())->isSameOriginDomain(protect(localDocument->securityOrigin())))
             return false;
     }
 

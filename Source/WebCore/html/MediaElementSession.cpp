@@ -676,7 +676,7 @@ bool MediaElementSession::canShowControlsManager(PlaybackControlsPurpose purpose
     if (purpose == MediaElementSession::PlaybackControlsPurpose::NowPlaying
         && hasBehaviorRestriction(RequirePageVisibilityForVideoToBeNowPlaying)
         && element->isVideo()
-        && !protect(element->document())->protectedPage()->isVisibleAndActive()) {
+        && !protect(protect(element->document())->page())->isVisibleAndActive()) {
         INFO_LOG(LOGIDENTIFIER, "returning FALSE: NowPlaying restricted for video in a page that is not visible");
         return false;
     }

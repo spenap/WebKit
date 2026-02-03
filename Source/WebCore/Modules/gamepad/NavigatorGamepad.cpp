@@ -191,7 +191,7 @@ void NavigatorGamepad::gamepadDisconnected(PlatformGamepad& platformGamepad)
 RefPtr<Page> NavigatorGamepad::protectedPage() const
 {
     RefPtr frame = m_navigator->frame();
-    return frame ? frame->protectedPage() : nullptr;
+    return frame ? protect(frame->page()) : nullptr;
 }
 
 } // namespace WebCore

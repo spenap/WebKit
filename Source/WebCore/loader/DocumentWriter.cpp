@@ -66,7 +66,7 @@ static inline bool canReferToParentFrameEncoding(const LocalFrame* frame, const 
     RefPtr document = frame->document();
     if (is<XMLDocument>(document))
         return false;
-    return parentFrame && protect(parentFrame->document())->protectedSecurityOrigin()->isSameOriginDomain(document->protectedSecurityOrigin());
+    return parentFrame && protect(protect(parentFrame->document())->securityOrigin())->isSameOriginDomain(protect(document->securityOrigin()));
 }
     
 // This is only called by ScriptController::executeIfJavaScriptURL
@@ -235,7 +235,7 @@ bool DocumentWriter::begin(const URL& urlReference, bool dispatch, Document* own
             RefPtr parentFrame = dynamicDowncast<LocalFrame>(frame->tree().parent());
             if (parentFrame && parentFrame->document()) {
                 document->inheritPolicyContainerFrom(parentFrame->document()->policyContainer());
-                document->checkedContentSecurityPolicy()->updateSourceSelf(protect(parentFrame->document())->protectedSecurityOrigin());
+                document->checkedContentSecurityPolicy()->updateSourceSelf(protect(protect(parentFrame->document())->securityOrigin()));
             }
         } else if (triggeringAction && triggeringAction->requester() && !isLoadingBrowserControlledHTML()) {
             document->inheritPolicyContainerFrom(triggeringAction->requester()->policyContainer);
@@ -260,7 +260,7 @@ bool DocumentWriter::begin(const URL& urlReference, bool dispatch, Document* own
     m_parser = document->parser();
 
     if (frame->view() && frameLoader->client().hasHTMLView())
-        frame->protectedView()->setContentsSize(IntSize());
+        protect(frame->view())->setContentsSize(IntSize());
 
     m_state = State::Started;
     return true;
@@ -283,7 +283,7 @@ TextResourceDecoder& DocumentWriter::decoder()
         // FIXME: This might be too cautious for non-7bit-encodings and
         // we may consider relaxing this later after testing.
         if (canReferToParentFrameEncoding(frame.ptr(), parentFrame.get()))
-            decoder->setHintEncoding(parentFrame->document()->protectedDecoder().get());
+            decoder->setHintEncoding(protect(parentFrame->document()->decoder()).get());
         if (m_encoding.isEmpty()) {
             if (canReferToParentFrameEncoding(frame.ptr(), parentFrame.get()))
                 decoder->setEncoding(parentFrame->document()->textEncoding(), TextResourceDecoder::EncodingFromParentFrame);

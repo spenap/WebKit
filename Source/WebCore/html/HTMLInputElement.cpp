@@ -1425,7 +1425,7 @@ ExceptionOr<void> HTMLInputElement::showPicker()
     // https://github.com/whatwg/html/issues/6909#issuecomment-917138991
     if (!m_inputType->allowsShowPickerAcrossFrames()) {
         RefPtr localTopFrame = dynamicDowncast<LocalFrame>(frame->tree().top());
-        if (!localTopFrame || !protect(frame->document())->protectedSecurityOrigin()->isSameOriginAs(protect(localTopFrame->document())->protectedSecurityOrigin()))
+        if (!localTopFrame || !protect(protect(frame->document())->securityOrigin())->isSameOriginAs(protect(protect(localTopFrame->document())->securityOrigin())))
             return Exception { ExceptionCode::SecurityError, "Input showPicker() called from cross-origin iframe."_s };
     }
 

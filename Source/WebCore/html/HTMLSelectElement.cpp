@@ -1814,7 +1814,7 @@ ExceptionOr<void> HTMLSelectElement::showPicker()
 
     // In cross-origin iframes it should throw a "SecurityError" DOMException. In same-origin iframes it should work fine.
     RefPtr localTopFrame = dynamicDowncast<LocalFrame>(frame->tree().top());
-    if (!localTopFrame || !protect(frame->document())->protectedSecurityOrigin()->isSameOriginAs(protect(localTopFrame->document())->protectedSecurityOrigin()))
+    if (!localTopFrame || !protect(protect(frame->document())->securityOrigin())->isSameOriginAs(protect(protect(localTopFrame->document())->securityOrigin())))
         return Exception { ExceptionCode::SecurityError, "Select showPicker() called from cross-origin iframe."_s };
 
     RefPtr window = frame->window();

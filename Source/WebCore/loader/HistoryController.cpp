@@ -292,7 +292,7 @@ void HistoryController::invalidateCurrentItemCachedPage()
         return;
 
     // When we are pre-commit, the currentItem is where any back/forward cache data resides.
-    auto cachedPage = BackForwardCache::singleton().take(*currentItem, m_frame->protectedPage().get());
+    auto cachedPage = BackForwardCache::singleton().take(*currentItem, protect(m_frame->page()).get());
     if (!cachedPage)
         return;
 
@@ -425,12 +425,12 @@ void HistoryController::goToItemForNavigationAPI(HistoryItem& targetItem, FrameL
         protectedThis->recursiveSetProvisionalItem(targetItem, currentItem.get(), ForNavigationAPI::Yes);
 
         for (auto& frameToNavigate : framesToNavigate) {
-            Ref abortHandler = frameToNavigate.frame->protectedWindow()->protectedNavigation()->registerAbortHandler();
+            Ref abortHandler = protect(protect(frameToNavigate.frame->window())->navigation())->registerAbortHandler();
             frameToNavigate.frame->loader().loadItem(frameToNavigate.toItem, frameToNavigate.fromItem.get(), frameLoadType, ShouldTreatAsContinuingLoad::No);
             // If the navigation was aborted (by the JS called preventDefault() on the navigate event), then
             // do not do any further navigations.
             if (abortHandler->wasAborted()) {
-                triggeringFrame->protectedWindow()->protectedNavigation()->rejectFinishedPromise(tracker.get());
+                protect(protect(triggeringFrame->window())->navigation())->rejectFinishedPromise(tracker.get());
                 break;
             }
         }
@@ -1076,7 +1076,7 @@ void HistoryController::pushState(RefPtr<SerializedScriptValue>&& stateObject, c
     protect(frame->loader().client())->updateGlobalHistory();
 
     if (document && document->settings().navigationAPIEnabled())
-        document->protectedWindow()->protectedNavigation()->updateForNavigation(*currentItem, NavigationNavigationType::Push);
+        protect(protect(document->window())->navigation())->updateForNavigation(*currentItem, NavigationNavigationType::Push);
 }
 
 void HistoryController::updateBackForwardListForReplaceState(RefPtr<SerializedScriptValue>&& stateObject, const String& urlString)
@@ -1114,7 +1114,7 @@ void HistoryController::replaceState(RefPtr<SerializedScriptValue>&& stateObject
 
     if (RefPtr document = frame->document(); document && document->settings().navigationAPIEnabled()) {
         currentItem->setNavigationAPIStateObject(nullptr);
-        document->protectedWindow()->protectedNavigation()->updateForNavigation(*currentItem, NavigationNavigationType::Replace);
+        protect(protect(document->window())->navigation())->updateForNavigation(*currentItem, NavigationNavigationType::Replace);
     }
 }
 

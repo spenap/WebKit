@@ -186,7 +186,7 @@ String HTMLIFrameElement::srcdoc() const
 
 ExceptionOr<void> HTMLIFrameElement::setSrcdoc(Variant<RefPtr<TrustedHTML>, String>&& value, SubstituteData::SessionHistoryVisibility sessionHistoryVisibility)
 {
-    auto stringValueHolder = trustedTypeCompliantString(protect(document())->protectedContextDocument(), WTF::move(value), "HTMLIFrameElement srcdoc"_s);
+    auto stringValueHolder = trustedTypeCompliantString(protect(protect(document())->contextDocument()), WTF::move(value), "HTMLIFrameElement srcdoc"_s);
 
     if (stringValueHolder.hasException())
         return stringValueHolder.releaseException();

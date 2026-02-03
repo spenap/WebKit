@@ -95,7 +95,7 @@ void FrameLoader::SubframeLoader::clear()
 bool FrameLoader::SubframeLoader::canCreateSubFrame() const
 {
     Ref frame = m_frame;
-    if (!frame->page() || frame->protectedPage()->subframeCount() >= Page::maxNumberOfFrames)
+    if (!frame->page() || protect(frame->page())->subframeCount() >= Page::maxNumberOfFrames)
         return false;
 
     if (frame->tree().depth() >= Page::maxFrameDepth)
@@ -251,7 +251,7 @@ bool FrameLoader::SubframeLoader::requestObject(HTMLPlugInElement& ownerElement,
     bool useFallback;
     if (shouldUsePlugin(completedURL, mimeType, hasFallbackContent, useFallback)) {
         bool success = requestPlugin(ownerElement, completedURL, mimeType, paramNames, paramValues, useFallback);
-        logPluginRequest(document->protectedPage().get(), mimeType, completedURL);
+        logPluginRequest(protect(document->page()).get(), mimeType, completedURL);
         return success;
     }
 
@@ -284,7 +284,7 @@ LocalFrame* FrameLoader::SubframeLoader::loadOrRedirectSubframe(HTMLFrameOwnerEl
                 page->willChangeLocationInCompletelyLoadedSubframe();
         }
 
-        frame->protectedNavigationScheduler()->scheduleLocationChange(initiatingDocument, initiatingDocument->protectedSecurityOrigin(), upgradedRequestURL, m_frame->loader().outgoingReferrer(), lockHistory, lockBackForwardList, NavigationHistoryBehavior::Auto, WTF::move(stopDelayingLoadEvent));
+        frame->protectedNavigationScheduler()->scheduleLocationChange(initiatingDocument, protect(initiatingDocument->securityOrigin()), upgradedRequestURL, m_frame->loader().outgoingReferrer(), lockHistory, lockBackForwardList, NavigationHistoryBehavior::Auto, WTF::move(stopDelayingLoadEvent));
     } else
         frame = loadSubframe(ownerElement, upgradedRequestURL, frameName, m_frame->loader().outgoingReferrerURL());
 
@@ -300,7 +300,7 @@ RefPtr<LocalFrame> FrameLoader::SubframeLoader::loadSubframe(HTMLFrameOwnerEleme
     Ref frame = m_frame;
     Ref document = ownerElement.document();
 
-    if (!document->protectedSecurityOrigin()->canDisplay(url, OriginAccessPatternsForWebProcess::singleton())) {
+    if (!protect(document->securityOrigin())->canDisplay(url, OriginAccessPatternsForWebProcess::singleton())) {
         FrameLoader::reportLocalLoadFailed(frame.ptr(), url.string());
         return nullptr;
     }
@@ -313,7 +313,7 @@ RefPtr<LocalFrame> FrameLoader::SubframeLoader::loadSubframe(HTMLFrameOwnerEleme
     if (!SubframeLoadingDisabler::canLoadFrame(ownerElement))
         return nullptr;
 
-    if (!frame->page() || frame->protectedPage()->subframeCount() >= Page::maxNumberOfFrames)
+    if (!frame->page() || protect(frame->page())->subframeCount() >= Page::maxNumberOfFrames)
         return nullptr;
 
     if (frame->tree().depth() >= Page::maxFrameDepth)

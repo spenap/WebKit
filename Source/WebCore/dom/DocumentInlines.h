@@ -125,11 +125,6 @@ inline ClientOrigin Document::clientOrigin() const { return { topOrigin().data()
 
 inline bool Document::wasLastFocusByClick() const { return m_latestFocusTrigger == FocusTrigger::Click; }
 
-inline RefPtr<DocumentParser> Document::protectedParser() const
-{
-    return m_parser;
-}
-
 inline UndoManager& Document::undoManager() const
 {
     if (!m_undoManager)
@@ -137,31 +132,11 @@ inline UndoManager& Document::undoManager() const
     return *m_undoManager;
 }
 
-inline Ref<UndoManager> Document::protectedUndoManager() const
-{
-    return undoManager();
-}
-
 inline ReportingScope& Document::reportingScope() const
 {
     if (!m_reportingScope)
         return const_cast<Document&>(*this).ensureReportingScope();
     return *m_reportingScope;
-}
-
-inline Ref<ReportingScope> Document::protectedReportingScope() const
-{
-    return reportingScope();
-}
-
-inline RefPtr<TextResourceDecoder> Document::protectedDecoder() const
-{
-    return m_decoder;
-}
-
-inline RefPtr<Element> Document::protectedFocusedElement() const
-{
-    return m_focusedElement;
 }
 
 inline Ref<DocumentSyncData> Document::syncData()

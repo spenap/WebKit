@@ -398,7 +398,7 @@ void HTMLLinkElement::process()
         request.setInitiator(*this);
 
         ASSERT_WITH_SECURITY_IMPLICATION(!m_cachedSheet);
-        m_cachedSheet = document->protectedCachedResourceLoader()->requestCSSStyleSheet(WTF::move(request)).value_or(nullptr);
+        m_cachedSheet = protect(document->cachedResourceLoader())->requestCSSStyleSheet(WTF::move(request)).value_or(nullptr);
 
         if (CachedResourceHandle cachedSheet = m_cachedSheet)
             cachedSheet->addClient(*this);

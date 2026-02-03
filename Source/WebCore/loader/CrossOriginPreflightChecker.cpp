@@ -144,7 +144,7 @@ void CrossOriginPreflightChecker::startPreflight()
     preflightRequest.setInitiatorType(AtomString { loader->options().initiatorType });
 
     ASSERT(!m_resource);
-    m_resource = loader->document().protectedCachedResourceLoader()->requestRawResource(WTF::move(preflightRequest)).value_or(nullptr);
+    m_resource = protect(loader->document().cachedResourceLoader())->requestRawResource(WTF::move(preflightRequest)).value_or(nullptr);
     if (CachedResourceHandle resource = m_resource)
         resource->addClient(*this);
 }

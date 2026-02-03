@@ -278,7 +278,7 @@ bool AppHighlightStorage::attemptToRestoreHighlightAndScroll(AppHighlightRangeDa
     if (!range)
         return false;
 
-    document->protectedAppHighlightRegistry()->addAnnotationHighlightWithRange(StaticRange::create(*range));
+    protect(document->appHighlightRegistry())->addAnnotationHighlightWithRange(StaticRange::create(*range));
 
     if (scroll == ScrollToHighlight::Yes) {
         auto textIndicator = TextIndicator::createWithRange(range.value(), { TextIndicatorOption::DoNotClipToVisibleRect }, WebCore::TextIndicatorPresentationTransition::Bounce);

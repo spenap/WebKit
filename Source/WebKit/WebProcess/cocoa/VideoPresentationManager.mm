@@ -80,7 +80,7 @@ static FloatRect inlineVideoFrame(HTMLVideoElement& element)
     if (renderer->hasLayer() && renderer->checkedEnclosingLayer()->isComposited()) {
         FloatQuad contentsBox = static_cast<FloatRect>(renderer->enclosingLayer()->backing()->contentsBox());
         contentsBox = renderer->localToAbsoluteQuad(contentsBox);
-        return document->protectedView()->contentsToRootView(contentsBox.boundingBox());
+        return protect(document->view())->contentsToRootView(contentsBox.boundingBox());
     }
 
     return renderer->videoBoxInRootView();
@@ -288,7 +288,7 @@ bool VideoPresentationManager::canEnterVideoFullscreen(HTMLVideoElement& videoEl
     ASSERT(mode != HTMLMediaElementEnums::VideoFullscreenModeNone);
 
 #if ENABLE(FULLSCREEN_API)
-    if (protect(videoElement.document())->protectedFullscreen()->isAnimatingFullscreen())
+    if (protect(protect(videoElement.document())->fullscreen())->isAnimatingFullscreen())
         return false;
 #endif
 

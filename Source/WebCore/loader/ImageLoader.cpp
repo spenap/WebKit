@@ -129,11 +129,11 @@ static inline bool pageIsBeingDismissed(Document& document)
 // https://html.spec.whatwg.org/multipage/images.html#updating-the-image-data:list-of-available-images
 static bool canReuseFromListOfAvailableImages(const CachedResourceRequest& request, Document& document)
 {
-    CachedResourceHandle resource = MemoryCache::singleton().resourceForRequest(request.resourceRequest(), document.protectedPage()->sessionID());
+    CachedResourceHandle resource = MemoryCache::singleton().resourceForRequest(request.resourceRequest(), protect(document.page())->sessionID());
     if (!resource || resource->stillNeedsLoad() || resource->isPreloaded())
         return false;
 
-    if (resource->options().mode == FetchOptions::Mode::Cors && !document.protectedSecurityOrigin()->isSameOriginAs(*protect(resource->origin())))
+    if (resource->options().mode == FetchOptions::Mode::Cors && !protect(document.securityOrigin())->isSameOriginAs(*protect(resource->origin())))
         return false;
 
     if (resource->options().mode != request.options().mode || resource->options().credentials != request.options().credentials)
@@ -288,7 +288,7 @@ void ImageLoader::updateFromElement(RelevantMutation relevantMutation)
                 }
             }
             auto imageLoading = (m_lazyImageLoadState == LazyImageLoadState::Deferred) ? ImageLoading::DeferredUntilVisible : ImageLoading::Immediate;
-            newImage = document->protectedCachedResourceLoader()->requestImage(WTF::move(request), imageLoading).value_or(nullptr);
+            newImage = protect(document->cachedResourceLoader())->requestImage(WTF::move(request), imageLoading).value_or(nullptr);
             LOG_WITH_STREAM(LazyLoading, stream << "ImageLoader " << this << " updateFromElement " << element.get() << " - state changed from " << oldState << " to " << m_lazyImageLoadState << ", loading is " << imageLoading << " new image " << newImage.get());
         }
 
@@ -304,7 +304,7 @@ void ImageLoader::updateFromElement(RelevantMutation relevantMutation)
                 auto request = createPotentialAccessControlRequest(WTF::move(resourceRequest), WTF::move(options), document, crossOriginAttribute);
                 request.setInitiator(*imageElement);
 
-                document->protectedCachedResourceLoader()->requestImage(WTF::move(request));
+                protect(document->cachedResourceLoader())->requestImage(WTF::move(request));
             }
         }
 #endif
