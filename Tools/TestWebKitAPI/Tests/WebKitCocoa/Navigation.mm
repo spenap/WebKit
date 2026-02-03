@@ -1929,7 +1929,7 @@ TEST(WKNavigation, HTTPSOnlyNonHTTPSSecureSchemes)
 
     auto url = [NSURL URLWithString:@"secure://bundle-file/simple.html"];
 
-    [webView loadRequest:[NSURLRequest requestWithURL:url]];
+    [webView loadURL:url];
     Util::run(&didFailNavigation);
 
     EXPECT_FALSE(finishedSuccessfully);
@@ -1942,7 +1942,7 @@ TEST(WKNavigation, HTTPSOnlyNonHTTPSSecureSchemes)
 
     [webView.get().configuration.processPool _registerURLSchemeAsSecure:secureScheme];
 
-    [webView loadRequest:[NSURLRequest requestWithURL:url]];
+    [webView loadURL:url];
     Util::run(&finishedSuccessfully);
 
     EXPECT_FALSE(didFailNavigation);

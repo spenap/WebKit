@@ -434,7 +434,7 @@ final public class WebPage {
             }
         }
 
-        return toNavigationSequence { $0.load(URLRequest(url: url)) }
+        return toNavigationSequence { $0.load(url) }
     }
 
     /// Loads the web content that the specified URL request object references and navigates to that content.
