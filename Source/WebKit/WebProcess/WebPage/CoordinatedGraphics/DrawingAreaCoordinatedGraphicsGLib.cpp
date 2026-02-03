@@ -819,4 +819,9 @@ void DrawingAreaCoordinatedGraphics::fillGLInformation(RenderProcessInfo&& info,
         completionHandler(WTF::move(info));
 }
 
+bool DrawingAreaCoordinatedGraphics::shouldUseTiledBackingForFrameView(const WebCore::LocalFrameView& frameView) const
+{
+    return frameView.frame().isMainFrame() || m_webPage->corePage()->settings().asyncFrameScrollingEnabled();
+}
+
 } // namespace WebKit

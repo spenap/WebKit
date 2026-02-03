@@ -74,6 +74,8 @@ private:
     void preferredBufferFormatsDidChange() override;
 #endif
 
+    bool shouldUseTiledBackingForFrameView(const WebCore::LocalFrameView&) const override;
+
     bool supportsAsyncScrolling() const override;
     void registerScrollingTree() override;
     void unregisterScrollingTree() override;
