@@ -6889,6 +6889,9 @@ header: <WebCore/TextExtractionTypes.h>
 header: <WebCore/TextExtractionTypes.h>
 [CustomHeader] struct WebCore::TextExtraction::ScrollableItemData {
     WebCore::FloatSize contentSize;
+    WebCore::IntPoint scrollPosition;
+    bool isRoot;
+    bool hasOverflowItems;
 };
 
 header: <WebCore/TextExtractionTypes.h>
@@ -6953,7 +6956,6 @@ header: <WebCore/TextExtractionTypes.h>
 
 header: <WebCore/TextExtractionTypes.h>
 [CustomHeader] enum class WebCore::TextExtraction::ContainerType : uint8_t {
-    Root,
     ViewportConstrained,
     List,
     ListItem,

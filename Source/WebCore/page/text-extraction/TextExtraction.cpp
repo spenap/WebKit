@@ -204,6 +204,7 @@ struct TraversalContext {
     const FrameIdentifier frameIdentifier;
     Vector<WeakPtr<Node, WeakPtrImplWithEventTargetData>> enclosingBlocks;
     WeakHashMap<Node, unsigned, WeakPtrImplWithEventTargetData> enclosingBlockNumberMap;
+    Vector<bool, 1> hasOverflowItemsStack;
     unsigned onlyCollectTextAndLinksCount { 0 };
     bool mergeParagraphs { false };
     bool skipNearlyTransparentContent { false };
@@ -574,8 +575,14 @@ static inline Variant<SkipExtraction, ItemData, URL, Editable> extractItemData(N
 
     if (CheckedPtr box = dynamicDowncast<RenderBox>(node.renderer()); box && box->canBeScrolledAndHasScrollableArea()) {
         if (CheckedPtr layer = box->layer()) {
-            if (CheckedPtr scrollableArea = layer->scrollableArea())
-                return { ScrollableItemData { scrollableArea->totalContentsSize() } };
+            if (CheckedPtr scrollableArea = layer->scrollableArea()) {
+                return { ScrollableItemData {
+                    .contentSize = scrollableArea->totalContentsSize(),
+                    .scrollPosition = scrollableArea->scrollPosition(),
+                    .isRoot = false,
+                    .hasOverflowItems = false,
+                } };
+            }
         }
     }
 
@@ -637,8 +644,6 @@ static inline bool shouldIncludeNodeIdentifier(NodeIdentifierInclusion inclusion
                 return false;
 
             switch (type) {
-            case ContainerType::Root:
-                return false;
             case ContainerType::Article:
             case ContainerType::ViewportConstrained:
             case ContainerType::List:
@@ -669,6 +674,11 @@ static inline bool shouldIncludeNodeIdentifier(NodeIdentifierInclusion inclusion
         },
         [](const SelectData&) {
             return true;
+        },
+        [inclusion](const ScrollableItemData& scrollableData) {
+            if (scrollableData.isRoot)
+                return false;
+            return inclusion == Interactive;
         },
         [inclusion](auto&) {
             return inclusion == Interactive;
@@ -789,6 +799,8 @@ static inline void extractRecursive(Node& node, Item& parentItem, TraversalConte
         return FallbackPolicy::Skip;
     }();
 
+    bool isScrollable = false;
+
     WTF::switchOn(extractItemData(node, policy, context),
         [&](SkipExtraction skipExtraction) {
             switch (skipExtraction) {
@@ -809,8 +821,17 @@ static inline void extractRecursive(Node& node, Item& parentItem, TraversalConte
         },
         [&](ItemData&& result) {
             auto bounds = rootViewBounds(node);
-            if (!context.shouldIncludeNodeWithRect(bounds))
+            if (!context.shouldIncludeNodeWithRect(bounds)) {
+                if (context.hasOverflowItemsStack.isEmpty()) {
+                    ASSERT_NOT_REACHED();
+                    return;
+                }
+
+                context.hasOverflowItemsStack.last() = true;
                 return;
+            }
+
+            isScrollable = std::holds_alternative<ScrollableItemData>(result);
 
             std::optional<NodeIdentifier> nodeIdentifier;
             if (shouldIncludeNodeIdentifier(context.nodeIdentifierInclusion, eventListeners, AccessibilityObject::ariaRoleToWebCoreRole(role), result))
@@ -856,6 +877,11 @@ static inline void extractRecursive(Node& node, Item& parentItem, TraversalConte
         context.onlyCollectTextAndLinksCount++;
     }
 
+    ASSERT_IMPLIES(isScrollable, item);
+
+    if (isScrollable)
+        context.hasOverflowItemsStack.append(false);
+
     if (RefPtr container = dynamicDowncast<ContainerNode>(node)) {
         for (Ref child : composedTreeChildren<0>(*container))
             extractRecursive(child.get(), item ? *item : parentItem, context);
@@ -867,6 +893,9 @@ static inline void extractRecursive(Node& node, Item& parentItem, TraversalConte
             }
         }
     }
+
+    if (isScrollable)
+        std::get<ScrollableItemData>(item->data).hasOverflowItems = context.hasOverflowItemsStack.takeLast();
 
     if (onlyCollectTextAndLinks) {
         if (item) {
@@ -1015,7 +1044,7 @@ static RefPtr<ContainerNode> findContainerNodeForDataDetectorResults(Node& rootN
 Item extractItem(Request&& request, LocalFrame& frame)
 {
     auto frameID = frame.frameID();
-    Item root { ContainerType::Root, { }, { }, { }, { }, frameID, { }, { }, { }, { }, { }, 0 };
+    Item root { ScrollableItemData { }, { }, { }, { }, { }, frameID, { }, { }, { }, { }, { }, 0 };
     RefPtr document = frame.document();
     if (!document)
         return root;
@@ -1050,6 +1079,13 @@ Item extractItem(Request&& request, LocalFrame& frame)
     RefPtr view = frame.view();
     if (!view)
         return root;
+
+    root.data = { ScrollableItemData {
+        .contentSize = view->contentsSize(),
+        .scrollPosition = view->scrollPosition(),
+        .isRoot = true,
+        .hasOverflowItems = false,
+    } };
 
     root.rectInRootView = view->contentsToRootView(IntRect { IntPoint::zero(), view->contentsSize() });
     if (root.rectInRootView.isEmpty())
@@ -1086,6 +1122,7 @@ Item extractItem(Request&& request, LocalFrame& frame)
             .frameIdentifier = WTF::move(frameID),
             .enclosingBlocks = { },
             .enclosingBlockNumberMap = { },
+            .hasOverflowItemsStack = { false },
             .onlyCollectTextAndLinksCount = 0,
             .mergeParagraphs = request.mergeParagraphs,
             .skipNearlyTransparentContent = request.skipNearlyTransparentContent,
@@ -1094,6 +1131,10 @@ Item extractItem(Request&& request, LocalFrame& frame)
             .includeAccessibilityAttributes = request.includeAccessibilityAttributes,
         };
         extractRecursive(*extractionRootNode, root, context);
+
+        ASSERT(context.hasOverflowItemsStack.size() == 1);
+        if (!context.hasOverflowItemsStack.isEmpty())
+            std::get<ScrollableItemData>(root.data).hasOverflowItems = context.hasOverflowItemsStack.takeLast();
     }
 
     pruneWhitespaceRecursive(root);
