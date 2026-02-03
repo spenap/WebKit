@@ -407,8 +407,6 @@ namespace JSC { namespace DFG {
     \
     /* Allocations. */\
     macro(NewObject, NodeResultJS) \
-    macro(NewGenerator, NodeResultJS) \
-    macro(NewAsyncGenerator, NodeResultJS) \
     /* FIXME: A lot of these could likely be consolidated but there's some subtle differences between them, particularly when having a bad time. */ \
     macro(NewArray, NodeResultJS | NodeHasVarArgs) \
     macro(NewArrayWithSpread, NodeResultJS | NodeHasVarArgs) \

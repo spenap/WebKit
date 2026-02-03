@@ -3936,8 +3936,6 @@ bool AbstractInterpreter<AbstractStateType>::executeEffects(unsigned clobberLimi
         break;
     }
 
-    case NewGenerator:
-    case NewAsyncGenerator:    
     case NewInternalFieldObject:
     case NewObject:
     case MaterializeNewInternalFieldObject:

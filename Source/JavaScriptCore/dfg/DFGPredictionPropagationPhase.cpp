@@ -1326,9 +1326,7 @@ private:
             break;
 
         case CreateGenerator:
-        case NewGenerator:
         case CreateAsyncGenerator:
-        case NewAsyncGenerator:
             setPrediction(SpecObjectOther);
             break;
 

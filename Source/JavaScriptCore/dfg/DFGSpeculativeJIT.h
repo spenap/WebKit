@@ -1773,8 +1773,6 @@ public:
     void compileCreateGenerator(Node*);
     void compileCreateAsyncGenerator(Node*);
     void compileNewObject(Node*);
-    void compileNewGenerator(Node*);
-    void compileNewAsyncGenerator(Node*);
     void compileNewInternalFieldObject(Node*);
     void compileToPrimitive(Node*);
     void compileToPropertyKey(Node*);

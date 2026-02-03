@@ -7239,12 +7239,12 @@ void ByteCodeParser::parseBlock(unsigned limit)
         }
 
         case op_create_generator: {
-            handleCreateInternalFieldObject(JSGenerator::info(), CreateGenerator, NewGenerator, currentInstruction->as<OpCreateGenerator>());
+            handleCreateInternalFieldObject(JSGenerator::info(), CreateGenerator, NewInternalFieldObject, currentInstruction->as<OpCreateGenerator>());
             NEXT_OPCODE(op_create_generator);
         }
 
         case op_create_async_generator: {
-            handleCreateInternalFieldObject(JSAsyncGenerator::info(), CreateAsyncGenerator, NewAsyncGenerator, currentInstruction->as<OpCreateAsyncGenerator>());
+            handleCreateInternalFieldObject(JSAsyncGenerator::info(), CreateAsyncGenerator, NewInternalFieldObject, currentInstruction->as<OpCreateAsyncGenerator>());
             NEXT_OPCODE(op_create_async_generator);
         }
 
@@ -7267,7 +7267,7 @@ void ByteCodeParser::parseBlock(unsigned limit)
         case op_new_generator: {
             auto bytecode = currentInstruction->as<OpNewGenerator>();
             JSGlobalObject* globalObject = m_graph.globalObjectFor(currentNodeOrigin().semantic);
-            set(bytecode.m_dst, addToGraph(NewGenerator, OpInfo(m_graph.registerStructure(globalObject->generatorStructure()))));
+            set(bytecode.m_dst, addToGraph(NewInternalFieldObject, OpInfo(m_graph.registerStructure(globalObject->generatorStructure()))));
             NEXT_OPCODE(op_new_generator);
         }
             

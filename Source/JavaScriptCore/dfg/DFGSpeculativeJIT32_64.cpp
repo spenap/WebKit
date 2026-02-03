@@ -3305,16 +3305,6 @@ void SpeculativeJIT::compile(Node* node)
         break;
     }
 
-    case NewGenerator: {
-        compileNewGenerator(node);
-        break;
-    }
-
-    case NewAsyncGenerator: {
-        compileNewAsyncGenerator(node);
-        break;
-    }
-
     case NewInternalFieldObject: {
         compileNewInternalFieldObject(node);
         break;

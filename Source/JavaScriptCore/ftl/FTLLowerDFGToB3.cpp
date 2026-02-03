@@ -1227,12 +1227,6 @@ private:
         case NewObject:
             compileNewObject();
             break;
-        case NewGenerator:
-            compileNewGenerator();
-            break;
-        case NewAsyncGenerator:
-            compileNewAsyncGenerator();
-            break;
         case NewInternalFieldObject:
             compileNewInternalFieldObject();
             break;
@@ -9501,16 +9495,6 @@ IGNORE_CLANG_WARNINGS_END
         setJSValue(m_out.phi(pointerType(), fastResult, slowResult));
     }
 
-    void compileNewGenerator()
-    {
-        compileNewInternalFieldObjectImpl<JSGenerator>(operationNewGenerator);
-    }
-
-    void compileNewAsyncGenerator()
-    {
-        compileNewInternalFieldObjectImpl<JSAsyncGenerator>(operationNewAsyncGenerator);
-    }
-
     void compileNewInternalFieldObject()
     {
         switch (m_node->structure()->typeInfo().type()) {
@@ -9534,6 +9518,12 @@ IGNORE_CLANG_WARNINGS_END
             break;
         case JSRegExpStringIteratorType:
             compileNewInternalFieldObjectImpl<JSRegExpStringIterator>(operationNewRegExpStringIterator);
+            break;
+        case JSGeneratorType:
+            compileNewInternalFieldObjectImpl<JSGenerator>(operationNewGenerator);
+            break;
+        case JSAsyncGeneratorType:
+            compileNewInternalFieldObjectImpl<JSAsyncGenerator>(operationNewAsyncGenerator);
             break;
         case JSPromiseType:
             if (m_node->structure()->classInfoForCells() == JSInternalPromise::info())
@@ -18164,6 +18154,12 @@ IGNORE_CLANG_WARNINGS_END
             break;
         case JSRegExpStringIteratorType:
             compileMaterializeNewInternalFieldObjectImpl<JSRegExpStringIterator>(operationNewRegExpStringIterator);
+            break;
+        case JSGeneratorType:
+            compileMaterializeNewInternalFieldObjectImpl<JSGenerator>(operationNewGenerator);
+            break;
+        case JSAsyncGeneratorType:
+            compileMaterializeNewInternalFieldObjectImpl<JSAsyncGenerator>(operationNewAsyncGenerator);
             break;
         case JSPromiseType:
             if (m_node->structure()->classInfoForCells() == JSInternalPromise::info())

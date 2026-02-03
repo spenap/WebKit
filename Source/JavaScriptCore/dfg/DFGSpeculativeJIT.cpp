@@ -15646,16 +15646,6 @@ void SpeculativeJIT::compileNewInternalFieldObjectImpl(Node* node, Operation ope
     cellResult(resultGPR, node);
 }
 
-void SpeculativeJIT::compileNewGenerator(Node* node)
-{
-    compileNewInternalFieldObjectImpl<JSGenerator>(node, operationNewGenerator);
-}
-
-void SpeculativeJIT::compileNewAsyncGenerator(Node* node)
-{
-    compileNewInternalFieldObjectImpl<JSAsyncGenerator>(node, operationNewAsyncGenerator);
-}
-
 void SpeculativeJIT::compileNewInternalFieldObject(Node* node)
 {
     switch (node->structure()->typeInfo().type()) {
@@ -15679,6 +15669,12 @@ void SpeculativeJIT::compileNewInternalFieldObject(Node* node)
         break;
     case JSRegExpStringIteratorType:
         compileNewInternalFieldObjectImpl<JSRegExpStringIterator>(node, operationNewRegExpStringIterator);
+        break;
+    case JSGeneratorType:
+        compileNewInternalFieldObjectImpl<JSGenerator>(node, operationNewGenerator);
+        break;
+    case JSAsyncGeneratorType:
+        compileNewInternalFieldObjectImpl<JSAsyncGenerator>(node, operationNewAsyncGenerator);
         break;
     case JSPromiseType: {
         if (node->structure()->classInfoForCells() == JSInternalPromise::info())

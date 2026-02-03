@@ -652,8 +652,6 @@ bool safeToExecute(AbstractStateType& state, Graph& graph, Node* node, bool igno
     case CallForwardVarargs:
     case ConstructForwardVarargs:
     case NewObject:
-    case NewGenerator:
-    case NewAsyncGenerator:
     case NewArray:
     case NewArrayWithSize:
     case NewArrayWithButterfly:
