@@ -99,10 +99,21 @@ WI.DOMNodeStyles = class DOMNodeStyles extends WI.Object
     static uniqueOrderedStyles(orderedStyles)
     {
         let uniqueOrderedStyles = [];
+        let seenRuleIds = new Set;
 
         for (let style of orderedStyles) {
             let rule = style.ownerRule;
             if (!rule) {
+                uniqueOrderedStyles.push(style);
+                continue;
+            }
+
+            let ruleId = rule.id;
+            if (ruleId) {
+                let ruleKey = `${ruleId.styleSheetId}:${ruleId.ordinal}`;
+                if (seenRuleIds.has(ruleKey))
+                    continue;
+                seenRuleIds.add(ruleKey);
                 uniqueOrderedStyles.push(style);
                 continue;
             }
