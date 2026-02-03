@@ -1,5 +1,7 @@
 
 PASS Validate readable default behavior
+PASS Validate readable multiple values
+PASS Cancel should reject if reason is not serializable
 PASS Validate readable invalid type
 PASS Validate readable invalid object messages
 PASS Validate writable default behavior

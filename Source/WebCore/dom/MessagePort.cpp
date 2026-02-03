@@ -66,6 +66,7 @@ void MessagePort::setMessageHandler(MessageHandler&& messageHandler)
 {
     ASSERT(!m_messageHandler);
     m_messageHandler = WTF::move(messageHandler);
+    start();
 }
 
 bool MessagePort::isMessagePortAliveForTesting(const MessagePortIdentifier& identifier)
@@ -287,7 +288,7 @@ void MessagePort::dispatchMessages()
             if (pendingActivity->object().m_messageHandler) {
                 ASSERT(message.transferredPorts.isEmpty());
                 pendingActivity->object().m_messageHandler(*JSC::jsCast<JSDOMGlobalObject*>(globalObject), message.message.releaseNonNull().get());
-                return;
+                continue;
             }
 
             auto ports = MessagePort::entanglePorts(*context, WTF::move(message.transferredPorts));

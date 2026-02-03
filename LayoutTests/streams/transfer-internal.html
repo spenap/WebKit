@@ -5,9 +5,6 @@
 function createReadableStreamAndPort()
 {
     const channel = new MessageChannel();
-    channel.port1.start();
-    channel.port2.start();
-
     const stream = internals.readableStreamFromMessagePort(channel.port2);
     return { stream, port: channel.port1 };
 }
@@ -51,6 +48,43 @@ promise_test(async t => {
     port.postMessage({ type:"close" });
     await reader.closed;
 }, 'Validate readable default behavior');
+
+promise_test(async t => {
+    if (!window.internals)
+        return;
+
+    const { stream, port } = createReadableStreamAndPort();
+    const reader = stream.getReader();
+
+    const channel = new MessageChannel();
+    channel.port1.postMessage(port, [port]);
+    const newPort = await new Promise(resolve => channel.port2.onmessage = e => resolve(e.data));
+
+    newPort.postMessage({ type:"chunk", value:"test1" });
+    newPort.postMessage({ type:"chunk", value:"test2" });
+    newPort.postMessage({ type:"chunk", value:"test3" });
+    newPort.postMessage({ type:"close" });
+
+    let chunk = await reader.read();
+    assert_equals(chunk.value, "test1");
+
+    chunk = await reader.read();
+    assert_equals(chunk.value, "test2");
+
+    chunk = await reader.read();
+    assert_equals(chunk.value, "test3");
+
+    await reader.closed;
+}, 'Validate readable multiple values');
+
+promise_test(async t => {
+    if (!window.internals)
+        return;
+
+    const { stream, port } = createReadableStreamAndPort();
+    const reader = stream.getReader();
+    await promise_rejects_js(t, TypeError, stream.cancel(stream));
+}, 'Cancel should reject if reason is not serializable');
 
 promise_test(async t => {
     if (!window.internals)

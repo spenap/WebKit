@@ -31,6 +31,7 @@
 #include "MessagePort.h"
 #include "ReadableStream.h"
 #include "ReadableStreamSource.h"
+#include "SerializedScriptValue.h"
 #include "StructuredSerializeOptions.h"
 #include "WritableStream.h"
 #include "WritableStreamSink.h"
@@ -96,7 +97,7 @@ public:
             auto catchScope = DECLARE_TOP_EXCEPTION_SCOPE(vm);
 
             bool didFail = false;
-            auto deserialized = value.deserialize(globalObject, &globalObject, { }, SerializationErrorMode::NonThrowing, &didFail);
+            auto deserialized = value.deserialize(globalObject, &globalObject, SerializationErrorMode::NonThrowing, &didFail);
             bool isSuccess = [&] {
                 if (catchScope.exception() || didFail) [[unlikely]]
                     return false;
@@ -141,8 +142,7 @@ private:
 
         String type = JSC::asString(typeValue)->tryGetValue();
         if (type == "chunk"_s) {
-            if (controller().enqueue(value))
-                pullFinished();
+            controller().enqueue(value);
             return true;
         }
         if (type == "close"_s) {
@@ -185,16 +185,21 @@ private:
             return;
 
         packAndPostMessage(*JSC::jsCast<JSDOMGlobalObject*>(globalObject), m_port.get(), "pull"_s, JSC::jsUndefined());
+        pullFinished();
     }
     void doCancel(JSC::JSValue reason) final
     {
-        // FIXME: Reject cancel promise in case of error.
         RefPtr context = m_port->scriptExecutionContext();
         auto* globalObject = context ? context->globalObject() : nullptr;
         if (!globalObject)
             return;
 
-        packAndPostMessageHandlingError(*JSC::jsCast<JSDOMGlobalObject*>(globalObject), m_port.get(), "error"_s, reason);
+        auto result = packAndPostMessageHandlingError(*JSC::jsCast<JSDOMGlobalObject*>(globalObject), m_port.get(), "error"_s, reason);
+        if (result.hasException())
+            cancelFinished(result.releaseException());
+        else
+            cancelFinished();
+
         m_port->close();
     }
 
@@ -203,7 +208,7 @@ private:
 
 ExceptionOr<Ref<ReadableStream>> setupCrossRealmTransformReadable(JSDOMGlobalObject& globalObject, MessagePort& port)
 {
-    return ReadableStream::create(globalObject, CrossRealmReadableStreamSource::create(port));
+    return ReadableStream::create(globalObject, CrossRealmReadableStreamSource::create(port), 0);
 }
 
 class CrossRealmWritableStreamSink final : public WritableStreamSink, public CanMakeWeakPtr<CrossRealmWritableStreamSink> {
