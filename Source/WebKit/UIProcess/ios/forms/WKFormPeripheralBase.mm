@@ -91,14 +91,15 @@
     }
     if (!event._isKeyDown)
         return NO;
-    UIPhysicalKeyboardEvent *keyEvent = (UIPhysicalKeyboardEvent *)event;
-    if (keyEvent._inputFlags & kUIKeyboardInputModifierFlagsChanged)
+    // FIXME: `checked_objc_cast<UIPhysicalKeyboardEvent>(event)` causes a linking error.
+    SUPPRESS_MEMORY_UNSAFE_CAST RetainPtr keyEvent = (UIPhysicalKeyboardEvent *)event;
+    if (keyEvent.get()._inputFlags & kUIKeyboardInputModifierFlagsChanged)
         return NO;
-    if (_editing && (keyEvent._keyCode == kHIDUsage_KeyboardEscape || [keyEvent._unmodifiedInput isEqualToString:UIKeyInputEscape])) {
+    if (_editing && (keyEvent.get()._keyCode == kHIDUsage_KeyboardEscape || [keyEvent.get()._unmodifiedInput isEqualToString:UIKeyInputEscape])) {
         [_view accessoryDone];
         return YES;
     }
-    if (!_editing && keyEvent._keyCode == kHIDUsage_KeyboardSpacebar) {
+    if (!_editing && keyEvent.get()._keyCode == kHIDUsage_KeyboardSpacebar) {
         [_view accessoryOpen];
         return YES;
     }

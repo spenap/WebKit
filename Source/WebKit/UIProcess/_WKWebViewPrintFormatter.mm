@@ -68,9 +68,7 @@
 
 - (WKWebView *)_webView
 {
-    UIView *view = self.view;
-    ASSERT([view isKindOfClass:[WKWebView class]]);
-    return static_cast<WKWebView *>(view);
+    return checked_objc_cast<WKWebView>(self.view);
 }
 
 - (BOOL)_shouldDrawUsingBitmap

@@ -72,9 +72,9 @@
     auto externalDelegate = _externalDelegate.get();
     NSMethodSignature *signature = [super methodSignatureForSelector:aSelector];
     if (!signature)
-        signature = [(NSObject *)_internalDelegate methodSignatureForSelector:aSelector];
+        signature = [static_cast<NSObject *>(_internalDelegate) methodSignatureForSelector:aSelector];
     if (!signature)
-        signature = [(NSObject *)externalDelegate.get() methodSignatureForSelector:aSelector];
+        signature = [static_cast<NSObject *>(externalDelegate.get()) methodSignatureForSelector:aSelector];
     return signature;
 }
 
@@ -223,16 +223,16 @@ static BOOL shouldForwardScrollViewDelegateMethodToExternalDelegate(SEL selector
 
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRequireFailureOfGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer
 {
-    if ([otherGestureRecognizer isKindOfClass:WKDeferringGestureRecognizer.class])
-        return [(WKDeferringGestureRecognizer *)otherGestureRecognizer shouldDeferGestureRecognizer:gestureRecognizer];
+    if (RetainPtr otherDeferringGestureRecognizer = dynamic_objc_cast<WKDeferringGestureRecognizer>(otherGestureRecognizer))
+        return [otherDeferringGestureRecognizer shouldDeferGestureRecognizer:gestureRecognizer];
 
     return NO;
 }
 
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldBeRequiredToFailByGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer
 {
-    if ([gestureRecognizer isKindOfClass:WKDeferringGestureRecognizer.class])
-        return [(WKDeferringGestureRecognizer *)gestureRecognizer shouldDeferGestureRecognizer:otherGestureRecognizer];
+    if (RetainPtr deferringGestureRecognizer = dynamic_objc_cast<WKDeferringGestureRecognizer>(gestureRecognizer))
+        return [deferringGestureRecognizer shouldDeferGestureRecognizer:otherGestureRecognizer];
 
     return NO;
 }

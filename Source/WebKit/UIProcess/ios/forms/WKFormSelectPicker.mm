@@ -650,19 +650,19 @@ static constexpr auto removeLineLimitForChildrenMenuOption = static_cast<UIMenuO
     for (UIMenuElement *menuElement in menuElements) {
         if ([menuElement isKindOfClass:UIAction.class]) {
             if (currentIndex == optionIndex)
-                return (UIAction *)menuElement;
+                return checked_objc_cast<UIAction>(menuElement);
 
-            currentIndex++;
+            ++currentIndex;
             continue;
         }
 
-        UIMenu *groupedMenu = (UIMenu *)menuElement;
-        NSUInteger numGroupedOptions = groupedMenu.children.count;
+        RetainPtr groupedMenu = checked_objc_cast<UIMenu>(menuElement);
+        NSUInteger numGroupedOptions = [groupedMenu children].count;
 
         if (currentIndex + numGroupedOptions <= (NSUInteger)optionIndex)
             currentIndex += numGroupedOptions;
         else
-            return (UIAction *)[groupedMenu.children objectAtIndex:(groupedMenu.children.count - numGroupedOptions) + (optionIndex - currentIndex)];
+            return checked_objc_cast<UIAction>([[groupedMenu children] objectAtIndex:([groupedMenu children].count - numGroupedOptions) + (optionIndex - currentIndex)]);
     }
 
     return nil;

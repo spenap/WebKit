@@ -310,8 +310,8 @@ void ScrollingTreeScrollingNodeDelegateIOS::commitStateBeforeChildren(const Scro
 
 void ScrollingTreeScrollingNodeDelegateIOS::updateScrollViewForOverscrollBehavior(UIScrollView *scrollView, const WebCore::OverscrollBehavior horizontalOverscrollBehavior, WebCore::OverscrollBehavior verticalOverscrollBehavior, AllowOverscrollToPreventScrollPropagation allowPropogation)
 {
-    if ([scrollView isKindOfClass:[WKScrollView class]])
-        [(WKScrollView*)scrollView _setBouncesInternal:horizontalOverscrollBehavior != WebCore::OverscrollBehavior::None vertical: verticalOverscrollBehavior != WebCore::OverscrollBehavior::None];
+    if (RetainPtr wkScrollView = dynamic_objc_cast<WKScrollView>(scrollView))
+        [wkScrollView _setBouncesInternal:horizontalOverscrollBehavior != WebCore::OverscrollBehavior::None vertical: verticalOverscrollBehavior != WebCore::OverscrollBehavior::None];
     else {
         scrollView.bouncesHorizontally = horizontalOverscrollBehavior != OverscrollBehavior::None;
         scrollView.bouncesVertically = verticalOverscrollBehavior != OverscrollBehavior::None;

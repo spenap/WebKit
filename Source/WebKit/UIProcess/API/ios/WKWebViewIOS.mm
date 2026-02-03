@@ -4170,9 +4170,7 @@ static bool isLockdownModeWarningNeeded()
 
 - (_WKWebViewPrintFormatter *)_webViewPrintFormatter
 {
-    UIViewPrintFormatter *viewPrintFormatter = self.viewPrintFormatter;
-    ASSERT([viewPrintFormatter isKindOfClass:[_WKWebViewPrintFormatter class]]);
-    return (_WKWebViewPrintFormatter *)viewPrintFormatter;
+    return checked_objc_cast<_WKWebViewPrintFormatter>(self.viewPrintFormatter);
 }
 
 - (_WKDragInteractionPolicy)_dragInteractionPolicy

@@ -120,7 +120,7 @@
 }
 
 - (CALayerHost *)layerHost {
-    return (CALayerHost *)[self layer];
+    return checked_objc_cast<CALayerHost>([self layer]);
 }
 
 - (BOOL)clipsToBounds {
@@ -985,7 +985,7 @@ RetainPtr<WKVideoView> VideoPresentationManagerProxy::createViewWithID(PlaybackS
 
         model->setVideoDimensions(nativeSize);
 
-        RetainPtr playerLayer { (WebAVPlayerLayer *)[playerView layer] };
+        RetainPtr playerLayer { checked_objc_cast<WebAVPlayerLayer>([playerView layer]) };
         [playerLayer setVideoDimensions:nativeSize];
         [playerLayer setPresentationModel:model.ptr()];
         [playerLayer setVideoSublayer:[view layer]];

@@ -1063,7 +1063,7 @@ void WebPage::completeSyntheticClick(std::optional<WebCore::FrameIdentifier> fra
 
 #if ENABLE(PDF_PLUGIN)
     if (RefPtr pluginElement = dynamicDowncast<HTMLPlugInElement>(nodeRespondingToClick)) {
-        if (RefPtr pluginWidget = static_cast<PluginView*>(pluginElement->pluginWidget()))
+        if (RefPtr pluginWidget = downcast<PluginView>(pluginElement->pluginWidget()))
             pluginWidget->handleSyntheticClick(WTF::move(releaseEvent));
     }
 #endif

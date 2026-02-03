@@ -552,8 +552,10 @@ void RemoteLayerTreePropertyApplier::applyPropertiesToLayer(CALayer *layer, Remo
     if (properties.changedProperties & LayerChange::VideoGravityChanged) {
         auto *playerLayer = layer;
 #if PLATFORM(IOS_FAMILY)
-        if (layerTreeNode && [layerTreeNode->uiView() isKindOfClass:WKVideoView.class])
-            playerLayer = [(WKVideoView*)layerTreeNode->uiView() playerLayer];
+        if (layerTreeNode) {
+            if (RetainPtr videoView = dynamic_objc_cast<WKVideoView>(layerTreeNode->uiView()))
+                playerLayer = [videoView playerLayer];
+        }
 #endif
         ASSERT([playerLayer respondsToSelector:@selector(setVideoGravity:)]);
         if (RetainPtr webAVPlayerLayer = dynamic_objc_cast<WebAVPlayerLayer>(playerLayer))

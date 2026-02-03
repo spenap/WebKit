@@ -206,18 +206,18 @@ struct WKWebViewState {
 
         webView._obscuredInsetEdgesAffectedBySafeArea = _savedObscuredInsetEdgesAffectedBySafeArea;
 
-        auto* scrollView = (WKScrollView *)[webView scrollView];
+        RetainPtr scrollView = checked_objc_cast<WKScrollView>([webView scrollView]);
         if (_savedContentInsetWasExternallyOverridden)
-            scrollView.contentInset = _savedEdgeInset;
+            scrollView.get().contentInset = _savedEdgeInset;
         else
             [scrollView _resetContentInset];
 
-        scrollView.contentOffset = _savedContentOffset;
-        scrollView.scrollIndicatorInsets = _savedScrollIndicatorInsets;
+        scrollView.get().contentOffset = _savedContentOffset;
+        scrollView.get().scrollIndicatorInsets = _savedScrollIndicatorInsets;
 
 #if !PLATFORM(WATCHOS) && !PLATFORM(APPLETV)
         if (_savedContentInsetAdjustmentBehaviorWasExternallyOverridden)
-            scrollView.contentInsetAdjustmentBehavior = _savedContentInsetAdjustmentBehavior;
+            scrollView.get().contentInsetAdjustmentBehavior = _savedContentInsetAdjustmentBehavior;
         else
             [webView _resetScrollViewInsetAdjustmentBehavior];
 #endif
@@ -237,7 +237,7 @@ struct WKWebViewState {
             page->setForceAlwaysUserScalable(_savedForceAlwaysUserScalable);
         }
         [webView _setViewScale:_savedViewScale];
-        scrollView.bouncesZoom = _savedBouncesZoom;
+        scrollView.get().bouncesZoom = _savedBouncesZoom;
         webView._minimumEffectiveDeviceWidth = _savedMinimumEffectiveDeviceWidth;
     }
 

@@ -95,17 +95,14 @@ UIScrollView *RemoteScrollingCoordinatorProxyIOS::scrollViewForScrollingNodeID(s
 {
     auto* treeNode = scrollingTree().nodeForID(nodeID);
 
-    // All ScrollingTreeOverflowScrollingNodes are ScrollingTreeOverflowScrollingNodeIOS on iOS.
-    if (RefPtr overflowScrollingNode = dynamicDowncast<ScrollingTreeOverflowScrollingNode>(treeNode))
-        return static_cast<ScrollingTreeOverflowScrollingNodeIOS*>(overflowScrollingNode.get())->scrollView();
+    if (RefPtr overflowScrollingNode = dynamicDowncast<ScrollingTreeOverflowScrollingNodeIOS>(treeNode))
+        return overflowScrollingNode->scrollView();
 
-    // All ScrollingTreeFrameScrollingNodes are ScrollingTreeFrameScrollingNodeRemoteIOS on iOS.
-    if (RefPtr frameScrollingNode = dynamicDowncast<ScrollingTreeFrameScrollingNode>(treeNode))
-        return static_cast<ScrollingTreeFrameScrollingNodeRemoteIOS*>(frameScrollingNode.get())->scrollView();
+    if (RefPtr frameScrollingNode = dynamicDowncast<ScrollingTreeFrameScrollingNodeRemoteIOS>(treeNode))
+        return frameScrollingNode->scrollView();
 
-    // All ScrollingTreePluginScrollingNodes are ScrollingTreePluginScrollingNodeIOS on iOS.
-    if (RefPtr pluginScrollingNode = dynamicDowncast<ScrollingTreePluginScrollingNode>(treeNode))
-        return static_cast<ScrollingTreePluginScrollingNodeIOS*>(pluginScrollingNode.get())->scrollView();
+    if (RefPtr pluginScrollingNode = dynamicDowncast<ScrollingTreePluginScrollingNodeIOS>(treeNode))
+        return pluginScrollingNode->scrollView();
 
     return nil;
 }

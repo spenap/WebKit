@@ -1244,19 +1244,15 @@ static NSMutableArray<UIMenuElement *> *menuElementsFromDefaultActions(RetainPtr
     if (item.title.length)
         result[@"title"] = item.title;
 
-    if ([item isKindOfClass:UIMenu.class]) {
-        UIMenu *menu = (UIMenu *)item;
-
-        NSMutableArray *children = [NSMutableArray arrayWithCapacity:menu.children.count];
-        for (UIMenuElement *child in menu.children)
+    if (RetainPtr menu = dynamic_objc_cast<UIMenu>(item)) {
+        NSMutableArray *children = [NSMutableArray arrayWithCapacity:[menu children].count];
+        for (UIMenuElement *child in [menu children])
             [children addObject:[self _contentsOfContextMenuItem:child]];
         result[@"children"] = children;
     }
 
-    if ([item isKindOfClass:UIAction.class]) {
-        UIAction *action = (UIAction *)item;
-
-        if (action.state == UIMenuElementStateOn)
+    if (RetainPtr action = dynamic_objc_cast<UIAction>(item)) {
+        if ([action state] == UIMenuElementStateOn)
             result[@"checked"] = @YES;
     }
 

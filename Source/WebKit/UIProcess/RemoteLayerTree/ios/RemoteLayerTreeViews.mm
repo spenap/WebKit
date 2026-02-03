@@ -489,16 +489,16 @@ static Class scrollViewScrollIndicatorClassSingleton()
 
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRequireFailureOfGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer
 {
-    if ([otherGestureRecognizer isKindOfClass:WKDeferringGestureRecognizer.class])
-        return [(WKDeferringGestureRecognizer *)otherGestureRecognizer shouldDeferGestureRecognizer:gestureRecognizer];
+    if (RetainPtr otherDeferringGestureRecognizer = dynamic_objc_cast<WKDeferringGestureRecognizer>(otherGestureRecognizer))
+        return [otherDeferringGestureRecognizer shouldDeferGestureRecognizer:gestureRecognizer];
 
     return NO;
 }
 
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldBeRequiredToFailByGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer
 {
-    if ([gestureRecognizer isKindOfClass:WKDeferringGestureRecognizer.class])
-        return [(WKDeferringGestureRecognizer *)gestureRecognizer shouldDeferGestureRecognizer:otherGestureRecognizer];
+    if (RetainPtr deferringGestureRecognizer = dynamic_objc_cast<WKDeferringGestureRecognizer>(gestureRecognizer))
+        return [deferringGestureRecognizer shouldDeferGestureRecognizer:otherGestureRecognizer];
 
     return NO;
 }
