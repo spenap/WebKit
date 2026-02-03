@@ -42,6 +42,7 @@
 
 #if PLATFORM(COCOA)
 #include <wtf/BlockPtr.h>
+#include <wtf/WeakObjCPtr.h>
 #endif
 
 #if PLATFORM(GTK)
@@ -432,7 +433,7 @@ private:
 
     BlockPtr<void (CGRect)> m_didMoveSwipeSnapshotCallback;
 #elif PLATFORM(IOS_FAMILY)
-    UIView* m_liveSwipeView { nullptr };
+    WeakObjCPtr<UIView> m_liveSwipeView;
     RetainPtr<UIView> m_liveSwipeViewClippingView;
     RetainPtr<UIView> m_snapshotView;
     RetainPtr<UIView> m_transitionContainerView;

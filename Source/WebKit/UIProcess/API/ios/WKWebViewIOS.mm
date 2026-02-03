@@ -29,6 +29,7 @@
 #if PLATFORM(IOS_FAMILY)
 
 #import "APIFindClient.h"
+#import "DataDetectionResult.h"
 #import "FrontBoardServicesSPI.h"
 #import "ImageOptions.h"
 #import "LayerProperties.h"

@@ -224,7 +224,7 @@ void ViewGestureController::beginSwipeGesture(_UINavigationInteractiveTransition
             backForwardList.currentItem()->setSnapshot(currentViewHistoryItem->snapshot());
     }
 
-    CGRect liveSwipeViewFrame = [m_liveSwipeView frame];
+    CGRect liveSwipeViewFrame = [m_liveSwipeView.get() frame];
 
     RetainPtr<UIViewController> snapshotViewController = adoptNS([[UIViewController alloc] init]);
     m_snapshotView = adoptNS([[UIView alloc] initWithFrame:liveSwipeViewFrame]);
@@ -279,7 +279,7 @@ void ViewGestureController::beginSwipeGesture(_UINavigationInteractiveTransition
 
     [m_snapshotView setBackgroundColor:backgroundColor.get()];
     [m_snapshotView layer].contentsGravity = kCAGravityTopLeft;
-    [m_snapshotView layer].contentsScale = m_liveSwipeView.window.screen.scale;
+    [m_snapshotView layer].contentsScale = [m_liveSwipeView.get() window].screen.scale;
     [snapshotViewController setView:m_snapshotView.get()];
 
     m_transitionContainerView = adoptNS([[UIView alloc] initWithFrame:liveSwipeViewFrame]);
@@ -289,9 +289,9 @@ void ViewGestureController::beginSwipeGesture(_UINavigationInteractiveTransition
 
     [m_liveSwipeViewClippingView setClipsToBounds:YES];
 
-    [m_liveSwipeView.superview insertSubview:m_transitionContainerView.get() belowSubview:m_liveSwipeView];
+    [[m_liveSwipeView.get() superview] insertSubview:m_transitionContainerView.get() belowSubview:m_liveSwipeView.get().get()];
     [m_transitionContainerView addSubview:m_liveSwipeViewClippingView.get()];
-    [m_liveSwipeViewClippingView addSubview:m_liveSwipeView];
+    [m_liveSwipeViewClippingView addSubview:m_liveSwipeView.get().get()];
 
     RetainPtr<UIViewController> targettedViewController = adoptNS([[UIViewController alloc] init]);
     [targettedViewController setView:m_liveSwipeViewClippingView.get()];
@@ -380,7 +380,7 @@ void ViewGestureController::endSwipeGesture(WebBackForwardListItem* targetItem, 
     [context _setAnimator:nil];
     
     [[m_transitionContainerView superview] insertSubview:m_snapshotView.get() aboveSubview:m_transitionContainerView.get()];
-    [[m_transitionContainerView superview] insertSubview:m_liveSwipeView aboveSubview:m_transitionContainerView.get()];
+    [[m_transitionContainerView superview] insertSubview:m_liveSwipeView.get().get() aboveSubview:m_transitionContainerView.get()];
     [m_liveSwipeViewClippingView removeFromSuperview];
     m_liveSwipeViewClippingView = nullptr;
     [m_transitionContainerView removeFromSuperview];
