@@ -599,3 +599,55 @@ function checkTextAlternatives(axElement, { expected = [], unexpected = [] }) {
     return result;
 }
 
+// Keep walking the tree, calling the given elementTests on each element, until each returns true on at least one element.
+function waitForElements(elementTests) {
+    // Recursively searches all elements from element returns true if elementTests each pass on
+    // at least one element. The passes array is used to keep track of which tests have passed
+    // so far and doesn't need to be passed in.
+    function checkElementTests(element, elementTests, passes) {
+        if (!element || !element.role) {
+            return false;
+        }
+
+        if (passes === undefined) {
+            passes = Array(elementTests.length).fill(false);
+        }
+
+        for (let i = 0; i < elementTests.length; i++) {
+            if (!passes[i] && elementTests[i](element)) {
+                passes[i] = true;
+            }
+        }
+        const childrenCount = element.childrenCount;
+        for (let i = 0; i < childrenCount; i++) {
+            checkElementTests(element.childAtIndex(i), elementTests, passes);
+        }
+
+        // Return if all tests passed
+        return passes.every(Boolean);
+    }
+
+    return new Promise((resolve, reject) => {
+        // Schedule a timeout after 3 seconds if condition is never met.
+        let timeoutID = setTimeout(() => {
+            clearInterval(intervalID);
+            reject("Timed out");
+        }, 3000);
+
+        // Repeatedly poll until all elementTests pass or we time out.
+        let intervalID = setInterval(() => {
+            try {
+                let root = accessibilityController.rootElement;
+                if (checkElementTests(root, elementTests)) {
+                    clearTimeout(timeoutID);
+                    clearInterval(intervalID);
+                    resolve(true);
+                }
+            } catch (error) {
+                clearTimeout(timeoutID);
+                clearInterval(intervalID);
+                reject(error);
+            }
+        }, 0);
+    });
+}
