@@ -70,6 +70,7 @@
 #include "DocumentLoader.h"
 #include "DocumentMarkerController.h"
 #include "DocumentPage.h"
+#include "DocumentQuirks.h"
 #include "DocumentResourceLoader.h"
 #include "DocumentSyncClient.h"
 #include "DocumentSyncData.h"
@@ -148,6 +149,7 @@
 #include "PointerCaptureController.h"
 #include "PointerLockController.h"
 #include "ProgressTracker.h"
+#include "Quirks.h"
 #include "RTCController.h"
 #include "Range.h"
 #include "RemoteFrame.h"
@@ -5870,6 +5872,11 @@ bool Page::shouldAllowScriptAccess(const URL& url, const SecurityOrigin& topOrig
 
 bool Page::requiresScriptTrackingPrivacyProtections(const URL& scriptURL) const
 {
+    RefPtr localMainFrame = dynamicDowncast<LocalFrame>(m_mainFrame.get());
+    if (RefPtr document = localMainFrame ? localMainFrame->document() : nullptr) {
+        if (document->quirks().needsConsistentQueryParameterFilteringQuirk(scriptURL))
+            return true;
+    }
     if (!advancedPrivacyProtections().contains(AdvancedPrivacyProtections::ScriptTrackingPrivacy))
         return false;
 

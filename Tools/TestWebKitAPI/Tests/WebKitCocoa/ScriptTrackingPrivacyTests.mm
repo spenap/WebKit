@@ -158,7 +158,8 @@ static RetainPtr<TestWKWebView> setUpWebViewForFingerprintingTests(NSString *pag
     RetainPtr configuration = [WKWebViewConfiguration _test_configurationWithTestPlugInClassName:@"WebProcessPlugInWithInternals" configureJSCForTesting:YES];
     for (_WKFeature *feature in WKPreferences._features) {
         if ([feature.key isEqualToString:@"ScriptTrackingPrivacyProtectionsEnabled"]
-            || [feature.key isEqualToString:@"ScriptTrackingPrivacyNetworkRequestBlockingEnabled"])
+            || [feature.key isEqualToString:@"ScriptTrackingPrivacyNetworkRequestBlockingEnabled"]
+            || [feature.key isEqualToString:@"ConsistentQueryParameterFilteringQuirkEnabled"])
             [[configuration preferences] _setEnabled:YES forFeature:feature];
     }
 
@@ -296,6 +297,23 @@ TEST(ScriptTrackingPrivacyTests, QueryParameters)
 
     EXPECT_WK_STREQ("test://top-domain.org/index.html?uid=Hv9U23Hfco08", [webView stringByEvaluatingJavaScript:@"window.urlForPureScript"]);
     EXPECT_WK_STREQ("test://top-domain.org/index.html", [webView stringByEvaluatingJavaScript:@"window.urlForTaintedScript"]);
+}
+
+TEST(ScriptTrackingPrivacyTests, ConsistentQueryParameters)
+{
+    if (!supportsFingerprintingScriptRequests())
+        return;
+
+    auto simpleConsistentIndexHTML = makeStringByReplacingAll(simpleIndexHTML, "tainted.net"_s, "consistentQueryParameterFiltering.internal"_s);
+
+    RetainPtr webView = setUpWebViewForFingerprintingTests(@"test://top-domain.org/index.html?uid=Hv9U23Hfco08", @{
+        @"test://top-domain.org/index.html?uid=Hv9U23Hfco08" : simpleConsistentIndexHTML.createNSString().autorelease(),
+        @"test://pure.com/script.js" : @"window.urlForPureScript = document.URL;",
+        @"test://consistentQueryParameterFiltering.internal/script.js" : @"window.urlFor3PScript = document.URL;"
+    });
+
+    EXPECT_WK_STREQ("test://top-domain.org/index.html?uid=Hv9U23Hfco08", [webView stringByEvaluatingJavaScript:@"window.urlForPureScript"]);
+    EXPECT_WK_STREQ("test://top-domain.org/index.html", [webView stringByEvaluatingJavaScript:@"window.urlFor3PScript"]);
 }
 
 TEST(ScriptTrackingPrivacyTests, Canvas2D)

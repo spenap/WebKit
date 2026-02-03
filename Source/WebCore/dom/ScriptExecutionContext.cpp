@@ -39,6 +39,7 @@
 #include "DatabaseContext.h"
 #include "Document.h"
 #include "DocumentPage.h"
+#include "DocumentQuirks.h"
 #include "EmptyScriptExecutionContext.h"
 #include "ErrorEvent.h"
 #include "FontLoadRequest.h"
@@ -55,6 +56,7 @@
 #include "Page.h"
 #include "Performance.h"
 #include "PublicURLManager.h"
+#include "Quirks.h"
 #include "RTCDataChannelRemoteHandlerConnection.h"
 #include "RejectedPromiseTracker.h"
 #include "ResourceRequest.h"
@@ -1006,13 +1008,14 @@ bool ScriptExecutionContext::requiresScriptTrackingPrivacyProtection(ScriptTrack
     if (category == ScriptTrackingPrivacyCategory::NetworkRequests && !page->settings().scriptTrackingPrivacyNetworkRequestBlockingEnabled())
         return false;
 
-    if (page->shouldAllowScriptAccess(taintedURL, protect(topOrigin()), category))
+    bool shouldApplyConsistently = category == ScriptTrackingPrivacyCategory::QueryParameters && document->quirks().needsConsistentQueryParameterFilteringQuirk(taintedURL);
+    if (page->shouldAllowScriptAccess(taintedURL, protect(topOrigin()), category) && !shouldApplyConsistently)
         return false;
 
     if (!page->settings().scriptTrackingPrivacyLoggingEnabled())
         return true;
 
-    if (includeConsoleLog == IncludeConsoleLog::No || !page->reportScriptTrackingPrivacy(taintedURL, category))
+    if ((includeConsoleLog == IncludeConsoleLog::No || !page->reportScriptTrackingPrivacy(taintedURL, category)) && !shouldApplyConsistently)
         return true;
 
     addConsoleMessage(MessageSource::JS, MessageLevel::Info, makeLogMessage(taintedURL, category));
