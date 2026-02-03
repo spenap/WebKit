@@ -6546,6 +6546,55 @@ TEST(SiteIsolation, SharedProcessWithResourceLoadStatistics)
     });
 }
 
+TEST(SiteIsolation, PartitionWebProcessCache)
+{
+    HTTPServer server({
+        { "/empty"_s, { ""_s } },
+        { "/first"_s, { "<!DOCTYPE html><iframe src='https://webkit.org/webkit'></iframe>"_s } },
+        { "/second"_s, { "<!DOCTYPE html><iframe src='https://example.com/empty'></iframe>"_s } },
+        { "/webkit"_s, { "webkit"_s } },
+    }, HTTPServer::Protocol::HttpsProxy);
+
+    auto [webView, navigationDelegate] = siteIsolatedViewWithSharedProcess(server, EnableProcessCache::Yes);
+    [webView loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"https://example.com/first"]]];
+    [navigationDelegate waitForDidFinishNavigation];
+
+    checkFrameTreesInProcesses(webView.get(), {
+        {
+            "https://example.com"_s,
+            { { RemoteFrame } }
+        },
+        {
+            RemoteFrame,
+            { { "https://webkit.org"_s } }
+        },
+    });
+    auto mainFrameProcess = [webView mainFrame].info._processIdentifier;
+    auto childFrameProcess = [webView mainFrame].childFrames[0].info._processIdentifier;
+    EXPECT_NE(childFrameProcess, mainFrameProcess);
+
+    [webView loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"https://example2.com/second"]]];
+    [navigationDelegate waitForDidFinishNavigation];
+
+    checkFrameTreesInProcesses(webView.get(), {
+        {
+            "https://example2.com"_s,
+            { { RemoteFrame } }
+        },
+        {
+            RemoteFrame,
+            { { "https://example.com"_s } }
+        },
+    });
+    auto mainFrameProcessB = [webView mainFrame].info._processIdentifier;
+    auto childFrameProcessB = [webView mainFrame].childFrames[0].info._processIdentifier;
+    EXPECT_NE(mainFrameProcessB, mainFrameProcess);
+    EXPECT_NE(childFrameProcessB, childFrameProcess);
+
+    EXPECT_NE(mainFrameProcess, childFrameProcessB);
+}
+
+
 #if PLATFORM(MAC)
 
 TEST(SiteIsolation, SharedProcessAfterClick)

@@ -81,7 +81,7 @@ void BrowsingContextGroup::sharedProcessForSite(WebsiteDataStore& websiteDataSto
             return completionHandler(frameProcess.get());
         }
 
-        Ref process = protect(pageConfiguration->processPool())->processForSite(websiteDataStore.get(), WebProcessPool::IsSharedProcess::Yes, site, mainFrameSite, domainsWithUserInteraction, lockdownMode, enhancedSecurity, pageConfiguration.get(), ProcessSwapDisposition::Other);
+        Ref process = protect(pageConfiguration->processPool())->processForSite(websiteDataStore.get(), WebProcessProxy::IsolatedProcessType::Shared, site, mainFrameSite, domainsWithUserInteraction, lockdownMode, enhancedSecurity, pageConfiguration.get(), ProcessSwapDisposition::Other);
         ASSERT(!process->isInProcessCache());
         Ref frameProcess = FrameProcess::create(process, protectedThis, std::nullopt, mainFrameSite, preferences, LoadedWebArchive::No, BrowsingContextGroupUpdate::AddProcessAndInjectBrowsingContext);
         ASSERT(frameProcess->isSharedProcess());

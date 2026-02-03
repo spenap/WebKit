@@ -1270,9 +1270,9 @@ void WebProcessPool::disconnectProcess(WebProcessProxy& process)
 #endif
 }
 
-Ref<WebProcessProxy> WebProcessPool::processForSite(WebsiteDataStore& websiteDataStore, IsSharedProcess isSharedProcess, const std::optional<Site>& site, const std::optional<Site>& mainFrameSite, const HashSet<RegistrableDomain>& isolatedDomains, WebProcessProxy::LockdownMode lockdownMode, EnhancedSecurity enhancedSecurity, const API::PageConfiguration& pageConfiguration, ProcessSwapDisposition processSwapDisposition)
+Ref<WebProcessProxy> WebProcessPool::processForSite(WebsiteDataStore& websiteDataStore, WebProcessProxy::IsolatedProcessType isolatedProcessType, const std::optional<Site>& site, const std::optional<Site>& mainFrameSite, const HashSet<RegistrableDomain>& isolatedDomains, WebProcessProxy::LockdownMode lockdownMode, EnhancedSecurity enhancedSecurity, const API::PageConfiguration& pageConfiguration, ProcessSwapDisposition processSwapDisposition)
 {
-    if (isSharedProcess == IsSharedProcess::Yes) {
+    if (isolatedProcessType == WebProcessProxy::IsolatedProcessType::Shared) {
         ASSERT(mainFrameSite);
         if (RefPtr process = webProcessCache().takeSharedProcess(*mainFrameSite, websiteDataStore, lockdownMode, enhancedSecurity, pageConfiguration)) {
             if (process->sharedProcessDomains().intersectionWith(isolatedDomains).isEmpty()) {
@@ -1285,7 +1285,7 @@ Ref<WebProcessProxy> WebProcessPool::processForSite(WebsiteDataStore& websiteDat
         }
     } else if (site && !site->isEmpty() && processSwapDisposition != ProcessSwapDisposition::COOP) {
         // We don't reuse cached processess because the process cache is per site, whereas COOP swaps are based on origin.
-        if (RefPtr process = webProcessCache().takeProcess(*site, websiteDataStore, lockdownMode, enhancedSecurity, pageConfiguration)) {
+        if (RefPtr process = webProcessCache().takeProcess(*site, isolatedProcessType, websiteDataStore, lockdownMode, enhancedSecurity, pageConfiguration)) {
             WEBPROCESSPOOL_RELEASE_LOG(ProcessSwapping, "processForSite: Using WebProcess from WebProcess cache (process=%p, PID=%i)", process.get(), process->processID());
             ASSERT(m_processes.containsIf([&](auto& item) { return item.ptr() == process; }));
             return process.releaseNonNull();
@@ -1304,6 +1304,7 @@ Ref<WebProcessProxy> WebProcessPool::processForSite(WebsiteDataStore& websiteDat
         if (site && !site->isEmpty())
             tryPrewarmWithDomainInformation(*process, site->domain());
         ASSERT(m_processes.containsIf([&](auto& item) { return item.ptr() == process; }));
+        process->setIsolatedProcessType(isolatedProcessType);
         return process.releaseNonNull();
     }
 
@@ -1325,7 +1326,9 @@ Ref<WebProcessProxy> WebProcessPool::processForSite(WebsiteDataStore& websiteDat
         }
     }
     auto enableWebAssemblyDebugger = protect(pageConfiguration.preferences())->webAssemblyDebuggerEnabled() ? WebProcessProxy::EnableWebAssemblyDebugger::Yes : WebProcessProxy::EnableWebAssemblyDebugger::No;
-    return createNewWebProcess(&websiteDataStore, lockdownMode, enhancedSecurity, enableWebAssemblyDebugger);
+    Ref process = createNewWebProcess(&websiteDataStore, lockdownMode, enhancedSecurity, enableWebAssemblyDebugger);
+    process->setIsolatedProcessType(isolatedProcessType);
+    return process;
 }
 
 Ref<WebUserContentControllerProxy> WebProcessPool::userContentControllerForRemoteWorkers()
@@ -1373,7 +1376,7 @@ Ref<WebPageProxy> WebProcessPool::createWebPage(PageClient& pageClient, Ref<API:
         }
     } else {
         WEBPROCESSPOOL_RELEASE_LOG(Process, "createWebPage: Not delaying WebProcess launch");
-        process = processForSite(protect(pageConfiguration->websiteDataStore()), IsSharedProcess::No, std::nullopt, std::nullopt, { }, lockdownMode, enhancedSecurity, pageConfiguration, WebCore::ProcessSwapDisposition::None);
+        process = processForSite(protect(pageConfiguration->websiteDataStore()), WebProcessProxy::IsolatedProcessType::MainFrame, std::nullopt, std::nullopt, { }, lockdownMode, enhancedSecurity, pageConfiguration, WebCore::ProcessSwapDisposition::None);
     }
 
     Ref userContentController = pageConfiguration->userContentController();
@@ -2157,7 +2160,7 @@ unsigned WebProcessPool::prewarmedProcessCountLimit() const
     return m_hasUsedSiteIsolation ? 2 : 1;
 }
 
-void WebProcessPool::processForNavigation(WebPageProxy& page, WebFrameProxy& frame, const API::Navigation& navigation, const URL& sourceURL, BrowsingContextGroup& browsingContextGroup, IsSharedProcess isSharedProcess, const Site& mainFrameSite, ProcessSwapRequestedByClient processSwapRequestedByClient, WebProcessProxy::LockdownMode lockdownMode, EnhancedSecurity enhancedSecurity, LoadedWebArchive loadedWebArchive, const FrameInfoData& frameInfo, Ref<WebsiteDataStore>&& dataStore, CompletionHandler<void(Ref<WebProcessProxy>&&, SuspendedPageProxy*, ASCIILiteral)>&& completionHandler)
+void WebProcessPool::processForNavigation(WebPageProxy& page, WebFrameProxy& frame, const API::Navigation& navigation, const URL& sourceURL, BrowsingContextGroup& browsingContextGroup, WebProcessProxy::IsolatedProcessType isolatedProcessType, const Site& mainFrameSite, ProcessSwapRequestedByClient processSwapRequestedByClient, WebProcessProxy::LockdownMode lockdownMode, EnhancedSecurity enhancedSecurity, LoadedWebArchive loadedWebArchive, const FrameInfoData& frameInfo, Ref<WebsiteDataStore>&& dataStore, CompletionHandler<void(Ref<WebProcessProxy>&&, SuspendedPageProxy*, ASCIILiteral)>&& completionHandler)
 {
     Site site { navigation.currentRequest().url() };
 
@@ -2190,8 +2193,8 @@ void WebProcessPool::processForNavigation(WebPageProxy& page, WebFrameProxy& fra
         }
     }
 
-    ASSERT(isSharedProcess == IsSharedProcess::No);
-    auto [process, suspendedPage, reason] = processForNavigationInternal(page, navigation, sourceProcess.copyRef(), sourceURL, isSharedProcess, mainFrameSite, processSwapRequestedByClient, lockdownMode, enhancedSecurity, frameInfo, dataStore.copyRef());
+    ASSERT(isolatedProcessType != WebProcessProxy::IsolatedProcessType::Shared);
+    auto [process, suspendedPage, reason] = processForNavigationInternal(page, navigation, sourceProcess.copyRef(), sourceURL, isolatedProcessType, mainFrameSite, processSwapRequestedByClient, lockdownMode, enhancedSecurity, frameInfo, dataStore.copyRef());
 
     // We are process-swapping so automatic process prewarming would be beneficial if the client has not explicitly enabled / disabled it.
     bool doingAnAutomaticProcessSwap = processSwapRequestedByClient == ProcessSwapRequestedByClient::No && process.ptr() != sourceProcess.ptr();
@@ -2216,21 +2219,21 @@ void WebProcessPool::processForNavigation(WebPageProxy& page, WebFrameProxy& fra
         return completionHandler(WTF::move(process), suspendedPage.get(), reason);
 
     ASSERT(process->state() != AuxiliaryProcessProxy::State::Terminated);
-    prepareProcessForNavigation(WTF::move(process), page, suspendedPage.get(), reason, isSharedProcess, site, mainFrameSite, navigation, lockdownMode, enhancedSecurity, loadedWebArchive, WTF::move(dataStore), WTF::move(completionHandler));
+    prepareProcessForNavigation(WTF::move(process), page, suspendedPage.get(), reason, isolatedProcessType, site, mainFrameSite, navigation, lockdownMode, enhancedSecurity, loadedWebArchive, WTF::move(dataStore), WTF::move(completionHandler));
 }
 
-void WebProcessPool::prepareProcessForNavigation(Ref<WebProcessProxy>&& process, WebPageProxy& page, SuspendedPageProxy* suspendedPage, ASCIILiteral reason, IsSharedProcess isSharedProcess, const Site& site, const Site& mainFrameSite,
+void WebProcessPool::prepareProcessForNavigation(Ref<WebProcessProxy>&& process, WebPageProxy& page, SuspendedPageProxy* suspendedPage, ASCIILiteral reason, WebProcessProxy::IsolatedProcessType isolatedProcessType, const Site& site, const Site& mainFrameSite,
     const API::Navigation& navigation, WebProcessProxy::LockdownMode lockdownMode, EnhancedSecurity enhancedSecurity, LoadedWebArchive loadedWebArchive, Ref<WebsiteDataStore>&& dataStore, CompletionHandler<void(Ref<WebProcessProxy>&&, SuspendedPageProxy*, ASCIILiteral)>&& completionHandler, unsigned previousAttemptsCount)
 {
     static constexpr unsigned maximumNumberOfAttempts = 3;
     auto preventProcessShutdownScope = process->shutdownPreventingScope();
-    auto callCompletionHandler = [this, protectedThis = Ref { *this }, completionHandler = WTF::move(completionHandler), page = protect(page), navigation = protect(navigation), process, preventProcessShutdownScope = WTF::move(preventProcessShutdownScope), reason, dataStore, lockdownMode, enhancedSecurity, loadedWebArchive, previousAttemptsCount, isSharedProcess, site, mainFrameSite](SuspendedPageProxy* suspendedPage) mutable {
+    auto callCompletionHandler = [this, protectedThis = Ref { *this }, completionHandler = WTF::move(completionHandler), page = protect(page), navigation = protect(navigation), process, preventProcessShutdownScope = WTF::move(preventProcessShutdownScope), reason, dataStore, lockdownMode, enhancedSecurity, loadedWebArchive, previousAttemptsCount, isolatedProcessType, site, mainFrameSite](SuspendedPageProxy* suspendedPage) mutable {
         // Since the IPC is asynchronous, make sure the destination process and suspended page are still valid.
         if (process->state() == AuxiliaryProcessProxy::State::Terminated && previousAttemptsCount < maximumNumberOfAttempts) {
             // The destination process crashed during the IPC to the network process, use a new process.
-            ASSERT(isSharedProcess == IsSharedProcess::No);
-            Ref fallbackProcess = processForSite(dataStore, isSharedProcess, site, mainFrameSite, { }, lockdownMode, enhancedSecurity, page->configuration(), WebCore::ProcessSwapDisposition::None);
-            prepareProcessForNavigation(WTF::move(fallbackProcess), page, nullptr, reason, isSharedProcess, site, mainFrameSite, navigation, lockdownMode, enhancedSecurity, loadedWebArchive, WTF::move(dataStore), WTF::move(completionHandler), previousAttemptsCount + 1);
+            ASSERT(isolatedProcessType != WebProcessProxy::IsolatedProcessType::Shared);
+            Ref fallbackProcess = processForSite(dataStore, isolatedProcessType, site, mainFrameSite, { }, lockdownMode, enhancedSecurity, page->configuration(), WebCore::ProcessSwapDisposition::None);
+            prepareProcessForNavigation(WTF::move(fallbackProcess), page, nullptr, reason, isolatedProcessType, site, mainFrameSite, navigation, lockdownMode, enhancedSecurity, loadedWebArchive, WTF::move(dataStore), WTF::move(completionHandler), previousAttemptsCount + 1);
             return;
         }
         if (suspendedPage) {
@@ -2248,15 +2251,15 @@ void WebProcessPool::prepareProcessForNavigation(Ref<WebProcessProxy>&& process,
     });
 }
 
-std::tuple<Ref<WebProcessProxy>, RefPtr<SuspendedPageProxy>, ASCIILiteral> WebProcessPool::processForNavigationInternal(WebPageProxy& page, const API::Navigation& navigation, Ref<WebProcessProxy>&& sourceProcess, const URL& pageSourceURL, IsSharedProcess isSharedProcess, const Site& mainFrameSite, ProcessSwapRequestedByClient processSwapRequestedByClient, WebProcessProxy::LockdownMode lockdownMode, EnhancedSecurity enhancedSecurity, const FrameInfoData& frameInfo, Ref<WebsiteDataStore>&& dataStore)
+std::tuple<Ref<WebProcessProxy>, RefPtr<SuspendedPageProxy>, ASCIILiteral> WebProcessPool::processForNavigationInternal(WebPageProxy& page, const API::Navigation& navigation, Ref<WebProcessProxy>&& sourceProcess, const URL& pageSourceURL, WebProcessProxy::IsolatedProcessType isolatedProcessType, const Site& mainFrameSite, ProcessSwapRequestedByClient processSwapRequestedByClient, WebProcessProxy::LockdownMode lockdownMode, EnhancedSecurity enhancedSecurity, const FrameInfoData& frameInfo, Ref<WebsiteDataStore>&& dataStore)
 {
     auto& targetURL = navigation.currentRequest().url();
     auto targetSite = Site { targetURL };
     Ref pageConfiguration = page.configuration();
 
     auto createNewProcess = [&] () -> Ref<WebProcessProxy> {
-        ASSERT(isSharedProcess == IsSharedProcess::No);
-        return processForSite(dataStore, isSharedProcess, targetSite, mainFrameSite, { }, lockdownMode, enhancedSecurity, pageConfiguration, WebCore::ProcessSwapDisposition::None);
+        ASSERT(isolatedProcessType != WebProcessProxy::IsolatedProcessType::Shared);
+        return processForSite(dataStore, isolatedProcessType, targetSite, mainFrameSite, { }, lockdownMode, enhancedSecurity, pageConfiguration, WebCore::ProcessSwapDisposition::None);
     };
 
     if (usesSingleWebProcess())

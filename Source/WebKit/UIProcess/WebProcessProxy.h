@@ -193,7 +193,15 @@ public:
     enum class LockdownMode : bool { Disabled, Enabled };
     enum class EnableWebAssemblyDebugger : bool { No, Yes };
 
+    enum class IsolatedProcessType : uint8_t {
+        Unspecified,
+        MainFrame,
+        SubFrame,
+        Shared
+    };
+
     static Ref<WebProcessProxy> create(WebProcessPool&, WebsiteDataStore*, LockdownMode, EnhancedSecurity, IsPrewarmed, WebCore::CrossOriginMode = WebCore::CrossOriginMode::Shared, ShouldLaunchProcess = ShouldLaunchProcess::Yes, EnableWebAssemblyDebugger = EnableWebAssemblyDebugger::No);
+
     static Ref<WebProcessProxy> createForRemoteWorkers(RemoteWorkerType, WebProcessPool&, WebCore::Site&&, WebsiteDataStore&, LockdownMode, EnhancedSecurity);
 
     ~WebProcessProxy();
@@ -229,6 +237,9 @@ public:
     const std::optional<WebCore::Site>& sharedProcessMainFrameSite() const { return m_sharedProcessMainFrameSite; }
     void addSharedProcessDomain(const WebCore::RegistrableDomain&);
     const HashSet<WebCore::RegistrableDomain>& sharedProcessDomains() const { return m_sharedProcessDomains; }
+
+    IsolatedProcessType isolatedProcessType() const { return m_isolatedProcessType; }
+    void setIsolatedProcessType(IsolatedProcessType isolatedProcessType) { m_isolatedProcessType = isolatedProcessType; }
 
     enum class WillShutDown : bool { No, Yes };
     void setIsInProcessCache(bool, WillShutDown = WillShutDown::No);
@@ -809,6 +820,8 @@ private:
     std::optional<WebCore::Site> m_sharedProcessMainFrameSite;
     HashSet<WebCore::RegistrableDomain> m_sharedProcessDomains;
     bool m_isInProcessCache { false };
+
+    IsolatedProcessType m_isolatedProcessType { IsolatedProcessType::Unspecified };
 
     enum class NoOrMaybe { No, Maybe } m_isResponsive;
     Vector<CompletionHandler<void(bool webProcessIsResponsive)>> m_isResponsiveCallbacks;

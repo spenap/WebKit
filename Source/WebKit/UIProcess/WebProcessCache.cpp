@@ -184,14 +184,15 @@ bool WebProcessCache::addProcess(Ref<CachedProcess>&& cachedProcess)
     RELEASE_ASSERT(process->site());
     RELEASE_ASSERT(!process->site()->isEmpty());
     auto site = *process->site();
+    auto isolatedProcessType = process->isolatedProcessType();
 
-    if (auto previousProcess = m_processesPerSite.take(site))
+    if (auto previousProcess = m_processesPerSite.take({ site, isolatedProcessType }))
         WEBPROCESSCACHE_RELEASE_LOG("addProcess: Evicting process from WebProcess cache because a new process was added for the same domain", previousProcess->process().processID());
 
     evictAtRandomIfNeeded();
 
-    WEBPROCESSCACHE_RELEASE_LOG("addProcess: Added process to WebProcess cache (size=%u, capacity=%u) %" SENSITIVE_LOG_STRING, cachedProcess->process().processID(), size() + 1, capacity(), site.toString().utf8().data());
-    m_processesPerSite.add(site, WTF::move(cachedProcess));
+    WEBPROCESSCACHE_RELEASE_LOG("addProcess: Added process to WebProcess cache (size=%u, capacity=%u, isolatedProcessType=%d) %" SENSITIVE_LOG_STRING, cachedProcess->process().processID(), size() + 1, capacity(), isolatedProcessType, site.toString().utf8().data());
+    m_processesPerSite.add({ site, isolatedProcessType }, WTF::move(cachedProcess));
 
     return true;
 }
@@ -208,7 +209,9 @@ void WebProcessCache::evictAtRandomIfNeeded()
         }
         if (!m_processesPerSite.isEmpty()) {
             auto it = m_processesPerSite.random();
-            if (RefPtr sharedProcess = m_sharedProcessesPerSite.take(it->key)) {
+            auto site = std::get<0>(it->key);
+            auto isolatedProcessType = std::get<1>(it->key);
+            if (RefPtr sharedProcess = m_sharedProcessesPerSite.take(site); sharedProcess && isolatedProcessType == WebProcessProxy::IsolatedProcessType::MainFrame) {
                 WEBPROCESSCACHE_RELEASE_LOG("addProcess: Evicting shared process from WebProcess cache because capacity was reached", sharedProcess->process().processID());
                 if (size() < capacity())
                     break;
@@ -219,11 +222,11 @@ void WebProcessCache::evictAtRandomIfNeeded()
     }
 }
 
-RefPtr<WebProcessProxy> WebProcessCache::takeProcess(const WebCore::Site& site, WebsiteDataStore& dataStore, WebProcessProxy::LockdownMode lockdownMode, EnhancedSecurity enhancedSecurity, const API::PageConfiguration& pageConfiguration)
+RefPtr<WebProcessProxy> WebProcessCache::takeProcess(const WebCore::Site& site, WebProcessProxy::IsolatedProcessType isolatedProcessType, WebsiteDataStore& dataStore, WebProcessProxy::LockdownMode lockdownMode, EnhancedSecurity enhancedSecurity, const API::PageConfiguration& pageConfiguration)
 {
-    auto it = m_processesPerSite.find(site);
+    auto it = m_processesPerSite.find({ site, isolatedProcessType });
     if (it == m_processesPerSite.end()) {
-        WEBPROCESSCACHE_RELEASE_LOG("takeProcess: did not find %" SENSITIVE_LOG_STRING, 0, site.toString().utf8().data());
+        WEBPROCESSCACHE_RELEASE_LOG("takeProcess: did not find %" SENSITIVE_LOG_STRING ", isolatedProcessType=%d", 0, site.toString().utf8().data(), isolatedProcessType);
         return nullptr;
     }
 
@@ -248,7 +251,7 @@ RefPtr<WebProcessProxy> WebProcessCache::takeProcess(const WebCore::Site& site, 
     }
 
     Ref process = m_processesPerSite.take(it)->takeProcess();
-    WEBPROCESSCACHE_RELEASE_LOG("takeProcess: Taking process from WebProcess cache (size=%u, capacity=%u, processWasTerminated=%d) %" SENSITIVE_LOG_STRING, process->processID(), size(), capacity(), process->wasTerminated(), site.toString().utf8().data());
+    WEBPROCESSCACHE_RELEASE_LOG("takeProcess: Taking process from WebProcess cache (size=%u, capacity=%u, processWasTerminated=%d, isolatedProcessType %d) %" SENSITIVE_LOG_STRING, process->processID(), size(), capacity(), process->wasTerminated(), isolatedProcessType, site.toString().utf8().data());
 
     ASSERT(!process->pageCount());
     ASSERT(!process->provisionalPageCount());
@@ -356,7 +359,7 @@ void WebProcessCache::clear()
 
 void WebProcessCache::clearAllProcessesForSession(PAL::SessionID sessionID)
 {
-    Vector<WebCore::Site> keysToRemove;
+    Vector<std::tuple<WebCore::Site, WebProcessProxy::IsolatedProcessType>> keysToRemove;
     for (auto& pair : m_processesPerSite) {
         RefPtr dataStore = pair.value->process().websiteDataStore();
         if (!dataStore || dataStore->sessionID() == sessionID) {
@@ -407,7 +410,8 @@ void WebProcessCache::removeProcess(WebProcessProxy& process, ShouldShutDownProc
     RefPtr<CachedProcess> cachedProcess;
 
     if (auto expectedSite = process.site()) {
-        auto it = m_processesPerSite.find(expectedSite.value());
+        auto isolatedProcessType = process.isolatedProcessType();
+        auto it = m_processesPerSite.find({ expectedSite.value(), isolatedProcessType });
         if (it != m_processesPerSite.end() && &it->value->process() == &process) {
             cachedProcess = WTF::move(it->value);
             m_processesPerSite.remove(it);

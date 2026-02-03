@@ -1381,7 +1381,7 @@ void WebPageProxy::launchProcess(const Site& site, ProcessLaunchReason reason)
         m_legacyMainFrameProcess = relatedPage->ensureRunningProcess();
         WEBPAGEPROXY_RELEASE_LOG(Loading, "launchProcess: Using process (process=%p, PID=%i) from related page", m_legacyMainFrameProcess.ptr(), m_legacyMainFrameProcess->processID());
     } else
-        m_legacyMainFrameProcess = processPool->processForSite(protect(websiteDataStore()), WebProcessPool::IsSharedProcess::No, site, site, { }, shouldEnableLockdownMode() ? WebProcessProxy::LockdownMode::Enabled : WebProcessProxy::LockdownMode::Disabled, currentEnhancedSecurityState(), m_configuration, WebCore::ProcessSwapDisposition::None);
+        m_legacyMainFrameProcess = processPool->processForSite(protect(websiteDataStore()), WebProcessProxy::IsolatedProcessType::MainFrame, site, site, { }, shouldEnableLockdownMode() ? WebProcessProxy::LockdownMode::Enabled : WebProcessProxy::LockdownMode::Disabled, currentEnhancedSecurityState(), m_configuration, WebCore::ProcessSwapDisposition::None);
 
     m_shouldReloadDueToCrashWhenVisible = false;
     m_isLockdownModeExplicitlySet = m_configuration->isLockdownModeExplicitlySet();
@@ -5340,7 +5340,8 @@ void WebPageProxy::receivedNavigationActionPolicyDecision(WebProcessProxy& proce
                 continueWithProcessForNavigation(sharedProcess->process(), nullptr, "Uses shared Web process"_s);
             return;
         }
-        protect(m_configuration->processPool())->processForNavigation(*this, frame, navigation, sourceURL, browsingContextGroup, WebProcessPool::IsSharedProcess::No, mainFrameSite, processSwapRequestedByClient, lockdownMode, enhancedSecurity, loadedWebArchive, frameInfo, WTF::move(websiteDataStore), WTF::move(continueWithProcessForNavigation));
+        auto isolatedProcessType = frame->isMainFrame() ? WebProcessProxy::IsolatedProcessType::MainFrame : WebProcessProxy::IsolatedProcessType::SubFrame;
+        protect(m_configuration->processPool())->processForNavigation(*this, frame, navigation, sourceURL, browsingContextGroup, isolatedProcessType, mainFrameSite, processSwapRequestedByClient, lockdownMode, enhancedSecurity, loadedWebArchive, frameInfo, WTF::move(websiteDataStore), WTF::move(continueWithProcessForNavigation));
     });
 }
 
@@ -9013,7 +9014,7 @@ void WebPageProxy::triggerBrowsingContextGroupSwitchForNavigation(WebCore::Navig
         auto enableWebAssemblyDebugger = protect(m_configuration->preferences())->webAssemblyDebuggerEnabled() ? WebProcessProxy::EnableWebAssemblyDebugger::Yes : WebProcessProxy::EnableWebAssemblyDebugger::No;
         processForNavigation = protect(m_configuration->processPool())->createNewWebProcess(protect(websiteDataStore()).ptr(), lockdownMode, enhancedSecurity, enableWebAssemblyDebugger, WebProcessProxy::IsPrewarmed::No, CrossOriginMode::Isolated);
     } else
-        processForNavigation = protect(m_configuration->processPool())->processForSite(protect(websiteDataStore()), WebProcessPool::IsSharedProcess::No, responseSite, responseSite, { }, lockdownMode, enhancedSecurity, m_configuration, WebCore::ProcessSwapDisposition::COOP);
+        processForNavigation = protect(m_configuration->processPool())->processForSite(protect(websiteDataStore()), WebProcessProxy::IsolatedProcessType::MainFrame, responseSite, responseSite, { }, lockdownMode, enhancedSecurity, m_configuration, WebCore::ProcessSwapDisposition::COOP);
 
     ASSERT(processForNavigation);
     auto domain = RegistrableDomain { navigation->currentRequest().url() };
