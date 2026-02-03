@@ -5001,6 +5001,7 @@ webkit.org/b/303547 fullscreen/full-screen-keyboard-lock-option-enabled.html [ P
 # Flaky soup_session_get_feature crash
 webkit.org/b/303677 imported/w3c/web-platform-tests/workers/constructors/SharedWorker/empty-name.html [ Pass Crash ]
 webkit.org/b/303677 imported/w3c/web-platform-tests/fetch/data-urls/base64.any.html [ Pass Crash ]
+webkit.org/b/303677 imported/w3c/web-platform-tests/close-watcher/user-activation/n-activate-preventDefault.html?CloseWatcher [ Pass Crash ]
 
 webkit.org/b/303855 fast/css/view-transitions-scrolling-position-fixed.html [ Pass ImageOnlyFailure ]
 webkit.org/b/303856 fast/scrolling/rtl-scrollbars-positioning.html [ Pass ImageOnlyFailure ]
