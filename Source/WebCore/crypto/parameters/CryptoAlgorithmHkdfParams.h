@@ -25,11 +25,11 @@
 
 #pragma once
 
-#include "BufferSource.h"
-#include "CryptoAlgorithmHkdfParamsInit.h"
-#include "CryptoAlgorithmParameters.h"
 #include <JavaScriptCore/JSObject.h>
 #include <JavaScriptCore/Strong.h>
+#include <WebCore/BufferSource.h>
+#include <WebCore/CryptoAlgorithmHkdfParamsInit.h>
+#include <WebCore/CryptoAlgorithmParameters.h>
 #include <wtf/Vector.h>
 
 namespace WebCore {

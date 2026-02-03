@@ -1107,6 +1107,36 @@ set(WebCore_PRIVATE_FRAMEWORK_HEADERS
 
     crypto/parameters/CryptoAlgorithmAesCbcCfbParams.h
     crypto/parameters/CryptoAlgorithmAesCbcCfbParamsInit.h
+    crypto/parameters/CryptoAlgorithmAesCtrParams.h
+    crypto/parameters/CryptoAlgorithmAesCtrParamsInit.h
+    crypto/parameters/CryptoAlgorithmAesGcmParams.h
+    crypto/parameters/CryptoAlgorithmAesGcmParamsInit.h
+    crypto/parameters/CryptoAlgorithmAesKeyParams.h
+    crypto/parameters/CryptoAlgorithmAesKeyParamsInit.h
+    crypto/parameters/CryptoAlgorithmEcKeyParams.h
+    crypto/parameters/CryptoAlgorithmEcKeyParamsInit.h
+    crypto/parameters/CryptoAlgorithmEcdhKeyDeriveParams.h
+    crypto/parameters/CryptoAlgorithmEcdhKeyDeriveParamsInit.h
+    crypto/parameters/CryptoAlgorithmEcdsaParams.h
+    crypto/parameters/CryptoAlgorithmEcdsaParamsInit.h
+    crypto/parameters/CryptoAlgorithmHkdfParams.h
+    crypto/parameters/CryptoAlgorithmHkdfParamsInit.h
+    crypto/parameters/CryptoAlgorithmHmacKeyParams.h
+    crypto/parameters/CryptoAlgorithmHmacKeyParamsInit.h
+    crypto/parameters/CryptoAlgorithmPbkdf2Params.h
+    crypto/parameters/CryptoAlgorithmPbkdf2ParamsInit.h
+    crypto/parameters/CryptoAlgorithmRsaHashedImportParams.h
+    crypto/parameters/CryptoAlgorithmRsaHashedImportParamsInit.h
+    crypto/parameters/CryptoAlgorithmRsaHashedKeyGenParams.h
+    crypto/parameters/CryptoAlgorithmRsaHashedKeyGenParamsInit.h
+    crypto/parameters/CryptoAlgorithmRsaKeyGenParams.h
+    crypto/parameters/CryptoAlgorithmRsaKeyGenParamsInit.h
+    crypto/parameters/CryptoAlgorithmRsaOaepParams.h
+    crypto/parameters/CryptoAlgorithmRsaOaepParamsInit.h
+    crypto/parameters/CryptoAlgorithmRsaPssParams.h
+    crypto/parameters/CryptoAlgorithmRsaPssParamsInit.h
+    crypto/parameters/CryptoAlgorithmX25519Params.h
+    crypto/parameters/CryptoAlgorithmX25519ParamsInit.h
 
     css/CSSAttrValue.h
     css/CSSColorValue.h

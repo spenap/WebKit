@@ -25,8 +25,8 @@
 
 #pragma once
 
-#include "CryptoAlgorithmParametersInit.h"
 #include <JavaScriptCore/Uint8Array.h>
+#include <WebCore/CryptoAlgorithmParametersInit.h>
 #include <wtf/Ref.h>
 
 namespace WebCore {

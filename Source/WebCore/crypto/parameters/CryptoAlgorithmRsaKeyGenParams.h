@@ -25,9 +25,9 @@
 
 #pragma once
 
-#include "CryptoAlgorithmParameters.h"
-#include "CryptoAlgorithmRsaKeyGenParamsInit.h"
 #include <JavaScriptCore/Uint8Array.h>
+#include <WebCore/CryptoAlgorithmParameters.h>
+#include <WebCore/CryptoAlgorithmRsaKeyGenParamsInit.h>
 #include <wtf/Vector.h>
 
 namespace WebCore {

@@ -25,9 +25,9 @@
 
 #pragma once
 
-#include "CryptoAlgorithmParametersInit.h"
 #include <JavaScriptCore/JSObject.h>
 #include <JavaScriptCore/Strong.h>
+#include <WebCore/CryptoAlgorithmParametersInit.h>
 #include <optional>
 
 namespace WebCore {

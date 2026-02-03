@@ -19,8 +19,8 @@
 
 #pragma once
 
-#include "CryptoAlgorithmParametersInit.h"
-#include "CryptoKey.h"
+#include <WebCore/CryptoAlgorithmParametersInit.h>
+#include <WebCore/CryptoKey.h>
 #include <wtf/Ref.h>
 
 namespace WebCore {

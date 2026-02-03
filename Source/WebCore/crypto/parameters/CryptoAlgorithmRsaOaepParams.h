@@ -25,9 +25,9 @@
 
 #pragma once
 
-#include "BufferSource.h"
-#include "CryptoAlgorithmParameters.h"
-#include "CryptoAlgorithmRsaOaepParamsInit.h"
+#include <WebCore/BufferSource.h>
+#include <WebCore/CryptoAlgorithmParameters.h>
+#include <WebCore/CryptoAlgorithmRsaOaepParamsInit.h>
 #include <wtf/Vector.h>
 
 namespace WebCore {
