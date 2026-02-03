@@ -455,21 +455,12 @@ static WebModel::ImageAssetSwizzle convert(MTLTextureSwizzleChannels swizzle)
 
 static WebModel::ImageAsset convert(WebBridgeImageAsset *imageAsset)
 {
-    RetainPtr imageSource = adoptCF(CGImageSourceCreateWithData((CFDataRef)imageAsset.data, nullptr));
-    auto platformImage = adoptCF(CGImageSourceCreateImageAtIndex(imageSource.get(), 0, nullptr));
-    RetainPtr pixelDataCfData = adoptCF(CGDataProviderCopyData(CGImageGetDataProvider(platformImage.get())));
-    auto byteSpan = span(pixelDataCfData.get());
-
-    auto width = CGImageGetWidth(platformImage.get());
-    auto height = CGImageGetHeight(platformImage.get());
-    auto bytesPerPixel = (int)(byteSpan.size() / (width * height));
-
     return WebModel::ImageAsset {
-        .data = Vector<uint8_t> { byteSpan },
-        .width = static_cast<long>(width),
-        .height = static_cast<long>(height),
+        .data = makeVector(imageAsset.data),
+        .width = imageAsset.width,
+        .height = imageAsset.height,
         .depth = 1,
-        .bytesPerPixel = bytesPerPixel,
+        .bytesPerPixel = imageAsset.bytesPerPixel,
         .textureType = imageAsset.textureType,
         .pixelFormat = imageAsset.pixelFormat,
         .mipmapLevelCount = imageAsset.mipmapLevelCount,

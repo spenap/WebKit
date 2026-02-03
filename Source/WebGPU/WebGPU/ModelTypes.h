@@ -354,14 +354,296 @@ typedef NS_ENUM(NSInteger, WebBridgeNodeType) {
 
 @end
 
+NS_SWIFT_SENDABLE
+@interface WebBridgeFunctionReference : NSObject
+
+@property (nonatomic, strong, readonly) NSString *moduleName;
+@property (nonatomic, readonly) NSInteger functionIndex;
+
+- (instancetype)initWithModuleName:(NSString *)moduleName functionIndex:(NSInteger)functionIndex;
+
+@end
+
+@class WebBridgeModuleReference;
+@class WebBridgeTypeDefinition;
+@class WebBridgeFunction;
+@class WebBridgeModuleGraph;
+
+NS_SWIFT_SENDABLE
+@interface WebBridgeModule : NSObject
+
+@property (nonatomic, readonly) NSString *name;
+@property (nonatomic, readonly) NSArray<WebBridgeModuleReference *> *imports;
+@property (nonatomic, readonly) NSArray<WebBridgeTypeDefinition *> *typeDefinitions;
+@property (nonatomic, readonly) NSArray<WebBridgeFunction *> *functions;
+@property (nonatomic, readonly) NSArray<WebBridgeModuleGraph *> *graphs;
+
+- (instancetype)initWithName:(NSString *)name
+    imports:(NSArray<WebBridgeModuleReference *> *)imports
+    typeDefinitions:(NSArray<WebBridgeTypeDefinition *> *)typeDefinitions
+    functions:(NSArray<WebBridgeFunction *> *)functions
+    graphs:(NSArray<WebBridgeModuleGraph *> *)graphs NS_DESIGNATED_INITIALIZER;
+
+@end
+
+NS_SWIFT_SENDABLE
+@interface WebBridgeModuleReference : NSObject
+
+@property (nonatomic, strong, readonly) WebBridgeModule *module;
+@property (nonatomic, readonly) NSString *name;
+@property (nonatomic, readonly) NSArray<WebBridgeModuleReference *> *imports;
+@property (nonatomic, readonly) NSArray<WebBridgeTypeDefinition *> *typeDefinitions;
+@property (nonatomic, readonly) NSArray<WebBridgeFunction *> *functions;
+
+- (instancetype)initWithModule:(WebBridgeModule *)module NS_DESIGNATED_INITIALIZER;
+
+@end
+
+@class WebBridgeTypeReference;
+
+NS_SWIFT_SENDABLE
+@interface WebBridgeTypeReference : NSObject
+
+@property (nonatomic, readonly) NSString *moduleName;
+@property (nonatomic, readonly) NSString *name;
+@property (nonatomic, assign, readonly) NSInteger typeDefIndex;
+
+- (instancetype)initWithModule:(NSString *)moduleName
+    name:(NSString *)name
+    typeDefIndex:(NSInteger)typeDefIndex NS_DESIGNATED_INITIALIZER;
+
+@end
+
+typedef NS_ENUM(NSInteger, WebBridgeTypeStructure) {
+    WebBridgeTypeStructurePrimitive,
+    WebBridgeTypeStructureStruct,
+    WebBridgeTypeStructureEnum
+};
+
+NS_SWIFT_SENDABLE
+@interface WebBridgeStructMember : NSObject
+
+@property (nonatomic, readonly) NSString *name;
+@property (nonatomic, strong, readonly) WebBridgeTypeReference *type;
+
+- (instancetype)initWithName:(NSString *)name type:(WebBridgeTypeReference *)type NS_DESIGNATED_INITIALIZER;
+
+@end
+
+NS_SWIFT_SENDABLE
+@interface WebBridgeEnumCase : NSObject
+
+@property (nonatomic, readonly) NSString *name;
+@property (nonatomic, assign, readonly) NSInteger value;
+
+- (instancetype)initWithName:(NSString *)name value:(NSInteger)value NS_DESIGNATED_INITIALIZER;
+
+@end
+
+NS_SWIFT_SENDABLE
+@interface WebBridgeTypeDefinition : NSObject
+
+@property (nonatomic, readonly) NSString *name;
+@property (nonatomic, strong, readonly) WebBridgeTypeReference *typeReference;
+@property (nonatomic, assign, readonly) WebBridgeTypeStructure structureType;
+@property (nonatomic, readonly, nullable) NSArray<WebBridgeStructMember *> *structMembers; // nil unless structureType == WebBridgeTypeStructureStruct
+@property (nonatomic, readonly, nullable) NSArray<WebBridgeEnumCase *> *enumCases; // nil unless structureType == WebBridgeTypeStructureEnum
+
+- (instancetype)initWithName:(NSString *)name
+    typeReference:(WebBridgeTypeReference *)typeReference
+    structureType:(WebBridgeTypeStructure)structureType
+    structMembers:(nullable NSArray<WebBridgeStructMember *> *)structMembers
+    enumCases:(nullable NSArray<WebBridgeEnumCase *> *)enumCases NS_DESIGNATED_INITIALIZER;
+
+@end
+
+@class WebBridgeFunctionReference;
+
+typedef NS_ENUM(NSInteger, WebBridgeFunctionKind) {
+    WebBridgeFunctionKindGraph,
+    WebBridgeFunctionKindIntrinsic
+};
+
+NS_SWIFT_SENDABLE
+@interface WebBridgeFunctionArgument : NSObject
+
+@property (nonatomic, readonly) NSString *name;
+@property (nonatomic, strong, readonly) WebBridgeTypeReference *type;
+
+- (instancetype)initWithName:(NSString *)name type:(WebBridgeTypeReference *)type NS_DESIGNATED_INITIALIZER;
+
+@end
+
+NS_SWIFT_SENDABLE
+@interface WebBridgeFunction : NSObject
+
+@property (nonatomic, strong, readonly) NSString *name;
+@property (nonatomic, strong, readonly) NSArray<WebBridgeFunctionArgument *> *arguments;
+@property (nonatomic, strong, readonly) WebBridgeTypeReference *returnType;
+@property (nonatomic, strong, readonly) WebBridgeFunctionReference *functionReference;
+@property (nonatomic, assign, readonly) WebBridgeFunctionKind kind;
+@property (nonatomic, readonly) NSString *kindName; // graph name or stitching function name
+
+- (instancetype)initWithName:(NSString *)name
+    arguments:(NSArray<WebBridgeFunctionArgument *> *)arguments
+    returnType:(WebBridgeTypeReference *)returnType
+    functionReference:(WebBridgeFunctionReference *)functionReference
+    kind:(WebBridgeFunctionKind)kind
+    kindName:(NSString *)kindName NS_DESIGNATED_INITIALIZER;
+
+@end
+
+NS_SWIFT_SENDABLE
+@interface WebBridgeNodeID : NSObject
+
+@property (nonatomic, assign, readonly) NSInteger value;
+
+- (instancetype)initWithValue:(NSInteger)value NS_DESIGNATED_INITIALIZER;
+
+@end
+
+typedef NS_ENUM(NSInteger, WebBridgeFunctionCallType) {
+    WebBridgeFunctionCallTypeName,
+    WebBridgeFunctionCallTypeReference
+};
+
+NS_SWIFT_SENDABLE
+@interface WebBridgeFunctionCall : NSObject
+
+@property (nonatomic, assign, readonly) WebBridgeFunctionCallType type;
+@property (nonatomic, readonly, nullable) NSString *name; // if type == WebBridgeFunctionCallTypeName
+@property (nonatomic, strong, readonly, nullable) WebBridgeFunctionReference *reference; // if type == WebBridgeFunctionCallTypeReference
+
+- (instancetype)initWithName:(NSString *)name;
+- (instancetype)initWithReference:(WebBridgeFunctionReference *)reference;
+
+@end
+
+typedef NS_ENUM(NSInteger, WebBridgeNodeInstructionType) {
+    WebBridgeNodeInstructionTypeFunctionCall,
+    WebBridgeNodeInstructionTypeFunctionConstant,
+    WebBridgeNodeInstructionTypeLiteral,
+    WebBridgeNodeInstructionTypeArgument,
+    WebBridgeNodeInstructionTypeElement
+};
+
+typedef NS_ENUM(uint32_t, WebBridgeLiteralType) {
+    WebBridgeLiteralTypeBool,
+    WebBridgeLiteralTypeInt32,
+    WebBridgeLiteralTypeUInt32,
+    WebBridgeLiteralTypeFloat,
+    WebBridgeLiteralTypeFloat2,
+    WebBridgeLiteralTypeFloat3,
+    WebBridgeLiteralTypeFloat4,
+#if defined(__arm64__)
+    WebBridgeLiteralTypeHalf,
+    WebBridgeLiteralTypeHalf2,
+    WebBridgeLiteralTypeHalf3,
+    WebBridgeLiteralTypeHalf4,
+#endif
+    WebBridgeLiteralTypeInt2,
+    WebBridgeLiteralTypeInt3,
+    WebBridgeLiteralTypeInt4,
+    WebBridgeLiteralTypeUInt2,
+    WebBridgeLiteralTypeUInt3,
+    WebBridgeLiteralTypeUInt4,
+    WebBridgeLiteralTypeFloat2x2,
+    WebBridgeLiteralTypeFloat3x3,
+    WebBridgeLiteralTypeFloat4x4,
+#if defined(__arm64__)
+    WebBridgeLiteralTypeHalf2x2,
+    WebBridgeLiteralTypeHalf3x3,
+    WebBridgeLiteralTypeHalf4x4,
+#endif
+};
+
+NS_SWIFT_SENDABLE
+@interface WebBridgeLiteralArchive : NSObject
+
+@property (nonatomic, assign, readonly) WebBridgeLiteralType type;
+@property (nonatomic, readonly) NSArray<NSNumber *> *data; // Array of UInt32
+
+- (instancetype)initWithType:(WebBridgeLiteralType)type data:(NSArray<NSNumber *> *)data NS_DESIGNATED_INITIALIZER;
+
+@end
+
+NS_SWIFT_SENDABLE
+@interface WebBridgeLiteral : NSObject
+
+@property (nonatomic, assign, readonly) WebBridgeLiteralType type;
+@property (nonatomic, strong, readonly) WebBridgeLiteralArchive *archive;
+
+- (instancetype)initWithType:(WebBridgeLiteralType)type data:(NSArray<NSNumber *> *)data NS_DESIGNATED_INITIALIZER;
+
+@end
+
+NS_SWIFT_SENDABLE
+@interface WebBridgeNodeInstruction : NSObject
+
+@property (nonatomic, assign, readonly) WebBridgeNodeInstructionType type;
+
+// Properties based on type
+@property (nonatomic, strong, readonly, nullable) WebBridgeFunctionCall *functionCall;
+@property (nonatomic, readonly, nullable) NSString *constantName;
+@property (nonatomic, strong, readonly, nullable) WebBridgeLiteral *literal;
+@property (nonatomic, readonly, nullable) NSString *argumentName;
+@property (nonatomic, strong, readonly, nullable) WebBridgeTypeReference *elementType;
+@property (nonatomic, readonly, nullable) NSString *elementName;
+
+- (instancetype)initWithFunctionCall:(WebBridgeFunctionCall *)functionCall;
+- (instancetype)initWithFunctionConstant:(NSString *)name literal:(WebBridgeLiteral *)literal;
+- (instancetype)initWithLiteral:(WebBridgeLiteral *)literal;
+- (instancetype)initWithArgument:(NSString *)argumentName;
+- (instancetype)initWithElementType:(WebBridgeTypeReference *)type elementName:(NSString *)elementName;
+
+@end
+
+NS_SWIFT_SENDABLE
+@interface WebBridgeArgumentError : NSObject
+
+@property (nonatomic, readonly) NSString *message;
+@property (nonatomic, strong, readonly) WebBridgeFunctionArgument *argument;
+
+- (instancetype)initWithMessage:(NSString *)message argument:(WebBridgeFunctionArgument *)argument NS_DESIGNATED_INITIALIZER;
+
+@end
+
+NS_SWIFT_SENDABLE
 @interface WebBridgeNode : NSObject
 
-@property (nonatomic, readonly) WebBridgeNodeType bridgeNodeType;
-@property (nonatomic, readonly, strong) WebBridgeBuiltin *builtin;
-@property (nonatomic, readonly) WebBridgeConstantContainer *constant;
+@property (nonatomic, strong, readonly) WebBridgeNodeID *nodeID;
+@property (nonatomic, strong, readonly) WebBridgeNodeInstruction *instruction;
 
-- (instancetype)init NS_UNAVAILABLE;
-- (instancetype)initWithBridgeNodeType:(WebBridgeNodeType)bridgeNodeType builtin:(WebBridgeBuiltin *)builtin constant:(WebBridgeConstantContainer *)constant NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithIdentifier:(WebBridgeNodeID *)nodeID
+    instruction:(WebBridgeNodeInstruction *)instruction NS_DESIGNATED_INITIALIZER;
+
+@end
+
+NS_SWIFT_SENDABLE
+@interface WebBridgeGraphEdge : NSObject
+
+@property (nonatomic, strong, readonly) WebBridgeNodeID *source;
+@property (nonatomic, strong, readonly) WebBridgeNodeID *destination;
+@property (nonatomic, readonly) NSString *argument;
+
+- (instancetype)initWithSource:(WebBridgeNodeID *)source
+    destination:(WebBridgeNodeID *)destination
+    argument:(NSString *)argument NS_DESIGNATED_INITIALIZER;
+
+@end
+
+NS_SWIFT_SENDABLE
+@interface WebBridgeModuleGraph : NSObject
+
+@property (nonatomic, strong, readonly) WebBridgeFunctionReference *functionReference;
+@property (nonatomic, readonly) NSString *name;
+@property (nonatomic, readonly) NSArray<WebBridgeFunctionArgument *> *arguments;
+@property (nonatomic, strong, readonly) WebBridgeTypeReference *returnType;
+@property (nonatomic, readonly) NSArray<WebBridgeNode *> *nodes;
+@property (nonatomic, readonly) NSArray<WebBridgeGraphEdge *> *edges;
+@property (nonatomic, readonly) NSInteger index;
+
+- (instancetype)initWithIndex:(NSInteger)index function:(WebBridgeFunction *)function NS_DESIGNATED_INITIALIZER;
 
 @end
 
@@ -370,9 +652,12 @@ NS_SWIFT_SENDABLE
 
 @property (nonatomic, strong, readonly, nullable) NSData *materialGraph;
 @property (nonatomic, strong, readonly) NSString *identifier;
+@property (nonatomic, strong, readonly, nullable) WebBridgeFunctionReference *geometryModifierFunctionReference;
+@property (nonatomic, strong, readonly, nullable) WebBridgeFunctionReference *surfaceShaderFunctionReference;
+@property (nonatomic, strong, readonly, nullable) WebBridgeModule *shaderGraphModule;
 
 - (instancetype)init NS_UNAVAILABLE;
-- (instancetype)initWithMaterialGraph:(nullable NSData *)materialGraph identifier:(NSString *)identifier NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithMaterialGraph:(nullable NSData *)materialGraph identifier:(NSString *)identifier geometryModifierFunctionReference:(nullable WebBridgeFunctionReference *)geometryModifierFunctionReference surfaceShaderFunctionReference:(nullable WebBridgeFunctionReference *)surfaceShaderFunctionReference shaderGraphModule:(nullable WebBridgeModule *)shaderGraphModule NS_DESIGNATED_INITIALIZER;
 
 @end
 

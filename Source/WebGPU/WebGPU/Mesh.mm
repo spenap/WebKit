@@ -289,7 +289,7 @@ void Mesh::updateTexture(WebBridgeUpdateTexture* descriptor)
 void Mesh::updateMaterial(const WebModel::UpdateMaterialDescriptor& originalDescriptor)
 {
 #if ENABLE(GPU_PROCESS_MODEL)
-    WebBridgeUpdateMaterial *descriptor = [[WebBridgeUpdateMaterial alloc] initWithMaterialGraph:WebModel::convert(originalDescriptor.materialGraph) identifier:originalDescriptor.identifier.createNSString().get()];
+    WebBridgeUpdateMaterial *descriptor = [[WebBridgeUpdateMaterial alloc] initWithMaterialGraph:WebModel::convert(originalDescriptor.materialGraph) identifier:originalDescriptor.identifier.createNSString().get() geometryModifierFunctionReference:nil surfaceShaderFunctionReference:nil shaderGraphModule:nil];
     if (!descriptor)
         return;
 

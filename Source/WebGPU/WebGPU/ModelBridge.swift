@@ -24,12 +24,11 @@
 import Metal
 internal import WebGPU_Private.ModelTypes
 
-#if canImport(RealityCoreRenderer, _version: 9999)
-@_spi(RealityCoreRendererAPI) @_spi(ShaderGraph) import RealityKit
-@_spi(UsdLoaderAPI) import _USDStageKit_SwiftUI
+#if canImport(RealityCoreRenderer, _version: 6) && canImport(USDKit, _version: 34)
+@_spi(RealityCoreRendererAPI) import RealityKit
+@_spi(UsdLoaderAPI) import _USDKit_RealityKit
 @_spi(SwiftAPI) import DirectResource
-import USDStageKit
-import _USDStageKit_SwiftUI
+import _USDKit_RealityKit
 import ShaderGraph
 #endif
 
@@ -339,34 +338,343 @@ extension WebBridgeUpdateTexture {
 
 @objc
 @implementation
-extension WebBridgeUpdateMaterial {
-    let materialGraph: Data?
-    let identifier: String
+extension WebBridgeTypeReference {
+    let moduleName: String
+    let name: String
+    let typeDefIndex: Int
+
+    init(module: String, name: String, typeDefIndex: Int) {
+        self.moduleName = module
+        self.name = name
+        self.typeDefIndex = typeDefIndex
+    }
+}
+
+@objc
+@implementation
+extension WebBridgeFunctionReference {
+    let moduleName: String
+    let functionIndex: Int
 
     init(
-        materialGraph: Data?,
-        identifier: String
+        moduleName: String,
+        functionIndex: Int
     ) {
-        self.materialGraph = materialGraph
-        self.identifier = identifier
+        self.moduleName = moduleName
+        self.functionIndex = functionIndex
+    }
+}
+
+@objc
+@implementation
+extension WebBridgeModule {
+    let name: String
+    let imports: [WebBridgeModuleReference]
+    let typeDefinitions: [WebBridgeTypeDefinition]
+    let functions: [WebBridgeFunction]
+    let graphs: [WebBridgeModuleGraph]
+
+    init(
+        name: String,
+        imports: [WebBridgeModuleReference] = [],
+        typeDefinitions: [WebBridgeTypeDefinition] = [],
+        functions: [WebBridgeFunction] = [],
+        graphs: [WebBridgeModuleGraph] = []
+    ) {
+        self.name = name
+        self.imports = imports
+        self.typeDefinitions = typeDefinitions
+        self.functions = functions
+        self.graphs = graphs
+    }
+}
+
+@objc
+@implementation
+extension WebBridgeModuleReference {
+    let module: WebBridgeModule
+    let name: String
+    let imports: [WebBridgeModuleReference]
+    let typeDefinitions: [WebBridgeTypeDefinition]
+    let functions: [WebBridgeFunction]
+
+    init(module: WebBridgeModule) {
+        self.module = module
+        self.name = module.name
+        self.imports = module.imports
+        self.typeDefinitions = module.typeDefinitions
+        self.functions = module.functions
+    }
+}
+
+@objc
+@implementation
+extension WebBridgeStructMember {
+    let name: String
+    let type: WebBridgeTypeReference
+
+    init(name: String, type: WebBridgeTypeReference) {
+        self.name = name
+        self.type = type
+    }
+}
+
+@objc
+@implementation
+extension WebBridgeEnumCase {
+    let name: String
+    let value: Int
+
+    init(name: String, value: Int) {
+        self.name = name
+        self.value = value
+    }
+}
+
+@objc
+@implementation
+extension WebBridgeTypeDefinition {
+    let name: String
+    let typeReference: WebBridgeTypeReference
+    let structureType: WebBridgeTypeStructure
+    let structMembers: [WebBridgeStructMember]?
+    let enumCases: [WebBridgeEnumCase]?
+
+    init(
+        name: String,
+        typeReference: WebBridgeTypeReference,
+        structureType: WebBridgeTypeStructure,
+        structMembers: [WebBridgeStructMember]?,
+        enumCases: [WebBridgeEnumCase]?
+    ) {
+        self.name = name
+        self.typeReference = typeReference
+        self.structureType = structureType
+        self.structMembers = structMembers
+        self.enumCases = enumCases
+    }
+}
+
+@objc
+@implementation
+extension WebBridgeFunctionArgument {
+    let name: String
+    let type: WebBridgeTypeReference
+
+    init(name: String, type: WebBridgeTypeReference) {
+        self.name = name
+        self.type = type
+    }
+}
+
+@objc
+@implementation
+extension WebBridgeFunction {
+    let name: String
+    let arguments: [WebBridgeFunctionArgument]
+    let returnType: WebBridgeTypeReference
+    let functionReference: WebBridgeFunctionReference
+    let kind: WebBridgeFunctionKind
+    let kindName: String
+
+    init(
+        name: String,
+        arguments: [WebBridgeFunctionArgument],
+        returnType: WebBridgeTypeReference,
+        functionReference: WebBridgeFunctionReference,
+        kind: WebBridgeFunctionKind,
+        kindName: String
+    ) {
+        self.name = name
+        self.arguments = arguments
+        self.returnType = returnType
+        self.functionReference = functionReference
+        self.kind = kind
+        self.kindName = kindName
+    }
+}
+
+@objc
+@implementation
+extension WebBridgeNodeID {
+    let value: Int
+
+    init(value: Int) {
+        self.value = value
+    }
+}
+
+@objc
+@implementation
+extension WebBridgeFunctionCall {
+    let type: WebBridgeFunctionCallType
+    let name: String?
+    let reference: WebBridgeFunctionReference?
+
+    init(name: String) {
+        self.type = .name
+        self.name = name
+        self.reference = nil
+    }
+
+    init(reference: WebBridgeFunctionReference) {
+        self.type = .reference
+        self.name = nil
+        self.reference = reference
+    }
+}
+
+@objc
+@implementation
+extension WebBridgeNodeInstruction {
+    let type: WebBridgeNodeInstructionType
+    let functionCall: WebBridgeFunctionCall?
+    let constantName: String?
+    let literal: WebBridgeLiteral?
+    let argumentName: String?
+    let elementType: WebBridgeTypeReference?
+    let elementName: String?
+
+    init(functionCall: WebBridgeFunctionCall) {
+        self.functionCall = functionCall
+        self.type = .functionCall
+
+        self.constantName = nil
+        self.literal = nil
+        self.argumentName = nil
+        self.elementType = nil
+        self.elementName = nil
+    }
+    init(functionConstant: String, literal: WebBridgeLiteral) {
+        self.constantName = functionConstant
+        self.literal = literal
+        self.type = .functionConstant
+
+        self.functionCall = nil
+        self.argumentName = nil
+        self.elementType = nil
+        self.elementName = nil
+    }
+    init(literal: WebBridgeLiteral) {
+        self.literal = literal
+        self.type = .literal
+
+        self.functionCall = nil
+        self.constantName = nil
+        self.argumentName = nil
+        self.elementType = nil
+        self.elementName = nil
+    }
+    init(argument: String) {
+        self.argumentName = argument
+        self.type = .argument
+
+        self.functionCall = nil
+        self.constantName = nil
+        self.literal = nil
+        self.elementType = nil
+        self.elementName = nil
+    }
+    init(elementType: WebBridgeTypeReference, elementName: String) {
+        self.elementType = elementType
+        self.elementName = elementName
+        self.type = .element
+
+        self.functionCall = nil
+        self.constantName = nil
+        self.literal = nil
+        self.argumentName = nil
+    }
+}
+
+@objc
+@implementation
+extension WebBridgeArgumentError {
+    let message: String
+    let argument: WebBridgeFunctionArgument
+
+    init(message: String, argument: WebBridgeFunctionArgument) {
+        self.message = message
+        self.argument = argument
     }
 }
 
 @objc
 @implementation
 extension WebBridgeNode {
-    let bridgeNodeType: WebBridgeNodeType
-    let builtin: WebBridgeBuiltin
-    let constant: WebBridgeConstantContainer
+    let nodeID: WebBridgeNodeID
+    let instruction: WebBridgeNodeInstruction
 
     init(
-        bridgeNodeType: WebBridgeNodeType,
-        builtin: WebBridgeBuiltin,
-        constant: WebBridgeConstantContainer
+        identifier: WebBridgeNodeID,
+        instruction: WebBridgeNodeInstruction
     ) {
-        self.bridgeNodeType = bridgeNodeType
-        self.builtin = builtin
-        self.constant = constant
+        self.nodeID = identifier
+        self.instruction = instruction
+    }
+}
+
+@objc
+@implementation
+extension WebBridgeGraphEdge {
+    let source: WebBridgeNodeID
+    let destination: WebBridgeNodeID
+    let argument: String
+
+    init(
+        source: WebBridgeNodeID,
+        destination: WebBridgeNodeID,
+        argument: String
+    ) {
+        self.source = source
+        self.destination = destination
+        self.argument = argument
+    }
+}
+
+@objc
+@implementation
+extension WebBridgeModuleGraph {
+    let functionReference: WebBridgeFunctionReference
+    let name: String
+    let arguments: [WebBridgeFunctionArgument]
+    let returnType: WebBridgeTypeReference
+    let nodes: [WebBridgeNode]
+    let edges: [WebBridgeGraphEdge]
+    let index: Int
+
+    init(index: Int, function: WebBridgeFunction) {
+        self.index = index
+        self.functionReference = function.functionReference
+        self.name = function.name
+        self.arguments = function.arguments
+        self.returnType = function.returnType
+        self.nodes = []
+        self.edges = []
+    }
+}
+
+@objc
+@implementation
+extension WebBridgeUpdateMaterial {
+    let materialGraph: Data?
+    let identifier: String
+    let geometryModifierFunctionReference: WebBridgeFunctionReference?
+    let surfaceShaderFunctionReference: WebBridgeFunctionReference?
+    let shaderGraphModule: WebBridgeModule?
+
+    init(
+        materialGraph: Data?,
+        identifier: String,
+        geometryModifierFunctionReference: WebBridgeFunctionReference?,
+        surfaceShaderFunctionReference: WebBridgeFunctionReference?,
+        shaderGraphModule: WebBridgeModule?
+    ) {
+        self.materialGraph = materialGraph
+        self.identifier = identifier
+        self.geometryModifierFunctionReference = geometryModifierFunctionReference
+        self.surfaceShaderFunctionReference = surfaceShaderFunctionReference
+        self.shaderGraphModule = shaderGraphModule
     }
 }
 
@@ -460,7 +768,34 @@ extension WebValueString {
     }
 }
 
-#if canImport(RealityCoreRenderer, _version: 9999)
+@objc
+@implementation
+extension WebBridgeLiteralArchive {
+    let type: WebBridgeLiteralType
+    let data: [NSNumber]
+
+    init(
+        type: WebBridgeLiteralType,
+        data: [NSNumber]
+    ) {
+        self.type = type
+        self.data = data
+    }
+}
+
+@objc
+@implementation
+extension WebBridgeLiteral {
+    let type: WebBridgeLiteralType
+    let archive: WebBridgeLiteralArchive
+
+    init(type: WebBridgeLiteralType, data: [NSNumber]) {
+        self.type = type
+        self.archive = .init(type: type, data: data)
+    }
+}
+
+#if canImport(RealityCoreRenderer, _version: 6) && canImport(USDKit, _version: 34)
 
 internal func toData<T>(_ input: [T]) -> Data {
     unsafe input.withUnsafeBytes { bufferPointer in
@@ -510,7 +845,7 @@ private func webLayoutsFromLayouts(_ attributes: [LowLevelMesh.Layout]) -> [WebB
 
 extension WebBridgeMeshDescriptor {
     @nonobjc
-    convenience init(_ request: LowLevelMesh.Descriptor) {
+    convenience init(request: LowLevelMesh.Descriptor) {
         self.init(
             vertexBufferCount: request.vertexBufferCount,
             vertexCapacity: request.vertexCapacity,
@@ -710,4 +1045,5 @@ extension WebBridgeImageAsset {
         )
     }
 }
+
 #endif
