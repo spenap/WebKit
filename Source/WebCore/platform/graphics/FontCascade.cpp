@@ -52,7 +52,7 @@ WTF_MAKE_TZONE_ALLOCATED_IMPL(FontCascade);
 
 using namespace WTF::Unicode;
 
-FontCascade::CodePath FontCascade::s_codePath = CodePath::Auto;
+Markable<FontCascade::CodePath> FontCascade::s_forcedCodePath = std::nullopt;
 
 static std::atomic<unsigned> lastFontCascadeGeneration { 0 };
 
@@ -653,20 +653,20 @@ bool FontCascade::shouldUseComplexTextControllerForSimpleText() const
 }
 #endif
 
-void FontCascade::setCodePath(CodePath p)
+void FontCascade::setForcedCodePath(Markable<CodePath> p)
 {
-    s_codePath = p;
+    s_forcedCodePath = p;
 }
 
-FontCascade::CodePath FontCascade::codePath()
+Markable<FontCascade::CodePath> FontCascade::forcedCodePath()
 {
-    return s_codePath;
+    return s_forcedCodePath;
 }
 
 FontCascade::CodePath FontCascade::codePath(const TextRun& run, std::optional<unsigned> from, std::optional<unsigned> to) const
 {
-    if (s_codePath != CodePath::Auto)
-        return s_codePath;
+    if (s_forcedCodePath)
+        return *s_forcedCodePath;
 
     if (!canHandleRunAsSimpleText(run, from.value_or(0), to.value_or(run.length())))
         return CodePath::Complex;

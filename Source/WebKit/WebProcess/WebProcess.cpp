@@ -958,7 +958,7 @@ void WebProcess::setDefaultRequestTimeoutInterval(double timeoutInterval)
 
 void WebProcess::setAlwaysUsesComplexTextCodePath(bool alwaysUseComplexText)
 {
-    WebCore::FontCascade::setCodePath(alwaysUseComplexText ? WebCore::FontCascade::CodePath::Complex : WebCore::FontCascade::CodePath::Auto);
+    WebCore::FontCascade::setForcedCodePath(alwaysUseComplexText ? Markable(WebCore::FontCascade::CodePath::Complex) : std::nullopt);
 }
 
 void WebProcess::setDisableFontSubpixelAntialiasingForTesting(bool disable)

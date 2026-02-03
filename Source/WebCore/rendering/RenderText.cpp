@@ -325,13 +325,19 @@ static unsigned offsetForPositionInRun(const InlineIterator::TextBox& textBox, f
     return textBox.fontCascade().offsetForPosition(textBox.textRun(InlineIterator::TextRunMode::Editing), runPosition, true);
 }
 
+static FontCascade::CodePath computeFontCodePath(const String& text, bool containsOnlyASCII)
+{
+    ASSERT(containsOnlyASCII == text.impl()->containsOnlyASCII());
+    return (containsOnlyASCII || text.is8Bit()) ? FontCascade::CodePath::Simple : FontCascade::characterRangeCodePath(text.span16());
+}
+
 inline RenderText::RenderText(Type type, Node& node, const String& text)
     : RenderObject(type, node, TypeFlag::IsText, { })
     , m_text(text)
     , m_containsOnlyASCII(text.impl()->containsOnlyASCII())
+    , m_fontCodePath(computeFontCodePath(m_text, m_containsOnlyASCII))
 {
     ASSERT(!m_text.isNull());
-    computeFontCodePath();
     ASSERT(isRenderText());
 }
 
@@ -1756,7 +1762,7 @@ void RenderText::setRenderedText(const String& newText)
     }
 
     m_containsOnlyASCII = text().containsOnlyASCII();
-    computeFontCodePath();
+    m_fontCodePath = computeFontCodePath(text(), m_containsOnlyASCII);
     m_canUseSimplifiedTextMeasuring = { };
     m_hasPositionDependentContentWidth = { };
     m_hasStrongDirectionalityContent = { };
@@ -2114,15 +2120,6 @@ int RenderText::nextOffset(int current) const
 
     CachedTextBreakIterator iterator(text(), { }, TextBreakIterator::CaretMode { }, nullAtom());
     return iterator.following(current).value_or(current + 1);
-}
-
-void RenderText::computeFontCodePath()
-{
-    if (m_containsOnlyASCII || text().is8Bit()) {
-        m_fontCodePath = static_cast<unsigned>(FontCascade::CodePath::Simple);
-        return;
-    }
-    m_fontCodePath = static_cast<unsigned>(FontCascade::characterRangeCodePath(text().span16()));
 }
 
 void RenderText::momentarilyRevealLastTypedCharacter(unsigned offsetAfterLastTypedCharacter)

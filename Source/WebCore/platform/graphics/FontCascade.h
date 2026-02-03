@@ -228,8 +228,7 @@ public:
     WEBCORE_EXPORT static void setDisableFontSubpixelAntialiasingForTesting(bool);
     WEBCORE_EXPORT static bool shouldDisableFontSubpixelAntialiasingForTesting();
 
-    // Keep this in sync with RenderText's m_fontCodePath
-    enum class CodePath : uint8_t { Auto, Simple, Complex, SimpleWithGlyphOverflow };
+    enum class CodePath : uint8_t { Simple, Complex, SimpleWithGlyphOverflow };
     WEBCORE_EXPORT CodePath codePath(const TextRun&, std::optional<unsigned> from = std::nullopt, std::optional<unsigned> to = std::nullopt) const;
 
     static CodePath characterRangeCodePath(std::span<const Latin1Character>) { return CodePath::Simple; }
@@ -283,9 +282,9 @@ public:
 #endif
 
     // Useful for debugging the different font rendering code paths.
-    WEBCORE_EXPORT static void setCodePath(CodePath);
-    static CodePath codePath();
-    static CodePath s_codePath;
+    WEBCORE_EXPORT static void setForcedCodePath(Markable<CodePath>);
+    static Markable<CodePath> forcedCodePath();
+    static Markable<CodePath> s_forcedCodePath;
 
     FontSelector* fontSelector() const;
 
@@ -390,8 +389,6 @@ private:
 #else
             return false;
 #endif
-        case CodePath::Auto:
-            break;
         }
         RELEASE_ASSERT_NOT_REACHED();
     }
