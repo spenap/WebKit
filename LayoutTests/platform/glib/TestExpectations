@@ -5144,6 +5144,8 @@ webkit.org/b/306471 media/video-poster-not-found.html [ Pass Timeout ]
 webkit.org/b/306472 fast/repaint/selection-gap-absolute-child.html [ Pass Failure ]
 webkit.org/b/306474 imported/w3c/web-platform-tests/fetch/range/sw-416.https.window.html [ Pass Failure ]
 
+webkit.org/b/122508 compositing/video/video-reflection.html [ Pass Timeout ]
+
 # End: Common failures between GTK and WPE.
 
 #////////////////////////////////////////////////////////////////////////////////////////
