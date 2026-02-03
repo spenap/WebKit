@@ -130,6 +130,11 @@ StyleAppearance RenderTheme::adjustAppearanceForElement(RenderStyle& style, cons
     }
 
     auto appearance = style.usedAppearance();
+    if (appearance == StyleAppearance::BaseSelect) {
+        style.setUsedAppearance(StyleAppearance::Base);
+        return StyleAppearance::Base;
+    }
+
     if (appearance == autoAppearance)
         return appearance;
 
@@ -629,6 +634,7 @@ RefPtr<ControlPart> RenderTheme::createControlPart(const RenderElement& renderer
     case StyleAppearance::None:
     case StyleAppearance::Auto:
     case StyleAppearance::Base:
+    case StyleAppearance::BaseSelect:
         break;
 
     case StyleAppearance::Checkbox:
