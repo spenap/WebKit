@@ -75,7 +75,6 @@ class RunLoop;
 
 namespace WebCore {
 class GLFence;
-class GraphicsContext;
 class ShareableBitmap;
 class ShareableBitmapHandle;
 }
@@ -123,7 +122,10 @@ public:
 #if PLATFORM(GTK) || ENABLE(WPE_PLATFORM)
     bool usesGL() const { return m_swapChain.type() != SwapChain::Type::SharedMemoryWithoutGL; }
 #endif
-    WebCore::GraphicsContext* graphicsContext();
+
+#if USE(SKIA)
+    SkCanvas* canvas();
+#endif
 
     void willDestroyGLContext();
     void willRenderFrame(const WebCore::IntSize&);
@@ -165,7 +167,9 @@ private:
 
         uint64_t id() const { return m_id; }
 
-        virtual WebCore::GraphicsContext* graphicsContext() { RELEASE_ASSERT_NOT_REACHED(); }
+#if USE(SKIA)
+        virtual SkSurface* skiaSurface() { RELEASE_ASSERT_NOT_REACHED(); }
+#endif
 
         virtual void willRenderFrame() { }
         virtual void didRenderFrame(Vector<WebCore::IntRect, 1>&&) { }
@@ -184,12 +188,9 @@ private:
 
         uint64_t m_id { 0 };
         uint64_t m_surfaceID { 0 };
-        struct {
 #if USE(SKIA)
-            sk_sp<SkSurface> surface;
+        sk_sp<SkSurface> m_skiaSurface;
 #endif
-            std::unique_ptr<WebCore::GraphicsContext> context;
-        } m_graphicsContext;
 #if ENABLE(DAMAGE_TRACKING)
         std::optional<WebCore::Damage> m_damage;
 #endif
@@ -207,7 +208,9 @@ private:
     protected:
         RenderTargetShareableBuffer(uint64_t, const WebCore::IntSize&);
 
-        WebCore::GraphicsContext* graphicsContext() override;
+#if USE(SKIA)
+        SkSurface* skiaSurface() override;
+#endif
 
         void willRenderFrame() override;
         void didRenderFrame(Vector<WebCore::IntRect, 1>&&) override;
@@ -302,7 +305,9 @@ private:
         RenderTargetSHMImageWithoutGL(uint64_t, const WebCore::IntSize&, Ref<WebCore::ShareableBitmap>&&, WebCore::ShareableBitmapHandle&&);
         ~RenderTargetSHMImageWithoutGL();
 
-        WebCore::GraphicsContext* graphicsContext() override;
+#if USE(SKIA)
+        SkSurface* skiaSurface() override;
+#endif
 
     private:
         void didRenderFrame(Vector<WebCore::IntRect, 1>&&) override;

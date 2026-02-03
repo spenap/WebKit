@@ -235,7 +235,14 @@ public:
         return adoptRef(*new SkiaGLContext(display));
     }
 
-    ~SkiaGLContext() = default;
+    ~SkiaGLContext()
+    {
+        if (m_skiaGLContext) {
+            m_skiaGLContext->makeContextCurrent();
+            m_skiaGrContext = nullptr;
+            m_skiaGLContext = nullptr;
+        }
+    }
 
     GLContext* skiaGLContext() const
     {

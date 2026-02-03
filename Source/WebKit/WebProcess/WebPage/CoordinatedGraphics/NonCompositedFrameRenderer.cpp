@@ -27,6 +27,7 @@
 #include "NonCompositedFrameRenderer.h"
 
 #if USE(COORDINATED_GRAPHICS)
+#include <WebCore/GraphicsContextSkia.h>
 
 namespace WebKit {
 using namespace WebCore;
@@ -107,12 +108,24 @@ void NonCompositedFrameRenderer::display()
     webPage->finalizeRenderingUpdate({ });
     webPage->flushPendingEditorStateUpdate();
 
-    m_surface->willRenderFrame(webPage->size());
-    auto* graphicsContext = m_surface->graphicsContext();
-    if (!graphicsContext)
+    IntSize scaledSize = webPage->size();
+    scaledSize.scale(webPage->deviceScaleFactor());
+
+    if (m_context)
+        m_context->makeContextCurrent();
+    m_surface->willRenderFrame(scaledSize);
+
+    auto* canvas = m_surface->canvas();
+    if (!canvas)
         return;
-    if (m_context && !m_context->makeContextCurrent())
-        return;
+
+    if (m_context)
+        PlatformDisplay::sharedDisplay().skiaGLContext()->makeContextCurrent();
+
+    canvas->save();
+    GraphicsContextSkia graphicsContext(*canvas, m_surface->usesGL() ? RenderingMode::Accelerated : RenderingMode::Unaccelerated, RenderingPurpose::Unspecified);
+    graphicsContext.applyDeviceScaleFactor(webPage->deviceScaleFactor());
+
 #if ENABLE(DAMAGE_TRACKING)
     if (m_frameDamage) {
         {
@@ -132,7 +145,11 @@ void NonCompositedFrameRenderer::display()
             rectToRepaint = renderTargetDamage->bounds();
     }
 #endif
-    webPage->drawRect(*graphicsContext, rectToRepaint);
+    webPage->drawRect(graphicsContext, rectToRepaint);
+    canvas->restore();
+
+    if (m_context)
+        m_context->makeContextCurrent();
 
     m_canRenderNextFrame = false;
     m_surface->didRenderFrame();
