@@ -49,6 +49,8 @@ public:
 
     virtual ~DrawingAreaCoordinatedGraphics();
 
+    void fillGLInformation(RenderProcessInfo&&, CompletionHandler<void(RenderProcessInfo&&)>&&);
+
 private:
     DrawingAreaCoordinatedGraphics(WebPage&, const WebPageCreationParameters&);
 
@@ -65,9 +67,11 @@ private:
     void updatePreferences(const WebPreferencesStore&) override;
     void sendEnterAcceleratedCompositingModeIfNeeded() override;
 
-#if USE(COORDINATED_GRAPHICS) || USE(TEXTURE_MAPPER)
     bool enterAcceleratedCompositingModeIfNeeded() override;
     void backgroundColorDidChange() override;
+
+#if PLATFORM(WPE) && ENABLE(WPE_PLATFORM) && (USE(GBM)|| OS(ANDROID))
+    void preferredBufferFormatsDidChange() override;
 #endif
 
     bool supportsAsyncScrolling() const override;
@@ -90,9 +94,17 @@ private:
     void forceUpdate() override;
     void didDiscardBackingStore() override;
 
+    void dispatchAfterEnsuringDrawing(IPC::AsyncReplyID) override;
+    void dispatchPendingCallbacksAfterEnsuringDrawing() override;
+
 #if ENABLE(DAMAGE_TRACKING)
     void resetDamageHistoryForTesting() override;
     void foreachRegionInDamageHistoryForTesting(Function<void(const WebCore::Region&)>&&) const override;
+#endif
+
+#if PLATFORM(GTK)
+    void adjustTransientZoom(double scale, WebCore::FloatPoint origin) override;
+    void commitTransientZoom(double scale, WebCore::FloatPoint origin, CompletionHandler<void()>&&) override;
 #endif
 
     void exitAcceleratedCompositingModeSoon();
@@ -132,6 +144,9 @@ private:
     // The layer tree host that handles accelerated compositing.
     std::unique_ptr<LayerTreeHost> m_layerTreeHost;
 
+    // Frame renderer used in non-composited mode.
+    std::unique_ptr<NonCompositedFrameRenderer> m_nonCompositedFrameRenderer;
+
     WebCore::Region m_dirtyRegion;
     WebCore::IntRect m_scrollRect;
     WebCore::IntSize m_scrollOffset;
@@ -146,6 +161,13 @@ private:
     bool m_shouldSendEnterAcceleratedCompositingMode { false };
 
     RunLoop::Timer m_displayTimer;
+
+#if PLATFORM(GTK)
+    bool m_transientZoom { false };
+    WebCore::FloatPoint m_transientZoomInitialOrigin;
+#endif
+
+    Vector<IPC::AsyncReplyID> m_pendingAfterDrawCallbackIDs;
 };
 
 } // namespace WebKit

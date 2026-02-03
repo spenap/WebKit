@@ -26,7 +26,7 @@
 #include "config.h"
 #include "WebPage.h"
 
-#include "DrawingAreaCoordinatedGraphics.h"
+#include "DrawingAreaCoordinatedGraphicsGLib.h"
 #include "EditorState.h"
 #include "InputMethodState.h"
 #include "MessageSenderInlines.h"
