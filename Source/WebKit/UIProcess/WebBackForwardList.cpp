@@ -122,20 +122,6 @@ void WebBackForwardList::addItem(Ref<WebBackForwardListItem>&& newItem)
             m_entries.removeLast();
         }
 
-        while (m_entries.size()) {
-            Ref lastEntry = m_entries.last();
-            if (!lastEntry->isRemoteFrameNavigation() || protect(lastEntry->navigatedFrameItem())->sharesAncestor(protect(newItem->navigatedFrameItem())))
-                break;
-            didRemoveItem(lastEntry);
-            removedItems.append(WTF::move(lastEntry));
-            m_entries.removeLast();
-
-            if (m_entries.isEmpty()) {
-                m_currentIndex = std::nullopt;
-            } else
-                m_currentIndex = *m_currentIndex - 1;
-        }
-
         // Toss the first item if the list is getting too big, as long as we're not using it
         // (or even if we are, if we only want 1 entry).
         if (m_entries.size() >= DefaultCapacity && (*m_currentIndex)) {
@@ -655,13 +641,9 @@ void WebBackForwardList::backForwardAddItemShared(IPC::Connection& connection, R
 
     if (RefPtr webPageProxy = m_page.get()) {
 
-        const bool isRemoteFrameNavigation = webPageProxy->isRemoteFrameNavigation(process);
-        ASSERT(!isRemoteFrameNavigation || webPageProxy->preferences().siteIsolationEnabled());
-
         auto navigatedFrameID = navigatedFrameState->frameID;
         Ref item = WebBackForwardListItem::create(completeFrameStateForNavigation(WTF::move(navigatedFrameState)), webPageProxy->identifier(), navigatedFrameID, protect(webPageProxy->browsingContextGroup()).ptr());
         item->setResourceDirectoryURL(webPageProxy->currentResourceDirectoryURL());
-        item->setIsRemoteFrameNavigation(isRemoteFrameNavigation);
         item->setEnhancedSecurity(process->enhancedSecurity());
         if (loadedWebArchive == LoadedWebArchive::Yes)
             item->setDataStoreForWebArchive(process->websiteDataStore());
