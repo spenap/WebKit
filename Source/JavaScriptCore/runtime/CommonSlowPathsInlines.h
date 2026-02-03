@@ -29,6 +29,7 @@
 #include "ClonedArguments.h"
 #include "CommonSlowPaths.h"
 #include "DirectArguments.h"
+#include "JSMapIteratorInlines.h"
 #include "JSSetInlines.h"
 #include "ScopedArguments.h"
 
@@ -199,6 +200,16 @@ ALWAYS_INLINE JSCellButterfly* trySpreadFast(JSGlobalObject* globalObject, JSCel
         auto* set = jsCast<JSSet*>(iterable);
         if (set->isIteratorProtocolFastAndNonObservable()) [[likely]]
             return JSCellButterfly::createFromSet(globalObject, set);
+        return nullptr;
+    }
+    case JSMapIteratorType: {
+        auto* iterator = jsCast<JSMapIterator*>(iterable);
+        // IterationKind::Entries requires more complex processing (returns [key, value] pairs).
+        // This optimization only handles Keys and Values.
+        if (iterator->kind() == IterationKind::Entries)
+            return nullptr;
+        if (iterator->isIteratorProtocolFastAndNonObservable()) [[likely]]
+            return JSCellButterfly::createFromMapIterator(globalObject, iterator);
         return nullptr;
     }
     default:

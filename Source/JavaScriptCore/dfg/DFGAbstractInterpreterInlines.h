@@ -3682,8 +3682,8 @@ bool AbstractInterpreter<AbstractStateType>::executeEffects(unsigned clobberLimi
             break;
         default:
             if (!m_graph.canDoFastSpread(node, forNode(node->child1()))) {
-                // SetObjectUse has no side effects since we iterate directly over internal storage.
-                if (node->child1().useKind() == SetObjectUse)
+                // SetObjectUse and MapIteratorObjectUse have no side effects since we iterate directly over internal storage.
+                if (node->child1().useKind() == SetObjectUse || node->child1().useKind() == MapIteratorObjectUse)
                     didFoldClobberWorld();
                 else
                     clobberWorld();

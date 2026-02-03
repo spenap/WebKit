@@ -8965,6 +8965,8 @@ void SpeculativeJIT::compileSpread(Node* node)
         speculateArray(node->child1(), argument);
     else if (node->child1().useKind() == SetObjectUse)
         speculateSetObject(node->child1(), argument);
+    else if (node->child1().useKind() == MapIteratorObjectUse)
+        speculateMapIteratorObject(node->child1(), argument);
 
     if (m_graph.canDoFastSpread(node, m_state.forNode(node->child1()))) {
 #if USE(JSVALUE64)
@@ -9138,6 +9140,14 @@ void SpeculativeJIT::compileSpread(Node* node)
         callOperation(operationSpreadSet, resultGPR, LinkableConstant::globalObject(*this, node), argument);
         cellResult(resultGPR, node);
 #endif // USE(JSVALUE64)
+    } else if (node->child1().useKind() == MapIteratorObjectUse) {
+        // MapIterator spread does not use inline fast path; call the C++ operation directly.
+        flushRegisters();
+
+        GPRFlushedCallResult result(this);
+        GPRReg resultGPR = result.gpr();
+        callOperation(operationSpreadMapIterator, resultGPR, LinkableConstant::globalObject(*this, node), argument);
+        cellResult(resultGPR, node);
     } else {
         flushRegisters();
 
