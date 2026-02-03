@@ -164,12 +164,7 @@ static constexpr Seconds indicatorMoveDuration { 0.3_s };
     auto completion = [view = retainPtr(self)](BOOL) {
         [view setAlpha:0];
     };
-#if HAVE(UI_VIEW_ANIMATION_OPTION_FLUSH_UPDATES)
-    static constexpr auto animationOptions = UIViewAnimationOptionFlushUpdates;
-#else
-    static constexpr auto animationOptions = 0;
-#endif
-    [UIView animateWithDuration:indicatorFadeOutDuration.seconds() delay:0 options:animationOptions animations:animations completion:completion];
+    [UIView animateWithDuration:indicatorFadeOutDuration.seconds() delay:0 options:UIViewAnimationOptionFlushUpdates animations:animations completion:completion];
 
     [std::exchange(_timer, nil) invalidate];
 }
