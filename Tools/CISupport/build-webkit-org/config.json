@@ -69,6 +69,8 @@
                   { "name": "bot632", "platform": "mac-sequoia" },
 
                   { "name": "bot304", "platform": "ios-26" },
+                  { "name": "bot2004", "platform": "ios-26" },
+                  { "name": "bot2005", "platform": "ios-26" },
                   { "name": "bot305", "platform": "ios-simulator-26" },
                   { "name": "bot306", "platform": "ios-simulator-26" },
                   { "name": "bot307", "platform": "ios-simulator-26" },
@@ -422,6 +424,11 @@
                     "platform": "ios-simulator-26", "configuration": "debug", "architectures": ["x86_64", "arm64"], "device_model": "ipad",
                     "additionalArguments": ["--no-retry-failures", "--no-sample-on-timeout", "--child-processes=6"],
                     "workernames": ["bot664"]
+                  },
+                  {
+                    "name": "Apple-iOS-26-Safer-CPP-Checks", "factory": "SaferCPPStaticAnalyzerFactory",
+                    "platform": "ios-26", "configuration": "release", "architectures": ["arm64"],
+                    "workernames": ["bot2004", "bot2005"]
                   },
                   {
                     "name": "Apple-visionOS-26-Release-Build", "factory": "BuildFactory",
