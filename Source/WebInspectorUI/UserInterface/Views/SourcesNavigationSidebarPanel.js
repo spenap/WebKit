@@ -705,11 +705,10 @@ WI.SourcesNavigationSidebarPanel = class SourcesNavigationSidebarPanel extends W
 
         let treeElement = this._callStackTreeOutline.children[0];
 
-        const ignoreHidden = true;
         const skipUnrevealed = true;
         const stayWithin = null;
         const dontPopulate = true;
-        while (!treeElement.revealed(ignoreHidden))
+        while (!treeElement.revealed)
             treeElement = treeElement.traverseNextTreeElement(skipUnrevealed, stayWithin, dontPopulate);
 
         let indentString = WI.indentString();
