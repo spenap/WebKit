@@ -149,6 +149,7 @@ class VoidCallback;
 class WebAnimation;
 class WebGLRenderingContext;
 class WindowProxy;
+class WritableStream;
 class XMLHttpRequest;
 
 struct VideoConfiguration;
@@ -1683,6 +1684,7 @@ public:
 #endif // ENABLE(DAMAGE_TRACKING)
 
     ExceptionOr<Ref<ReadableStream>> readableStreamFromMessagePort(JSDOMGlobalObject&, MessagePort&);
+    ExceptionOr<Ref<WritableStream>> writableStreamFromMessagePort(JSDOMGlobalObject&, MessagePort&);
 
 #if ENABLE(MODEL_ELEMENT)
     void disableModelLoadDelaysForTesting();

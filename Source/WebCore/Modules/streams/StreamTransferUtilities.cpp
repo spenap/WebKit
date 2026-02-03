@@ -32,6 +32,8 @@
 #include "ReadableStream.h"
 #include "ReadableStreamSource.h"
 #include "StructuredSerializeOptions.h"
+#include "WritableStream.h"
+#include "WritableStreamSink.h"
 #include <JavaScriptCore/ObjectConstructor.h>
 
 namespace WebCore {
@@ -70,6 +72,7 @@ static void crossRealmTransformSendError(JSDOMGlobalObject& globalObject, Messag
     packAndPostMessage(globalObject, port, "error"_s, error);
 }
 
+// https://streams.spec.whatwg.org/#abstract-opdef-packandpostmessagehandlingerror
 static ExceptionOr<void> packAndPostMessageHandlingError(JSDOMGlobalObject& globalObject, MessagePort& port, const String& type, JSC::JSValue value)
 {
     auto result = packAndPostMessage(globalObject, port, type, value);
@@ -201,6 +204,155 @@ private:
 ExceptionOr<Ref<ReadableStream>> setupCrossRealmTransformReadable(JSDOMGlobalObject& globalObject, MessagePort& port)
 {
     return ReadableStream::create(globalObject, CrossRealmReadableStreamSource::create(port));
+}
+
+class CrossRealmWritableStreamSink final : public WritableStreamSink, public CanMakeWeakPtr<CrossRealmWritableStreamSink> {
+public:
+    static Ref<CrossRealmWritableStreamSink> create(Ref<MessagePort>&& port, Ref<DeferredPromise>&& backpressurePromise)
+    {
+        Ref source = adoptRef(*new CrossRealmWritableStreamSink(WTF::move(port), WTF::move(backpressurePromise)));
+        source->m_port->setMessageHandler([weakSource = WeakPtr { source }](auto& globalObject, auto& value) {
+            RefPtr protectedSource = weakSource.get();
+            if (!protectedSource)
+                return;
+
+            auto& vm = globalObject.vm();
+            Locker locker(vm.apiLock());
+            auto catchScope = DECLARE_TOP_EXCEPTION_SCOPE(vm);
+
+            bool didFail = false;
+            auto deserialized = value.deserialize(globalObject, &globalObject, SerializationErrorMode::NonThrowing, &didFail);
+            bool isSuccess = [&] {
+                if (catchScope.exception() || didFail) [[unlikely]]
+                    return false;
+
+                auto* object = deserialized.getObject();
+                if (!object)
+                    return false;
+
+                JSC::Strong<JSC::JSObject> strongObject(vm, object);
+                return protectedSource->handleMessage(globalObject, *object);
+            }();
+
+            if (!isSuccess)
+                protectedSource->handleMessageError(globalObject);
+        });
+        return source;
+    }
+
+private:
+    CrossRealmWritableStreamSink(Ref<MessagePort>&& port, Ref<DeferredPromise>&& backpressurePromise)
+        : m_port(WTF::move(port))
+        , m_backpressurePromise(WTF::move(backpressurePromise))
+    {
+    }
+
+    bool handleMessage(JSDOMGlobalObject& globalObject, JSC::JSObject& object)
+    {
+        Ref vm = globalObject.vm();
+        auto catchScope = DECLARE_TOP_EXCEPTION_SCOPE(vm);
+
+        auto typeValue = object.get(&globalObject, vm->propertyNames->type);
+        if (catchScope.exception()) [[unlikely]]
+            return false;
+        auto value = object.get(&globalObject, vm->propertyNames->value);
+        if (catchScope.exception()) [[unlikely]]
+            return false;
+
+        if (!typeValue.isString())
+            return false;
+
+        String type = JSC::asString(typeValue)->tryGetValue();
+        if (type == "pull"_s) {
+            if (auto promise = std::exchange(m_backpressurePromise, { }))
+                promise->resolve();
+            return true;
+        }
+        if (type == "error"_s) {
+            errorIfNeeded(globalObject, value);
+            if (auto promise = std::exchange(m_backpressurePromise, { }))
+                promise->resolve();
+            return true;
+        }
+
+        errorStream(globalObject, createDOMException(&globalObject, ExceptionCode::TypeError, "Unexpected value"_s));
+        return true;
+    }
+
+    void handleMessageError(JSDOMGlobalObject& globalObject)
+    {
+        errorStream(globalObject, createDOMException(&globalObject, ExceptionCode::DataCloneError, "Failed to deserialize value"_s));
+    }
+
+    void errorStream(JSDOMGlobalObject& globalObject, JSC::JSValue error)
+    {
+        Ref vm = globalObject.vm();
+        JSC::Strong<JSC::Unknown> strongError(vm.get(), error);
+        crossRealmTransformSendError(globalObject, m_port, error);
+        errorIfNeeded(globalObject, error);
+        m_port->close();
+    }
+
+    // WritableStreamSink
+    void write(ScriptExecutionContext& context, JSC::JSValue chunk, DOMPromiseDeferred<void>&& promise) final
+    {
+        auto* globalObject = context.globalObject();
+        if (!globalObject)
+            return;
+
+        if (!m_backpressurePromise) {
+            RefPtr backpressurePromise = DeferredPromise::create(*JSC::jsCast<JSDOMGlobalObject*>(globalObject), DeferredPromise::Mode::RetainPromiseOnResolve);
+            if (!backpressurePromise)
+                return;
+            backpressurePromise->resolve();
+            m_backpressurePromise = backpressurePromise.releaseNonNull();
+        }
+
+        Ref { *m_backpressurePromise }->whenSettled([weakThis = WeakPtr { *this }, strongChunk = JSC::Strong<JSC::Unknown> { globalObject->vm(), chunk }, promise = WTF::move(promise)]() mutable {
+            auto chunk = std::exchange(strongChunk, { });
+            RefPtr protectedThis = weakThis;
+            if (!protectedThis)
+                return;
+
+            RefPtr context = protectedThis->m_port->scriptExecutionContext();
+            auto* globalObject = context ? JSC::jsCast<JSDOMGlobalObject*>(context->globalObject()) : nullptr;
+            if (!globalObject)
+                return;
+
+            protectedThis->m_backpressurePromise = DeferredPromise::create(*JSC::jsCast<JSDOMGlobalObject*>(globalObject), DeferredPromise::Mode::RetainPromiseOnResolve);
+            if (!protectedThis->m_backpressurePromise)
+                return;
+
+            auto result = packAndPostMessageHandlingError(*globalObject, protectedThis->m_port.get(), "chunk"_s, chunk.get());
+            if (result.hasException()) {
+                protectedThis->m_port->close();
+                promise.reject(result.exception());
+                return;
+            }
+            promise.resolve();
+        });
+    }
+    void close(JSDOMGlobalObject& globalObject) final
+    {
+        packAndPostMessage(globalObject, m_port, "close"_s, JSC::jsUndefined());
+        m_port->close();
+    }
+    void abort(JSDOMGlobalObject& globalObject, JSC::JSValue reason, DOMPromiseDeferred<void>&& promise) final
+    {
+        promise.settle(packAndPostMessage(globalObject, m_port, "error"_s, reason));
+        m_port->close();
+    }
+
+    const Ref<MessagePort> m_port;
+    RefPtr<DeferredPromise> m_backpressurePromise;
+};
+
+ExceptionOr<Ref<WritableStream>> setupCrossRealmTransformWritable(JSDOMGlobalObject& globalObject, MessagePort& port)
+{
+    RefPtr backpressurePromise = DeferredPromise::create(globalObject, DeferredPromise::Mode::RetainPromiseOnResolve);
+    if (!backpressurePromise)
+        return Exception { ExceptionCode::InvalidStateError, "Unable to create a promise"_s };
+    return WritableStream::create(globalObject, CrossRealmWritableStreamSink::create(port, backpressurePromise.releaseNonNull()));
 }
 
 } // namespace WebCore

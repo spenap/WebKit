@@ -36,5 +36,7 @@ class WritableStream;
 
 // https://streams.spec.whatwg.org/#abstract-opdef-setupcrossrealmtransformreadable
 WEBCORE_EXPORT ExceptionOr<Ref<ReadableStream>> setupCrossRealmTransformReadable(JSDOMGlobalObject&, MessagePort&);
+// https://streams.spec.whatwg.org/#abstract-opdef-setupcrossrealmtransformwritable
+WEBCORE_EXPORT ExceptionOr<Ref<WritableStream>> setupCrossRealmTransformWritable(JSDOMGlobalObject&, MessagePort&);
 
 } // namespace WebCore

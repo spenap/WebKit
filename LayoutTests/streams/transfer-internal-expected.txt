@@ -1,5 +1,8 @@
 
-PASS Validate default behavior
-PASS Validate invalid type
-PASS Validate invalid object messages
+PASS Validate readable default behavior
+PASS Validate readable invalid type
+PASS Validate readable invalid object messages
+PASS Validate writable default behavior
+PASS Validate writable invalid type
+PASS Validate writable invalid object messages
 

@@ -173,7 +173,7 @@ void FileSystemWritableFileStreamSink::write(ScriptExecutionContext& context, JS
     }
 }
 
-void FileSystemWritableFileStreamSink::close()
+void FileSystemWritableFileStreamSink::close(JSDOMGlobalObject&)
 {
     ASSERT(!m_isClosed);
 
@@ -181,12 +181,13 @@ void FileSystemWritableFileStreamSink::close()
     protectedSource()->closeWritable(m_identifier, FileSystemWriteCloseReason::Completed);
 }
 
-void FileSystemWritableFileStreamSink::abort(JSC::JSValue)
+void FileSystemWritableFileStreamSink::abort(JSDOMGlobalObject&, JSC::JSValue, DOMPromiseDeferred<void>&& promise)
 {
     ASSERT(!m_isClosed);
 
     m_isClosed = true;
     protectedSource()->closeWritable(m_identifier, FileSystemWriteCloseReason::Aborted);
+    promise.resolve();
 }
 
 } // namespace WebCore

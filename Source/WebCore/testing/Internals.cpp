@@ -270,6 +270,7 @@
 #include "WindowProxy.h"
 #include "WorkerThread.h"
 #include "WorkletGlobalScope.h"
+#include "WritableStream.h"
 #include "WritingDirection.h"
 #include "XMLHttpRequest.h"
 #include <JavaScriptCore/CodeBlock.h>
@@ -8357,6 +8358,11 @@ void Internals::testAsyncIterator(JSDOMGlobalObject& globalObject, JSC::JSValue 
 ExceptionOr<Ref<ReadableStream>> Internals::readableStreamFromMessagePort(JSDOMGlobalObject& globalObject, MessagePort& port)
 {
     return setupCrossRealmTransformReadable(globalObject, port);
+}
+
+ExceptionOr<Ref<WritableStream>> Internals::writableStreamFromMessagePort(JSDOMGlobalObject& globalObject, MessagePort& port)
+{
+    return setupCrossRealmTransformWritable(globalObject, port);
 }
 
 #if ENABLE(MODEL_ELEMENT)
