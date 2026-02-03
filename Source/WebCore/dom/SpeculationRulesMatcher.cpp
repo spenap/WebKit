@@ -27,11 +27,13 @@
 #include "SpeculationRulesMatcher.h"
 
 #include "CheckVisibilityOptions.h"
+#include "ComposedTreeIterator.h"
 #include "Document.h"
 #include "Element.h"
 #include "HTMLAnchorElement.h"
 #include "JSDOMGlobalObject.h"
 #include "ReferrerPolicy.h"
+#include "RenderElement.h"
 #include "ScriptController.h"
 #include "SelectorQuery.h"
 #include "ShadowRoot.h"
@@ -48,6 +50,15 @@ static bool isUnslottedElement(Element& element)
         if (parent && parent->shadowRoot() && !ancestor->assignedSlot())
             return true;
         ancestor = WTF::move(parent);
+    }
+    return false;
+}
+
+static bool hasRenderedDescendants(Element& element)
+{
+    for (CheckedRef descendant : composedTreeDescendants(element)) {
+        if (descendant->renderer())
+            return true;
     }
     return false;
 }
@@ -131,8 +142,20 @@ std::optional<PrefetchRule> SpeculationRulesMatcher::hasMatchingRule(Document& d
     // - It's unslotted (light DOM child of a shadow host without a slot assignment)
     // - It or an ancestor has display:none
     // - It's part of content-visibility:hidden content
-    if (isUnslottedElement(anchor) || !anchor.checkVisibility(CheckVisibilityOptions { }))
+    if (isUnslottedElement(anchor))
         return std::nullopt;
+
+    if (!anchor.checkVisibility(CheckVisibilityOptions { })) {
+        // checkVisibility returns false for elements with no renderer, which includes both
+        // display:none and display:contents.
+        //
+        // `display: none` elements can't have rendered descendants.
+        if (!anchor.hasDisplayContents())
+            return std::nullopt;
+        // `display: contents` elements can have rendered descendants, so we need to check for them.
+        if (!hasRenderedDescendants(anchor))
+            return std::nullopt;
+    }
 
     const auto& url = anchor.href();
 
