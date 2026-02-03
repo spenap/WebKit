@@ -2344,7 +2344,7 @@ void Page::updateRendering()
     });
 
     runProcessingStep(RenderingUpdateStep::IntersectionObservations, [] (Document& document) {
-        document.updateIntersectionObservers();
+        document.updateIntersectionObservations();
     });
 
     runProcessingStep(RenderingUpdateStep::Images, [] (Document& document) {

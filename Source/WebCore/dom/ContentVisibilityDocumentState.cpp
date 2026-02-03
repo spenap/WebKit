@@ -30,7 +30,6 @@
 #include "ContentVisibilityAutoStateChangeEvent.h"
 #include "DocumentTimeline.h"
 #include "EventNames.h"
-#include "FrameDestructionObserverInlines.h"
 #include "FrameSelection.h"
 #include "IntersectionObserverCallback.h"
 #include "IntersectionObserverEntry.h"
@@ -206,10 +205,7 @@ HadInitialVisibleContentVisibilityDetermination ContentVisibilityDocumentState::
     }
     auto hadInitialVisibleContentVisibilityDetermination = HadInitialVisibleContentVisibilityDetermination::No;
     if (!elementsToCheck.isEmpty()) {
-        Ref document = elementsToCheck.first()->document();
-        if (m_observer->updateObservations(*document->protectedFrame()) == IntersectionObserver::NeedNotify::Yes)
-            m_observer->notify();
-
+        protect(elementsToCheck.first()->document())->updateIntersectionObservations({ m_observer });
         for (auto& element : elementsToCheck) {
             checkRelevancyOfContentVisibilityElement(element, { ContentRelevancy::OnScreen });
             if (element->isRelevantToUser())

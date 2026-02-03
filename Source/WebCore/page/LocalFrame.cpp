@@ -94,7 +94,6 @@
 #include "ProcessWarming.h"
 #include "RemoteFrame.h"
 #include "RenderLayerCompositor.h"
-#include "RenderObjectInlines.h"
 #include "RenderStyle+GettersInlines.h"
 #include "RenderTableCell.h"
 #include "RenderText.h"
@@ -1135,15 +1134,10 @@ void LocalFrame::setPageAndTextZoomFactors(float pageZoomFactor, float textZoomF
 
 float LocalFrame::usedZoomForChild(const Frame& child) const
 {
-    CheckedPtr childOwnerRenderer = child.ownerRenderer();
-    if (!childOwnerRenderer)
-        return 1.0;
+    if (CheckedPtr ownerRenderer = child.ownerRenderer())
+        return ownerRenderer->style().usedZoom();
 
-    // Ensure |child| is a child of this frame.
-    ASSERT(child.tree().parent()->frameID() == frameID());
-    ASSERT(childOwnerRenderer->frame().frameID() == frameID());
-
-    return childOwnerRenderer->style().usedZoom();
+    return 1.0;
 }
 
 void LocalFrame::suspendActiveDOMObjectsAndAnimations()

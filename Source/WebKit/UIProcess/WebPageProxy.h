@@ -2905,8 +2905,6 @@ public:
     friend class TextExtractionAssertionScope;
     UniqueRef<TextExtractionAssertionScope> createTextExtractionAssertionScope();
 
-    void updateRemoteIntersectionObserversInOtherWebProcesses(IPC::Connection&);
-
 private:
     WebPageProxy(PageClient&, WebProcessProxy&, Ref<API::PageConfiguration>&&);
     void platformInitialize();
