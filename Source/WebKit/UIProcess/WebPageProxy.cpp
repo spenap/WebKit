@@ -5163,14 +5163,6 @@ void WebPageProxy::receivedNavigationActionPolicyDecision(WebProcessProxy& proce
     m_isLockdownModeExplicitlySet = (websitePolicies && websitePolicies->isLockdownModeExplicitlySet()) || m_configuration->isLockdownModeExplicitlySet();
     auto lockdownMode = (websitePolicies ? websitePolicies->lockdownModeEnabled() : shouldEnableLockdownMode()) ? WebProcessProxy::LockdownMode::Enabled : WebProcessProxy::LockdownMode::Disabled;
 
-    if (frame.isMainFrame() && preferences->enhancedSecurityHeuristicsEnabled())
-        internals().enhancedSecurityTracker.trackNavigation(navigation, hasOpenedPage());
-
-    auto enhancedSecurity = currentEnhancedSecurityState(websitePolicies.get());
-
-    if (preferences->enhancedSecurityHeuristicsEnabled())
-        protect(this->websiteDataStore())->trackEnhancedSecurityForDomain(RegistrableDomain { navigation.currentRequest().url() }, enhancedSecurity);
-
     Ref browsingContextGroup = m_browsingContextGroup;
     bool usesSameWebsiteDataStore = websiteDataStore.ptr() == &this->websiteDataStore();
     bool mainFrameSiteChanges = !m_mainFrame || Site { m_mainFrame->url() } != Site { navigation.currentRequest().url() };
@@ -5178,6 +5170,17 @@ void WebPageProxy::receivedNavigationActionPolicyDecision(WebProcessProxy& proce
         browsingContextGroup = *targetBackForwardItem->browsingContextGroup();
     else if (processSwapRequestedByClient == ProcessSwapRequestedByClient::Yes || !usesSameWebsiteDataStore || (navigation.isRequestFromClientOrUserInput() && !navigation.isFromLoadData() && mainFrameSiteChanges))
         browsingContextGroup = BrowsingContextGroup::create();
+
+    if (frame.isMainFrame() && preferences->enhancedSecurityHeuristicsEnabled())
+        internals().enhancedSecurityTracker.trackNavigation(navigation, hasOpenedPage());
+
+    auto enhancedSecurity = currentEnhancedSecurityState(websitePolicies.get());
+
+    if (RefPtr process = browsingContextGroup->processForSite(Site { navigation.currentRequest().url() }))
+        enhancedSecurity = process->process().enhancedSecurity();
+
+    if (preferences->enhancedSecurityHeuristicsEnabled())
+        protect(this->websiteDataStore())->trackEnhancedSecurityForDomain(RegistrableDomain { navigation.currentRequest().url() }, enhancedSecurity);
 
     Site site { navigation.currentRequest().url() };
     Site mainFrameSite = frame.isMainFrame() ? site : Site { URL(protect(pageLoadState())->activeURL()) };
