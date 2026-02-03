@@ -8878,7 +8878,6 @@ struct WebCore::JsonWebKey {
     String kty;
     String use
     std::optional<Vector<WebCore::CryptoKeyUsage>> key_ops;
-    int usages;
     String alg;
     std::optional<bool> ext;
     String crv;
@@ -8894,6 +8893,7 @@ struct WebCore::JsonWebKey {
     String qi;
     std::optional<Vector<WebCore::RsaOtherPrimesInfo>> oth;
     String k;
+    int usages;
 };
 
 enum class WebCore::CryptoAlgorithmIdentifier : uint8_t {

@@ -1078,6 +1078,7 @@ set(WebCore_PRIVATE_FRAMEWORK_HEADERS
     crypto/CryptoAlgorithm.h
     crypto/CryptoAlgorithmIdentifier.h
     crypto/CryptoAlgorithmParameters.h
+    crypto/CryptoAlgorithmParametersInit.h
     crypto/CryptoKey.h
     crypto/CryptoKeyData.h
     crypto/CryptoKeyFormat.h
@@ -1105,6 +1106,7 @@ set(WebCore_PRIVATE_FRAMEWORK_HEADERS
     crypto/keys/CryptoRsaKeyAlgorithm.h
 
     crypto/parameters/CryptoAlgorithmAesCbcCfbParams.h
+    crypto/parameters/CryptoAlgorithmAesCbcCfbParamsInit.h
 
     css/CSSAttrValue.h
     css/CSSColorValue.h
