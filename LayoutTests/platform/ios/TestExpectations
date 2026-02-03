@@ -2445,7 +2445,7 @@ accessibility/tree-update-with-dynamically-ignored-tabindex-div.html [ Pass ]
 accessibility/url-test.html [ Pass ]
 accessibility/video-element-url-attribute.html [ Pass ]
 accessibility/visible-character-range-height-changes.html [ Pass ]
-accessibility/visible-character-range-vertical-rl.html [ Pass ]
+webkit.org/b/306555 accessibility/visible-character-range-vertical-rl.html [ Failure ]
 accessibility/visibility-visible-inside-hidden.html [ Pass ]
 
 # Enable "aria-current" tests for iOS.
