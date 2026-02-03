@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Apple Inc. All rights reserved.
+ * Copyright (c) 2025-2026 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -44,7 +44,6 @@
 #include "unistd.h"
 #endif
 
-#if defined(PAS_USE_OPENSOURCE_MTE) && PAS_USE_OPENSOURCE_MTE
 #if PAS_ENABLE_MTE
 
 #include "pas_utils.h"
@@ -1111,10 +1110,6 @@ void* pas_mte_system_heap_realloc_zero_tagged(malloc_zone_t* zone, void* ptr, si
 PAS_IGNORE_WARNINGS_END
 
 #else // !PAS_ENABLE_MTE
-#define PAS_MTE_HANDLE(kind, ...) PAS_UNUSED_V(__VA_ARGS__)
-#define PAS_SHOULD_MTE_TAG_BASIC_HEAP_PAGE(size_category) (false)
-#endif // PAS_ENABLE_MTE
-#else // defined(PAS_USE_OPENSOURCE_MTE) && PAS_USE_OPENSOURCE_MTE
 #define PAS_MTE_HANDLE(kind, ...) PAS_UNUSED_V(__VA_ARGS__)
 #define PAS_SHOULD_MTE_TAG_BASIC_HEAP_PAGE(size_category) (false)
 #endif // PAS_ENABLE_MTE

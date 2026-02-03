@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 Apple Inc. All rights reserved.
+ * Copyright (c) 2021-2026 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -225,13 +225,10 @@
 #define PAS_USE_APPLE_INTERNAL_SDK 0
 #endif // PAS_PLATFORM(COCOA)
 
-#ifndef PAS_USE_OPENSOURCE_MTE
-#define PAS_USE_OPENSOURCE_MTE 1
 // For legacy consumers of certain headers
 #ifndef MTE_ENABLED_IN_BUILD
 #define MTE_ENABLED_IN_BUILD 0
 #endif // MTE_ENABLED_IN_BUILD
-#endif // PAS_USE_OPENSOURCE_MTE
 
 /* PAS_ALLOW_UNSAFE_BUFFER_USAGE */
 
