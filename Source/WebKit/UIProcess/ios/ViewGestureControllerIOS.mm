@@ -355,8 +355,9 @@ void ViewGestureController::willEndSwipeGesture(WebBackForwardListItem& targetIt
         | SnapshotRemovalTracker::RepaintAfterNavigation
         | SnapshotRemovalTracker::MainFrameLoad
         | SnapshotRemovalTracker::SubresourceLoads
-        | SnapshotRemovalTracker::ScrollPositionRestoration, [this] {
-        this->removeSwipeSnapshot();
+        | SnapshotRemovalTracker::ScrollPositionRestoration, [weakThis = WeakPtr { *this }] {
+        if (RefPtr protectedThis = weakThis.get())
+            protectedThis->removeSwipeSnapshot();
     });
 
     if (ViewSnapshot* snapshot = targetItem.snapshot()) {
@@ -415,11 +416,15 @@ void ViewGestureController::endSwipeGesture(WebBackForwardListItem* targetItem, 
     auto pageID = page->identifier();
     GestureID gestureID = m_currentGestureID;
 
-    auto doAfterLoadStart = [this, pageID, gestureID] {
-        RefPtr page = m_webPageProxy.get();
+    auto doAfterLoadStart = [weakThis = WeakPtr { * this }, pageID, gestureID] {
+        RefPtr protectedThis = weakThis.get();
+        if (!protectedThis)
+            return;
+
+        RefPtr page = protectedThis->m_webPageProxy.get();
         auto* drawingArea = page ? page->provisionalDrawingArea() : nullptr;
         if (!drawingArea) {
-            removeSwipeSnapshot();
+            protectedThis->removeSwipeSnapshot();
             return;
         }
 

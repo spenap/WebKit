@@ -934,9 +934,9 @@ ALLOW_DEPRECATED_DECLARATIONS_END
         return;
 
     BlockPtr<UIMenu*(UIMenu*)> menuUpdater;
-    menuUpdater = makeBlockPtr([&](UIMenu *menu) -> UIMenu* {
-        if ([menu.identifier isEqual:captionStyleMenu.identifier])
-            return captionStyleMenu;
+    menuUpdater = makeBlockPtr([&, captionStyleMenu = RetainPtr { captionStyleMenu }](UIMenu *menu) mutable -> UIMenu* {
+        if ([menu.identifier isEqual:captionStyleMenu.get().identifier])
+            return captionStyleMenu.getAutoreleased();
 
         if (!menu.children.count)
             return menu;

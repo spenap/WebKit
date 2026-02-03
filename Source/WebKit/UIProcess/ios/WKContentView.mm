@@ -1156,7 +1156,9 @@ static void storeAccessibilityRemoteConnectionInformation(id element, pid_t pid,
 
     if (isPrintingOnBackgroundThread) {
         BinarySemaphore computePagesSemaphore;
-        callOnMainRunLoop([self, printFormatter, printInfo, &frameID, &pageCount, &computePagesSemaphore]() mutable {
+        // Silencing lambda capture warnings here since the lambda actually runs synchronously thanks
+        // to the BinarySemaphore.
+        SUPPRESS_UNCOUNTED_LAMBDA_CAPTURE callOnMainRunLoop([self, printFormatter, printInfo, &frameID, &pageCount, &computePagesSemaphore]() mutable {
             auto identifier = [self _frameIdentifierForPrintFormatter:printFormatter];
             if (!identifier) {
                 computePagesSemaphore.signal();

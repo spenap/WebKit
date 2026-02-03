@@ -300,30 +300,34 @@ void ApplicationStateTracker::setScene(UIScene *scene)
     RELEASE_LOG(ViewState, "%p - ApplicationStateTracker: add observers for scene", this);
 
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
-    m_didEnterBackgroundObserver = [notificationCenter addObserverForName:UISceneDidEnterBackgroundNotification object:scene queue:nil usingBlock:[this, weakThis = WeakPtr { *this }](NSNotification *notification) {
-        if (!weakThis)
+    m_didEnterBackgroundObserver = [notificationCenter addObserverForName:UISceneDidEnterBackgroundNotification object:scene queue:nil usingBlock:[weakThis = WeakPtr { *this }](NSNotification *notification) {
+        RefPtr protectedThis = weakThis.get();
+        if (!protectedThis)
             return;
-        RELEASE_LOG(ViewState, "%p - ApplicationStateTracker: UISceneDidEnterBackground", this);
-        applicationDidEnterBackground();
+        RELEASE_LOG(ViewState, "%p - ApplicationStateTracker: UISceneDidEnterBackground", protectedThis.get());
+        protectedThis->applicationDidEnterBackground();
     }];
 
-    m_willEnterForegroundObserver = [notificationCenter addObserverForName:UISceneWillEnterForegroundNotification object:scene queue:nil usingBlock:[this, weakThis = WeakPtr { *this }](NSNotification *notification) {
-        if (!weakThis)
+    m_willEnterForegroundObserver = [notificationCenter addObserverForName:UISceneWillEnterForegroundNotification object:scene queue:nil usingBlock:[weakThis = WeakPtr { *this }](NSNotification *notification) {
+        RefPtr protectedThis = weakThis.get();
+        if (!protectedThis)
             return;
-        RELEASE_LOG(ViewState, "%p - ApplicationStateTracker: UISceneWillEnterForeground", this);
-        applicationWillEnterForeground();
+        RELEASE_LOG(ViewState, "%p - ApplicationStateTracker: UISceneWillEnterForeground", protectedThis.get());
+        protectedThis->applicationWillEnterForeground();
     }];
 
-    m_willBeginSnapshotSequenceObserver = [notificationCenter addObserverForName:_UISceneWillBeginSystemSnapshotSequence object:scene queue:nil usingBlock:[this, weakThis = WeakPtr { *this }](NSNotification *notification) {
-        if (!weakThis)
+    m_willBeginSnapshotSequenceObserver = [notificationCenter addObserverForName:_UISceneWillBeginSystemSnapshotSequence object:scene queue:nil usingBlock:[weakThis = WeakPtr { *this }](NSNotification *notification) {
+        RefPtr protectedThis = weakThis.get();
+        if (!protectedThis)
             return;
-        willBeginSnapshotSequence();
+        protectedThis->willBeginSnapshotSequence();
     }];
 
-    m_didCompleteSnapshotSequenceObserver = [notificationCenter addObserverForName:_UISceneDidCompleteSystemSnapshotSequence object:scene queue:nil usingBlock:[this, weakThis = WeakPtr { *this }](NSNotification *notification) {
-        if (!weakThis)
+    m_didCompleteSnapshotSequenceObserver = [notificationCenter addObserverForName:_UISceneDidCompleteSystemSnapshotSequence object:scene queue:nil usingBlock:[weakThis = WeakPtr { *this }](NSNotification *notification) {
+        RefPtr protectedThis = weakThis.get();
+        if (!protectedThis)
             return;
-        didCompleteSnapshotSequence();
+        protectedThis->didCompleteSnapshotSequence();
     }];
 }
 
@@ -356,17 +360,19 @@ void ApplicationStateTracker::setViewController(UIViewController *serviceViewCon
     RELEASE_LOG(ProcessSuspension, "%{public}s has PID %d, host application PID=%d, isInBackground=%d", _UIApplicationIsExtension() ? "Extension" : "ViewService", getpid(), applicationPID, m_isInBackground);
 
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
-    m_didEnterBackgroundObserver = [notificationCenter addObserverForName:viewServiceBackgroundNotificationName object:serviceViewController queue:nil usingBlock:[this, weakThis = WeakPtr { *this }, applicationPID](NSNotification *) {
-        if (!weakThis)
+    m_didEnterBackgroundObserver = [notificationCenter addObserverForName:viewServiceBackgroundNotificationName object:serviceViewController queue:nil usingBlock:[weakThis = WeakPtr { *this }, applicationPID](NSNotification *) {
+        RefPtr protectedThis = weakThis.get();
+        if (!protectedThis)
             return;
         RELEASE_LOG(ProcessSuspension, "%{public}s has PID %d, host application PID=%d, didEnterBackground", _UIApplicationIsExtension() ? "Extension" : "ViewService", getpid(), applicationPID);
-        applicationDidEnterBackground();
+        protectedThis->applicationDidEnterBackground();
     }];
-    m_willEnterForegroundObserver = [notificationCenter addObserverForName:viewServiceForegroundNotificationName object:serviceViewController queue:nil usingBlock:[this, weakThis = WeakPtr { *this }, applicationPID](NSNotification *) {
-        if (!weakThis)
+    m_willEnterForegroundObserver = [notificationCenter addObserverForName:viewServiceForegroundNotificationName object:serviceViewController queue:nil usingBlock:[weakThis = WeakPtr { *this }, applicationPID](NSNotification *) {
+        RefPtr protectedThis = weakThis.get();
+        if (!protectedThis)
             return;
         RELEASE_LOG(ProcessSuspension, "%{public}s has PID %d, host application PID=%d, willEnterForeground", _UIApplicationIsExtension() ? "Extension" : "ViewService", getpid(), applicationPID);
-        applicationWillEnterForeground();
+        protectedThis->applicationWillEnterForeground();
     }];
 }
 

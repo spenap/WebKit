@@ -733,30 +733,30 @@ static NSSet<NSString *> *UTIsForMIMETypes(NSArray *mimeTypes)
 
 - (UIContextMenuConfiguration *)contextMenuInteraction:(UIContextMenuInteraction *)interaction configurationForMenuAtLocation:(CGPoint)location {
 
-    UIContextMenuActionProvider actionMenuProvider = [self, weakSelf = WeakObjCPtr<WKFileUploadPanel>(self)] (NSArray<UIMenuElement *> *) -> UIMenu * {
-        NSArray *actions;
-
+    WeakObjCPtr<WKFileUploadPanel> weakSelf { self };
+    UIContextMenuActionProvider actionMenuProvider = [weakSelf] (NSArray<UIMenuElement *> *) -> UIMenu * {
         auto strongSelf = weakSelf.get();
         if (!strongSelf)
             return nil;
 
-        self->_isPresentingSubMenu = NO;
+        strongSelf->_isPresentingSubMenu = NO;
         UIAction *chooseAction = [UIAction actionWithTitle:[strongSelf _chooseFilesButtonLabel] image:[UIImage systemImageNamed:@"folder"] identifier:@"choose" handler:^(__kindof UIAction *action) {
-            self->_isPresentingSubMenu = YES;
-            [self showFilePickerMenu];
+            strongSelf->_isPresentingSubMenu = YES;
+            [strongSelf showFilePickerMenu];
         }];
 
         UIAction *photoAction = [UIAction actionWithTitle:[strongSelf _photoLibraryButtonLabel] image:[UIImage systemImageNamed:@"photo.on.rectangle"] identifier:@"photo" handler:^(__kindof UIAction *action) {
-            self->_isPresentingSubMenu = YES;
-            [self _showPhotoPicker];
+            strongSelf->_isPresentingSubMenu = YES;
+            [strongSelf _showPhotoPicker];
         }];
 
+        NSArray *actions;
         if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) {
             NSString *cameraString = [strongSelf _cameraButtonLabel];
             UIAction *cameraAction = [UIAction actionWithTitle:cameraString image:[UIImage systemImageNamed:@"camera"] identifier:@"camera" handler:^(__kindof UIAction *action) {
-                _usingCamera = YES;
-                self->_isPresentingSubMenu = YES;
-                [self _showCamera];
+                strongSelf->_usingCamera = YES;
+                strongSelf->_isPresentingSubMenu = YES;
+                [strongSelf _showCamera];
             }];
             actions = @[photoAction, cameraAction, chooseAction];
         } else

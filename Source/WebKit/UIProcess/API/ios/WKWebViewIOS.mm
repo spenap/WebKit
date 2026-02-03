@@ -665,8 +665,8 @@ static WebCore::Color scrollViewBackgroundColor(WKWebView *webView, AllowPageBac
         return WebCore::Color::transparentBlack;
 
     WebCore::Color color;
-    [WebCore::traitCollectionWithAdjustedIdiomForSystemColors(webView.traitCollection) performAsCurrentTraitCollection:[&] {
-        color = baseScrollViewBackgroundColor(webView, allowPageBackgroundColorOverride);
+    [WebCore::traitCollectionWithAdjustedIdiomForSystemColors(webView.traitCollection) performAsCurrentTraitCollection:[&, webView = RetainPtr { webView }] {
+        color = baseScrollViewBackgroundColor(webView.get(), allowPageBackgroundColorOverride);
 
         if (!color.isValid() && webView->_contentView)
             color = WebCore::roundAndClampToSRGBALossy([webView->_contentView backgroundColor].CGColor);
@@ -3720,9 +3720,9 @@ static bool isLockdownModeWarningNeeded()
         return;
 
 #if PLATFORM(MACCATALYST)
-    auto message = WEB_UI_NSSTRING(@"Certain experiences and features may not function as expected. You can manage Lockdown Mode in Settings.", "Lockdown Mode alert message (MacCatalyst)");
+    RetainPtr message = WEB_UI_NSSTRING(@"Certain experiences and features may not function as expected. You can manage Lockdown Mode in Settings.", "Lockdown Mode alert message (MacCatalyst)");
 #else
-    auto message = WEB_UI_NSSTRING(@"Certain experiences and features may not function as expected. You can turn off Lockdown Mode for this app in Settings.", "Lockdown Mode alert message");
+    RetainPtr message = WEB_UI_NSSTRING(@"Certain experiences and features may not function as expected. You can turn off Lockdown Mode for this app in Settings.", "Lockdown Mode alert message");
 #endif
 
     auto decisionHandler = makeBlockPtr([message, protectedSelf = retainPtr(self)](WKDialogResult result) mutable {
@@ -3738,7 +3738,7 @@ static bool isLockdownModeWarningNeeded()
             return;
         }
 
-        RunLoop::mainSingleton().dispatch([message = retainPtr(message), protectedSelf = WTF::move(protectedSelf)] {
+        RunLoop::mainSingleton().dispatch([message = WTF::move(message), protectedSelf = WTF::move(protectedSelf)] {
             NSString *appDisplayName = [[NSBundle mainBundle] objectForInfoDictionaryKey:(__bridge NSString *)_kCFBundleDisplayNameKey];
             if (!appDisplayName)
                 appDisplayName = [[NSBundle mainBundle] objectForInfoDictionaryKey:(__bridge NSString *)kCFBundleNameKey];
@@ -3756,7 +3756,7 @@ static bool isLockdownModeWarningNeeded()
     
 #if PLATFORM(IOS) || PLATFORM(VISION)
     if ([self.UIDelegate respondsToSelector:@selector(webView:showLockdownModeFirstUseMessage:completionHandler:)]) {
-        [self.UIDelegate webView:self showLockdownModeFirstUseMessage:message completionHandler:decisionHandler.get()];
+        [self.UIDelegate webView:self showLockdownModeFirstUseMessage:message.get() completionHandler:decisionHandler.get()];
         return;
     }
 #endif
@@ -4704,9 +4704,12 @@ static std::optional<WebCore::ViewportArguments> viewportArgumentsFromDictionary
 {
     ++_activeFocusedStateRetainCount;
     // FIXME: Use something like CompletionHandlerCallChecker to ensure that the returned block is called before it's released.
-    return adoptNS([[self] {
-        if (_activeFocusedStateRetainCount)
-            --_activeFocusedStateRetainCount;
+    return adoptNS([[weakSelf = WeakObjCPtr { self }] {
+        RetainPtr strongSelf = weakSelf.get();
+        if (!strongSelf)
+            return;
+        if (strongSelf->_activeFocusedStateRetainCount)
+            --strongSelf->_activeFocusedStateRetainCount;
     } copy]).autorelease();
 }
 

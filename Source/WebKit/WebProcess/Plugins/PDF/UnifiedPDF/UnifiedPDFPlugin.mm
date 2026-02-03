@@ -3917,7 +3917,7 @@ void UnifiedPDFPlugin::updatePageNumberIndicatorCurrentPage(const std::optional<
     if (!m_frame || !m_frame->page())
         return;
 
-    auto unobscuredContentRectInRootView = maybeUnobscuredContentRectInRootView.or_else([this] -> std::optional<IntRect> {
+    auto unobscuredContentRectInRootView = maybeUnobscuredContentRectInRootView.or_else([this, protectedThis = Ref { *this }] -> std::optional<IntRect> {
         if (!m_frame || !m_frame->coreLocalFrame())
             return { };
         RefPtr view = m_frame->coreLocalFrame()->view();
@@ -4615,13 +4615,13 @@ auto UnifiedPDFPlugin::selectionCaretPointInPage(PDFSelection *selection, Select
 
     AffineTransform cumulativeTransform = [page transformForBox:kPDFDisplayBoxMediaBox];
     bool appliedLineTransform = false;
-    [selectedLine enumerateRectsAndTransformsForPage:page.get() usingBlock:[&](CGRect rect, CGAffineTransform transform) {
+    [selectedLine enumerateRectsAndTransformsForPage:page.get() usingBlock:[&, protectedThis = Ref { *this }](CGRect rect, CGAffineTransform transform) {
         if (std::exchange(appliedLineTransform, true)) {
             ASSERT_NOT_REACHED();
             return;
         }
 
-        boundsInRootView = pageToRootView({ CGRectApplyAffineTransform(rect, transform) }, page.get());
+        boundsInRootView = protectedThis->pageToRootView({ CGRectApplyAffineTransform(rect, transform) }, page.get());
         cumulativeTransform *= transform;
     }];
 
@@ -4676,9 +4676,9 @@ bool UnifiedPDFPlugin::platformPopulateEditorStateIfNeeded(EditorState& state) c
 #if HAVE(PDFSELECTION_ENUMERATE_RECTS_AND_TRANSFORMS)
     for (PDFPage *page in [selection pages]) {
         auto pageIndex = m_documentLayout.indexForPage(page);
-        [selection enumerateRectsAndTransformsForPage:page usingBlock:[&](CGRect rect, CGAffineTransform transform) {
+        [selection enumerateRectsAndTransformsForPage:page usingBlock:[&, protectedThis = Ref { *this }](CGRect rect, CGAffineTransform transform) {
             auto transformedRectInPage = CGRectApplyAffineTransform(rect, transform);
-            auto rectInRootView = pageToRootView(FloatRect { transformedRectInPage }, pageIndex);
+            auto rectInRootView = protectedThis->pageToRootView(FloatRect { transformedRectInPage }, pageIndex);
             if (rectInRootView.isEmpty())
                 return;
 

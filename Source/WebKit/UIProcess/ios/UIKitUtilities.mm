@@ -213,8 +213,9 @@ static UIAxis axesForDelta(WebCore::FloatSize delta)
 {
     static bool hasAPI = [UIScrollView instancesRespondToSelector:@selector(showScrollIndicatorsForContentOffsetChanges:)];
     if (hasAPI) {
-        [self showScrollIndicatorsForContentOffsetChanges:[animated, offset, self] {
-            [self setContentOffset:offset animated:animated];
+        [self showScrollIndicatorsForContentOffsetChanges:[animated, offset, weakSelf = WeakObjCPtr { self }] {
+            if (RetainPtr strongSelf = weakSelf.get())
+                [strongSelf setContentOffset:offset animated:animated];
         }];
         return;
     }

@@ -1299,8 +1299,8 @@ FloatBoxExtent PageClientImpl::computedObscuredInset() const
 WebCore::Color PageClientImpl::contentViewBackgroundColor()
 {
     WebCore::Color color;
-    [[webView() traitCollection] performAsCurrentTraitCollection:[&]() {
-        color = WebCore::roundAndClampToSRGBALossy([contentView() backgroundColor].CGColor);
+    [[webView() traitCollection] performAsCurrentTraitCollection:[&, protectedThis = Ref { *this }]() {
+        color = WebCore::roundAndClampToSRGBALossy([protectedThis->contentView() backgroundColor].CGColor);
         if (color.isValid())
             return;
         color = WebCore::roundAndClampToSRGBALossy(UIColor.systemBackgroundColor.CGColor);

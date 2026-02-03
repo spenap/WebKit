@@ -11245,19 +11245,19 @@ static Vector<WebCore::IntSize> sizesOfPlaceholderElementsToInsertWhenDroppingIt
 
     auto positionForDragEnd = WebCore::roundedIntPoint(_dragDropInteractionState.adjustedPositionForDragEnd());
     RetainPtr<WKContentView> protectedSelf(self);
-    [animator addCompletion:[session, positionForDragEnd, protectedSelf, page = _page] (UIViewAnimatingPosition finalPosition) {
+    [animator addCompletion:[session = RetainPtr { session }, positionForDragEnd, protectedSelf, page = _page] (UIViewAnimatingPosition finalPosition) {
 #if RELEASE_LOG_DISABLED
         UNUSED_PARAM(session);
 #endif
         if (finalPosition == UIViewAnimatingPositionStart) {
-            RELEASE_LOG(DragAndDrop, "Drag session ended at start: %p", session);
+            RELEASE_LOG(DragAndDrop, "Drag session ended at start: %p", session.get());
             // The lift was canceled, so -dropInteraction:sessionDidEnd: will never be invoked. This is the last chance to clean up.
             [protectedSelf cleanUpDragSourceSessionState];
             page->dragEnded(positionForDragEnd, positionForDragEnd, { });
         }
 #if !RELEASE_LOG_DISABLED
         else
-            RELEASE_LOG(DragAndDrop, "Drag session did not end at start: %p", session);
+            RELEASE_LOG(DragAndDrop, "Drag session did not end at start: %p", session.get());
 #endif
     }];
 }
@@ -13282,7 +13282,7 @@ static BOOL shouldUseMachineReadableCodeMenuFromImageAnalysisResult(CocoaImageAn
 - (void)_insertDynamicImageAnalysisContextMenuItemsIfPossible
 {
     bool updated = false;
-    [self.contextMenuInteraction updateVisibleMenuWithBlock:makeBlockPtr([&](UIMenu *menu) -> UIMenu * {
+    [self.contextMenuInteraction updateVisibleMenuWithBlock:makeBlockPtr([&, strongSelf = RetainPtr { self }](UIMenu *menu) -> UIMenu * {
         updated = true;
         __block BOOL foundRevealImageItem = NO;
         __block BOOL foundShowTextItem = NO;

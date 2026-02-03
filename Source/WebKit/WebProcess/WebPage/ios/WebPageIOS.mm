@@ -2645,13 +2645,13 @@ void WebPage::selectTextWithGranularityAtPoint(const WebCore::IntPoint& point, W
     if (auto selectionChangedHandler = std::exchange(m_selectionChangedHandler, {}))
         selectionChangedHandler();
 
-    m_selectionChangedHandler = [point, granularity, isInteractingWithFocusedElement, completionHandler = WTF::move(completionHandler), webPage = WeakPtr { *this }, this]() mutable {
-        RefPtr<WebPage> strongPage = webPage.get();
-        if (!strongPage) {
+    m_selectionChangedHandler = [point, granularity, isInteractingWithFocusedElement, completionHandler = WTF::move(completionHandler), weakThis = WeakPtr { *this }]() mutable {
+        RefPtr protectedThis = weakThis.get();
+        if (!protectedThis) {
             completionHandler();
             return;
         }
-        setSelectionRange(point, granularity, isInteractingWithFocusedElement);
+        protectedThis->setSelectionRange(point, granularity, isInteractingWithFocusedElement);
         completionHandler();
     };
 
@@ -2815,7 +2815,7 @@ void WebPage::prepareSelectionForContextMenuWithLocationInView(IntPoint point, C
             return completionHandler(true, revealItemForCurrentSelection());
     }
 
-    auto sendEditorStateAndCallCompletionHandler = [this, completionHandler = WTF::move(completionHandler)](RevealItem&& item) mutable {
+    auto sendEditorStateAndCallCompletionHandler = [this, protectedThis = Ref { *this }, completionHandler = WTF::move(completionHandler)](RevealItem&& item) mutable {
         layoutIfNeeded();
         sendEditorStateUpdate();
         completionHandler(true, WTF::move(item));
@@ -4422,7 +4422,7 @@ void WebPage::resetViewportDefaultConfiguration(WebFrame* frame, bool hasMobileD
 
     RefPtr document = localFrame->document();
 
-    auto updateViewportConfigurationForMobileDocType = [this, document] {
+    auto updateViewportConfigurationForMobileDocType = [this, protectedThis = Ref { *this }, document] {
         m_viewportConfiguration.setDefaultConfiguration(ViewportConfiguration::xhtmlMobileParameters());
 
         // Do not update the viewport arguments if they are already configured by the website.
@@ -4578,7 +4578,7 @@ void WebPage::shrinkToFitContent(ZoomToInitialScale zoomToInitialScale)
     if (originalHorizontalOverflowAmount <= toleratedHorizontalScrollingDistance || originalLayoutWidth >= maximumExpandedLayoutWidth || originalContentWidth <= originalViewWidth || originalContentWidth > maximumContentWidthBeforeAvoidingShrinkToFit)
         return;
 
-    auto changeMinimumEffectiveDeviceWidth = [this, mainDocument] (int targetLayoutWidth) -> bool {
+    auto changeMinimumEffectiveDeviceWidth = [this, protectedThis = Ref { *this }, mainDocument] (int targetLayoutWidth) -> bool {
         if (m_viewportConfiguration.setMinimumEffectiveDeviceWidthForShrinkToFit(targetLayoutWidth)) {
             viewportConfigurationChanged();
             mainDocument->updateLayout();
