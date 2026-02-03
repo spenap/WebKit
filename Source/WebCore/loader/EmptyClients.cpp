@@ -35,7 +35,6 @@
 #include "CacheStorageProvider.h"
 #include "ColorChooser.h"
 #include "ContextMenuClient.h"
-#include "CookieConsentDecisionResult.h"
 #include "CookieJar.h"
 #include "CredentialRequestCoordinatorClient.h"
 #include "DOMPasteAccess.h"
@@ -654,11 +653,6 @@ void EmptyChromeClient::runOpenPanel(LocalFrame&, FileChooser&)
     
 void EmptyChromeClient::showShareSheet(ShareDataWithParsedURL&&, CompletionHandler<void(bool)>&&)
 {
-}
-
-void EmptyChromeClient::requestCookieConsent(CompletionHandler<void(CookieConsentDecisionResult)>&& completion)
-{
-    completion(CookieConsentDecisionResult::NotSupported);
 }
 
 RefPtr<Icon> EmptyChromeClient::createIconForFiles(const Vector<String>& /* filenames */)

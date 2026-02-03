@@ -60,7 +60,6 @@
 #import <WebCore/ColorChooser.h>
 #import <WebCore/ContextMenu.h>
 #import <WebCore/ContextMenuController.h>
-#import <WebCore/CookieConsentDecisionResult.h>
 #import <WebCore/Cursor.h>
 #import <WebCore/DataListSuggestionPicker.h>
 #import <WebCore/DocumentFullscreen.h>
@@ -1155,9 +1154,4 @@ RefPtr<WebCore::ShapeDetection::TextDetector> WebChromeClient::createTextDetecto
 void WebChromeClient::registerBlobPathForTesting(const String&, CompletionHandler<void()>&& completion)
 {
     completion();
-}
-
-void WebChromeClient::requestCookieConsent(CompletionHandler<void(CookieConsentDecisionResult)>&& completion)
-{
-    completion(CookieConsentDecisionResult::NotSupported);
 }

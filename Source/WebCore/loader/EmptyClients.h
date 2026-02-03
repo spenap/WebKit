@@ -221,8 +221,6 @@ class EmptyChromeClient : public ChromeClient {
     bool shouldNotifyOnFormChanges() final { return false; }
 
     RefPtr<Icon> createIconForFiles(const Vector<String>& /* filenames */) final;
-
-    void requestCookieConsent(CompletionHandler<void(CookieConsentDecisionResult)>&&) final;
 };
 
 DiagnosticLoggingClient& emptyDiagnosticLoggingClient();

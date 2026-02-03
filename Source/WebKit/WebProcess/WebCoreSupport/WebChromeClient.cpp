@@ -82,7 +82,6 @@
 #include <WebCore/ColorChooserClient.h>
 #include <WebCore/ContentRuleListMatchedRule.h>
 #include <WebCore/ContentRuleListResults.h>
-#include <WebCore/CookieConsentDecisionResult.h>
 #include <WebCore/DataListSuggestionPicker.h>
 #include <WebCore/DatabaseTracker.h>
 #include <WebCore/DocumentFullscreen.h>
@@ -2209,14 +2208,6 @@ void WebChromeClient::beginSystemPreview(const URL& url, const SecurityOriginDat
         completionHandler();
 }
 #endif
-
-void WebChromeClient::requestCookieConsent(CompletionHandler<void(CookieConsentDecisionResult)>&& completion)
-{
-    if (RefPtr page = m_page.get())
-        page->sendWithAsyncReply(Messages::WebPageProxy::RequestCookieConsent(), WTF::move(completion));
-    else
-        completion(CookieConsentDecisionResult::NotSupported);
-}
 
 bool WebChromeClient::isUsingUISideCompositing() const
 {

@@ -246,7 +246,6 @@ void UIDelegate::setDelegate(id<WKUIDelegate> delegate)
 #endif // ENABLE(WEBXR)
 
     m_delegateMethods.webViewRequestNotificationPermissionForSecurityOriginDecisionHandler = [delegate respondsToSelector:@selector(_webView:requestNotificationPermissionForSecurityOrigin:decisionHandler:)];
-    m_delegateMethods.webViewRequestCookieConsentWithMoreInfoHandlerDecisionHandler = [delegate respondsToSelector:@selector(_webView:requestCookieConsentWithMoreInfoHandler:decisionHandler:)];
 
     m_delegateMethods.webViewUpdatedAppBadge = [delegate respondsToSelector:@selector(_webView:updatedAppBadge:fromSecurityOrigin:)];
 
@@ -853,29 +852,6 @@ void UIDelegate::UIClient::decidePolicyForNotificationPermissionRequest(WebKit::
         checker->didCallCompletionHandler();
 
         completionHandler(result);
-    }).get()];
-}
-
-void UIDelegate::UIClient::requestCookieConsent(CompletionHandler<void(WebCore::CookieConsentDecisionResult)>&& completion)
-{
-    RefPtr uiDelegate = m_uiDelegate.get();
-    if (!uiDelegate)
-        return completion(WebCore::CookieConsentDecisionResult::NotSupported);
-
-    if (!uiDelegate->m_delegateMethods.webViewRequestCookieConsentWithMoreInfoHandlerDecisionHandler)
-        return completion(WebCore::CookieConsentDecisionResult::NotSupported);
-
-    RetainPtr delegate = uiDelegatePrivate();
-    if (!delegate)
-        return completion(WebCore::CookieConsentDecisionResult::NotSupported);
-
-    // FIXME: Add support for the 'more info' handler.
-    auto checker = CompletionHandlerCallChecker::create(delegate.get(), @selector(_webView:requestCookieConsentWithMoreInfoHandler:decisionHandler:));
-    [delegate _webView:uiDelegate->m_webView.get().get() requestCookieConsentWithMoreInfoHandler:nil decisionHandler:makeBlockPtr([completion = WTF::move(completion), checker = WTF::move(checker)] (BOOL decision) mutable {
-        if (checker->completionHandlerHasBeenCalled())
-            return;
-        checker->didCallCompletionHandler();
-        completion(decision ? WebCore::CookieConsentDecisionResult::Consent : WebCore::CookieConsentDecisionResult::Dissent);
     }).get()];
 }
 

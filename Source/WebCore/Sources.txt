@@ -112,7 +112,6 @@ Modules/compression/DecompressionStreamDecoder.cpp
 Modules/compression/ZStream.cpp
 Modules/contact-picker/ContactsManager.cpp
 Modules/contact-picker/NavigatorContacts.cpp
-Modules/cookie-consent/NavigatorCookieConsent.cpp
 Modules/cookie-store/CookieChangeEvent.cpp
 Modules/cookie-store/CookieStore.cpp
 Modules/cookie-store/CookieStoreManager.cpp
@@ -4771,7 +4770,6 @@ JSReportBody.cpp
 JSReportingObserver.cpp
 JSReportingObserverCallback.cpp
 JSRequestAnimationFrameCallback.cpp
-JSRequestCookieConsentOptions.cpp
 JSRequestPriority.cpp
 JSResidentKeyRequirement.cpp
 JSResizeObserver.cpp

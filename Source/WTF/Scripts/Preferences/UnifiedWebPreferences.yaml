@@ -1949,23 +1949,6 @@ ContextMenuQRCodeDetectionEnabled:
     WebCore:
       default: false
 
-CookieConsentAPIEnabled:
-  type: bool
-  status: unstable
-  category: dom
-  humanReadableName: "Cookie Consent API"
-  humanReadableDescription: "Enable cookie consent API"
-  exposed: [ WebKit ]
-  defaultValue:
-    WebCore:
-      default: false
-    WebKitLegacy:
-      default: false
-    WebKit:
-      default: false
-  sharedPreferenceForWebProcess: true
-  richJavaScript: true
-
 # FIXME: This is handled via WebView SPI rather than WebPreferences for WebKitLegacy. We should change the SPI to lookup the WebPreferences value instead.
 CookieEnabled:
   type: bool

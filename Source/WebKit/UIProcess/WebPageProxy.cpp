@@ -16531,11 +16531,6 @@ void WebPageProxy::clearAppPrivacyReportTestingData(CompletionHandler<void()>&& 
 }
 #endif
 
-void WebPageProxy::requestCookieConsent(CompletionHandler<void(CookieConsentDecisionResult)>&& completion)
-{
-    m_uiClient->requestCookieConsent(WTF::move(completion));
-}
-
 #if ENABLE(IMAGE_ANALYSIS) && ENABLE(VIDEO)
 void WebPageProxy::beginTextRecognitionForVideoInElementFullScreen(ShareableBitmap::Handle&& bitmapHandle, FloatRect bounds)
 {

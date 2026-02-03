@@ -400,8 +400,6 @@ set(WebCore_PRIVATE_FRAMEWORK_HEADERS
     Modules/contact-picker/ContactsRequestData.h
     Modules/contact-picker/ContactsSelectOptions.h
 
-    Modules/cookie-consent/CookieConsentDecisionResult.h
-
     Modules/cookie-store/CookieChangeSubscription.h
     Modules/cookie-store/CookieStoreGetOptions.h
     Modules/cookie-store/CookieStoreManager.h

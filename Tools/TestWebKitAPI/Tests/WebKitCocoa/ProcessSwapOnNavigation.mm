@@ -8849,7 +8849,6 @@ static void checkSettingsControlledByLockdownMode(WKWebView *webView, ShouldBeEn
     EXPECT_EQ(runJSCheck("!!window.DeprecationReportBody"_s), shouldBeEnabled == ShouldBeEnabled::Yes);
 
     // Confirm unstable settings are always off in Lockdown Mode.
-    EXPECT_EQ(runJSCheck("!!navigator.requestCookieConsent"_s), false);
     EXPECT_EQ(runJSCheck("!!document.undoManager"_s), false);
 }
 

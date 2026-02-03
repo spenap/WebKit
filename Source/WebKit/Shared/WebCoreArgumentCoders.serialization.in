@@ -71,13 +71,6 @@ enum class WebCore::ContactProperty : uint8_t {
     Tel
 };
 
-header: <WebCore/CookieConsentDecisionResult.h>
-enum class WebCore::CookieConsentDecisionResult : uint8_t {
-    NotSupported,
-    Consent,
-    Dissent,
-};
-
 header: <WebCore/IDBResultData.h>
 enum class WebCore::IDBResultType : uint8_t {
     Error,

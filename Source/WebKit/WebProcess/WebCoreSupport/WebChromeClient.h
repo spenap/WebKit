@@ -35,7 +35,6 @@ class HTMLImageElement;
 class HTMLVideoElement;
 class RegistrableDomain;
 enum class BroadcastFocusedElement : bool;
-enum class CookieConsentDecisionResult : uint8_t;
 enum class DidFilterLinkDecoration : bool;
 enum class IsLoggedIn : uint8_t;
 enum class PointerLockRequestResult : uint8_t;
@@ -518,8 +517,6 @@ private:
     void beginSystemPreview(const URL&, const WebCore::SecurityOriginData& topOrigin, const WebCore::SystemPreviewInfo&, CompletionHandler<void()>&&) final;
 #endif
 
-    void requestCookieConsent(CompletionHandler<void(WebCore::CookieConsentDecisionResult)>&&) final;
-    
     bool isUsingUISideCompositing() const;
 
     bool isInStableState() const final;

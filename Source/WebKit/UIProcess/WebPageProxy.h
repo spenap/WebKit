@@ -181,7 +181,6 @@ enum class AutoplayEvent : uint8_t;
 enum class AutoplayEventFlags : uint8_t;
 enum class BrowsingContextGroupSwitchDecision : uint8_t;
 enum class CaretAnimatorType : uint8_t;
-enum class CookieConsentDecisionResult : uint8_t;
 enum class CreateNewGroupForHighlight : bool;
 enum class CrossOriginOpenerPolicyValue : uint8_t;
 enum class DOMPasteAccessCategory : uint8_t;
@@ -2603,8 +2602,6 @@ public:
     void beginSystemPreview(const URL&, const WebCore::SecurityOriginData& topOrigin, const WebCore::SystemPreviewInfo&, CompletionHandler<void()>&&);
     void setSystemPreviewCompletionHandlerForLoadTesting(CompletionHandler<void(bool)>&&);
 #endif
-
-    void requestCookieConsent(CompletionHandler<void(WebCore::CookieConsentDecisionResult)>&&);
 
 #if ENABLE(IMAGE_ANALYSIS) && ENABLE(VIDEO)
     void beginTextRecognitionForVideoInElementFullScreen(WebCore::ShareableBitmapHandle&&, WebCore::FloatRect);
