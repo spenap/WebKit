@@ -295,7 +295,6 @@ void WebModelPlayer::load(Model& modelSource, LayoutSize size)
     });
 
     m_modelLoader = adoptNS([[WebBridgeModelLoader alloc] init]);
-    RetainPtr nsURL = modelSource.url().createNSURL();
     Ref protectedThis = Ref { *this };
     [m_modelLoader setCallbacksWithModelUpdatedCallback:^(WebBridgeUpdateMesh *updateRequest) {
         ensureOnMainThreadWithProtectedThis([updateRequest] (Ref<WebModelPlayer> protectedThis) {
@@ -338,7 +337,9 @@ void WebModelPlayer::load(Model& modelSource, LayoutSize size)
             [protectedThis->m_modelLoader requestCompleted:updateMaterial];
         });
     }];
-    [m_modelLoader loadModelFrom:nsURL.get()];
+
+    m_retainedData = modelSource.data()->createNSData();
+    [m_modelLoader loadModel:m_retainedData.get()];
 }
 
 void WebModelPlayer::notifyEntityTransformUpdated()

@@ -114,6 +114,7 @@ private:
     RetainPtr<WebBridgeModelLoader> m_modelLoader;
     Vector<MachSendRight> m_displayBuffers;
     RefPtr<WebCore::Mesh> m_currentModel;
+    RetainPtr<NSData> m_retainedData;
     WeakRef<Page> m_page;
     mutable RefPtr<ModelDisplayBufferDisplayDelegate> m_contentsDisplayDelegate;
     uint32_t m_currentTexture { 0 };
