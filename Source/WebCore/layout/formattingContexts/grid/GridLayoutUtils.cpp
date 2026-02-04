@@ -61,11 +61,18 @@ static bool spansFlexMaxTrackSizingFunction(WTF::Range<size_t> spannedTrackIndex
     return false;
 }
 
-static std::optional<LayoutUnit> inlineSpecifiedSizeSuggestion(const PlacedGridItem&, LayoutUnit borderAndPadding)
+static std::optional<LayoutUnit> inlineSpecifiedSizeSuggestion(const PlacedGridItem& gridItem, LayoutUnit borderAndPadding)
 {
-    UNUSED_VARIABLE(borderAndPadding);
-    ASSERT_NOT_IMPLEMENTED_YET();
-    return { };
+    auto& preferredSize = gridItem.inlineAxisSizes().preferredSize;
+    return WTF::switchOn(preferredSize,
+        [&](const Style::PreferredSize::Fixed fixedSize) -> std::optional<LayoutUnit> {
+            return Style::evaluate<LayoutUnit>(fixedSize, gridItem.usedZoom()) + borderAndPadding;
+        },
+        [](const auto&) -> std::optional<LayoutUnit> {
+            ASSERT_NOT_IMPLEMENTED_YET();
+            return { };
+        }
+    );
 }
 
 static std::optional<LayoutUnit> inlineTransferredSizeSuggestion(const PlacedGridItem&)
@@ -80,11 +87,17 @@ static LayoutUnit inlineContentSizeSuggestion(const PlacedGridItem& gridItem, co
     return integrationUtils.minContentWidth(gridItem.layoutBox());
 }
 
-static std::optional<LayoutUnit> blockSpecifiedSizeSuggestion(const PlacedGridItem&, LayoutUnit borderAndPadding)
+static std::optional<LayoutUnit> blockSpecifiedSizeSuggestion(const PlacedGridItem& gridItem, LayoutUnit borderAndPadding)
 {
-    UNUSED_VARIABLE(borderAndPadding);
-    ASSERT_NOT_IMPLEMENTED_YET();
-    return { };
+    auto& preferredSize = gridItem.blockAxisSizes().preferredSize;
+    return WTF::switchOn(preferredSize,
+        [&](const Style::PreferredSize::Fixed fixedSize) -> std::optional<LayoutUnit> {
+            return Style::evaluate<LayoutUnit>(fixedSize, gridItem.usedZoom()) + borderAndPadding;
+        },
+        [](const auto&) -> std::optional<LayoutUnit> {
+            ASSERT_NOT_IMPLEMENTED_YET();
+            return { };
+    });
 }
 
 static std::optional<LayoutUnit> blockTransferredSizeSuggestion(const PlacedGridItem&)
