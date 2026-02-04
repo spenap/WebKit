@@ -43,7 +43,7 @@
 constexpr WebCore::FramesPerSecond DisplayLinkFramesPerSecond = 60;
 
 @interface WKDisplayLinkHandler : NSObject {
-    WebKit::RemoteLayerTreeDrawingAreaProxy* _drawingAreaProxy;
+    WeakPtr<WebKit::RemoteLayerTreeDrawingAreaProxy> _drawingAreaProxy;
     CADisplayLink *_displayLink;
     WebCore::FramesPerSecond _preferredFramesPerSecond;
     BOOL _wantsHighFrameRate;
@@ -114,7 +114,8 @@ static void* displayRefreshRateObservationContext = &displayRefreshRateObservati
 - (void)displayLinkFired:(CADisplayLink *)sender
 {
     ASSERT(isUIThread());
-    _drawingAreaProxy->didRefreshDisplay();
+    if (RefPtr drawingArea = _drawingAreaProxy)
+        drawingArea->didRefreshDisplay();
     _currentUpdate = _currentUpdate.nextUpdate();
 }
 
@@ -122,7 +123,8 @@ static void* displayRefreshRateObservationContext = &displayRefreshRateObservati
 - (void)timerFired
 {
     ASSERT(isUIThread());
-    _drawingAreaProxy->didRefreshDisplay();
+    if (RefPtr drawingArea = _drawingAreaProxy)
+        drawingArea->didRefreshDisplay();
     _currentUpdate = _currentUpdate.nextUpdate();
 }
 #endif // ENABLE(TIMER_DRIVEN_DISPLAY_REFRESH_FOR_TESTING)
@@ -166,7 +168,7 @@ static void* displayRefreshRateObservationContext = &displayRefreshRateObservati
 
 - (WebCore::FramesPerSecond)nominalFramesPerSecond
 {
-    RefPtr page = _drawingAreaProxy->page();
+    RefPtr page = _drawingAreaProxy ? protect(*_drawingAreaProxy)->page() : nullptr;
     if (page && (page->preferences().webAnimationsCustomFrameRateEnabled() || !page->preferences().preferPageRenderingUpdatesNear60FPSEnabled())) {
         auto minimumRefreshInterval = _displayLink.maximumRefreshRate;
         if (minimumRefreshInterval > 0)
@@ -178,7 +180,7 @@ static void* displayRefreshRateObservationContext = &displayRefreshRateObservati
 
 - (void)didChangeNominalFramesPerSecond
 {
-    RefPtr page = _drawingAreaProxy->page();
+    RefPtr page = _drawingAreaProxy ? protect(*_drawingAreaProxy)->page() : nullptr;
     if (!page)
         return;
     if (auto displayID = page->displayID())
@@ -214,7 +216,7 @@ static void* displayRefreshRateObservationContext = &displayRefreshRateObservati
         effectiveFramesPerSecond = frameRateRange.maximum;
         [_displayLink setPreferredFrameRateRange:frameRateRange];
 
-        RefPtr page = _drawingAreaProxy->page();
+        RefPtr page = _drawingAreaProxy ? protect(*_drawingAreaProxy)->page() : nullptr;
         auto preferPageRenderingUpdatesNear60FPSEnabled = !page || page->preferences().preferPageRenderingUpdatesNear60FPSEnabled();
         auto highFrameRateReason = preferPageRenderingUpdatesNear60FPSEnabled ? WebKit::webAnimationHighFrameRateReason :
             WebKit::preferPageRenderingUpdatesNear60FPSDisabledHighFrameRateReason;
