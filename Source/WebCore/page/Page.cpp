@@ -2196,7 +2196,7 @@ void Page::syncLocalFrameInfoToRemote()
         {
             HashMap<FrameIdentifier, RemoteFrameLayoutInfo> childrenFrameLayoutInfo;
 
-            for (RefPtr child = frame.tree().firstChild(); child; child = child->tree().traverseNextSkippingChildren()) {
+            for (RefPtr child = frame.tree().firstChild(); child; child = child->tree().nextSibling()) {
                 auto visibleRect = frameView->visibleRectOfChild(*child.get());
 
                 float usedZoom = 1.0;
