@@ -6412,6 +6412,20 @@ ReadableStreamIterableEnabled:
     WebKit:
       default: true
 
+ReadableStreamTransferEnabled:
+  type: bool
+  status: testable
+  category: dom
+  humanReadableName: "ReadableStream transfer"
+  humanReadableDescription: "Enable ReadableStream transfer"
+  defaultValue:
+    WebCore:
+      default: false
+    WebKitLegacy:
+      default: false
+    WebKit:
+      default: false
+
 RemoteMediaSessionManagerEnabled:
   type: bool
   status: unstable
