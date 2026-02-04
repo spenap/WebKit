@@ -2917,6 +2917,26 @@ public:
             cmov(x86Condition(invert(cond)), elseCase, dest);
     }
 
+    void moveConditionally32(RelationalCondition cond, RegisterID left, TrustedImm32 right, TrustedImm32 thenCase, RegisterID elseCase, RegisterID dest)
+    {
+        if (!right.m_value) {
+            if (auto resultCondition = commuteCompareToZeroIntoTest(cond)) {
+                moveConditionallyTest32(*resultCondition, left, left, thenCase, elseCase, dest);
+                return;
+            }
+        }
+
+        m_assembler.cmpl_ir(right.m_value, left);
+
+        if (elseCase == dest) {
+            move(thenCase, scratchRegister());
+            cmov(x86Condition(cond), scratchRegister(), dest);
+        } else {
+            move(thenCase, dest);
+            cmov(x86Condition(invert(cond)), elseCase, dest);
+        }
+    }
+
     void moveConditionallyTest32(ResultCondition cond, RegisterID testReg, RegisterID mask, RegisterID src, RegisterID dest)
     {
         m_assembler.testl_rr(testReg, mask);
@@ -2941,6 +2961,22 @@ public:
             cmov(x86Condition(invert(cond)), elseCase, dest);
     }
 
+    void moveConditionallyTest32(ResultCondition cond, RegisterID left, RegisterID right, TrustedImm32 thenCase, RegisterID elseCase, RegisterID dest)
+    {
+        ASSERT(isInvertible(cond));
+        ASSERT_WITH_MESSAGE(cond != Overflow, "TEST does not set the Overflow Flag.");
+
+        m_assembler.testl_rr(right, left);
+
+        if (elseCase == dest) {
+            move(thenCase, scratchRegister());
+            cmov(x86Condition(cond), scratchRegister(), dest);
+        } else {
+            move(thenCase, dest);
+            cmov(x86Condition(invert(cond)), elseCase, dest);
+        }
+    }
+
     void moveConditionallyTest32(ResultCondition cond, RegisterID testReg, TrustedImm32 mask, RegisterID src, RegisterID dest)
     {
         test32(testReg, mask);
@@ -2963,6 +2999,22 @@ public:
             cmov(x86Condition(cond), thenCase, dest);
         else
             cmov(x86Condition(invert(cond)), elseCase, dest);
+    }
+
+    void moveConditionallyTest32(ResultCondition cond, RegisterID testReg, TrustedImm32 mask, TrustedImm32 thenCase, RegisterID elseCase, RegisterID dest)
+    {
+        ASSERT(isInvertible(cond));
+        ASSERT_WITH_MESSAGE(cond != Overflow, "TEST does not set the Overflow Flag.");
+
+        test32(testReg, mask);
+
+        if (elseCase == dest) {
+            move(thenCase, scratchRegister());
+            cmov(x86Condition(cond), scratchRegister(), dest);
+        } else {
+            move(thenCase, dest);
+            cmov(x86Condition(invert(cond)), elseCase, dest);
+        }
     }
 
     template<typename LeftType, typename RightType>

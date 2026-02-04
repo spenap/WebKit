@@ -6045,6 +6045,230 @@ void testMoveDoubleConditionally64()
 #endif
 }
 
+#if CPU(X86_64) || CPU(ARM64)
+template<typename SelectionType>
+static SelectionType expectedResultForRelationalCondition(MacroAssembler::RelationalCondition cond, int32_t a, int32_t b, SelectionType thenValue, SelectionType elseValue)
+{
+    switch (cond) {
+    case MacroAssembler::Equal:
+        return a == b ? thenValue : elseValue;
+    case MacroAssembler::NotEqual:
+        return a != b ? thenValue : elseValue;
+    case MacroAssembler::Above:
+        return static_cast<uint32_t>(a) > static_cast<uint32_t>(b) ? thenValue : elseValue;
+    case MacroAssembler::AboveOrEqual:
+        return static_cast<uint32_t>(a) >= static_cast<uint32_t>(b) ? thenValue : elseValue;
+    case MacroAssembler::Below:
+        return static_cast<uint32_t>(a) < static_cast<uint32_t>(b) ? thenValue : elseValue;
+    case MacroAssembler::BelowOrEqual:
+        return static_cast<uint32_t>(a) <= static_cast<uint32_t>(b) ? thenValue : elseValue;
+    case MacroAssembler::GreaterThan:
+        return a > b ? thenValue : elseValue;
+    case MacroAssembler::GreaterThanOrEqual:
+        return a >= b ? thenValue : elseValue;
+    case MacroAssembler::LessThan:
+        return a < b ? thenValue : elseValue;
+    case MacroAssembler::LessThanOrEqual:
+        return a <= b ? thenValue : elseValue;
+    }
+    RELEASE_ASSERT_NOT_REACHED();
+}
+
+template<typename SelectionType>
+static SelectionType expectedResultForResultCondition(MacroAssembler::ResultCondition cond, int32_t testValue, int32_t mask, SelectionType thenValue, SelectionType elseValue)
+{
+    int32_t result = testValue & mask;
+    switch (cond) {
+    case MacroAssembler::Zero:
+        return result == 0 ? thenValue : elseValue;
+    case MacroAssembler::NonZero:
+        return result != 0 ? thenValue : elseValue;
+    default:
+        break;
+    }
+    RELEASE_ASSERT_NOT_REACHED();
+}
+
+// Tests moveConditionally32(cond, left, immRight, immThenCase, regElseCase, dest)
+void testMoveConditionally32WithImmThenCase(MacroAssembler::RelationalCondition cond)
+{
+    const int32_t thenValue = 42;
+    const int32_t elseValue = 17;
+
+    for (auto left : int32Operands()) {
+        for (auto right : int32Operands()) {
+            int32_t expected = expectedResultForRelationalCondition(cond, left, right, thenValue, elseValue);
+
+            // Test with dest != elseCase
+            auto testCodeDestNotElse = compile([=] (CCallHelpers& jit) {
+                emitFunctionPrologue(jit);
+
+                GPRReg destGPR = GPRInfo::returnValueGPR;
+                GPRReg leftGPR = GPRInfo::regT2; // Use a different register for left
+                GPRReg elseGPR = GPRInfo::regT3;
+                RELEASE_ASSERT(destGPR != elseGPR);
+                RELEASE_ASSERT(leftGPR != destGPR);
+                RELEASE_ASSERT(leftGPR != elseGPR);
+
+                // Move argument to leftGPR before we touch destGPR (which may alias argumentGPR0)
+                jit.move(GPRInfo::argumentGPR0, leftGPR);
+                jit.move(CCallHelpers::TrustedImm32(elseValue), elseGPR);
+                jit.move(CCallHelpers::TrustedImm32(-1), destGPR);
+
+                jit.moveConditionally32(cond, leftGPR, CCallHelpers::TrustedImm32(right), CCallHelpers::TrustedImm32(thenValue), elseGPR, destGPR);
+
+                emitFunctionEpilogue(jit);
+                jit.ret();
+            });
+
+            // Test with dest == elseCase (special code path in x86)
+            auto testCodeDestEqualsElse = compile([=] (CCallHelpers& jit) {
+                emitFunctionPrologue(jit);
+
+                GPRReg destGPR = GPRInfo::returnValueGPR;
+                GPRReg leftGPR = GPRInfo::regT2; // Use a different register for left
+                GPRReg elseGPR = destGPR; // Same as dest
+                RELEASE_ASSERT(destGPR == elseGPR);
+                RELEASE_ASSERT(leftGPR != destGPR);
+
+                // Move argument to leftGPR before we touch destGPR (which may alias argumentGPR0)
+                jit.move(GPRInfo::argumentGPR0, leftGPR);
+                jit.move(CCallHelpers::TrustedImm32(elseValue), elseGPR);
+
+                jit.moveConditionally32(cond, leftGPR, CCallHelpers::TrustedImm32(right), CCallHelpers::TrustedImm32(thenValue), elseGPR, destGPR);
+
+                emitFunctionEpilogue(jit);
+                jit.ret();
+            });
+
+            CHECK_EQ(invoke<int32_t>(testCodeDestNotElse, left), expected);
+            CHECK_EQ(invoke<int32_t>(testCodeDestEqualsElse, left), expected);
+        }
+    }
+}
+
+// Tests moveConditionallyTest32(cond, left, regMask, immThenCase, regElseCase, dest)
+void testMoveConditionallyTest32WithImmThenCaseRegMask(MacroAssembler::ResultCondition cond)
+{
+    const int32_t thenValue = 42;
+    const int32_t elseValue = 17;
+
+    for (auto test : int32Operands()) {
+        for (auto mask : int32Operands()) {
+            int32_t expected = expectedResultForResultCondition(cond, test, mask, thenValue, elseValue);
+
+            // Test with dest != elseCase
+            auto testCodeDestNotElse = compile([=] (CCallHelpers& jit) {
+                emitFunctionPrologue(jit);
+
+                GPRReg destGPR = GPRInfo::returnValueGPR;
+                GPRReg testGPR = GPRInfo::regT2;
+                GPRReg maskGPR = GPRInfo::regT3;
+                GPRReg elseGPR = GPRInfo::regT4;
+                RELEASE_ASSERT(destGPR != elseGPR);
+                RELEASE_ASSERT(testGPR != destGPR);
+                RELEASE_ASSERT(maskGPR != destGPR);
+
+                // Move arguments to safe registers before touching destGPR
+                jit.move(GPRInfo::argumentGPR0, testGPR);
+                jit.move(GPRInfo::argumentGPR1, maskGPR);
+                jit.move(CCallHelpers::TrustedImm32(elseValue), elseGPR);
+                jit.move(CCallHelpers::TrustedImm32(-1), destGPR);
+
+                jit.moveConditionallyTest32(cond, testGPR, maskGPR, CCallHelpers::TrustedImm32(thenValue), elseGPR, destGPR);
+
+                emitFunctionEpilogue(jit);
+                jit.ret();
+            });
+
+            // Test with dest == elseCase
+            auto testCodeDestEqualsElse = compile([=] (CCallHelpers& jit) {
+                emitFunctionPrologue(jit);
+
+                GPRReg destGPR = GPRInfo::returnValueGPR;
+                GPRReg testGPR = GPRInfo::regT2;
+                GPRReg maskGPR = GPRInfo::regT3;
+                GPRReg elseGPR = destGPR;
+                RELEASE_ASSERT(destGPR == elseGPR);
+                RELEASE_ASSERT(testGPR != destGPR);
+                RELEASE_ASSERT(maskGPR != destGPR);
+
+                // Move arguments to safe registers before touching destGPR
+                jit.move(GPRInfo::argumentGPR0, testGPR);
+                jit.move(GPRInfo::argumentGPR1, maskGPR);
+                jit.move(CCallHelpers::TrustedImm32(elseValue), elseGPR);
+
+                jit.moveConditionallyTest32(cond, testGPR, maskGPR, CCallHelpers::TrustedImm32(thenValue), elseGPR, destGPR);
+
+                emitFunctionEpilogue(jit);
+                jit.ret();
+            });
+
+            CHECK_EQ(invoke<int32_t>(testCodeDestNotElse, test, mask), expected);
+            CHECK_EQ(invoke<int32_t>(testCodeDestEqualsElse, test, mask), expected);
+        }
+    }
+}
+
+// Tests moveConditionallyTest32(cond, testReg, immMask, immThenCase, regElseCase, dest)
+void testMoveConditionallyTest32WithImmThenCaseImmMask(MacroAssembler::ResultCondition cond)
+{
+    const int32_t thenValue = 42;
+    const int32_t elseValue = 17;
+
+    for (auto test : int32Operands()) {
+        for (auto mask : int32Operands()) {
+            int32_t expected = expectedResultForResultCondition(cond, test, mask, thenValue, elseValue);
+
+            // Test with dest != elseCase
+            auto testCodeDestNotElse = compile([=] (CCallHelpers& jit) {
+                emitFunctionPrologue(jit);
+
+                GPRReg destGPR = GPRInfo::returnValueGPR;
+                GPRReg testGPR = GPRInfo::regT2;
+                GPRReg elseGPR = GPRInfo::regT3;
+                RELEASE_ASSERT(destGPR != elseGPR);
+                RELEASE_ASSERT(testGPR != destGPR);
+
+                // Move argument to safe register before touching destGPR
+                jit.move(GPRInfo::argumentGPR0, testGPR);
+                jit.move(CCallHelpers::TrustedImm32(elseValue), elseGPR);
+                jit.move(CCallHelpers::TrustedImm32(-1), destGPR);
+
+                jit.moveConditionallyTest32(cond, testGPR, CCallHelpers::TrustedImm32(mask), CCallHelpers::TrustedImm32(thenValue), elseGPR, destGPR);
+
+                emitFunctionEpilogue(jit);
+                jit.ret();
+            });
+
+            // Test with dest == elseCase
+            auto testCodeDestEqualsElse = compile([=] (CCallHelpers& jit) {
+                emitFunctionPrologue(jit);
+
+                GPRReg destGPR = GPRInfo::returnValueGPR;
+                GPRReg testGPR = GPRInfo::regT2;
+                GPRReg elseGPR = destGPR;
+                RELEASE_ASSERT(destGPR == elseGPR);
+                RELEASE_ASSERT(testGPR != destGPR);
+
+                // Move argument to safe register before touching destGPR
+                jit.move(GPRInfo::argumentGPR0, testGPR);
+                jit.move(CCallHelpers::TrustedImm32(elseValue), elseGPR);
+
+                jit.moveConditionallyTest32(cond, testGPR, CCallHelpers::TrustedImm32(mask), CCallHelpers::TrustedImm32(thenValue), elseGPR, destGPR);
+
+                emitFunctionEpilogue(jit);
+                jit.ret();
+            });
+
+            CHECK_EQ(invoke<int32_t>(testCodeDestNotElse, test), expected);
+            CHECK_EQ(invoke<int32_t>(testCodeDestEqualsElse, test), expected);
+        }
+    }
+}
+
+#endif
+
 void testLoadBaseIndex()
 {
 #if CPU(ARM64) || CPU(X86_64) || CPU(RISCV64)
@@ -8064,6 +8288,20 @@ void run(const char* filter) WTF_IGNORES_THREAD_SAFETY_ANALYSIS
         RUN(__test(MacroAssembler::DoubleLessThanOrEqualOrUnordered)); \
     } while (false)
 
+#define FOR_EACH_RELATIONAL_CONDITION_RUN(__test) \
+    do { \
+        RUN(__test(MacroAssembler::Equal)); \
+        RUN(__test(MacroAssembler::NotEqual)); \
+        RUN(__test(MacroAssembler::Above)); \
+        RUN(__test(MacroAssembler::AboveOrEqual)); \
+        RUN(__test(MacroAssembler::Below)); \
+        RUN(__test(MacroAssembler::BelowOrEqual)); \
+        RUN(__test(MacroAssembler::GreaterThan)); \
+        RUN(__test(MacroAssembler::GreaterThanOrEqual)); \
+        RUN(__test(MacroAssembler::LessThan)); \
+        RUN(__test(MacroAssembler::LessThanOrEqual)); \
+    } while (false)
+
     FOR_EACH_DOUBLE_CONDITION_RUN(testCompareDouble);
     FOR_EACH_DOUBLE_CONDITION_RUN(testCompareDoubleSameArg);
 
@@ -8253,7 +8491,20 @@ void run(const char* filter) WTF_IGNORES_THREAD_SAFETY_ANALYSIS
     FOR_EACH_DOUBLE_CONDITION_RUN(testMoveConditionallyFloat3SameArg);
     FOR_EACH_DOUBLE_CONDITION_RUN(testMoveDoubleConditionallyDoubleSameArg);
     FOR_EACH_DOUBLE_CONDITION_RUN(testMoveDoubleConditionallyFloatSameArg);
+#endif
 
+#if CPU(X86_64) || CPU(ARM64)
+    // Tests for moveConditionally32 and moveConditionallyTest32 with immediate thenCase.
+    FOR_EACH_RELATIONAL_CONDITION_RUN(testMoveConditionally32WithImmThenCase);
+
+    // For test32 variants, only use Zero and NonZero (Overflow is not valid for TEST).
+    RUN(testMoveConditionallyTest32WithImmThenCaseRegMask(MacroAssembler::Zero));
+    RUN(testMoveConditionallyTest32WithImmThenCaseRegMask(MacroAssembler::NonZero));
+    RUN(testMoveConditionallyTest32WithImmThenCaseImmMask(MacroAssembler::Zero));
+    RUN(testMoveConditionallyTest32WithImmThenCaseImmMask(MacroAssembler::NonZero));
+#endif
+
+#if CPU(X86_64) || CPU(ARM64) || CPU(RISCV64)
     RUN(testSignExtend8To32());
     RUN(testSignExtend16To32());
     RUN(testSignExtend8To64());
