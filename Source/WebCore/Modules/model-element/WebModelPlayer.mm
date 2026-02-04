@@ -417,12 +417,15 @@ void WebModelPlayer::setAnimationIsPlaying(bool, CompletionHandler<void(bool suc
 {
 }
 
-void WebModelPlayer::isLoopingAnimation(CompletionHandler<void(std::optional<bool>&&)>&&)
+void WebModelPlayer::isLoopingAnimation(CompletionHandler<void(std::optional<bool>&&)>&& completion)
 {
+    completion(m_isLooping);
 }
 
-void WebModelPlayer::setIsLoopingAnimation(bool, CompletionHandler<void(bool success)>&&)
+void WebModelPlayer::setIsLoopingAnimation(bool shouldLoop, CompletionHandler<void(bool success)>&& completion)
 {
+    m_isLooping = shouldLoop;
+    completion(shouldLoop);
 }
 
 void WebModelPlayer::animationDuration(CompletionHandler<void(std::optional<Seconds>&&)>&& completion)
@@ -522,7 +525,11 @@ void WebModelPlayer::update()
     constexpr float elapsedTime = 1.f / 60.f;
     simulate(elapsedTime);
 
-    [m_modelLoader update:paused() ? 0.f : (m_playbackRate * elapsedTime)];
+    auto timeDelta = paused() ? 0.f : (m_playbackRate * elapsedTime);
+    if (!m_isLooping && [m_modelLoader currentTime] > [m_modelLoader duration])
+        timeDelta = 0.f;
+
+    [m_modelLoader update:timeDelta];
     if (m_didFinishLoading) {
         if (RefPtr currentModel = m_currentModel)
             currentModel->render();

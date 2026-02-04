@@ -1738,6 +1738,10 @@ final class USDModelLoader: _Proto_UsdStageSession_v1.Delegate {
         return 0.0
     }
 
+    func currentTime() -> Double {
+        time - startTime
+    }
+
     func loadModel(from data: Data) {
     }
 
@@ -1805,6 +1809,14 @@ extension WebBridgeModelLoader {
             return 0.0
         }
         return loader.duration()
+    }
+
+    @objc
+    func currentTime() -> Double {
+        guard let loader else {
+            return 0.0
+        }
+        return loader.currentTime()
     }
 
     fileprivate func updateMesh(webRequest: WebBridgeUpdateMesh) {
@@ -1998,6 +2010,11 @@ extension WebBridgeModelLoader {
 
     @objc
     func duration() -> Double {
+        0.0
+    }
+
+    @objc
+    func currentTime() -> Double {
         0.0
     }
 }

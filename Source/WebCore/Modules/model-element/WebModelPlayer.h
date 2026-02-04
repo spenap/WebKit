@@ -133,6 +133,7 @@ private:
     float m_yaw { 0.f };
     float m_pitch { 0.f };
     float m_playbackRate { 1.0f };
+    bool m_isLooping { false };
 };
 
 }

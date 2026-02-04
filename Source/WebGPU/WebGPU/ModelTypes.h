@@ -690,6 +690,7 @@ NS_SWIFT_SENDABLE
 
 - (instancetype)init NS_DESIGNATED_INITIALIZER;
 
+- (double)currentTime;
 - (double)duration;
 - (void)loadModelFrom:(NSURL *)url;
 - (void)update:(double)deltaTime;
