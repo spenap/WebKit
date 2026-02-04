@@ -21,7 +21,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
 
-#if canImport(RealityCoreRenderer, _version: 6) && canImport(_USDKit_RealityKit)
+#if canImport(RealityCoreRenderer, _version: 6) && canImport(USDStageKit, _version: 34)
 
 import Metal
 @_spi(RealityCoreRendererAPI) import RealityKit
