@@ -261,6 +261,7 @@ void WebModelPlayer::load(Model& modelSource, LayoutSize size)
     if (!gpu)
         return;
 
+    size.scale(document->deviceScaleFactor());
     WebModel::ImageAsset diffuseTexture {
         .data = loadData(adoptCF(static_cast<CFStringRef>(@"modelDefaultDiffuseData"))),
         .width = 64,
