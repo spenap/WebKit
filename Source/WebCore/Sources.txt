@@ -807,7 +807,6 @@ bindings/js/WebCoreJSClientData.cpp
 bindings/js/WebCoreTypedArrayController.cpp
 bindings/js/WindowProxy.cpp
 bindings/js/WorkerModuleScriptLoader.cpp
-bridge/IdentifierRep.cpp
 bridge/jsc/BridgeJSC.cpp
 bridge/runtime_array.cpp
 bridge/runtime_method.cpp

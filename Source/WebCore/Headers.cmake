@@ -1032,8 +1032,6 @@ set(WebCore_PRIVATE_FRAMEWORK_HEADERS
     bindings/js/WindowProxy.h
     bindings/js/WorkerScriptFetcher.h
 
-    bridge/IdentifierRep.h
-
     bridge/jsc/BridgeJSC.h
 
     bridge/runtime_method.h
