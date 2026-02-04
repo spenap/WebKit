@@ -58,8 +58,6 @@ static const GLenum s_pixelDataType = GL_UNSIGNED_INT_8_8_8_8_REV;
 static const GLenum s_pixelDataType = GL_UNSIGNED_BYTE;
 #endif
 
-constexpr GLenum textureFormat = GL_RGBA;
-
 // On GLES3, the format we want for packed depth stencil is GL_DEPTH24_STENCIL8, but when added through
 // the extension this format is called GL_DEPTH24_STENCIL8_OES. In any case they hold the same value 0x88F0
 // so we can just use the first one.
@@ -70,6 +68,11 @@ constexpr GLenum textureFormat = GL_RGBA;
 #endif
 
 namespace WebCore {
+
+GLenum BitmapTexture::textureFormat() const
+{
+    return m_flags.contains(Flags::UseBGRALayout) ? GL_BGRA : GL_RGBA;
+}
 
 GLenum depthBufferFormat()
 {
@@ -97,6 +100,9 @@ BitmapTexture::BitmapTexture(const IntSize& size, OptionSet<Flags> flags)
             ASSERT(!flags.contains(Flags::ForceLinearBuffer));
             bufferFlags.add(MemoryMappedGPUBuffer::BufferFlag::ForceVivanteSuperTiled);
         }
+
+        if (flags.contains(Flags::UseBGRALayout))
+            bufferFlags.add(MemoryMappedGPUBuffer::BufferFlag::UseBGRALayout);
 
         m_memoryMappedGPUBuffer = MemoryMappedGPUBuffer::create(m_size, bufferFlags);
 
@@ -132,7 +138,7 @@ void BitmapTexture::createTexture()
 void BitmapTexture::allocateTexture()
 {
     createTexture();
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_size.width(), m_size.height(), 0, textureFormat, s_pixelDataType, nullptr);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_size.width(), m_size.height(), 0, textureFormat(), s_pixelDataType, nullptr);
 }
 
 #if USE(GBM)
@@ -249,7 +255,7 @@ void BitmapTexture::reset(const IntSize& size, OptionSet<Flags> flags)
 #endif
 
     glBindTexture(GL_TEXTURE_2D, m_id);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_size.width(), m_size.height(), 0, textureFormat, s_pixelDataType, nullptr);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_size.width(), m_size.height(), 0, textureFormat(), s_pixelDataType, nullptr);
     glBindTexture(GL_TEXTURE_2D, boundTexture);
 }
 
@@ -317,7 +323,7 @@ void BitmapTexture::updateContents(const void* srcData, const IntRect& targetRec
         glPixelStorei(GL_UNPACK_SKIP_PIXELS, adjustedSourceOffset.x());
     }
 
-    glTexSubImage2D(GL_TEXTURE_2D, 0, targetRect.x(), targetRect.y(), targetRect.width(), targetRect.height(), textureFormat, s_pixelDataType, data);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, targetRect.x(), targetRect.y(), targetRect.width(), targetRect.height(), textureFormat(), s_pixelDataType, data);
 
     if (supportsUnpackSubimage) {
         glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
@@ -509,6 +515,9 @@ void BitmapTexture::copyFromExternalTexture(GLuint sourceTextureID, const IntRec
 OptionSet<TextureMapperFlags> BitmapTexture::colorConvertFlags() const
 {
     if (m_pixelFormat == PixelFormat::RGBA8)
+        return { };
+
+    if (m_flags.contains(Flags::UseBGRALayout))
         return { };
 
     // Our GL textures are stored in RGBA format. If we received an update in BGRA format, we write that BGRA data into
