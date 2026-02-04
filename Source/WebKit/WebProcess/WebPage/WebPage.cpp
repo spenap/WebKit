@@ -6075,6 +6075,32 @@ void WebPage::capitalizeWord(FrameIdentifier frameID)
 
     coreFrame->protectedEditor()->capitalizeWord();
 }
+
+void WebPage::convertToTraditionalChinese(FrameIdentifier frameID)
+{
+    RefPtr frame = WebProcess::singleton().webFrame(frameID);
+    if (!frame)
+        return;
+
+    RefPtr coreFrame = frame->coreLocalFrame();
+    if (!coreFrame)
+        return;
+
+    coreFrame->protectedEditor()->convertToTraditionalChinese();
+}
+
+void WebPage::convertToSimplifiedChinese(FrameIdentifier frameID)
+{
+    RefPtr frame = WebProcess::singleton().webFrame(frameID);
+    if (!frame)
+        return;
+
+    RefPtr coreFrame = frame->coreLocalFrame();
+    if (!coreFrame)
+        return;
+
+    coreFrame->protectedEditor()->convertToSimplifiedChinese();
+}
 #endif
 
 #if !PLATFORM(COCOA)

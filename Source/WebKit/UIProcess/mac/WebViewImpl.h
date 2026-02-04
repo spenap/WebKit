@@ -481,6 +481,8 @@ public:
     void uppercaseWord();
     void lowercaseWord();
     void capitalizeWord();
+    void convertToTraditionalChinese();
+    void convertToSimplifiedChinese();
 
     void requestCandidatesForSelectionIfNeeded();
 

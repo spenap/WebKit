@@ -2487,6 +2487,8 @@ private:
     void uppercaseWord(WebCore::FrameIdentifier);
     void lowercaseWord(WebCore::FrameIdentifier);
     void capitalizeWord(WebCore::FrameIdentifier);
+    void convertToTraditionalChinese(WebCore::FrameIdentifier);
+    void convertToSimplifiedChinese(WebCore::FrameIdentifier);
 #endif
 
     bool shouldDispatchSyntheticMouseEventsWhenModifyingSelection() const;

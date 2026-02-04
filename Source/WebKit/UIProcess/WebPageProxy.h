@@ -1889,6 +1889,8 @@ public:
     void uppercaseWord();
     void lowercaseWord();
     void capitalizeWord();
+    void convertToTraditionalChinese();
+    void convertToSimplifiedChinese();
 #endif
 
 #if PLATFORM(COCOA)

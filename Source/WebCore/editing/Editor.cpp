@@ -1912,7 +1912,43 @@ void Editor::capitalizeWord()
     if (client())
         client()->capitalizeWord();
 }
-    
+
+bool Editor::canApplyCaseTransformations(const String& selection)
+{
+    if (client())
+        return client()->canApplyCaseTransformations(selection);
+
+    return true;
+}
+
+bool Editor::canConvertToSimplifiedChinese(const String& selection)
+{
+    if (client())
+        return client()->canConvertToSimplifiedChinese(selection);
+
+    return false;
+}
+
+bool Editor::canConvertToTraditionalChinese(const String& selection)
+{
+    if (client())
+        return client()->canConvertToTraditionalChinese(selection);
+
+    return false;
+}
+
+void Editor::convertToTraditionalChinese()
+{
+    if (client())
+        client()->convertToTraditionalChinese();
+}
+
+void Editor::convertToSimplifiedChinese()
+{
+    if (client())
+        client()->convertToSimplifiedChinese();
+}
+
 #endif
 
 #if USE(AUTOMATIC_TEXT_REPLACEMENT)

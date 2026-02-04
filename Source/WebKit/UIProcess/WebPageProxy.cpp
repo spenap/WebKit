@@ -10570,6 +10570,22 @@ void WebPageProxy::capitalizeWord()
         return;
     sendToProcessContainingFrame(targetFrameID, Messages::WebPage::CapitalizeWord(*targetFrameID));
 }
+
+void WebPageProxy::convertToTraditionalChinese()
+{
+    auto targetFrameID = focusedOrMainFrame() ? std::optional(focusedOrMainFrame()->frameID()) : std::nullopt;
+    if (!targetFrameID)
+        return;
+    sendToProcessContainingFrame(targetFrameID, Messages::WebPage::ConvertToTraditionalChinese(*targetFrameID));
+}
+
+void WebPageProxy::convertToSimplifiedChinese()
+{
+    auto targetFrameID = focusedOrMainFrame() ? std::optional(focusedOrMainFrame()->frameID()) : std::nullopt;
+    if (!targetFrameID)
+        return;
+    sendToProcessContainingFrame(targetFrameID, Messages::WebPage::ConvertToSimplifiedChinese(*targetFrameID));
+}
 #endif
 
 void WebPageProxy::didGetImageForFindMatch(ImageBufferParameters&& parameters, ShareableBitmap::Handle&& contentImageHandle, uint32_t matchIndex)
