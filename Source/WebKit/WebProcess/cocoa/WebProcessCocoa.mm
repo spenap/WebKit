@@ -613,7 +613,7 @@ void WebProcess::platformInitializeWebProcess(WebProcessCreationParameters& para
     disableURLSchemeCheckInDataDetectors();
 
 #if ENABLE(QUICKLOOK_SANDBOX_RESTRICTIONS)
-    if (auto auditToken = parentProcessConnection()->getAuditToken()) {
+    if (auto auditToken = protect(parentProcessConnection())->getAuditToken()) {
         bool parentCanSetStateFlags = WTF::hasEntitlementValueInArray(auditToken.value(), "com.apple.private.security.enable-state-flags"_s, "EnableQuickLookSandboxResources"_s);
         if (parentCanSetStateFlags) {
             auto auditToken = auditTokenForSelf();
@@ -944,7 +944,7 @@ void WebProcess::initializeLogForwarding(const WebProcessCreationParameters& par
     if (!connectionPair)
         CRASH();
     auto [connection, handle] = WTF::move(*connectionPair);
-    connection->open(*this, RunLoop::currentSingleton());
+    connection->open(protect(*this), RunLoop::currentSingleton());
     std::unique_ptr newLogClient = makeUnique<LogClient>(Ref { connection });
     parentConnection->sendWithAsyncReply(Messages::WebProcessProxy::CreateLogStream(WTF::move(handle), newLogClient->identifier()), [newLogClient = WTF::move(newLogClient), connection = WTF::move(connection), isDebugLoggingEnabled = parameters.isDebugLoggingEnabled] (IPC::Semaphore&& wakeUpSemaphore, IPC::Semaphore&& clientWaitSemaphore) mutable {
         connection->setSemaphores(WTF::move(wakeUpSemaphore), WTF::move(clientWaitSemaphore));
@@ -1022,7 +1022,7 @@ RetainPtr<CFDataRef> WebProcess::sourceApplicationAuditData() const
     ASSERT(parentProcessConnection());
     if (!parentProcessConnection())
         return nullptr;
-    std::optional<audit_token_t> auditToken = parentProcessConnection()->getAuditToken();
+    std::optional<audit_token_t> auditToken = protect(parentProcessConnection())->getAuditToken();
     if (!auditToken)
         return nullptr;
     return adoptCF(CFDataCreate(nullptr, (const UInt8*)&*auditToken, sizeof(*auditToken)));

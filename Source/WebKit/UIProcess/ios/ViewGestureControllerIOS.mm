@@ -103,7 +103,7 @@ static const float swipeSnapshotRemovalRenderTreeSizeTargetFraction = 0.5;
 
 - (void)startInteractiveTransition:(_UINavigationInteractiveTransitionBase *)transition
 {
-    _gestureController->beginSwipeGesture(transition, [self directionForTransition:transition]);
+    protect(*_gestureController)->beginSwipeGesture(transition, [self directionForTransition:transition]);
 }
 
 - (BOOL)shouldBeginInteractiveTransition:(_UINavigationInteractiveTransitionBase *)transition
@@ -113,7 +113,7 @@ static const float swipeSnapshotRemovalRenderTreeSizeTargetFraction = 0.5;
 
     using enum WebKit::ViewGestureController::DeferToConflictingGestures;
     auto deferToConflictingGestures = transition.gestureRecognizer.state == UIGestureRecognizerStateFailed ? Yes : No;
-    return _gestureController->canSwipeInDirection([self directionForTransition:transition], deferToConflictingGestures);
+    return protect(*_gestureController)->canSwipeInDirection([self directionForTransition:transition], deferToConflictingGestures);
 }
 
 - (BOOL)interactiveTransition:(_UINavigationInteractiveTransitionBase *)transition gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer
@@ -213,7 +213,7 @@ void ViewGestureController::beginSwipeGesture(_UINavigationInteractiveTransition
         return;
     }
 
-    m_webPageProxyForBackForwardListForCurrentSwipe->navigationGestureDidBegin();
+    protect(m_webPageProxyForBackForwardListForCurrentSwipe)->navigationGestureDidBegin();
     if (page.get() != m_webPageProxyForBackForwardListForCurrentSwipe)
         page->navigationGestureDidBegin();
 
@@ -257,7 +257,7 @@ void ViewGestureController::beginSwipeGesture(_UINavigationInteractiveTransition
             if (!shouldRestoreScrollPosition && (currentScrollPosition != snapshot->viewScrollPosition()))
                 return false;
 
-            auto insetDelta = snapshot->computedObscuredInset() - m_webPageProxyForBackForwardListForCurrentSwipe->computedObscuredInset();
+            auto insetDelta = snapshot->computedObscuredInset() - protect(m_webPageProxyForBackForwardListForCurrentSwipe)->computedObscuredInset();
             bool insetChangedSignificantly = insetDelta.anyOf([](auto value) {
                 static constexpr auto minimumSignificantChange = 100;
                 return std::abs(value) >= minimumSignificantChange;
@@ -331,7 +331,7 @@ void ViewGestureController::beginSwipeGesture(_UINavigationInteractiveTransition
 void ViewGestureController::willEndSwipeGesture(WebBackForwardListItem& targetItem, bool cancelled)
 {
     m_didCallWillEndSwipeGesture = true;
-    m_webPageProxyForBackForwardListForCurrentSwipe->navigationGestureWillEnd(!cancelled, targetItem);
+    protect(m_webPageProxyForBackForwardListForCurrentSwipe)->navigationGestureWillEnd(!cancelled, targetItem);
 
     if (cancelled)
         return;
@@ -341,7 +341,7 @@ void ViewGestureController::willEndSwipeGesture(WebBackForwardListItem& targetIt
         m_snapshotRemovalTargetRenderTreeSize = snapshot->renderTreeSize() * swipeSnapshotRemovalRenderTreeSizeTargetFraction;
 
     m_didStartProvisionalLoad = false;
-    m_pendingNavigation = m_webPageProxyForBackForwardListForCurrentSwipe->goToBackForwardItem(targetItem);
+    m_pendingNavigation = protect(m_webPageProxyForBackForwardListForCurrentSwipe)->goToBackForwardItem(targetItem);
 
     auto* currentItem = m_webPageProxyForBackForwardListForCurrentSwipe->backForwardList().currentItem();
     // The main frame will not be navigated so hide the snapshot right away.
@@ -397,7 +397,7 @@ void ViewGestureController::endSwipeGesture(WebBackForwardListItem* targetItem, 
         return;
     }
 
-    m_webPageProxyForBackForwardListForCurrentSwipe->navigationGestureDidEnd(true, *targetItem);
+    protect(m_webPageProxyForBackForwardListForCurrentSwipe)->navigationGestureDidEnd(true, *targetItem);
     if (page.get() != m_webPageProxyForBackForwardListForCurrentSwipe)
         page->navigationGestureDidEnd();
 
@@ -486,7 +486,7 @@ void ViewGestureController::resetState()
     m_snapshotRemovalTargetRenderTreeSize = 0;
 
     if (m_webPageProxyForBackForwardListForCurrentSwipe) {
-        m_webPageProxyForBackForwardListForCurrentSwipe->navigationGestureSnapshotWasRemoved();
+        protect(m_webPageProxyForBackForwardListForCurrentSwipe)->navigationGestureSnapshotWasRemoved();
         m_webPageProxyForBackForwardListForCurrentSwipe = nullptr;
     }
 

@@ -950,9 +950,9 @@ WebPageProxy::WebPageProxy(PageClient& pageClient, WebProcessProxy& process, Ref
     addAllMessageReceivers();
 
 #if PLATFORM(IOS_FAMILY)
-    DeprecatedGlobalSettings::setDisableScreenSizeOverride(m_preferences->disableScreenSizeOverride());
+    DeprecatedGlobalSettings::setDisableScreenSizeOverride(protect(m_preferences)->disableScreenSizeOverride());
 
-    if (m_configuration->preferences().serviceWorkerEntitlementDisabledForTesting())
+    if (protect(m_configuration)->preferences().serviceWorkerEntitlementDisabledForTesting())
         disableServiceWorkerEntitlementInNetworkProcess();
 #endif
 
@@ -1570,7 +1570,7 @@ void WebPageProxy::swapToProvisionalPage(Ref<ProvisionalPageProxy>&& provisional
 
     std::optional<FramesPerSecond> nominalFramesPerSecond;
     if (m_drawingArea)
-        nominalFramesPerSecond = m_drawingArea->displayNominalFramesPerSecond();
+        nominalFramesPerSecond = protect(m_drawingArea)->displayNominalFramesPerSecond();
     // FIXME: We may want to send WindowScreenDidChange on non-iOS platforms too.
     send(Messages::WebPage::WindowScreenDidChange(*m_displayID, nominalFramesPerSecond));
 #endif
@@ -8959,7 +8959,7 @@ void WebPageProxy::decidePolicyForResponseShared(Ref<WebProcessProxy>&& process,
 
 #if USE(QUICK_LOOK) && ENABLE(QUICKLOOK_SANDBOX_RESTRICTIONS)
         if (policyAction == PolicyAction::Use && supportsMIMEType) {
-            auto auditToken = process->connection().getAuditToken();
+            auto auditToken = protect(process)->connection().getAuditToken();
             bool status = sandbox_enable_state_flag("EnableQuickLookSandboxResources", *auditToken);
             WEBPAGEPROXY_RELEASE_LOG(Sandbox, "Enabling EnableQuickLookSandboxResources state flag, status = %d", status);
         }
@@ -12440,7 +12440,7 @@ WebPageCreationParameters WebPageProxy::creationParameters(WebProcessProxy& proc
     parameters.textAutosizingWidth = textAutosizingWidth();
     parameters.mimeTypesWithCustomContentProviders = pageClient ? pageClient->mimeTypesWithCustomContentProviders() : Vector<String> { };
     parameters.deviceOrientation = m_deviceOrientation;
-    parameters.hardwareKeyboardState = m_configuration->processPool().cachedHardwareKeyboardState();
+    parameters.hardwareKeyboardState = protect(m_configuration)->processPool().cachedHardwareKeyboardState();
     parameters.canShowWhileLocked = m_configuration->canShowWhileLocked();
     parameters.insertionPointColor = pageClient ? pageClient->insertionPointColor() : WebCore::Color { };
 #endif

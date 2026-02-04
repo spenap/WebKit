@@ -169,7 +169,7 @@ static constexpr auto yearAndMonthDatePickerMode = static_cast<UIDatePickerMode>
 - (void)datePickerPopoverControllerDidReset:(WKDatePickerPopoverController *)controller
 {
     [self setDateTimePickerToInitialValue];
-    [_view page]->setFocusedElementValue([_view focusedElementInformation].elementContext, { });
+    protect(*[_view page])->setFocusedElementValue([_view focusedElementInformation].elementContext, { });
 }
 
 - (void)handleDatePickerPresentationDismissal

@@ -107,7 +107,7 @@ UseLosslessCompression RemoteLayerTreeContext::useIOSurfaceLosslessCompression()
 #if PLATFORM(IOS_FAMILY)
 bool RemoteLayerTreeContext::canShowWhileLocked() const
 {
-    return m_webPage->canShowWhileLocked();
+    return protect(m_webPage)->canShowWhileLocked();
 }
 #endif
 

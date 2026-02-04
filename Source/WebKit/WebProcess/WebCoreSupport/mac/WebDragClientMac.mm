@@ -111,7 +111,7 @@ void WebDragClient::startDrag(DragItem dragItem, DataTransfer&, Frame& frame, co
 void WebDragClient::didConcludeEditDrag()
 {
 #if PLATFORM(IOS_FAMILY)
-    m_page->didConcludeEditDrag();
+    protect(m_page)->didConcludeEditDrag();
 #endif
 }
 
@@ -190,7 +190,7 @@ void WebDragClient::declareAndWriteDragImage(const String& pasteboardName, Eleme
 void WebDragClient::declareAndWriteDragImage(const String& pasteboardName, Element& element, const URL& url, const String& label, LocalFrame*)
 {
     if (RefPtr frame = element.document().frame())
-        frame->editor().writeImageToPasteboard(*Pasteboard::createForDragAndDrop(PagePasteboardContext::create(frame->pageID())), element, url, label);
+        protect(frame->editor())->writeImageToPasteboard(*Pasteboard::createForDragAndDrop(PagePasteboardContext::create(frame->pageID())), element, url, label);
 }
 
 #endif // USE(APPKIT)

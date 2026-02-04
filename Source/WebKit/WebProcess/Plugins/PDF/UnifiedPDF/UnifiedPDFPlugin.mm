@@ -2903,10 +2903,11 @@ bool UnifiedPDFPlugin::takeFindStringFromSelection()
 #if PLATFORM(MAC)
     writeStringToFindPasteboard(findString);
 #else
-    if (!m_frame || !m_frame->coreLocalFrame())
+    RefPtr frame = m_frame;
+    if (!frame || !frame->coreLocalFrame())
         return false;
 
-    if (CheckedPtr client = m_frame->coreLocalFrame()->protectedEditor()->client())
+    if (CheckedPtr client = frame->coreLocalFrame()->protectedEditor()->client())
         client->updateStringForFind(findString);
     else
         return false;
@@ -3830,7 +3831,7 @@ id UnifiedPDFPlugin::accessibilityHitTestInPageForIOS(WebCore::FloatPoint point)
 WebCore::AXCoreObject* UnifiedPDFPlugin::accessibilityCoreObject()
 {
     if (CheckedPtr cache = axObjectCache())
-        return cache->exportedGetOrCreate(m_element.get());
+        return cache->exportedGetOrCreate(protect(m_element.get()));
     return nullptr;
 }
 #endif // PLATFORM(IOS_FAMILY)
@@ -3892,35 +3893,39 @@ bool UnifiedPDFPlugin::shouldShowPageNumberIndicator() const
 
 auto UnifiedPDFPlugin::updatePageNumberIndicatorVisibility() -> IndicatorVisible
 {
-    if (!m_frame || !m_frame->page())
+    RefPtr frame = m_frame;
+    if (!frame || !frame->page())
         return IndicatorVisible::No;
 
     if (shouldShowPageNumberIndicator()) {
-        protect(m_frame->page())->createPDFPageNumberIndicator(*this, frameForPageNumberIndicatorInRootViewCoordinates(), m_documentLayout.pageCount());
+        protect(frame->page())->createPDFPageNumberIndicator(*this, frameForPageNumberIndicatorInRootViewCoordinates(), m_documentLayout.pageCount());
         return IndicatorVisible::Yes;
     }
 
-    protect(m_frame->page())->removePDFPageNumberIndicator(*this);
+    protect(frame->page())->removePDFPageNumberIndicator(*this);
     return IndicatorVisible::No;
 }
 
 void UnifiedPDFPlugin::updatePageNumberIndicatorLocation()
 {
-    if (!m_frame || !m_frame->page())
+    RefPtr frame = m_frame;
+    if (!frame || !frame->page())
         return;
 
-    protect(m_frame->page())->updatePDFPageNumberIndicatorLocation(*this, frameForPageNumberIndicatorInRootViewCoordinates());
+    protect(frame->page())->updatePDFPageNumberIndicatorLocation(*this, frameForPageNumberIndicatorInRootViewCoordinates());
 }
 
 void UnifiedPDFPlugin::updatePageNumberIndicatorCurrentPage(const std::optional<IntRect>& maybeUnobscuredContentRectInRootView)
 {
-    if (!m_frame || !m_frame->page())
+    RefPtr frame = m_frame;
+    if (!frame || !frame->page())
         return;
 
     auto unobscuredContentRectInRootView = maybeUnobscuredContentRectInRootView.or_else([this, protectedThis = Ref { *this }] -> std::optional<IntRect> {
-        if (!m_frame || !m_frame->coreLocalFrame())
+        RefPtr frame = m_frame;
+        if (!frame || !frame->coreLocalFrame())
             return { };
-        RefPtr view = m_frame->coreLocalFrame()->view();
+        RefPtr view = frame->coreLocalFrame()->view();
         if (!view)
             return { };
         return view->unobscuredContentRect();
@@ -3931,8 +3936,8 @@ void UnifiedPDFPlugin::updatePageNumberIndicatorCurrentPage(const std::optional<
 
     auto scrollPositionInPluginSpace = convertFromRootViewToPlugin(FloatPoint { unobscuredContentRectInRootView->center() });
     auto scrollPositionInDocumentLayoutSpace = convertDown(CoordinateSpace::Plugin, CoordinateSpace::PDFDocumentLayout, scrollPositionInPluginSpace);
-    auto currentPageIndex = m_presentationController->nearestPageIndexForDocumentPoint(scrollPositionInDocumentLayoutSpace);
-    protect(m_frame->page())->updatePDFPageNumberIndicatorCurrentPage(*this, currentPageIndex + 1);
+    auto currentPageIndex = protect(m_presentationController)->nearestPageIndexForDocumentPoint(scrollPositionInDocumentLayoutSpace);
+    protect(frame->page())->updatePDFPageNumberIndicatorCurrentPage(*this, currentPageIndex + 1);
 }
 
 
@@ -4725,7 +4730,7 @@ bool UnifiedPDFPlugin::platformPopulateEditorStateIfNeeded(EditorState& state) c
     state.visualData->selectionGeometries = WTF::move(selectionGeometries);
 
     if (m_presentationController)
-        state.visualData->enclosingLayerID = m_presentationController->contentsLayerIdentifier();
+        state.visualData->enclosingLayerID = protect(m_presentationController)->contentsLayerIdentifier();
 
     if (m_scrollingNodeID) {
         state.visualData->enclosingScrollingNodeID = *m_scrollingNodeID;

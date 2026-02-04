@@ -5306,12 +5306,12 @@ void WebPage::startPlayingPredominantVideo(CompletionHandler<void(bool)>&& compl
 void WebPage::setSceneIdentifier(String&& sceneIdentifier)
 {
     AudioSession::singleton().setSceneIdentifier(sceneIdentifier);
-    m_page->setSceneIdentifier(WTF::move(sceneIdentifier));
+    protect(m_page)->setSceneIdentifier(WTF::move(sceneIdentifier));
 }
 
 void WebPage::setAllowsMediaDocumentInlinePlayback(bool allows)
 {
-    m_page->setAllowsMediaDocumentInlinePlayback(allows);
+    protect(m_page)->setAllowsMediaDocumentInlinePlayback(allows);
 }
 #endif
 
@@ -7220,7 +7220,7 @@ static bool isTextFormControlOrEditableContent(const WebCore::Element& element)
 #if PLATFORM(IOS_FAMILY) && ENABLE(FULLSCREEN_API)
 static bool shouldExitFullscreenAfterFocusingElement(const WebCore::Element& element)
 {
-    if (!element.document().fullscreen().isFullscreen())
+    if (!protect(element.document().fullscreen())->isFullscreen())
         return false;
 
     if (RefPtr input = dynamicDowncast<const HTMLInputElement>(element))
@@ -7254,7 +7254,7 @@ void WebPage::elementDidFocus(Element& element, const FocusOptions& options)
 
 #if ENABLE(FULLSCREEN_API)
     if (shouldExitFullscreenAfterFocusingElement(element))
-        element.document().fullscreen().fullyExitFullscreen();
+        protect(element.document().fullscreen())->fullyExitFullscreen();
 #endif
         if (isChangingFocusedElement && (m_userIsInteracting || m_keyboardIsAttached))
             m_sendAutocorrectionContextAfterFocusingElement = true;
@@ -7265,7 +7265,7 @@ void WebPage::elementDidFocus(Element& element, const FocusOptions& options)
 
         RefPtr<API::Object> userData;
 
-        m_formClient->willBeginInputSession(this, &element, WebFrame::fromCoreFrame(*element.document().frame()).get(), m_userIsInteracting, userData);
+        m_formClient->willBeginInputSession(this, &element, protect(WebFrame::fromCoreFrame(*element.document().frame())).get(), m_userIsInteracting, userData);
 
         if (!userData) {
             auto userInfo = element.userInfo();
@@ -7697,10 +7697,10 @@ void WebPage::didCommitLoad(WebFrame* frame)
     m_viewportConfiguration.setPrefersHorizontalScrollingBelowDesktopViewportWidths(shouldEnableViewportBehaviorsForResizableWindows());
 
     LOG_WITH_STREAM(VisibleRects, stream << "WebPage " << m_identifier.toUInt64() << " didCommitLoad setting content size to " << coreFrame->view()->contentsSize());
-    if (m_viewportConfiguration.setContentsSize(coreFrame->view()->contentsSize()))
+    if (m_viewportConfiguration.setContentsSize(protect(coreFrame->view())->contentsSize()))
         viewportChanged = true;
 
-    if (m_viewportConfiguration.setViewportArguments(coreFrame->document()->viewportArguments()))
+    if (m_viewportConfiguration.setViewportArguments(protect(coreFrame->document())->viewportArguments()))
         viewportChanged = true;
 
     if (m_viewportConfiguration.setIsKnownToLayOutWiderThanViewport(false))

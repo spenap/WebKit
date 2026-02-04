@@ -185,7 +185,7 @@ static void providePresentingApplicationPID(RemoteAudioSessionProxy& proxy)
         return;
 #endif
 
-    ProcessID pid = GPUProcess::singleton().parentProcessConnection()->remoteProcessID();
+    ProcessID pid = protect(GPUProcess::singleton().parentProcessConnection())->remoteProcessID();
 
 #if !PLATFORM(APPLETV)
     // Presenting application audit tokens are per-page, but AudioSessions are per-web-process,
@@ -201,7 +201,7 @@ static void providePresentingApplicationPID(RemoteAudioSessionProxy& proxy)
 #endif
 #endif
 
-    MediaSessionHelper::sharedHelper().providePresentingApplicationPID(pid);
+    protect(MediaSessionHelper::sharedHelper())->providePresentingApplicationPID(pid);
 }
 #endif
 

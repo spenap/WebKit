@@ -467,7 +467,7 @@ double ProcessAssertion::remainingRunTimeInSeconds(ProcessID pid)
 void ProcessAssertion::acquireAsync(CompletionHandler<void()>&& completionHandler)
 {
     ASSERT(isMainRunLoop());
-    assertionsWorkQueue().dispatch([protectedThis = Ref { *this }, completionHandler = WTF::move(completionHandler)]() mutable {
+    protect(assertionsWorkQueue())->dispatch([protectedThis = Ref { *this }, completionHandler = WTF::move(completionHandler)]() mutable {
         protectedThis->acquireSync();
         RunLoop::mainSingleton().dispatch([protectedThis = WTF::move(protectedThis), completionHandler = WTF::move(completionHandler)]() mutable {
             if (completionHandler)

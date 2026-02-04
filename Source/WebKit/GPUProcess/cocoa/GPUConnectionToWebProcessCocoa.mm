@@ -79,7 +79,7 @@ bool GPUConnectionToWebProcess::setCaptureAttributionString()
 void GPUConnectionToWebProcess::setTCCIdentity()
 {
 #if !PLATFORM(MACCATALYST)
-    auto auditToken = gpuProcess().parentProcessConnection()->getAuditToken();
+    auto auditToken = protect(gpuProcess().parentProcessConnection())->getAuditToken();
     if (!auditToken) {
         RELEASE_LOG_ERROR(WebRTC, "getAuditToken returned null");
         return;

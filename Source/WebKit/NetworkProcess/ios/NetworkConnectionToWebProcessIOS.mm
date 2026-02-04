@@ -68,7 +68,7 @@ void NetworkConnectionToWebProcess::notifyWillPresentPaymentUI(WebPageProxyIdent
 
 void NetworkConnectionToWebProcess::getPaymentCoordinatorEmbeddingUserAgent(WebPageProxyIdentifier webPageProxyIdentifier, CompletionHandler<void(const String&)>&& completionHandler)
 {
-    networkProcess().parentProcessConnection()->sendWithAsyncReply(Messages::NetworkProcessProxy::GetPaymentCoordinatorEmbeddingUserAgent { webPageProxyIdentifier }, WTF::move(completionHandler));
+    protect(networkProcess().parentProcessConnection())->sendWithAsyncReply(Messages::NetworkProcessProxy::GetPaymentCoordinatorEmbeddingUserAgent { webPageProxyIdentifier }, WTF::move(completionHandler));
 }
 
 CocoaWindow *NetworkConnectionToWebProcess::paymentCoordinatorPresentingWindow(const WebPaymentCoordinatorProxy&) const

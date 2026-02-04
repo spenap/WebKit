@@ -835,7 +835,7 @@ bool PageClientImpl::handleRunOpenPanel(const WebPageProxy& page, const WebFrame
 #if ENABLE(MEDIA_CAPTURE)
     if (parameters.mediaCaptureType() != WebCore::MediaCaptureType::MediaCaptureTypeNone) {
         if (auto pid = page.configuration().processPool().configuration().presentingApplicationPID())
-            WebCore::MediaSessionHelper::sharedHelper().providePresentingApplicationPID(pid);
+            protect(WebCore::MediaSessionHelper::sharedHelper())->providePresentingApplicationPID(pid);
     }
 #endif
 

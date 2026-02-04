@@ -250,7 +250,7 @@ void SOAuthorizationSession::continueStartAfterDecidePolicy(const SOAuthorizatio
         kSOAuthorizationOptionInitiatingPath: initiatingPath.createNSString().get()
     };
 #if PLATFORM(IOS_FAMILY)
-    RetainPtr<WKWebView> webView = m_page->cocoaView();
+    RetainPtr<WKWebView> webView = protect(m_page)->cocoaView();
     id webViewUIDelegate = [webView UIDelegate];
     if ([webViewUIDelegate respondsToSelector:@selector(_hostSceneIdentifierForWebView:)]) {
         NSString *callerSceneID = [webViewUIDelegate _hostSceneIdentifierForWebView:webView.get()];

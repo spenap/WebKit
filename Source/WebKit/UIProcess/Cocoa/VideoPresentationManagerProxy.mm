@@ -388,7 +388,7 @@ UIViewController *VideoPresentationModelContext::presentingViewController()
     if (!m_manager || !m_manager->m_page)
         return nullptr;
 
-    if (RefPtr pageClient = m_manager->m_page->pageClient())
+    if (RefPtr pageClient = protect(m_manager)->m_page->pageClient())
         return pageClient->presentingViewController();
     return nullptr;
 }
@@ -1688,7 +1688,7 @@ RefPtr<PlatformVideoPresentationInterface> VideoPresentationManagerProxy::bestVi
     if (!m_page)
         return nullptr;
 
-    RefPtr pageClient = m_page->pageClient();
+    RefPtr pageClient = protect(m_page)->pageClient();
     if (!pageClient)
         return nullptr;
 

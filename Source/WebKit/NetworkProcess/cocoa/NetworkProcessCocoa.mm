@@ -175,7 +175,7 @@ std::optional<audit_token_t> NetworkProcess::sourceApplicationAuditToken() const
     ASSERT(parentProcessConnection());
     if (!parentProcessConnection())
         return { };
-    return parentProcessConnection()->getAuditToken();
+    return protect(parentProcessConnection())->getAuditToken();
 #else
     return { };
 #endif

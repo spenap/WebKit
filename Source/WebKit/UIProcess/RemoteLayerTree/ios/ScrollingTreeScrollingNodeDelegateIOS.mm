@@ -453,7 +453,7 @@ void ScrollingTreeScrollingNodeDelegateIOS::handleAsynchronousCancelableScrollEv
 {
     auto* scrollingCoordinatorProxy = downcast<WebKit::RemoteScrollingTree>(scrollingTree())->scrollingCoordinatorProxy();
     if (scrollingCoordinatorProxy) {
-        if (RefPtr pageClient = scrollingCoordinatorProxy->webPageProxy().pageClient())
+        if (RefPtr pageClient = protect(scrollingCoordinatorProxy->webPageProxy())->pageClient())
             pageClient->handleAsynchronousCancelableScrollEvent(scrollView, update, completion);
     }
 }
@@ -548,7 +548,7 @@ void ScrollingTreeScrollingNodeDelegateIOS::computeActiveTouchActionsForGestureR
     if (!scrollingCoordinatorProxy)
         return;
 
-    RefPtr pageClient = scrollingCoordinatorProxy->webPageProxy().pageClient();
+    RefPtr pageClient = protect(scrollingCoordinatorProxy->webPageProxy())->pageClient();
     if (!pageClient)
         return;
 
@@ -562,7 +562,7 @@ void ScrollingTreeScrollingNodeDelegateIOS::cancelPointersForGestureRecognizer(U
     if (!scrollingCoordinatorProxy)
         return;
 
-    if (RefPtr pageClient = scrollingCoordinatorProxy->webPageProxy().pageClient())
+    if (RefPtr pageClient = protect(scrollingCoordinatorProxy->webPageProxy())->pageClient())
         pageClient->cancelPointersForGestureRecognizer(gestureRecognizer);
 }
 

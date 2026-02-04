@@ -147,7 +147,7 @@ void WebDataListSuggestionsDropdownIOS::didSelectOption(const String& selectedOp
     if (!m_page)
         return;
 
-    m_page->didSelectOption(selectedOption);
+    protect(m_page)->didSelectOption(selectedOption);
     close();
 }
 
@@ -185,7 +185,7 @@ void WebDataListSuggestionsDropdownIOS::didSelectOption(const String& selectedOp
 
 - (void)didSelectOptionAtIndex:(NSInteger)index
 {
-    _dropdown->didSelectOption(_suggestions[index].value);
+    protect(*_dropdown)->didSelectOption(_suggestions[index].value);
 }
 
 - (void)invalidate

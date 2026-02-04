@@ -259,19 +259,21 @@ typedef NS_ENUM(NSInteger, _WKPrintRenderingCallbackType) {
     ASSERT(_pageClient);
 
     _page = processPool.createWebPage(*_pageClient, WTF::move(configuration));
-    auto& pageConfiguration = _page->configuration();
-    _page->initializeWebPage(pageConfiguration.openedSite(), pageConfiguration.initialSandboxFlags(), pageConfiguration.initialReferrerPolicy());
+    Ref page = *_page;
+
+    auto& pageConfiguration = page->configuration();
+    page->initializeWebPage(pageConfiguration.openedSite(), pageConfiguration.initialSandboxFlags(), pageConfiguration.initialReferrerPolicy());
 
     [self _updateRuntimeProtocolConformanceIfNeeded];
 
-    _page->setIntrinsicDeviceScaleFactor([self intrinsicDeviceScaleFactor]);
-    _page->setUseFixedLayout(true);
-    _page->setScreenIsBeingCaptured([self screenIsBeingCaptured]);
+    page->setIntrinsicDeviceScaleFactor([self intrinsicDeviceScaleFactor]);
+    page->setUseFixedLayout(true);
+    page->setScreenIsBeingCaptured([self screenIsBeingCaptured]);
 
-    _page->windowScreenDidChange(_page->generateDisplayIDFromPageID());
+    page->windowScreenDidChange(page->generateDisplayIDFromPageID());
 
 #if ENABLE(FULLSCREEN_API)
-    _page->setFullscreenClient(makeUnique<WebKit::FullscreenClient>(self.webView));
+    page->setFullscreenClient(makeUnique<WebKit::FullscreenClient>(self.webView));
 #endif
 
     WebKit::WebProcessPool::statistics().wkViewCount++;
@@ -350,7 +352,7 @@ typedef NS_ENUM(NSInteger, _WKPrintRenderingCallbackType) {
 
 - (void)_setupVisibilityPropagationForWebProcess
 {
-    if (!_page->hasRunningProcess())
+    if (!protect(_page)->hasRunningProcess())
         return;
 
 #if USE(EXTENSIONKIT)
@@ -495,7 +497,7 @@ typedef NS_ENUM(NSInteger, _WKPrintRenderingCallbackType) {
 
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 
-    _page->close();
+    protect(_page)->close();
 
     WebKit::WebProcessPool::statistics().wkViewCount--;
 
@@ -610,7 +612,7 @@ typedef NS_ENUM(NSInteger, _WKPrintRenderingCallbackType) {
         _inspectorHighlightView = adoptNS([[WKInspectorHighlightView alloc] initWithFrame:CGRectZero]);
         [self insertSubview:_inspectorHighlightView.get() aboveSubview:_rootContentView.get()];
     }
-    [_inspectorHighlightView update:highlight scale:([self intrinsicDeviceScaleFactor] * [self _contentZoomScale]) frame:_page->unobscuredContentRect()];
+    [_inspectorHighlightView update:highlight scale:([self intrinsicDeviceScaleFactor] * [self _contentZoomScale]) frame:protect(_page)->unobscuredContentRect()];
 }
 
 - (void)_hideInspectorHighlight
@@ -675,15 +677,16 @@ typedef NS_ENUM(NSInteger, _WKPrintRenderingCallbackType) {
     if (!drawingArea)
         return;
 
+    Ref page = *_page;
 
     LOG_WITH_STREAM(VisibleRects, stream << "-[WKContentView didUpdateVisibleRect]" << visibleContentRectUpdateInfo.dump());
 
-    bool wasStableState = _page->inStableState();
+    bool wasStableState = page->inStableState();
 
-    _page->updateVisibleContentRects(visibleContentRectUpdateInfo, sendEvenIfUnchanged);
+    page->updateVisibleContentRects(visibleContentRectUpdateInfo, sendEvenIfUnchanged);
 
-    auto layoutViewport = _page->unconstrainedLayoutViewportRect();
-    _page->adjustLayersForLayoutViewport(_page->unobscuredContentRect().location(), layoutViewport, _page->displayedContentScale());
+    auto layoutViewport = page->unconstrainedLayoutViewportRect();
+    page->adjustLayersForLayoutViewport(page->unobscuredContentRect().location(), layoutViewport, page->displayedContentScale());
 
     _sizeChangedSinceLastVisibleContentRectUpdate = NO;
     self.webView->_needsScrollend = NO;
@@ -826,7 +829,7 @@ static void storeAccessibilityRemoteConnectionInformation(id element, pid_t pid,
         auto elementToken = WebCore::AccessibilityRemoteToken(WTF::UUID::createVersion4(), getpid());
 
         storeAccessibilityRemoteConnectionInformation(self, _page->legacyMainFrameProcess().processID(), elementToken.uuid);
-        _page->registerUIProcessAccessibilityTokens(elementToken, elementToken);
+        protect(_page)->registerUIProcessAccessibilityTokens(elementToken, elementToken);
     }
 }
 
@@ -849,7 +852,7 @@ static void storeAccessibilityRemoteConnectionInformation(id element, pid_t pid,
 
 - (Ref<WebKit::DrawingAreaProxy>)_createDrawingAreaProxy:(WebKit::WebProcessProxy&)webProcessProxy
 {
-    return WebKit::RemoteLayerTreeDrawingAreaProxyIOS::create(*_page, webProcessProxy);
+    return WebKit::RemoteLayerTreeDrawingAreaProxyIOS::create(protect(*_page), webProcessProxy);
 }
 
 - (void)_processDidExit
@@ -973,10 +976,12 @@ static void storeAccessibilityRemoteConnectionInformation(id element, pid_t pid,
         scaledOrigin.scale(scale);
         [_interactionViewsContainerView setFrame:CGRectMake(scaledOrigin.x(), scaledOrigin.y(), 0, 0)];
     }
+
+    Ref page = *_page;
     
     if (boundsChanged) {
         // FIXME: factor computeLayoutViewportRect() into something that gives us this rect.
-        WebCore::FloatRect fixedPositionRect = _page->computeLayoutViewportRect(_page->unobscuredContentRect(), _page->unobscuredContentRectRespectingInputViewBounds(), _page->layoutViewportRect(), self.webView.scrollView.zoomScale, WebCore::LayoutViewportConstraint::Unconstrained);
+        WebCore::FloatRect fixedPositionRect = page->computeLayoutViewportRect(page->unobscuredContentRect(), page->unobscuredContentRectRespectingInputViewBounds(), page->layoutViewportRect(), self.webView.scrollView.zoomScale, WebCore::LayoutViewportConstraint::Unconstrained);
         [self updateFixedClippingView:fixedPositionRect];
 
         // We need to push the new content bounds to the webview to update fixed position rects.
@@ -986,7 +991,7 @@ static void storeAccessibilityRemoteConnectionInformation(id element, pid_t pid,
     // Updating the selection requires a full editor state. If the editor state is missing post layout
     // data then it means there is a layout pending and we're going to be called again after the layout
     // so we delay the selection update.
-    if (_page->editorState().hasPostLayoutAndVisualData())
+    if (page->editorState().hasPostLayoutAndVisualData())
         [self _updateChangedSelection];
 }
 
@@ -1059,39 +1064,39 @@ static void storeAccessibilityRemoteConnectionInformation(id element, pid_t pid,
 
 - (void)_applicationWillResignActive:(NSNotification*)notification
 {
-    _page->applicationWillResignActive();
+    protect(_page)->applicationWillResignActive();
 }
 
 - (void)_applicationDidBecomeActive:(NSNotification*)notification
 {
-    _page->applicationDidBecomeActive();
+    protect(_page)->applicationDidBecomeActive();
 }
 
 - (void)_applicationDidEnterBackground:(NSNotification*)notification
 {
     if (!self.window)
-        _page->applicationDidEnterBackgroundForMedia();
+        protect(_page)->applicationDidEnterBackgroundForMedia();
 }
 
 - (void)_applicationWillEnterForeground:(NSNotification*)notification
 {
     if (!self.window)
-        _page->applicationWillEnterForegroundForMedia();
+        protect(_page)->applicationWillEnterForegroundForMedia();
 }
 
 - (void)_displayScaleDidChange
 {
-    _page->setIntrinsicDeviceScaleFactor([self intrinsicDeviceScaleFactor]);
+    protect(_page)->setIntrinsicDeviceScaleFactor([self intrinsicDeviceScaleFactor]);
 }
 
 - (void)_sceneCaptureStateDidChange
 {
-    _page->setScreenIsBeingCaptured([self screenIsBeingCaptured]);
+    protect(_page)->setScreenIsBeingCaptured([self screenIsBeingCaptured]);
 }
 
 - (BOOL)_shouldExposeRollAngleAsTwist
 {
-    return _page->preferences().exposeRollAngleAsTwistEnabled();
+    return protect(_page)->preferences().exposeRollAngleAsTwistEnabled();
 }
 
 @end
@@ -1173,7 +1178,7 @@ static void storeAccessibilityRemoteConnectionInformation(id element, pid_t pid,
 
             // This has the side effect of calling `WebPage::beginPrinting`. It is important that all calls
             // of `WebPage::beginPrinting` are matched with a corresponding call to `WebPage::endPrinting`.
-            _page->computePagesForPrinting(*frameID, printInfo, [&pageCount, &computePagesSemaphore](const Vector<WebCore::IntRect>& pageRects, double /* totalScaleFactorForPrinting */, const WebCore::FloatBoxExtent& /* computedPageMargin */) mutable {
+            protect(_page)->computePagesForPrinting(*frameID, printInfo, [&pageCount, &computePagesSemaphore](const Vector<WebCore::IntRect>& pageRects, double /* totalScaleFactorForPrinting */, const WebCore::FloatBoxExtent& /* computedPageMargin */) mutable {
                 ASSERT(pageRects.size() >= 1);
                 pageCount = pageRects.size();
                 RELEASE_LOG(Printing, "Computed pages for printing on background thread. Page count = %zu", pageCount);
@@ -1189,7 +1194,7 @@ static void storeAccessibilityRemoteConnectionInformation(id element, pid_t pid,
         frameID = *identifier;
 
         if (!pageCount)
-            pageCount = _page->computePagesForPrintingiOS(*frameID, printInfo);
+            pageCount = protect(_page)->computePagesForPrintingiOS(*frameID, printInfo);
     }
 
     if (!pageCount)
@@ -1219,7 +1224,7 @@ static void storeAccessibilityRemoteConnectionInformation(id element, pid_t pid,
         RELEASE_LOG(Printing, "Beginning to generate print preview image. Page count = %zu", [formatterAttributes pageCount]);
 
         // Begin generating the image in expectation of a (eventual) request for the drawn data.
-        auto callbackID = retainedSelf->_page->drawToImage(*[formatterAttributes frameID], [formatterAttributes printInfo], [isPrintingOnBackgroundThread, printFormatter, retainedSelf](std::optional<WebCore::ShareableBitmap::Handle>&& imageHandle) mutable {
+        auto callbackID = protect(retainedSelf->_page)->drawToImage(*[formatterAttributes frameID], [formatterAttributes printInfo], [isPrintingOnBackgroundThread, printFormatter, retainedSelf](std::optional<WebCore::ShareableBitmap::Handle>&& imageHandle) mutable {
             if (!isPrintingOnBackgroundThread)
                 retainedSelf->_printRenderingCallbackID = std::nullopt;
             else {
@@ -1255,7 +1260,7 @@ static void storeAccessibilityRemoteConnectionInformation(id element, pid_t pid,
 
     ensureOnMainRunLoop([formatterAttributes = retainPtr(formatterAttributes), isPrintingOnBackgroundThread, printFormatter = retainPtr(printFormatter), retainedSelf = retainPtr(self)] {
         // Begin generating the PDF in expectation of a (eventual) request for the drawn data.
-        auto callbackID = retainedSelf->_page->drawToPDFiOS(*[formatterAttributes frameID], [formatterAttributes printInfo], [formatterAttributes pageCount], [isPrintingOnBackgroundThread, printFormatter, retainedSelf](RefPtr<WebCore::SharedBuffer>&& pdfData) mutable {
+        auto callbackID = protect(retainedSelf->_page)->drawToPDFiOS(*[formatterAttributes frameID], [formatterAttributes printInfo], [formatterAttributes pageCount], [isPrintingOnBackgroundThread, printFormatter, retainedSelf](RefPtr<WebCore::SharedBuffer>&& pdfData) mutable {
             if (!isPrintingOnBackgroundThread)
                 retainedSelf->_printRenderingCallbackID = std::nullopt;
             else {
@@ -1289,7 +1294,7 @@ static void storeAccessibilityRemoteConnectionInformation(id element, pid_t pid,
         if (!callbackID)
             return;
 
-        _page->legacyMainFrameProcess().connection().waitForAsyncReplyAndDispatchImmediately<Messages::WebPage::DrawToPDFiOS>(*callbackID, Seconds::infinity());
+        protect(_page)->legacyMainFrameProcess().connection().waitForAsyncReplyAndDispatchImmediately<Messages::WebPage::DrawToPDFiOS>(*callbackID, Seconds::infinity());
         return;
     }
 
@@ -1333,7 +1338,7 @@ static void storeAccessibilityRemoteConnectionInformation(id element, pid_t pid,
         if (!callbackID)
             return;
 
-        _page->legacyMainFrameProcess().connection().waitForAsyncReplyAndDispatchImmediately<Messages::WebPage::DrawRectToImage>(*callbackID, Seconds::infinity());
+        protect(_page)->legacyMainFrameProcess().connection().waitForAsyncReplyAndDispatchImmediately<Messages::WebPage::DrawRectToImage>(*callbackID, Seconds::infinity());
         return;
     }
 

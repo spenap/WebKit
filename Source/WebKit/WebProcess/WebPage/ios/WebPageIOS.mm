@@ -280,7 +280,7 @@ void WebPage::platformInitializeAccessibility(ShouldInitializeNSAccessibility)
     m_mockAccessibilityElement = adoptNS([[WKAccessibilityWebPageObject alloc] init]);
     [m_mockAccessibilityElement setWebPage:this];
 
-    RefPtr localMainFrame = m_page->localMainFrame();
+    RefPtr localMainFrame = protect(*m_page)->localMainFrame();
     if (localMainFrame)
         accessibilityTransferRemoteToken(accessibilityRemoteTokenData());
 }
@@ -572,7 +572,7 @@ void WebPage::restorePageState(const HistoryItem& historyItem)
     // scroll to the correct position through a regular VisibleContentRectUpdate.
 
     m_userHasChangedPageScaleFactor = !historyItem.scaleIsInitial();
-    RefPtr localMainFrame = m_page->localMainFrame();
+    RefPtr localMainFrame = protect(*m_page)->localMainFrame();
     if (!localMainFrame)
         return;
     auto& frameView = *localMainFrame->view();
@@ -803,7 +803,7 @@ void WebPage::advanceToNextMisspelling(bool)
 IntRect WebPage::rectForElementAtInteractionLocation() const
 {
     constexpr OptionSet<HitTestRequest::Type> hitType { HitTestRequest::Type::ReadOnly, HitTestRequest::Type::Active, HitTestRequest::Type::AllowVisibleChildFrameContentOnly };
-    RefPtr localMainFrame = m_page->localMainFrame();
+    RefPtr localMainFrame = protect(*m_page)->localMainFrame();
     if (!localMainFrame)
         return IntRect();
     HitTestResult result = localMainFrame->eventHandler().hitTestResultAtPoint(flooredIntPoint(m_lastInteractionLocation), hitType);
@@ -1081,7 +1081,7 @@ void WebPage::completeSyntheticClick(std::optional<WebCore::FrameIdentifier> fra
 void WebPage::attemptSyntheticClick(const IntPoint& point, OptionSet<WebEventModifier> modifiers, TransactionID lastLayerTreeTransactionId)
 {
     FloatPoint adjustedPoint;
-    RefPtr localMainFrame = m_page->localMainFrame();
+    RefPtr localMainFrame = protect(*m_page)->localMainFrame();
     Node* nodeRespondingToClick = localMainFrame ? localMainFrame->nodeRespondingToClickEvents(point, adjustedPoint) : nullptr;
     auto* frameRespondingToClick = nodeRespondingToClick ? nodeRespondingToClick->document().frame() : nullptr;
     IntPoint adjustedIntPoint = roundedIntPoint(adjustedPoint);
@@ -1115,7 +1115,7 @@ static RefPtr<LocalDOMWindow> windowWithDoubleClickEventListener(RefPtr<LocalFra
 void WebPage::handleDoubleTapForDoubleClickAtPoint(const IntPoint& point, OptionSet<WebEventModifier> modifiers, TransactionID lastLayerTreeTransactionId)
 {
     FloatPoint adjustedPoint;
-    RefPtr localMainFrame = m_page->localMainFrame();
+    RefPtr localMainFrame = protect(*m_page)->localMainFrame();
     auto* nodeRespondingToDoubleClick = localMainFrame ? localMainFrame->nodeRespondingToDoubleClickEvent(point, adjustedPoint) : nullptr;
 
     RefPtr windowListeningToDoubleClickEvents = windowWithDoubleClickEventListener(localMainFrame);
@@ -1200,7 +1200,7 @@ Awaitable<DragInitiationResult> WebPage::requestAdditionalItemsForDragSession(st
     // is opaque to the web process, which only sees that the current drag has ended, and that a new one is beginning.
     PlatformMouseEvent event(clientPosition, globalPosition, MouseButton::Left, PlatformEvent::Type::MouseMoved, 0, { }, MonotonicTime::now(), 0, WebCore::SyntheticClickType::NoTap);
     m_page->dragController().dragEnded();
-    RefPtr localMainFrame = m_page->localMainFrame();
+    RefPtr localMainFrame = protect(*m_page)->localMainFrame();
     if (!localMainFrame)
         co_return { false };
 
@@ -1375,7 +1375,7 @@ void WebPage::sendTapHighlightForNodeIfNecessary(WebKit::TapIdentifier requestID
 void WebPage::handleTwoFingerTapAtPoint(const WebCore::IntPoint& point, OptionSet<WebKit::WebEventModifier> modifiers, WebKit::TapIdentifier requestID)
 {
     FloatPoint adjustedPoint;
-    RefPtr localMainFrame = m_page->localMainFrame();
+    RefPtr localMainFrame = protect(*m_page)->localMainFrame();
     Node* nodeRespondingToClick = localMainFrame ? localMainFrame->nodeRespondingToClickEvents(point, adjustedPoint) : nullptr;
     if (!nodeRespondingToClick || !nodeRespondingToClick->renderer()) {
         send(Messages::WebPageProxy::DidNotHandleTapAsClick(roundedIntPoint(adjustedPoint)));
@@ -1387,7 +1387,7 @@ void WebPage::handleTwoFingerTapAtPoint(const WebCore::IntPoint& point, OptionSe
 
 Awaitable<std::optional<WebCore::RemoteUserInputEventData>> WebPage::potentialTapAtPosition(std::optional<WebCore::FrameIdentifier> frameID, WebKit::TapIdentifier requestID, WebCore::FloatPoint position, bool shouldRequestMagnificationInformation)
 {
-    RefPtr localMainFrame = m_page->localMainFrame();
+    RefPtr localMainFrame = protect(*m_page)->localMainFrame();
 
     if (RefPtr localRootFrame = this->localRootFrame(frameID))
         m_potentialTapNode = localRootFrame->nodeRespondingToClickEvents(position, m_potentialTapLocation, m_potentialTapSecurityOrigin.get());
@@ -1532,7 +1532,7 @@ void WebPage::commitPotentialTapFailed()
     if (auto selectionChangedHandler = std::exchange(m_selectionChangedHandler, {}))
         selectionChangedHandler();
 
-    if (RefPtr localMainFrame = m_page->localMainFrame())
+    if (RefPtr localMainFrame = protect(*m_page)->localMainFrame())
         ContentChangeObserver::didCancelPotentialTap(*localMainFrame);
     clearSelectionAfterTapIfNeeded();
     invokePendingSyntheticClickCallback(SyntheticClickResult::Failed);
@@ -1564,7 +1564,7 @@ void WebPage::clearSelectionAfterTapIfNeeded()
 
 void WebPage::cancelPotentialTap()
 {   
-    if (RefPtr localMainFrame = m_page->localMainFrame())
+    if (RefPtr localMainFrame = protect(*m_page)->localMainFrame())
         ContentChangeObserver::didCancelPotentialTap(*localMainFrame);
     cancelPotentialTapInFrame(m_mainFrame);
 }
@@ -1587,13 +1587,13 @@ void WebPage::cancelPotentialTapInFrame(WebFrame& frame)
 
 void WebPage::didRecognizeLongPress()
 {
-    if (RefPtr localMainFrame = m_page->localMainFrame())
+    if (RefPtr localMainFrame = protect(*m_page)->localMainFrame())
         ContentChangeObserver::didRecognizeLongPress(*localMainFrame);
 }
 
 void WebPage::tapHighlightAtPosition(WebKit::TapIdentifier requestID, const FloatPoint& position)
 {
-    RefPtr localMainFrame = m_page->localMainFrame();
+    RefPtr localMainFrame = protect(*m_page)->localMainFrame();
     if (!localMainFrame)
         return;
     FloatPoint adjustedPoint;
@@ -1602,7 +1602,7 @@ void WebPage::tapHighlightAtPosition(WebKit::TapIdentifier requestID, const Floa
 
 void WebPage::inspectorNodeSearchMovedToPosition(const FloatPoint& position)
 {
-    RefPtr localMainFrame = m_page->localMainFrame();
+    RefPtr localMainFrame = protect(*m_page)->localMainFrame();
     if (!localMainFrame)
         return;
     IntPoint adjustedPoint = roundedIntPoint(position);
@@ -1613,7 +1613,7 @@ void WebPage::inspectorNodeSearchMovedToPosition(const FloatPoint& position)
 
 void WebPage::inspectorNodeSearchEndedAtPosition(const FloatPoint& position)
 {
-    RefPtr localMainFrame = m_page->localMainFrame();
+    RefPtr localMainFrame = protect(*m_page)->localMainFrame();
     if (Node* node = localMainFrame ? localMainFrame->deepestNodeAtLocation(position) : nullptr)
         node->inspect();
 }
@@ -1676,7 +1676,7 @@ void WebPage::setIsShowingInputViewForFocusedElement(bool showingInputView)
 {
     m_isShowingInputViewForFocusedElement = showingInputView;
     if (!showingInputView)
-        m_page->clearIsShowingInputView();
+        protect(*m_page)->clearIsShowingInputView();
 }
 
 void WebPage::showInspectorHighlight(const WebCore::InspectorOverlay::Highlight& highlight)
@@ -1911,7 +1911,7 @@ IntRect WebPage::rootViewBounds(const Node& node)
 void WebPage::clearSelection()
 {
     m_startingGestureRange = std::nullopt;
-    RefPtr focusedOrMainFrame = m_page->focusController().focusedOrMainFrame();
+    RefPtr focusedOrMainFrame = protect(*m_page)->focusController().focusedOrMainFrame();
     focusedOrMainFrame->selection().clear();
 #if ENABLE(PDF_PLUGIN)
     if (RefPtr pluginView = pluginViewForFrame(focusedOrMainFrame.get()))
@@ -2765,7 +2765,7 @@ void WebPage::didReleaseAllTouchPoints()
 #if ENABLE(REVEAL)
 RevealItem WebPage::revealItemForCurrentSelection()
 {
-    RefPtr frame = m_page->focusController().focusedOrMainFrame();
+    RefPtr frame = protect(*m_page)->focusController().focusedOrMainFrame();
     if (!frame)
         return { };
 
@@ -2878,7 +2878,7 @@ void WebPage::replaceDictatedText(const String& oldText, const String& newText)
 
 void WebPage::willInsertFinalDictationResult()
 {
-    RefPtr frame = m_page->focusController().focusedOrMainFrame();
+    RefPtr frame = protect(*m_page)->focusController().focusedOrMainFrame();
     if (!frame)
         return;
 
@@ -3900,7 +3900,7 @@ void WebPage::focusNextFocusedElement(bool isForward, CompletionHandler<void()>&
 
 std::optional<FocusedElementInformation> WebPage::focusedElementInformation()
 {
-    RefPtr focusedOrMainFrame = m_page->focusController().focusedOrMainFrame();
+    RefPtr focusedOrMainFrame = protect(*m_page)->focusController().focusedOrMainFrame();
     if (!focusedOrMainFrame)
         return std::nullopt;
     RefPtr<Document> document = focusedOrMainFrame->document();
@@ -4470,7 +4470,7 @@ void WebPage::resetViewportDefaultConfiguration(WebFrame* frame, bool hasMobileD
 
 void WebPage::updateTextAutosizingEnablementFromInitialScale(double initialScale)
 {
-    if (m_page->settings().textAutosizingEnabledAtLargeInitialScale())
+    if (protect(*m_page)->settings().textAutosizingEnabledAtLargeInitialScale())
         return;
 
     bool shouldEnable = initialScale <= 1;
@@ -4557,8 +4557,11 @@ void WebPage::shrinkToFitContent(ZoomToInitialScale zoomToInitialScale)
         return;
 
     RefPtr view = mainFrame->view();
+    if (!view)
+        return;
+
     RefPtr mainDocument = mainFrame->document();
-    if (!view || !mainDocument)
+    if (!mainDocument)
         return;
 
     mainDocument->updateLayout();
@@ -5124,7 +5127,7 @@ void WebPage::willStartUserTriggeredZooming()
         pluginView->didBeginMagnificationGesture();
 #endif
 
-    m_page->diagnosticLoggingClient().logDiagnosticMessage(DiagnosticLoggingKeys::webViewKey(), DiagnosticLoggingKeys::userZoomActionKey(), ShouldSample::No);
+    protect(*m_page)->diagnosticLoggingClient().logDiagnosticMessage(DiagnosticLoggingKeys::webViewKey(), DiagnosticLoggingKeys::userZoomActionKey(), ShouldSample::No);
     m_userHasChangedPageScaleFactor = true;
 }
 

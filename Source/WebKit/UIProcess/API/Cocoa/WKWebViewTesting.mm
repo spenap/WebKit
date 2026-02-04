@@ -382,9 +382,9 @@ static void dumpCALayer(TextStream& ts, CALayer *layer, bool traverse)
 #if PLATFORM(MAC)
     return _impl->beginBackSwipeForTesting();
 #else
-    if (!_gestureController)
-        return NO;
-    return _gestureController->beginSimulatedSwipeInDirectionForTesting(WebKit::ViewGestureController::SwipeDirection::Back);
+    if (RefPtr gestureController = _gestureController)
+        return gestureController->beginSimulatedSwipeInDirectionForTesting(WebKit::ViewGestureController::SwipeDirection::Back);
+    return NO;
 #endif
 }
 
@@ -393,9 +393,9 @@ static void dumpCALayer(TextStream& ts, CALayer *layer, bool traverse)
 #if PLATFORM(MAC)
     return _impl->completeBackSwipeForTesting();
 #else
-    if (!_gestureController)
-        return NO;
-    return _gestureController->completeSimulatedSwipeInDirectionForTesting(WebKit::ViewGestureController::SwipeDirection::Back);
+    if (RefPtr gestureController = _gestureController)
+        return gestureController->completeSimulatedSwipeInDirectionForTesting(WebKit::ViewGestureController::SwipeDirection::Back);
+    return NO;
 #endif
 }
 
@@ -414,8 +414,8 @@ static void dumpCALayer(TextStream& ts, CALayer *layer, bool traverse)
     if (RefPtr gestureController = _impl->gestureController())
         gestureController->reset();
 #else
-    if (_gestureController)
-        _gestureController->reset();
+    if (RefPtr gestureController = _gestureController)
+        gestureController->reset();
 #endif
 }
 

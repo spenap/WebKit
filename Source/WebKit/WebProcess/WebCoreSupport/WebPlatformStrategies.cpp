@@ -362,7 +362,7 @@ void WebPlatformStrategies::writeToPasteboard(const WebCore::PasteboardWebConten
         protect(WebProcess::singleton().parentProcessConnection())->send(Messages::WebPasteboardProxy::WriteWebContentToPasteboard(*updatedContent, pasteboardName, pageIdentifier(context)), 0);
         return;
     }
-    WebProcess::singleton().parentProcessConnection()->send(Messages::WebPasteboardProxy::WriteWebContentToPasteboard(content, pasteboardName, pageIdentifier(context)), 0);
+    protect(WebProcess::singleton().parentProcessConnection())->send(Messages::WebPasteboardProxy::WriteWebContentToPasteboard(content, pasteboardName, pageIdentifier(context)), 0);
 }
 
 void WebPlatformStrategies::writeToPasteboard(const WebCore::PasteboardImage& image, const String& pasteboardName, const PasteboardContext* context)

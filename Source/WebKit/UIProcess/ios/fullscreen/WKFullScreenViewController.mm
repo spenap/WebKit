@@ -99,11 +99,15 @@ public:
         if (m_interface == interface)
             return;
 
-        if (m_interface && m_interface->playbackSessionModel())
-            m_interface->playbackSessionModel()->removeClient(*this);
+        if (RefPtr currentInterface = m_interface; currentInterface) {
+            if (CheckedPtr playbackSessionModel = currentInterface->playbackSessionModel())
+                playbackSessionModel->removeClient(*this);
+        }
         m_interface = interface;
-        if (m_interface && m_interface->playbackSessionModel())
-            m_interface->playbackSessionModel()->addClient(*this);
+        if (RefPtr currentInterface = m_interface; currentInterface) {
+            if (CheckedPtr playbackSessionModel = currentInterface->playbackSessionModel())
+                playbackSessionModel->addClient(*this);
+        }
     }
 
 private:
@@ -409,7 +413,7 @@ ALLOW_DEPRECATED_DECLARATIONS_END
     WebCore::PlaybackSessionModel* playbackSessionModel = playbackSessionInterface ? playbackSessionInterface->playbackSessionModel() : nullptr;
     self.playing = playbackSessionModel ? playbackSessionModel->isPlaying() : NO;
     bool isPiPEnabled = false;
-    if (auto page = [self._webView _page])
+    if (RefPtr page = [self._webView _page].get())
         isPiPEnabled = page->preferences().pictureInPictureAPIEnabled() && page->preferences().allowsPictureInPictureMediaPlayback();
     bool isPiPSupported = playbackSessionModel && playbackSessionModel->isPictureInPictureSupported();
 #if ENABLE(VIDEO_USES_ELEMENT_FULLSCREEN)
@@ -745,7 +749,7 @@ ALLOW_DEPRECATED_DECLARATIONS_END
     UIImage *doneImage;
 
     // FIXME: Rename `alternateFullScreenControlDesignEnabled` to something that explains it is for visionOS.
-    auto alternateFullScreenControlDesignEnabled = self._webView._page->preferences().alternateFullScreenControlDesignEnabled();
+    auto alternateFullScreenControlDesignEnabled = protect(*self._webView._page)->preferences().alternateFullScreenControlDesignEnabled();
     
     if (alternateFullScreenControlDesignEnabled) {
         buttonSize = CGSizeMake(44.0, 44.0);
@@ -999,7 +1003,7 @@ ALLOW_DEPRECATED_DECLARATIONS_END
 {
     ASSERT(_valid);
     if (auto page = [self._webView _page])
-        return page->fullScreenManager();
+        return protect(*page)->fullScreenManager();
     return nullptr;
 }
 

@@ -116,9 +116,9 @@ void* WKUIWindowSceneObserverContext = &WKUIWindowSceneObserverContext;
 
         id scene = [change valueForKey:NSKeyValueChangeNewKey];
         if ([scene isKindOfClass:UIWindowScene.class])
-            _parent->setScene((UIWindowScene *)scene);
+            protect(_parent)->setScene((UIWindowScene *)scene);
         else
-            _parent->setScene(nil);
+            protect(_parent)->setScene(nil);
     });
 }
 @end

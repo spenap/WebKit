@@ -232,7 +232,7 @@ struct WKWebViewState {
         else
             [webView _clearOverrideLayoutParameters];
 
-        if (auto page = webView._page) {
+        if (RefPtr page = webView._page.get()) {
             page->setObscuredContentInsets(_savedWebPageObscuredContentInsets);
             page->setForceAlwaysUserScalable(_savedForceAlwaysUserScalable);
         }
@@ -257,7 +257,7 @@ ALLOW_DEPRECATED_DECLARATIONS_END
 #if !PLATFORM(WATCHOS) && !PLATFORM(APPLETV)
         _savedContentInsetAdjustmentBehaviorWasExternallyOverridden = scrollView._contentInsetAdjustmentBehaviorWasExternallyOverridden;
 #endif
-        if (auto page = webView._page) {
+        if (RefPtr page = webView._page.get()) {
             _savedWebPageObscuredContentInsets = page->obscuredContentInsets();
             _savedForceAlwaysUserScalable = page->forceAlwaysUserScalable();
         }
@@ -1042,7 +1042,7 @@ ALLOW_DEPRECATED_DECLARATIONS_END
     ASSERT(windowScene);
 
     RetainPtr<WKWebView> webView = self._webView;
-    auto page = [webView _page];
+    RefPtr page = [webView _page].get();
     auto* manager = self._manager;
     if (!page || !manager)
         return completionHandler(false);
@@ -1166,7 +1166,7 @@ ALLOW_DEPRECATED_DECLARATIONS_END
     auto logIdentifier = OBJC_LOGIDENTIFIER;
     [webView takeSnapshotWithConfiguration:config completionHandler:makeBlockPtr([self, protectedSelf = RetainPtr { self }, logIdentifier, completionHandler = WTF::move(completionHandler)] (UIImage * snapshotImage, NSError * error) mutable {
         RetainPtr<WKWebView> webView = self._webView;
-        auto page = [self._webView _page];
+        RefPtr page = [self._webView _page].get();
         if (!page)
             return completionHandler(false);
 
@@ -1292,7 +1292,7 @@ ALLOW_DEPRECATED_DECLARATIONS_END
             return completionHandler(false);
         }
 
-        auto page = [[strongSelf _webView] _page];
+        RefPtr page = [[strongSelf _webView] _page].get();
         auto* manager = [strongSelf _manager];
 
         if (page && manager) {
@@ -1329,7 +1329,7 @@ ALLOW_DEPRECATED_DECLARATIONS_END
                         else
                             [strongSelf didExitPictureInPicture];
                     });
-                    videoPresentationManager->addVideoInPictureInPictureDidChangeObserver(*strongSelf->_pipObserver);
+                    videoPresentationManager->addVideoInPictureInPictureDidChangeObserver(protect(*strongSelf->_pipObserver));
                 }
                 if (RefPtr videoPresentationInterface = videoPresentationManager ? videoPresentationManager->returningToStandbyInterface() : nullptr) {
                     if (strongSelf->_returnToFullscreenFromPictureInPicture)
@@ -1470,7 +1470,7 @@ ALLOW_DEPRECATED_DECLARATIONS_END
     _finalFrame.size = WebKit::sizeExpandedToSize(_finalFrame.size, CGSizeMake(1, 1));
     _finalFrame = WebKit::safeInlineRect(_finalFrame, [_rootViewController view].frame.size);
 
-    if (auto page = [self._webView _page]) {
+    if (RefPtr page = [self._webView _page].get()) {
         page->setSuppressVisibilityUpdates(true);
         page->startDeferringResizeEvents();
         page->startDeferringScrollEvents();
@@ -1503,7 +1503,7 @@ ALLOW_DEPRECATED_DECLARATIONS_END
 
     [webView _setForcesInitialScaleFactor:NO];
     _viewState.applyTo(webView.get());
-    if (auto page = [webView _page])
+    if (RefPtr page = [webView _page].get())
         page->setOverrideViewportArguments(std::nullopt);
 
     [webView setNeedsLayout];
@@ -1536,13 +1536,13 @@ ALLOW_DEPRECATED_DECLARATIONS_END
         manager->setAnimatingFullScreen(false);
     completionHandler();
 
-    if (auto page = [self._webView _page]) {
+    if (RefPtr page = [self._webView _page].get()) {
         page->flushDeferredResizeEvents();
         page->flushDeferredScrollEvents();
         page->flushDeferredIntersectionObservations();
     }
 
-    RefPtr videoPresentationInterface = self._videoPresentationManager ? self._videoPresentationManager->controlsManagerInterface() : nullptr;
+    RefPtr videoPresentationInterface = self._videoPresentationManager ? protect(self._videoPresentationManager)->controlsManagerInterface() : nullptr;
     _shouldReturnToFullscreenFromPictureInPicture = videoPresentationInterface && videoPresentationInterface->inPictureInPicture();
 
     [_window setHidden:YES];
@@ -1559,7 +1559,7 @@ ALLOW_DEPRECATED_DECLARATIONS_END
         _webViewPlaceholder.get().parent = nil;
         [_webViewPlaceholder removeFromSuperview];
 
-        if (auto page = [self._webView _page]) {
+        if (RefPtr page = [self._webView _page].get()) {
             page->setSuppressVisibilityUpdates(false);
             page->setNeedsDOMWindowResizeEvent();
             page->flushDeferredResizeEvents();
@@ -1643,7 +1643,7 @@ ALLOW_DEPRECATED_DECLARATIONS_END
 - (void)didExitPictureInPicture
 {
     if (!_enterFullscreenNeedsExitPictureInPicture && _shouldReturnToFullscreenFromPictureInPicture) {
-        RefPtr videoPresentationInterface = self._videoPresentationManager ? self._videoPresentationManager->returningToStandbyInterface() : nullptr;
+        RefPtr videoPresentationInterface = self._videoPresentationManager ? protect(self._videoPresentationManager)->returningToStandbyInterface() : nullptr;
         if (videoPresentationInterface && videoPresentationInterface->returningToStandby()) {
             OBJC_ALWAYS_LOG(OBJC_LOGIDENTIFIER, "returning to standby");
             if (!_exitingFullScreen) {
@@ -1893,14 +1893,14 @@ ALLOW_DEPRECATED_DECLARATIONS_END
 
 - (WebKit::WebFullScreenManagerProxy*)_manager
 {
-    if (auto page = [self._webView _page])
+    if (RefPtr page = [self._webView _page].get())
         return page->fullScreenManager();
     return nullptr;
 }
 
 - (WebKit::VideoPresentationManagerProxy*)_videoPresentationManager
 {
-    if (auto page = [self._webView _page])
+    if (RefPtr page = [self._webView _page].get())
         return page->videoPresentationManager();
     return nullptr;
 }

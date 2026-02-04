@@ -1169,7 +1169,7 @@ struct WKWebsiteData {
 - (void)_appBoundDomains:(void (^)(NSArray<NSString *> *))completionHandler
 {
 #if ENABLE(APP_BOUND_DOMAINS)
-    _websiteDataStore->getAppBoundDomains([completionHandler = makeBlockPtr(completionHandler)](auto& domains) mutable {
+    protect(*_websiteDataStore)->getAppBoundDomains([completionHandler = makeBlockPtr(completionHandler)](auto& domains) mutable {
         auto apiDomains = WTF::map(domains, [](auto& domain) -> RefPtr<API::Object> {
             return API::String::create(domain.string());
         });
@@ -1183,7 +1183,7 @@ struct WKWebsiteData {
 - (void)_appBoundSchemes:(void (^)(NSArray<NSString *> *))completionHandler
 {
 #if ENABLE(APP_BOUND_DOMAINS)
-    _websiteDataStore->getAppBoundSchemes([completionHandler = makeBlockPtr(completionHandler)](auto& schemes) mutable {
+    protect(*_websiteDataStore)->getAppBoundSchemes([completionHandler = makeBlockPtr(completionHandler)](auto& schemes) mutable {
         auto apiSchemes = WTF::map(schemes, [](auto& scheme) -> RefPtr<API::Object> {
             return API::String::create(scheme);
         });
@@ -1460,7 +1460,7 @@ struct WKWebsiteData {
 -(void)_setBackupExclusionPeriodForTesting:(double)seconds completionHandler:(void(^)(void))completionHandler
 {
 #if PLATFORM(IOS_FAMILY)
-    _websiteDataStore->setBackupExclusionPeriodForTesting(Seconds(seconds), [completionHandler = makeBlockPtr(completionHandler)] {
+    protect(*_websiteDataStore)->setBackupExclusionPeriodForTesting(Seconds(seconds), [completionHandler = makeBlockPtr(completionHandler)] {
         completionHandler();
     });
 #else

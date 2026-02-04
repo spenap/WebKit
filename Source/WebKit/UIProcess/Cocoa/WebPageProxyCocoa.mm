@@ -1137,7 +1137,7 @@ bool WebPageProxy::shouldForceForegroundPriorityForClientNavigation() const
 
 bool WebPageProxy::shouldAllowAutoFillForCellularIdentifiers() const
 {
-    return WebKit::shouldAllowAutoFillForCellularIdentifiers(URL { pageLoadState().activeURL() });
+    return WebKit::shouldAllowAutoFillForCellularIdentifiers(URL { protect(pageLoadState())->activeURL() });
 }
 
 #endif
@@ -1163,20 +1163,21 @@ void WebPageProxy::setMediaCapability(RefPtr<MediaCapability>&& capability)
     }
 
     WEBPAGEPROXY_RELEASE_LOG(ProcessCapabilities, "setMediaCapability: creating (envID=%{public}s) for URL '%{sensitive}s'", internals().mediaCapability->environmentIdentifier().utf8().data(), internals().mediaCapability->webPageURL().string().utf8().data());
-    protect(legacyMainFrameProcess())->send(Messages::WebPage::SetMediaEnvironment(internals().mediaCapability->environmentIdentifier()), webPageIDInMainFrameProcess());
+    protect(legacyMainFrameProcess())->send(Messages::WebPage::SetMediaEnvironment(protect(internals().mediaCapability)->environmentIdentifier()), webPageIDInMainFrameProcess());
 }
 
 void WebPageProxy::deactivateMediaCapability(MediaCapability& capability)
 {
     WEBPAGEPROXY_RELEASE_LOG(ProcessCapabilities, "deactivateMediaCapability: deactivating (envID=%{public}s) for URL '%{sensitive}s'", capability.environmentIdentifier().utf8().data(), capability.webPageURL().string().utf8().data());
     Ref processPool = protect(legacyMainFrameProcess())->processPool();
-    processPool->extensionCapabilityGranter().setMediaCapabilityActive(capability, false);
-    processPool->extensionCapabilityGranter().revoke(capability, *this);
+    Ref granter = processPool->extensionCapabilityGranter();
+    granter->setMediaCapabilityActive(capability, false);
+    granter->revoke(capability, *this);
 }
 
 void WebPageProxy::resetMediaCapability()
 {
-    if (!preferences().mediaCapabilityGrantsEnabled())
+    if (!protect(preferences())->mediaCapabilityGrantsEnabled())
         return;
 
     URL currentURL { this->currentURL() };
@@ -1205,10 +1206,10 @@ void WebPageProxy::updateMediaCapability()
     Ref processPool = protect(legacyMainFrameProcess())->processPool();
 
     if (shouldActivateMediaCapability())
-        processPool->extensionCapabilityGranter().setMediaCapabilityActive(*mediaCapability, true);
+        protect(processPool->extensionCapabilityGranter())->setMediaCapabilityActive(*mediaCapability, true);
 
     if (mediaCapability->isActivatingOrActive())
-        processPool->extensionCapabilityGranter().grant(*mediaCapability, *this);
+        protect(processPool->extensionCapabilityGranter())->grant(*mediaCapability, *this);
 }
 
 bool WebPageProxy::shouldActivateMediaCapability() const

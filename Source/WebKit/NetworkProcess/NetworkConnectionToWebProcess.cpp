@@ -360,7 +360,7 @@ bool NetworkConnectionToWebProcess::dispatchMessage(IPC::Connection& connection,
 
 #if ENABLE(APPLE_PAY_REMOTE_UI)
     if (decoder.messageReceiverName() == Messages::WebPaymentCoordinatorProxy::messageReceiverName()) {
-        paymentCoordinator().didReceiveMessage(connection, decoder);
+        protect(paymentCoordinator())->didReceiveMessage(connection, decoder);
         return true;
     }
 #endif
@@ -441,7 +441,7 @@ bool NetworkConnectionToWebProcess::dispatchSyncMessage(IPC::Connection& connect
 
 #if ENABLE(APPLE_PAY_REMOTE_UI)
     if (decoder.messageReceiverName() == Messages::WebPaymentCoordinatorProxy::messageReceiverName()) {
-        paymentCoordinator().didReceiveSyncMessage(connection, decoder, reply);
+        protect(paymentCoordinator())->didReceiveSyncMessage(connection, decoder, reply);
         return true;
     }
 #endif
