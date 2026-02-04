@@ -255,7 +255,6 @@ void ProvisionalPageProxy::initializeWebPage(RefPtr<API::WebsitePolicies>&& webs
     drawingArea->startReceivingMessages(process);
     m_drawingArea = drawingArea.copyRef();
 
-    bool registerWithInspectorController { true };
     if (websitePolicies)
         m_mainFrameWebsitePolicies = websitePolicies->copy();
 
@@ -270,7 +269,6 @@ void ProvisionalPageProxy::initializeWebPage(RefPtr<API::WebsitePolicies>&& webs
                 existingRemotePageProxy->setDrawingArea(nullptr);
                 m_needsDidStartProvisionalLoad = false;
                 m_needsCookieAccessAddedInNetworkProcess = true;
-                registerWithInspectorController = false; // FIXME: <rdar://121240770> This is a hack. There seems to be a bug in our interaction with WebPageInspectorController.
                 existingRemotePageProxy->disconnect();
             } else
                 m_takenRemotePage = WTF::move(existingRemotePageProxy);
@@ -301,8 +299,7 @@ void ProvisionalPageProxy::initializeWebPage(RefPtr<API::WebsitePolicies>&& webs
     if (page->isLayerTreeFrozenDueToSwipeAnimation())
         send(Messages::WebPage::SwipeAnimationDidStart());
 
-    if (registerWithInspectorController)
-        page->inspectorController().didCreateProvisionalPage(*this);
+    page->inspectorController().didCreateProvisionalPage(*this);
 }
 
 void ProvisionalPageProxy::loadData(API::Navigation& navigation, Ref<WebCore::SharedBuffer>&& data, const String& mimeType, const String& encoding, const String& baseURL, API::Object* userData, WebCore::ShouldTreatAsContinuingLoad shouldTreatAsContinuingLoad, std::optional<NavigatingToAppBoundDomain> isNavigatingToAppBoundDomain, RefPtr<API::WebsitePolicies>&& websitePolicies, SubstituteData::SessionHistoryVisibility sessionHistoryVisibility)
