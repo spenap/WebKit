@@ -74,10 +74,10 @@ static std::optional<LayoutUnit> inlineTransferredSizeSuggestion(const PlacedGri
     return { };
 }
 
-static LayoutUnit inlineContentSizeSuggestion(const PlacedGridItem&)
+static LayoutUnit inlineContentSizeSuggestion(const PlacedGridItem& gridItem, const IntegrationUtils& integrationUtils)
 {
-    ASSERT_NOT_IMPLEMENTED_YET();
-    return { };
+    ASSERT(!gridItem.hasPreferredAspectRatio(), "Grid items with preferred aspect ratio not supported yet.");
+    return integrationUtils.minContentWidth(gridItem.layoutBox());
 }
 
 static std::optional<LayoutUnit> blockSpecifiedSizeSuggestion(const PlacedGridItem&, LayoutUnit borderAndPadding)
@@ -93,10 +93,10 @@ static std::optional<LayoutUnit> blockTransferredSizeSuggestion(const PlacedGrid
     return { };
 }
 
-static LayoutUnit blockContentSizeSuggestion(const PlacedGridItem&)
+static LayoutUnit blockContentSizeSuggestion(const PlacedGridItem& gridItem, const IntegrationUtils& integrationUtils)
 {
-    ASSERT_NOT_IMPLEMENTED_YET();
-    return { };
+    ASSERT(!gridItem.hasPreferredAspectRatio(), "Grid items with preferred aspect ratio not supported yet.");
+    return integrationUtils.minContentHeight(gridItem.layoutBox());
 }
 
 static bool hasScrollableInlineOverflow(const PlacedGridItem&)
@@ -162,7 +162,8 @@ LayoutUnit usedInlineSizeForGridItem(const PlacedGridItem& placedGridItem, Layou
 }
 
 // https://drafts.csswg.org/css-grid-1/#min-size-auto
-static LayoutUnit automaticMinimumInlineSize(const PlacedGridItem& gridItem, LayoutUnit borderAndPadding, const TrackSizingFunctionsList& trackSizingFunctions)
+static LayoutUnit automaticMinimumInlineSize(const PlacedGridItem& gridItem, LayoutUnit borderAndPadding, const TrackSizingFunctionsList& trackSizingFunctions,
+    const IntegrationUtils& integrationUtils)
 {
     auto& inlineAxisSizes = gridItem.inlineAxisSizes();
     ASSERT(inlineAxisSizes.minimumSize.isAuto());
@@ -199,7 +200,7 @@ static LayoutUnit automaticMinimumInlineSize(const PlacedGridItem& gridItem, Lay
                 return *transferredSizeSuggestion;
         }
         // else its content size suggestion
-        return inlineContentSizeSuggestion(gridItem);
+        return inlineContentSizeSuggestion(gridItem, integrationUtils);
     };
 
     // In all cases, the size suggestion is additionally clamped by the maximum size in
@@ -211,7 +212,8 @@ static LayoutUnit automaticMinimumInlineSize(const PlacedGridItem& gridItem, Lay
 }
 
 // https://drafts.csswg.org/css-grid-1/#min-size-auto
-static LayoutUnit automaticMinimumBlockSize(const PlacedGridItem& gridItem, LayoutUnit borderAndPadding, const TrackSizingFunctionsList& trackSizingFunctions)
+static LayoutUnit automaticMinimumBlockSize(const PlacedGridItem& gridItem, LayoutUnit borderAndPadding, const TrackSizingFunctionsList& trackSizingFunctions,
+    const IntegrationUtils& integrationUtils)
 {
     auto& blockAxisSizes = gridItem.blockAxisSizes();
     ASSERT(blockAxisSizes.minimumSize.isAuto());
@@ -248,7 +250,7 @@ static LayoutUnit automaticMinimumBlockSize(const PlacedGridItem& gridItem, Layo
                 return *transferredSizeSuggestion;
         }
         // else its content size suggestion
-        return blockContentSizeSuggestion(gridItem);
+        return blockContentSizeSuggestion(gridItem, integrationUtils);
     };
 
     // In all cases, the size suggestion is additionally clamped by the maximum size in
@@ -304,7 +306,7 @@ LayoutUnit usedBlockSizeForGridItem(const PlacedGridItem& placedGridItem, Layout
 }
 
 LayoutUnit usedInlineMinimumSize(const PlacedGridItem& gridItem, const TrackSizingFunctionsList& trackSizingFunctions,
-    LayoutUnit borderAndPadding, LayoutUnit columnsSize)
+    LayoutUnit borderAndPadding, LayoutUnit columnsSize, const IntegrationUtils& integrationUtils)
 {
     auto& minimumSize = gridItem.inlineAxisSizes().minimumSize;
     return WTF::switchOn(minimumSize,
@@ -318,7 +320,7 @@ LayoutUnit usedInlineMinimumSize(const PlacedGridItem& gridItem, const TrackSizi
             return Style::evaluate<LayoutUnit>(calculated, columnsSize, gridItem.usedZoom()) + borderAndPadding;
         },
         [&](const CSS::Keyword::Auto&) -> LayoutUnit {
-            return automaticMinimumInlineSize(gridItem, borderAndPadding, trackSizingFunctions);
+            return automaticMinimumInlineSize(gridItem, borderAndPadding, trackSizingFunctions, integrationUtils);
         },
         [](const auto&) -> LayoutUnit {
             ASSERT_NOT_IMPLEMENTED_YET();
@@ -327,7 +329,7 @@ LayoutUnit usedInlineMinimumSize(const PlacedGridItem& gridItem, const TrackSizi
 }
 
 LayoutUnit usedBlockMinimumSize(const PlacedGridItem& gridItem, const TrackSizingFunctionsList& trackSizingFunctions,
-    LayoutUnit borderAndPadding, LayoutUnit rowsSize)
+    LayoutUnit borderAndPadding, LayoutUnit rowsSize, const IntegrationUtils& integrationUtils)
 {
     auto& minimumSize = gridItem.blockAxisSizes().minimumSize;
     return WTF::switchOn(minimumSize,
@@ -341,7 +343,7 @@ LayoutUnit usedBlockMinimumSize(const PlacedGridItem& gridItem, const TrackSizin
             return Style::evaluate<LayoutUnit>(calculated, rowsSize, gridItem.usedZoom()) + borderAndPadding;
         },
         [&](const CSS::Keyword::Auto&) -> LayoutUnit {
-            return automaticMinimumBlockSize(gridItem, borderAndPadding, trackSizingFunctions);
+            return automaticMinimumBlockSize(gridItem, borderAndPadding, trackSizingFunctions, integrationUtils);
         },
         [](const auto&) -> LayoutUnit {
             ASSERT_NOT_IMPLEMENTED_YET();
