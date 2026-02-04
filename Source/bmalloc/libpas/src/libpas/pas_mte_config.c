@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025-2026 Apple Inc. All rights reserved.
+ * Copyright (c) 2025 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -74,6 +74,7 @@ extern const pas_heap_config iso_heap_config;
 #endif // PAS_ENABLE_ISO
 extern const pas_heap_config pas_utility_heap_config;
 
+#if defined(PAS_USE_OPENSOURCE_MTE) && PAS_USE_OPENSOURCE_MTE
 #if PAS_ENABLE_MTE
 
 static int is_env_false(const char* var)
@@ -370,4 +371,5 @@ void pas_mte_force_nontaggable_user_allocations_into_large_heap(void)
     }
 #endif
 }
+#endif // defined(PAS_USE_OPENSOURCE_MTE) && PAS_USE_OPENSOURCE_MTE
 #endif // LIBPAS_ENABLED
