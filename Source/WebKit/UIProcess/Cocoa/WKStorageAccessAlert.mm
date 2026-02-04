@@ -36,6 +36,7 @@
 #if PLATFORM(COCOA) && !PLATFORM(WATCHOS) && !PLATFORM(APPLETV)
 
 #import "WKWebViewInternal.h"
+#import "WebPageProxy.h"
 #import <WebCore/LocalizedStrings.h>
 #import <WebCore/NetworkStorageSession.h>
 #import <WebCore/RegistrableDomain.h>
@@ -248,6 +249,9 @@ void displayStorageAccessAlert(WKWebView *webView, NSString *alertTitle, NSStrin
     [alert addAction:doNotAllowAction];
     [alert addAction:allowAction];
 
+#if PLATFORM(VISION)
+    [webView _page]->dispatchWillPresentModalUI();
+#endif
     [webView._wk_viewControllerForFullScreenPresentation presentViewController:alert.get() animated:YES completion:nil];
 #endif
 }

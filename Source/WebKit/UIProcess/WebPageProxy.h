@@ -939,6 +939,10 @@ public:
     API::UIClient& uiClient() { return *m_uiClient; }
     void setUIClient(std::unique_ptr<API::UIClient>&&);
 
+#if PLATFORM(VISION)
+    void dispatchWillPresentModalUI();
+#endif
+
     API::IconLoadingClient& iconLoadingClient() { return *m_iconLoadingClient; }
     void setIconLoadingClient(std::unique_ptr<API::IconLoadingClient>&&);
 

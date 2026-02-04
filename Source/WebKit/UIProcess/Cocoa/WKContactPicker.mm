@@ -30,6 +30,8 @@
 
 #import "ContactsUISPI.h"
 #import "PickerDismissalReason.h"
+#import "WKWebViewInternal.h"
+#import "WebPageProxy.h"
 #import <Contacts/Contacts.h>
 #import <WebCore/ContactInfo.h>
 #import <WebCore/ContactsRequestData.h>
@@ -169,6 +171,10 @@ SOFT_LINK_CLASS(ContactsUI, CNContactPickerViewController)
     [_contactPickerViewController setPrompt:requestData.url.createNSString().get()];
 
     auto presentationViewController = [_webView _wk_viewControllerForFullScreenPresentation];
+#if PLATFORM(VISION)
+    if (RetainPtr webView = _webView.get())
+        [webView _page]->dispatchWillPresentModalUI();
+#endif
     [presentationViewController presentViewController:_contactPickerViewController.get() animated:YES completion:[weakSelf = WeakObjCPtr<WKContactPicker>(self)] {
         auto strongSelf = weakSelf.get();
         if (!strongSelf)

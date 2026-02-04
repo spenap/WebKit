@@ -422,7 +422,9 @@ void SOAuthorizationSession::presentViewController(SOAuthorizationViewController
     // WKFullScreenViewController even though that is the presenting view controller of the WKWebView.
     // We should call PageClientImpl::presentingViewController() instead.
     UIViewController *presentingViewController = page->uiClient().presentingViewController();
-#if !PLATFORM(VISION)
+#if PLATFORM(VISION)
+    page->dispatchWillPresentModalUI();
+#else
     if (!presentingViewController)
         presentingViewController = [page->cocoaView() _wk_viewControllerForFullScreenPresentation];
 #endif

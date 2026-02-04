@@ -960,6 +960,9 @@ static NSSet<NSString *> *UTIsForMIMETypes(NSArray *mimeTypes)
     [self _dismissDisplayAnimated:animated];
 
     _presentationViewController = [_view _wk_viewControllerForFullScreenPresentation];
+#if PLATFORM(VISION)
+    [_view page]->dispatchWillPresentModalUI();
+#endif
     [_presentationViewController presentViewController:viewController animated:animated completion:^{
         if (!_isPresentingSubMenu && [_view isFirstResponder])
             [_view resignFirstResponder];

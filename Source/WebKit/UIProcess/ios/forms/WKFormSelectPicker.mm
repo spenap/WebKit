@@ -1292,6 +1292,9 @@ ALLOW_DEPRECATED_DECLARATIONS_END
 
     [self configurePresentation];
     auto presentingViewController = _view._wk_viewControllerForFullScreenPresentation;
+#if PLATFORM(VISION)
+    [_view page]->dispatchWillPresentModalUI();
+#endif
     [presentingViewController presentViewController:_navigationController.get() animated:YES completion:nil];
 }
 

@@ -30,7 +30,9 @@
 
 #import "UIKitSPI.h"
 #import "UIKitUtilities.h"
+#import "WKWebViewInternal.h"
 #import "WKWebViewPrivateForTesting.h"
+#import "WebPageProxy.h"
 #import <CoreLocation/CoreLocation.h>
 #import <WebCore/LocalizedStrings.h>
 #import <WebCore/SecurityOrigin.h>
@@ -200,6 +202,9 @@ struct PermissionRequest {
         [alert addAction:denyAction];
         [alert addAction:allowAction];
 
+#if PLATFORM(VISION)
+        [_activeChallenge->view _page]->dispatchWillPresentModalUI();
+#endif
         [[_activeChallenge->view _wk_viewControllerForFullScreenPresentation] presentViewController:alert.get() animated:YES completion:nil];
     }];
 }

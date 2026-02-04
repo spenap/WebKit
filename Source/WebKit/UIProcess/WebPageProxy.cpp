@@ -1247,6 +1247,13 @@ void WebPageProxy::setUIClient(std::unique_ptr<API::UIClient>&& uiClient)
     setNeedsFontAttributes(m_uiClient->needsFontAttributes());
 }
 
+#if PLATFORM(VISION)
+void WebPageProxy::dispatchWillPresentModalUI()
+{
+    m_uiClient->willPresentModalUI(*this);
+}
+#endif
+
 void WebPageProxy::setIconLoadingClient(std::unique_ptr<API::IconLoadingClient>&& iconLoadingClient)
 {
     if (!iconLoadingClient)

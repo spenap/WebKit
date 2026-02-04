@@ -229,6 +229,9 @@ void alertForPermission(WebPageProxy& page, MediaPermissionReason reason, const 
     [alert addAction:doNotAllowAction];
     [alert addAction:allowAction];
 
+#if PLATFORM(VISION)
+    page.dispatchWillPresentModalUI();
+#endif
     [[webView _wk_viewControllerForFullScreenPresentation] presentViewController:alert.get() animated:YES completion:nil];
 #endif
 }
