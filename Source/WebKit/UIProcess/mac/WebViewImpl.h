@@ -85,6 +85,7 @@ OBJC_CLASS WKRevealItemPresenter;
 OBJC_CLASS _WKWarningView;
 OBJC_CLASS WKShareSheet;
 OBJC_CLASS WKTextAnimationManager;
+OBJC_CLASS WKTextSelectionController;
 OBJC_CLASS WKViewLayoutStrategy;
 OBJC_CLASS WKWebView;
 OBJC_CLASS WKWindowVisibilityObserver;
@@ -837,6 +838,10 @@ public:
     void showCaptionDisplaySettings(WebCore::HTMLMediaElementIdentifier, const WebCore::ResolvedCaptionDisplaySettingsOptions&, CompletionHandler<void(Expected<void, WebCore::ExceptionData>&&)>&&);
 #endif
 
+#if HAVE(APPKIT_GESTURES_SUPPORT)
+    void addTextSelectionManager();
+#endif
+
 private:
 #if HAVE(TOUCH_BAR)
     void setUpTextTouchBar(NSTouchBar *);
@@ -1131,7 +1136,11 @@ ALLOW_DEPRECATED_DECLARATIONS_END
     bool m_inlinePredictionsEnabled { false };
 #endif
 
+    // FIXME: Perhaps merge these types at some point?
+#if HAVE(APPKIT_GESTURES_SUPPORT)
     RetainPtr<WKAppKitGestureController> m_appKitGestureController;
+    RetainPtr<WKTextSelectionController> m_textSelectionController;
+#endif
 };
 
 } // namespace WebKit
