@@ -5091,7 +5091,6 @@ http/tests/security/aboutBlank/xss-DENIED-set-opener.html
 http/tests/security/isolatedWorld/cross-origin-xhr.html
 http/tests/security/javascriptURL/xss-ALLOWED-from-javascript-url-window-open.html
 http/tests/security/javascriptURL/xss-ALLOWED-to-javascript-url-window-open.html
-http/tests/security/mixedContent/about-blank-iframe-in-main-frame.html
 http/tests/security/mixedContent/redirect-http-to-https-iframe-in-main-frame.html
 http/tests/security/referrer-policy-redirect-link.html
 http/tests/security/referrer-policy-redirect-link-downgrade.html
