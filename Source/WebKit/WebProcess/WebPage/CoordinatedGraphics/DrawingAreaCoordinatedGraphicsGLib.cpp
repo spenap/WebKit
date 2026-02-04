@@ -214,7 +214,7 @@ void DrawingAreaCoordinatedGraphics::updatePreferences(const WebPreferencesStore
 {
     Settings& settings = m_webPage->corePage()->settings();
 #if PLATFORM(GTK)
-    if (settings.acceleratedCompositingEnabled())
+    if (settings.acceleratedCompositingEnabled() || settings.useHardwareBuffersForFrameRendering())
         WebProcess::singleton().initializePlatformDisplayIfNeeded();
 #endif
     settings.setForceCompositingMode(store.getBoolValueForKey(WebPreferencesKey::forceCompositingModeKey()));

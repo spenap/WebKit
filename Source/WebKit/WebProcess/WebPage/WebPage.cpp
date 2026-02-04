@@ -1233,9 +1233,6 @@ void WebPage::updateAfterDrawingAreaCreation(const WebPageCreationParameters& pa
             protect(drawingArea())->setViewExposedRect(viewExposedRect);
     }
 #endif
-#if USE(COORDINATED_GRAPHICS)
-    protect(drawingArea())->updatePreferences(parameters.store);
-#endif
 }
 
 void WebPage::constructFrameTree(WebFrame& parent, const FrameTreeCreationParameters& treeCreationParameters)
@@ -1432,12 +1429,13 @@ void WebPage::reinitializeWebPage(WebPageCreationParameters&& parameters)
         updateAfterDrawingAreaCreation(parameters);
         addRootFramesToNewDrawingArea(m_mainFrame.get(), *drawingArea);
 
+        drawingArea->setShouldScaleViewToFitDocument(parameters.shouldScaleViewToFitDocument);
+        drawingArea->updatePreferences(parameters.store);
+
 #if USE(COORDINATED_GRAPHICS) || USE(TEXTURE_MAPPER)
         if (drawingArea->enterAcceleratedCompositingModeIfNeeded() && !parameters.isProcessSwap)
             drawingArea->sendEnterAcceleratedCompositingModeIfNeeded();
 #endif
-        drawingArea->setShouldScaleViewToFitDocument(parameters.shouldScaleViewToFitDocument);
-        drawingArea->updatePreferences(parameters.store);
 
         drawingArea->adoptLayersFromDrawingArea(*oldDrawingArea);
         drawingArea->adoptDisplayRefreshMonitorsFromDrawingArea(*oldDrawingArea);
