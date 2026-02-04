@@ -3318,7 +3318,7 @@ bool MediaPlayerPrivateAVFoundationObjC::isCurrentPlaybackTargetWireless() const
 
 #if !PLATFORM(IOS_FAMILY) || ENABLE(WIRELESS_PLAYBACK_MEDIA_PLAYER)
     if (RefPtr playbackTarget = m_playbackTarget) {
-        if (playbackTarget->type() == MediaPlaybackTarget::Type::WirelessPlayback)
+        if (playbackTarget->targetType() == MediaPlaybackTarget::Type::AVOutputContext)
             wirelessTarget = m_avPlayer && m_avPlayer.get().externalPlaybackActive;
         else
             wirelessTarget = m_shouldPlayToPlaybackTarget && playbackTarget->hasActiveRoute();
@@ -3427,7 +3427,7 @@ String MediaPlayerPrivateAVFoundationObjC::wirelessPlaybackTargetName() const
 #if !PLATFORM(IOS_FAMILY) || ENABLE(WIRELESS_PLAYBACK_MEDIA_PLAYER)
     if (RefPtr playbackTarget = m_playbackTarget) {
 #if HAVE(MEDIAEXPERIENCE_AVSYSTEMCONTROLLER)
-        if (playbackTarget->type() == MediaPlaybackTarget::Type::AVOutputContext)
+        if (playbackTarget->targetType() == MediaPlaybackTarget::Type::AVOutputContext)
             wirelessTargetName = externalDeviceDisplayNameForPlayer(m_avPlayer.get()).get();
         else
 #endif
@@ -3504,7 +3504,7 @@ void MediaPlayerPrivateAVFoundationObjC::setShouldPlayToPlaybackTarget(bool shou
     INFO_LOG(LOGIDENTIFIER, shouldPlay);
 
 #if !PLATFORM(IOS_FAMILY)
-    if (playbackTarget->type() == MediaPlaybackTarget::Type::AVOutputContext) {
+    if (playbackTarget->targetType() == MediaPlaybackTarget::Type::AVOutputContext) {
         RetainPtr<AVOutputContext> newContext = shouldPlay ? m_outputContext.get() : nil;
 
         if (!m_avPlayer)
