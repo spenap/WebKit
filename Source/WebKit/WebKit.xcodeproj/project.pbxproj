@@ -2369,7 +2369,7 @@
 		E31869C42B1A7C2400571519 /* WKProcessExtension.mm in Sources */ = {isa = PBXBuildFile; fileRef = E31869C22B1A7C2400571519 /* WKProcessExtension.mm */; };
 		E31869C52B1A7C2400571519 /* WKProcessExtension.h in Headers */ = {isa = PBXBuildFile; fileRef = E31869C32B1A7C2400571519 /* WKProcessExtension.h */; };
 		E326E357284E580E00157372 /* AuxiliaryProcessProxyCocoa.mm in Sources */ = {isa = PBXBuildFile; fileRef = E326E356284E580E00157372 /* AuxiliaryProcessProxyCocoa.mm */; };
-		E326F4DC2CA6C44F00182187 /* LogStream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E326F4DA2CA6C44F00182187 /* LogStream.cpp */; };
+		E326F4DC2CA6C44F00182187 /* LogStream.mm in Sources */ = {isa = PBXBuildFile; fileRef = E326F4DA2CA6C44F00182187 /* LogStream.mm */; };
 		E326F4DD2CA6C44F00182187 /* LogStream.h in Headers */ = {isa = PBXBuildFile; fileRef = E326F4D92CA6C44F00182187 /* LogStream.h */; };
 		E33E8FFD2C7FD2980002BEB3 /* UseDownloadPlaceholder.h in Headers */ = {isa = PBXBuildFile; fileRef = E33E8FFC2C7FD2980002BEB3 /* UseDownloadPlaceholder.h */; };
 		E34DAD392B753FA700FABEE2 /* ExtensionProcess.mm in Sources */ = {isa = PBXBuildFile; fileRef = E34DAD372B753FA700FABEE2 /* ExtensionProcess.mm */; };
@@ -8468,7 +8468,7 @@
 		E31869C32B1A7C2400571519 /* WKProcessExtension.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WKProcessExtension.h; sourceTree = "<group>"; };
 		E326E356284E580E00157372 /* AuxiliaryProcessProxyCocoa.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = AuxiliaryProcessProxyCocoa.mm; sourceTree = "<group>"; };
 		E326F4D92CA6C44F00182187 /* LogStream.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LogStream.h; sourceTree = "<group>"; };
-		E326F4DA2CA6C44F00182187 /* LogStream.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = LogStream.cpp; sourceTree = "<group>"; };
+		E326F4DA2CA6C44F00182187 /* LogStream.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = LogStream.mm; sourceTree = "<group>"; };
 		E33E8FFC2C7FD2980002BEB3 /* UseDownloadPlaceholder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = UseDownloadPlaceholder.h; sourceTree = "<group>"; };
 		E3439B632345463A0011DE0B /* NetworkProcessConnectionInfo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = NetworkProcessConnectionInfo.h; path = Network/NetworkProcessConnectionInfo.h; sourceTree = "<group>"; };
 		E34B110C27C46BC6006D2F2E /* libWebCoreTestShim.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; path = libWebCoreTestShim.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -10148,8 +10148,8 @@
 				5C37A5BE2970DB6000D222A0 /* LoadedWebArchive.h */,
 				2D10875F1D2C573E00B85F82 /* LoadParameters.h */,
 				46B9E2372B04228A008346A5 /* LoadParameters.serialization.in */,
-				E326F4DA2CA6C44F00182187 /* LogStream.cpp */,
 				E326F4D92CA6C44F00182187 /* LogStream.h */,
+				E326F4DA2CA6C44F00182187 /* LogStream.mm */,
 				E3DC5B1A2C9AE09700D73BB3 /* LogStreamIdentifier.h */,
 				462CD80B28204DF100F0EA04 /* MarkSurfacesAsVolatileRequestIdentifier.h */,
 				49917DB0252E30750050313F /* MediaPlaybackState.h */,
@@ -21593,7 +21593,7 @@
 				41A0EB142641714900794471 /* LibWebRTCCodecsProxy.mm in Sources */,
 				449D90DA21FDC30B00F677C0 /* LocalAuthenticationSoftLink.mm in Sources */,
 				0715310D2F3036F400B56C0E /* Logger+Extras.swift in Sources */,
-				E326F4DC2CA6C44F00182187 /* LogStream.cpp in Sources */,
+				E326F4DC2CA6C44F00182187 /* LogStream.mm in Sources */,
 				9B4790912531563200EC11AB /* MessageArgumentDescriptions.cpp in Sources */,
 				EBA8D3B627A5E33F00CB7900 /* MockPushServiceConnection.mm in Sources */,
 				57B826452304F14000B72EB0 /* NearFieldSoftLink.mm in Sources */,

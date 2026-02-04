@@ -21,21 +21,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "LogStream.h"
+#import "config.h"
+#import "LogStream.h"
 
 #if ENABLE(LOGD_BLOCKING_IN_WEBCONTENT)
 
-#include "LogStreamMessages.h"
-#include "Logging.h"
-#include "StreamConnectionWorkQueue.h"
-#include "StreamServerConnection.h"
-#include "WebProcessProxy.h"
-#include <wtf/OSObjectPtr.h>
-#include <wtf/TZoneMallocInlines.h>
+#import "LogStreamMessages.h"
+#import "Logging.h"
+#import "StreamConnectionWorkQueue.h"
+#import "StreamServerConnection.h"
+#import "WebProcessProxy.h"
+#import <wtf/OSObjectPtr.h>
+#import <wtf/TZoneMallocInlines.h>
 
 #if HAVE(OS_SIGNPOST)
-#include <wtf/SystemTracing.h>
+#import <wtf/SystemTracing.h>
 #endif
 
 #define MESSAGE_CHECK(assertion, connection) MESSAGE_CHECK_BASE(assertion, connection)
@@ -148,7 +148,7 @@ unsigned LogStream::logCountForTesting()
 }
 
 #if __has_include("LogMessagesImplementations.h")
-#include "LogMessagesImplementations.h"
+#import "LogMessagesImplementations.h"
 #endif
 
 }
