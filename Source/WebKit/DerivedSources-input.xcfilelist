@@ -269,6 +269,7 @@ $(PROJECT_DIR)/Shared/Cocoa/CoreIPCNSValue.serialization.in
 $(PROJECT_DIR)/Shared/Cocoa/CoreIPCNull.serialization.in
 $(PROJECT_DIR)/Shared/Cocoa/CoreIPCPKDateComponentsRange.serialization.in
 $(PROJECT_DIR)/Shared/Cocoa/CoreIPCPKPaymentMerchantSession.serialization.in
+$(PROJECT_DIR)/Shared/Cocoa/CoreIPCPKPaymentSetupFeature.serialization.in
 $(PROJECT_DIR)/Shared/Cocoa/CoreIPCPKPaymentToken.serialization.in
 $(PROJECT_DIR)/Shared/Cocoa/CoreIPCPassKit.serialization.in
 $(PROJECT_DIR)/Shared/Cocoa/CoreIPCPersonNameComponents.serialization.in
