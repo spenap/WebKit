@@ -1205,6 +1205,14 @@ void RenderObject::showRenderTreeForThis() const
     WTFLogAlways("%s", stream.release().utf8().data());
 }
 
+void RenderObject::showSubtreeForThis() const
+{
+    TextStream stream(TextStream::LineMode::MultipleLine, TextStream::Formatting::SVGStyleRect);
+    outputRenderTreeLegend(stream);
+    outputRenderSubTreeAndMark(stream, this, 1);
+    WTFLogAlways("%s", stream.release().utf8().data());
+}
+
 void RenderObject::showLineTreeForThis() const
 {
     auto* blockFlow = dynamicDowncast<RenderBlockFlow>(*this);
