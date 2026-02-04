@@ -61,6 +61,7 @@ public:
         ForceVivanteSuperTiledBuffer = 1 << 4,
 #endif
         UseBGRALayout = 1 << 5,
+        NearestFiltering = 1 << 6,
     };
 
     static Ref<BitmapTexture> create(const IntSize& size, OptionSet<Flags> flags = { })
