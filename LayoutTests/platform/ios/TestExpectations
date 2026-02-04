@@ -8398,13 +8398,13 @@ webkit.org/b/263872 imported/w3c/web-platform-tests/scroll-animations/scroll-tim
 webkit.org/b/303341 imported/w3c/web-platform-tests/css/css-contain/content-visibility/content-visibility-intrinsic-size-001.html [ Pass ImageOnlyFailure ]
 
 webkit.org/b/303507 http/tests/xmlhttprequest/origin-exact-matching.html [ Timeout ]
-webkit.org/b/303507 inspector/animation/nameChanged.html [ Timeout ]
-webkit.org/b/303507 inspector/audit/basic-error.html [ Timeout ]
-webkit.org/b/303507 inspector/canvas/console-record-offscreen-webgl.html [ Timeout ]
-webkit.org/b/303507 inspector/dom/customElementState.html [ Timeout ]
-webkit.org/b/303507 inspector/injected-script/observable.html [ Timeout ]
+webkit.org/b/303507 [ Release ] inspector/animation/nameChanged.html [ Timeout ]
+webkit.org/b/303507 [ Release ] inspector/audit/basic-error.html [ Timeout ]
+webkit.org/b/303507 [ Release ] inspector/canvas/console-record-offscreen-webgl.html [ Timeout ]
+webkit.org/b/303507 [ Release ] inspector/dom/customElementState.html [ Timeout ]
+webkit.org/b/303507 [ Release ] inspector/injected-script/observable.html [ Timeout ]
 webkit.org/b/303507 inspector/network/intercept-aborted-request.html [ Timeout ]
-webkit.org/b/303507 inspector/page/filter-cookies-for-domain.html [ Timeout ]
+webkit.org/b/303507 [ Release ] inspector/page/filter-cookies-for-domain.html [ Timeout ]
 
 # webkit.org/b/303639 Mass-marking flaky tests
 compositing/backing/page-scale-overlap-in-iframe.html [ Pass Failure ]
@@ -8471,3 +8471,10 @@ webkit.org/b/306785 imported/w3c/web-platform-tests/storage-access-api/requestSt
 webkit.org/b/306984 [ Debug ] fast/canvas/fallback-content.html [ Skip ]
 webkit.org/b/306984 [ Debug ] fast/rendering/render-style-null-optgroup-crash.html [ Skip ]
 webkit.org/b/306984 [ Debug ] fast/dom/HTMLProgressElement/progress-element-with-child-crash.html [ Skip ]
+
+webkit.org/b/306998 [ Debug ] inspector/animation/nameChanged.html [ Skip ]
+webkit.org/b/306998 [ Debug ] inspector/audit/basic-error.html [ Skip ]
+webkit.org/b/306998 [ Debug ] inspector/canvas/console-record-offscreen-webgl.html [ Skip ]
+webkit.org/b/306998 [ Debug ] inspector/dom/customElementState.html [ Skip ]
+webkit.org/b/306998 [ Debug ] inspector/injected-script/observable.html [ Skip ]
+webkit.org/b/306998 [ Debug ] inspector/page/filter-cookies-for-domain.html [ Skip ]
