@@ -585,9 +585,9 @@ static constexpr auto removeLineLimitForChildrenMenuOption = static_cast<UIMenuO
 - (UIMenu *)createMenu
 {
     if (!_view.focusedSelectElementOptions.size()) {
-        UIAction *emptyAction = [UIAction actionWithTitle:WEB_UI_STRING_KEY("No Options", "No Options Select Popover", "Empty select list").createNSString().get() image:nil identifier:nil handler:^(__kindof UIAction *action) { }];
-        emptyAction.attributes = UIMenuElementAttributesDisabled;
-        return [UIMenu menuWithTitle:@"" children:@[emptyAction]];
+        RetainPtr emptyAction = [UIAction actionWithTitle:WEB_UI_STRING_KEY("No Options", "No Options Select Popover", "Empty select list").createNSString().get() image:nil identifier:nil handler:^(__kindof UIAction *action) { }];
+        emptyAction.get().attributes = UIMenuElementAttributesDisabled;
+        return [UIMenu menuWithTitle:@"" children:@[emptyAction.get()]];
     }
 
     NSMutableArray *items = [NSMutableArray array];
@@ -629,17 +629,17 @@ static constexpr auto removeLineLimitForChildrenMenuOption = static_cast<UIMenuO
 
 - (UIAction *)actionForOptionItem:(const OptionItem&)option withIndex:(NSInteger)optionIndex
 {
-    UIAction *optionAction = [UIAction actionWithTitle:option.text.createNSString().get() image:nil identifier:nil handler:^(__kindof UIAction *action) {
+    RetainPtr optionAction = [UIAction actionWithTitle:option.text.createNSString().get() image:nil identifier:nil handler:^(__kindof UIAction *action) {
         [self didSelectOptionIndex:optionIndex];
     }];
 
     if (option.disabled)
-        optionAction.attributes = UIMenuElementAttributesDisabled;
+        optionAction.get().attributes = UIMenuElementAttributesDisabled;
 
     if (option.isSelected)
-        optionAction.state = UIMenuElementStateOn;
+        optionAction.get().state = UIMenuElementStateOn;
 
-    return optionAction;
+    return optionAction.autorelease();
 }
 
 - (UIAction *)actionForOptionIndex:(NSInteger)optionIndex
@@ -759,12 +759,12 @@ static constexpr auto removeLineLimitForChildrenMenuOption = static_cast<UIMenuO
 #if USE(UICONTEXTMENU)
     NSMutableArray<NSString *> *itemTitles = [NSMutableArray array];
     for (UIMenuElement *menuElement in [_selectMenu children]) {
-        if (auto *action = dynamic_objc_cast<UIAction>(menuElement)) {
-            [itemTitles addObject:action.title];
+        if (RetainPtr action = dynamic_objc_cast<UIAction>(menuElement)) {
+            [itemTitles addObject:action.get().title];
             continue;
         }
 
-        if (auto *menu = dynamic_objc_cast<UIMenu>(menuElement)) {
+        if (RetainPtr menu = dynamic_objc_cast<UIMenu>(menuElement)) {
             for (UIMenuElement *groupedMenuElement in [menu children])
                 [itemTitles addObject:groupedMenuElement.title];
         }
@@ -1083,12 +1083,12 @@ static NSString *optionCellReuseIdentifier = @"WKSelectPickerTableViewCell";
     for (NSInteger i = 0; i < rowCount; i++)
         [indexPaths addObject:[NSIndexPath indexPathForRow:i inSection:section]];
 
-    NSNumber *object = @(section);
-    if ([_collapsedSections containsObject:object]) {
-        [_collapsedSections removeObject:object];
+    RetainPtr object = @(section);
+    if ([_collapsedSections containsObject:object.get()]) {
+        [_collapsedSections removeObject:object.get()];
         [self.tableView insertRowsAtIndexPaths:indexPaths withRowAnimation:UITableViewRowAnimationFade];
     } else {
-        [_collapsedSections addObject:object];
+        [_collapsedSections addObject:object.get()];
         [self.tableView deleteRowsAtIndexPaths:indexPaths withRowAnimation:UITableViewRowAnimationFade];
     }
 }
@@ -1262,10 +1262,10 @@ ALLOW_DEPRECATED_DECLARATIONS_END
         UIPresentationController *presentationController = [_navigationController presentationController];
         presentationController.delegate = self;
 
-        if (auto sheetPresentationController = dynamic_objc_cast<UISheetPresentationController>(presentationController)) {
-            sheetPresentationController.detents = @[UISheetPresentationControllerDetent.mediumDetent, UISheetPresentationControllerDetent.largeDetent];
-            sheetPresentationController.widthFollowsPreferredContentSizeWhenEdgeAttached = YES;
-            sheetPresentationController.prefersEdgeAttachedInCompactHeight = YES;
+        if (RetainPtr sheetPresentationController = dynamic_objc_cast<UISheetPresentationController>(presentationController)) {
+            sheetPresentationController.get().detents = @[UISheetPresentationControllerDetent.mediumDetent, UISheetPresentationControllerDetent.largeDetent];
+            sheetPresentationController.get().widthFollowsPreferredContentSizeWhenEdgeAttached = YES;
+            sheetPresentationController.get().prefersEdgeAttachedInCompactHeight = YES;
         }
     } else {
         [_navigationController setModalPresentationStyle:UIModalPresentationPopover];
@@ -1291,11 +1291,11 @@ ALLOW_DEPRECATED_DECLARATIONS_END
     [_view startRelinquishingFirstResponderToFocusedElement];
 
     [self configurePresentation];
-    auto presentingViewController = _view._wk_viewControllerForFullScreenPresentation;
+    RetainPtr<UIViewController> presentingViewController = _view._wk_viewControllerForFullScreenPresentation;
 #if PLATFORM(VISION)
     [_view page]->dispatchWillPresentModalUI();
 #endif
-    [presentingViewController presentViewController:_navigationController.get() animated:YES completion:nil];
+    [presentingViewController.get() presentViewController:_navigationController.get() animated:YES completion:nil];
 }
 
 - (void)controlUpdateEditing

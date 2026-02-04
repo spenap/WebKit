@@ -137,8 +137,8 @@ void PageClientImpl::requestScroll(const FloatPoint& scrollPosition, const IntPo
 
 WebCore::FloatPoint PageClientImpl::viewScrollPosition()
 {
-    if (UIScrollView *scroller = [contentView() _scroller])
-        return scroller.contentOffset;
+    if (RetainPtr scroller = [contentView() _scroller])
+        return scroller.get().contentOffset;
 
     return { };
 }
@@ -412,8 +412,8 @@ void PageClientImpl::handleSmartMagnificationInformationForPotentialTap(WebKit::
 
 double PageClientImpl::minimumZoomScale() const
 {
-    if (UIScrollView *scroller = [webView() scrollView])
-        return scroller.minimumZoomScale;
+    if (RetainPtr scroller = [webView() scrollView])
+        return scroller.get().minimumZoomScale;
 
     return 1;
 }
@@ -443,7 +443,7 @@ void PageClientImpl::registerEditCommand(Ref<WebEditCommandProxy>&& command, Und
     auto actionName = command->label();
     auto commandObjC = adoptNS([[WKEditCommand alloc] initWithWebEditCommandProxy:WTF::move(command)]);
     
-    NSUndoManager *undoManager = [contentView() undoManagerForWebView];
+    RetainPtr undoManager = [contentView() undoManagerForWebView];
     [undoManager registerUndoWithTarget:m_undoTarget.get() selector:((undoOrRedo == UndoOrRedo::Undo) ? @selector(undoEditing:) : @selector(redoEditing:)) object:commandObjC.get()];
     if (!actionName.isEmpty())
         [undoManager setActionName:actionName.createNSString().get()];

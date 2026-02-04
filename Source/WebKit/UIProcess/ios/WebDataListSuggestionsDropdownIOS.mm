@@ -538,16 +538,16 @@ ALLOW_DEPRECATED_DECLARATIONS_END
     NSMutableArray *suggestions = [NSMutableArray arrayWithCapacity:self.suggestionsCount];
 
     for (NSInteger index = 0; index < self.suggestionsCount; index++) {
-        UIAction *suggestionAction = [UIAction actionWithTitle:[self suggestionAtIndex:index].createNSString().get() image:nil identifier:nil handler:[weakSelf = WeakObjCPtr<WKDataListSuggestionsDropdown>(self), index] (UIAction *) {
+        RetainPtr suggestionAction = [UIAction actionWithTitle:[self suggestionAtIndex:index].createNSString().get() image:nil identifier:nil handler:[weakSelf = WeakObjCPtr<WKDataListSuggestionsDropdown>(self), index] (UIAction *) {
             auto strongSelf = weakSelf.get();
             if (!strongSelf)
                 return;
 
             [strongSelf didSelectOptionAtIndex:index];
         }];
-        suggestionAction.subtitle = [self suggestionLabelAtIndex:index].createNSString().get();
+        suggestionAction.get().subtitle = [self suggestionLabelAtIndex:index].createNSString().get();
 
-        [suggestions addObject:suggestionAction];
+        [suggestions addObject:suggestionAction.get()];
     }
 
     _suggestionsMenuElements = adoptNS([suggestions copy]);

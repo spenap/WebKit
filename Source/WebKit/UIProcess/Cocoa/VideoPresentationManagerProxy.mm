@@ -641,7 +641,7 @@ void VideoPresentationManagerProxy::invalidateInterface(WebCore::PlatformVideoPr
     }
 
 #if PLATFORM(IOS_FAMILY)
-    if (auto *playerLayerView = interface.playerLayerView()) {
+    if (RetainPtr playerLayerView = interface.playerLayerView()) {
         [playerLayerView removeFromSuperview];
         interface.setPlayerLayerView(nullptr);
     }
@@ -1107,8 +1107,8 @@ void VideoPresentationManagerProxy::setupFullscreenWithID(PlaybackSessionContext
 
 #if PLATFORM(IOS_FAMILY)
     auto* rootNode = downcast<RemoteLayerTreeDrawingAreaProxy>(*page->drawingArea()).remoteLayerTreeHost().rootNode();
-    UIView *parentView = rootNode ? rootNode->uiView() : nil;
-    interface->setupFullscreen(screenRect, videoDimensions, parentView, videoFullscreenMode, allowsPictureInPicture, standby, blocksReturnToFullscreenFromPictureInPicture);
+    RetainPtr parentView = rootNode ? rootNode->uiView() : nil;
+    interface->setupFullscreen(screenRect, videoDimensions, parentView.get(), videoFullscreenMode, allowsPictureInPicture, standby, blocksReturnToFullscreenFromPictureInPicture);
 #else
     UNUSED_PARAM(videoDimensions);
     UNUSED_PARAM(blocksReturnToFullscreenFromPictureInPicture);
@@ -1448,10 +1448,10 @@ void VideoPresentationManagerProxy::returnVideoView(PlaybackSessionContextIdenti
 {
 #if PLATFORM(IOS_FAMILY)
     Ref interface = ensureInterface(contextId);
-    auto *playerView = interface->playerLayerView();
-    auto *videoView = interface->layerHostView();
+    RetainPtr playerView = interface->playerLayerView();
+    RetainPtr videoView = interface->layerHostView();
     if (playerView && videoView) {
-        [playerView addSubview:videoView];
+        [playerView addSubview:videoView.get()];
         [playerView setNeedsLayout];
         [playerView layoutIfNeeded];
     }
@@ -1572,12 +1572,12 @@ void VideoPresentationManagerProxy::setVideoLayerFrame(PlaybackSessionContextIde
     WTF::MachSendRightAnnotated sendRightAnnotated;
 #if PLATFORM(IOS_FAMILY)
 #if USE(EXTENSIONKIT)
-    auto view = dynamic_objc_cast<WKLayerHostView>(interface->layerHostView());
-    if (view && view->_hostingView) {
-        auto hostingUpdateCoordinator = [BELayerHierarchyHostingTransactionCoordinator coordinatorWithError:nil];
-        [hostingUpdateCoordinator addLayerHierarchyHostingView:view->_hostingView.get()];
+    RetainPtr view = dynamic_objc_cast<WKLayerHostView>(interface->layerHostView());
+    if (view && view.get()->_hostingView) {
+        RetainPtr hostingUpdateCoordinator = [BELayerHierarchyHostingTransactionCoordinator coordinatorWithError:nil];
+        [hostingUpdateCoordinator addLayerHierarchyHostingView:view.get()->_hostingView.get()];
 #if ENABLE(MACH_PORT_LAYER_HOSTING)
-        sendRightAnnotated = LayerHostingContext::fence(hostingUpdateCoordinator);
+        sendRightAnnotated = LayerHostingContext::fence(hostingUpdateCoordinator.get());
 #else
         OSObjectPtr<xpc_object_t> xpcRepresentationHostingCoordinator = [hostingUpdateCoordinator createXPCRepresentation];
         sendRightAnnotated.sendRight = MachSendRight::adopt(xpc_dictionary_copy_mach_send(xpcRepresentationHostingCoordinator.get(), machPortKey));

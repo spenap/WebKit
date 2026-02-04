@@ -1256,9 +1256,9 @@ static void changeContentOffsetBoundedInValidRange(UIScrollView *scrollView, Web
     }
 
     if (_perProcessState.pendingFindLayerID) {
-        CALayer *layer = downcast<WebKit::RemoteLayerTreeDrawingAreaProxy>(*_page->drawingArea()).remoteLayerTreeHost().layerForID(*_perProcessState.pendingFindLayerID);
-        if (layer.superlayer)
-            [self _didAddLayerForFindOverlay:layer];
+        RetainPtr layer = downcast<WebKit::RemoteLayerTreeDrawingAreaProxy>(*_page->drawingArea()).remoteLayerTreeHost().layerForID(*_perProcessState.pendingFindLayerID);
+        if (layer.get().superlayer)
+            [self _didAddLayerForFindOverlay:layer.get()];
     }
 
 }
@@ -3546,13 +3546,13 @@ static WebCore::UserInterfaceLayoutDirection toUserInterfaceLayoutDirection(UISe
     if (!_findOverlaysOutsideContentView)
         return;
 
-    UIScrollView *scrollView = _scrollView.get();
+    RetainPtr scrollView = _scrollView.get();
     CGRect contentViewBounds = [_contentView bounds];
     CGRect contentViewFrame = [_contentView frame];
-    CGFloat minX = std::min<CGFloat>(0, scrollView.contentOffset.x);
-    CGFloat minY = std::min<CGFloat>(0, scrollView.contentOffset.y);
-    CGFloat maxX = std::max<CGFloat>(scrollView.bounds.size.width + scrollView.contentOffset.x, contentViewBounds.size.width);
-    CGFloat maxY = std::max<CGFloat>(scrollView.bounds.size.height + scrollView.contentOffset.y, contentViewBounds.size.height);
+    CGFloat minX = std::min<CGFloat>(0, scrollView.get().contentOffset.x);
+    CGFloat minY = std::min<CGFloat>(0, scrollView.get().contentOffset.y);
+    CGFloat maxX = std::max<CGFloat>(scrollView.get().bounds.size.width + scrollView.get().contentOffset.x, contentViewBounds.size.width);
+    CGFloat maxY = std::max<CGFloat>(scrollView.get().bounds.size.height + scrollView.get().contentOffset.y, contentViewBounds.size.height);
 
     [_findOverlaysOutsideContentView->top setFrame:CGRectMake(
         CGRectGetMinX(contentViewFrame),
@@ -4590,14 +4590,14 @@ static bool isLockdownModeWarningNeeded()
     if (_customContentView) {
         UIGraphicsBeginImageContextWithOptions(imageSize, YES, 1);
 
-        UIView *customContentView = _customContentView.get();
-        [customContentView.backgroundColor set];
+        RetainPtr customContentView = _customContentView.get();
+        [customContentView.get().backgroundColor set];
         UIRectFill(CGRectMake(0, 0, imageWidth, imageHeight));
 
-        CGContextRef context = UIGraphicsGetCurrentContext();
-        CGContextTranslateCTM(context, -snapshotRectInContentCoordinates.origin.x * imageScale, -snapshotRectInContentCoordinates.origin.y * imageScale);
-        CGContextScaleCTM(context, imageScale, imageScale);
-        [customContentView.layer renderInContext:context];
+        RetainPtr context = UIGraphicsGetCurrentContext();
+        CGContextTranslateCTM(context.get(), -snapshotRectInContentCoordinates.origin.x * imageScale, -snapshotRectInContentCoordinates.origin.y * imageScale);
+        CGContextScaleCTM(context.get(), imageScale, imageScale);
+        [customContentView.get().layer renderInContext:context.get()];
 
         completionHandler([UIGraphicsGetImageFromCurrentImageContext() CGImage]);
 
@@ -5081,9 +5081,9 @@ ALLOW_DEPRECATED_IMPLEMENTATIONS_END
 
 - (id <_WKWebViewPrintProvider>)_printProvider
 {
-    id printProvider = _customContentView ? _customContentView.get() : _contentView.get();
+    RetainPtr printProvider = _customContentView ? _customContentView.get() : _contentView.get();
     if ([printProvider conformsToProtocol:@protocol(_WKWebViewPrintProvider)])
-        return printProvider;
+        return (id<_WKWebViewPrintProvider>)printProvider.autorelease();
     return nil;
 }
 

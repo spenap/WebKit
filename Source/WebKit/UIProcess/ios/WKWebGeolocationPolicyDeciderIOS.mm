@@ -190,17 +190,17 @@ struct PermissionRequest {
         RetainPtr denyActionTitle = WEB_UI_STRING_KEY("Don’t Allow", "Don’t Allow (website location dialog)", "Action denying a webpage access to the user’s location.").createNSString();
 
         RetainPtr alert = WebKit::createUIAlertController(title.get(), message.get());
-        UIAlertAction *denyAction = [UIAlertAction actionWithTitle:denyActionTitle.get() style:UIAlertActionStyleDefault handler:[weakSelf = WeakObjCPtr<WKWebGeolocationPolicyDecider>(self)](UIAlertAction *) mutable {
+        RetainPtr denyAction = [UIAlertAction actionWithTitle:denyActionTitle.get() style:UIAlertActionStyleDefault handler:[weakSelf = WeakObjCPtr<WKWebGeolocationPolicyDecider>(self)](UIAlertAction *) mutable {
             if (auto strongSelf = weakSelf.get())
                 [strongSelf _finishActiveChallenge:NO];
         }];
-        UIAlertAction *allowAction = [UIAlertAction actionWithTitle:allowActionTitle.get() style:UIAlertActionStyleDefault handler:[weakSelf = WeakObjCPtr<WKWebGeolocationPolicyDecider>(self)](UIAlertAction *) mutable {
+        RetainPtr allowAction = [UIAlertAction actionWithTitle:allowActionTitle.get() style:UIAlertActionStyleDefault handler:[weakSelf = WeakObjCPtr<WKWebGeolocationPolicyDecider>(self)](UIAlertAction *) mutable {
             if (auto strongSelf = weakSelf.get())
                 [strongSelf _finishActiveChallenge:YES];
         }];
 
-        [alert addAction:denyAction];
-        [alert addAction:allowAction];
+        [alert addAction:denyAction.get()];
+        [alert addAction:allowAction.get()];
 
 #if PLATFORM(VISION)
         [_activeChallenge->view _page]->dispatchWillPresentModalUI();

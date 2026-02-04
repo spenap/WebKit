@@ -985,10 +985,10 @@ ALLOW_DEPRECATED_DECLARATIONS_END
             return completionHandler(false);
         }
 
-        UIWindowScene *windowScene;
-        if (UIWindowScene *presentingWindowScene = viewController.view.window.windowScene) {
+        RetainPtr<UIWindowScene> windowScene;
+        if (RetainPtr<UIWindowScene> presentingWindowScene = viewController.view.window.windowScene) {
             OBJC_ALWAYS_LOG_WITH_SELF(strongSelf, logIdentifier, "using window scene from presenting view controller");
-            windowScene = presentingWindowScene;
+            windowScene = WTF::move(presentingWindowScene);
         } else {
             OBJC_ALWAYS_LOG_WITH_SELF(strongSelf, logIdentifier, "using window scene from web view");
             windowScene = [strongSelf _webView].window.windowScene;
@@ -1000,7 +1000,7 @@ ALLOW_DEPRECATED_DECLARATIONS_END
             return completionHandler(false);
         }
 
-        [strongSelf _enterFullScreen:mediaDimensions windowScene:windowScene completionHandler:WTF::move(completionHandler)];
+        [strongSelf _enterFullScreen:mediaDimensions windowScene:windowScene.get() completionHandler:WTF::move(completionHandler)];
     });
 }
 
@@ -1828,17 +1828,17 @@ ALLOW_DEPRECATED_DECLARATIONS_END
     ASSERT(!_EVOrganizationName.get());
     _EVOrganizationNameIsValid = YES;
 
-    SecTrustRef trust = [self _serverTrust];
+    RetainPtr trust = [self _serverTrust];
     if (!trust)
         return nil;
 
-    auto infoDictionary = adoptCF(SecTrustCopyInfo(trust));
+    auto infoDictionary = adoptCF(SecTrustCopyInfo(trust.get()));
     // If SecTrustCopyInfo returned NULL then it's likely that the SecTrustRef has not been evaluated
     // and the only way to get the information we need is to call SecTrustEvaluate ourselves.
     if (!infoDictionary) {
-        if (!SecTrustEvaluateWithError(trust, nullptr))
+        if (!SecTrustEvaluateWithError(trust.get(), nullptr))
             return nil;
-        infoDictionary = adoptCF(SecTrustCopyInfo(trust));
+        infoDictionary = adoptCF(SecTrustCopyInfo(trust.get()));
         if (!infoDictionary)
             return nil;
     }

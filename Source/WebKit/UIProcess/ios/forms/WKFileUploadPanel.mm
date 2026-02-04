@@ -484,7 +484,7 @@ ALLOW_DEPRECATED_DECLARATIONS_END
     for (NSURL *fileURL in fileURLs)
         filenames.append(String::fromUTF8(fileURL.fileSystemRepresentation));
 
-    NSData *png = UIImagePNGRepresentation(iconImage);
+    RetainPtr png = UIImagePNGRepresentation(iconImage);
     RefPtr iconImageDataRef = adoptRef(WebKit::toImpl(WKDataCreate(static_cast<const unsigned char*>([png bytes]), [png length])));
 
     protect(_listener)->chooseFiles(filenames, displayString, iconImageDataRef.get());
@@ -649,18 +649,18 @@ static NSSet<NSString *> *UTIsForMIMETypes(NSArray *mimeTypes)
 
 - (NSArray<NSString *> *)_mediaTypesForPickerSourceType:(UIImagePickerControllerSourceType)sourceType
 {
-    NSArray<NSString *> *availableMediaTypeUTIs = [UIImagePickerController availableMediaTypesForSourceType:sourceType];
-    NSSet<NSString *> *acceptedMediaTypeUTIs = _acceptedUTIs.get();
-    if (acceptedMediaTypeUTIs.count) {
-        NSMutableArray<NSString *> *mediaTypes = [NSMutableArray array];
-        for (NSString *availableMediaTypeUTI in availableMediaTypeUTIs) {
+    RetainPtr availableMediaTypeUTIs = [UIImagePickerController availableMediaTypesForSourceType:sourceType];
+    RetainPtr acceptedMediaTypeUTIs = _acceptedUTIs.get();
+    if (acceptedMediaTypeUTIs.get().count) {
+        RetainPtr<NSMutableArray<NSString *>> mediaTypes = [NSMutableArray array];
+        for (NSString *availableMediaTypeUTI in availableMediaTypeUTIs.get()) {
             if ([acceptedMediaTypeUTIs containsObject:availableMediaTypeUTI])
                 [mediaTypes addObject:availableMediaTypeUTI];
             else {
-                UTType *availableMediaType = [UTType typeWithIdentifier:availableMediaTypeUTI];
-                for (NSString *acceptedMediaTypeUTI in acceptedMediaTypeUTIs) {
-                    UTType *acceptedMediaType = [UTType typeWithIdentifier:acceptedMediaTypeUTI];
-                    if ([acceptedMediaType conformsToType:availableMediaType]) {
+                RetainPtr availableMediaType = [UTType typeWithIdentifier:availableMediaTypeUTI];
+                for (NSString *acceptedMediaTypeUTI in acceptedMediaTypeUTIs.get()) {
+                    RetainPtr acceptedMediaType = [UTType typeWithIdentifier:acceptedMediaTypeUTI];
+                    if ([acceptedMediaType conformsToType:availableMediaType.get()]) {
                         [mediaTypes addObject:availableMediaTypeUTI];
                         break;
                     }
@@ -668,13 +668,13 @@ static NSSet<NSString *> *UTIsForMIMETypes(NSArray *mimeTypes)
             }
         }
 
-        ASSERT(mediaTypes.count);
-        if (mediaTypes.count)
-            return mediaTypes;
+        ASSERT(mediaTypes.get().count);
+        if (mediaTypes.get().count)
+            return mediaTypes.autorelease();
     }
 
     // Fallback to every supported media type if there is no filter.
-    return availableMediaTypeUTIs;
+    return availableMediaTypeUTIs.autorelease();
 }
 
 #if HAVE(PHOTOS_UI)
@@ -740,12 +740,12 @@ static NSSet<NSString *> *UTIsForMIMETypes(NSArray *mimeTypes)
             return nil;
 
         strongSelf->_isPresentingSubMenu = NO;
-        UIAction *chooseAction = [UIAction actionWithTitle:[strongSelf _chooseFilesButtonLabel] image:[UIImage systemImageNamed:@"folder"] identifier:@"choose" handler:^(__kindof UIAction *action) {
+        RetainPtr chooseAction = [UIAction actionWithTitle:[strongSelf _chooseFilesButtonLabel] image:[UIImage systemImageNamed:@"folder"] identifier:@"choose" handler:^(__kindof UIAction *action) {
             strongSelf->_isPresentingSubMenu = YES;
             [strongSelf showFilePickerMenu];
         }];
 
-        UIAction *photoAction = [UIAction actionWithTitle:[strongSelf _photoLibraryButtonLabel] image:[UIImage systemImageNamed:@"photo.on.rectangle"] identifier:@"photo" handler:^(__kindof UIAction *action) {
+        RetainPtr photoAction = [UIAction actionWithTitle:[strongSelf _photoLibraryButtonLabel] image:[UIImage systemImageNamed:@"photo.on.rectangle"] identifier:@"photo" handler:^(__kindof UIAction *action) {
             strongSelf->_isPresentingSubMenu = YES;
             [strongSelf _showPhotoPicker];
         }];
@@ -753,14 +753,14 @@ static NSSet<NSString *> *UTIsForMIMETypes(NSArray *mimeTypes)
         NSArray *actions;
         if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) {
             NSString *cameraString = [strongSelf _cameraButtonLabel];
-            UIAction *cameraAction = [UIAction actionWithTitle:cameraString image:[UIImage systemImageNamed:@"camera"] identifier:@"camera" handler:^(__kindof UIAction *action) {
+            RetainPtr cameraAction = [UIAction actionWithTitle:cameraString image:[UIImage systemImageNamed:@"camera"] identifier:@"camera" handler:^(__kindof UIAction *action) {
                 strongSelf->_usingCamera = YES;
                 strongSelf->_isPresentingSubMenu = YES;
                 [strongSelf _showCamera];
             }];
-            actions = @[photoAction, cameraAction, chooseAction];
+            actions = @[photoAction.get(), cameraAction.get(), chooseAction.get()];
         } else
-            actions = @[photoAction, chooseAction];
+            actions = @[photoAction.get(), chooseAction.get()];
 
         return [UIMenu menuWithTitle:@"" children:actions];
     };
