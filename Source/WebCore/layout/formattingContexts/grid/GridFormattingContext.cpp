@@ -234,7 +234,7 @@ PlacedGridItems GridFormattingContext::constructPlacedGridItems(const GridAreas&
             return root().style().alignItems().resolve();
         };
 
-        PlacedGridItem::ComputedSizes inlineAxisSizes {
+        ComputedSizes inlineAxisSizes {
             gridItemStyle->width(),
             gridItemStyle->minWidth(),
             gridItemStyle->maxWidth(),
@@ -242,7 +242,7 @@ PlacedGridItems GridFormattingContext::constructPlacedGridItems(const GridAreas&
             gridItemStyle->marginRight()
         };
 
-        PlacedGridItem::ComputedSizes blockAxisSizes {
+        ComputedSizes blockAxisSizes {
             gridItemStyle->height(),
             gridItemStyle->minHeight(),
             gridItemStyle->maxHeight(),

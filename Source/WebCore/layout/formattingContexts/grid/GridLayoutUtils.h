@@ -55,6 +55,9 @@ LayoutUnit blockAxisMinContentContribution(const ElementBox& gridItem, const Int
 LayoutUnit blockAxisMaxContentContribution(const ElementBox& gridItem, const IntegrationUtils&);
 GridItemSizingFunctions blockAxisGridItemSizingFunctions();
 
+bool preferredSizeBehavesAsAuto(const Style::PreferredSize&);
+bool preferredSizeDependsOnContainingBlockSize(const Style::PreferredSize&);
+
 } // namespace GridLayoutUtils
 } // namespace Layout
 } // namespace WebCore

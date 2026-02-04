@@ -403,6 +403,24 @@ GridItemSizingFunctions blockAxisGridItemSizingFunctions()
     return { blockAxisMinContentContribution, blockAxisMaxContentContribution };
 }
 
+bool preferredSizeBehavesAsAuto(const Style::PreferredSize& preferredSize)
+{
+    return WTF::switchOn(preferredSize,
+        [](const CSS::Keyword::Auto&) {
+            return true;
+        },
+        [](const auto&) {
+            ASSERT_NOT_IMPLEMENTED_YET();
+            return false;
+    });
+}
+
+bool preferredSizeDependsOnContainingBlockSize(const Style::PreferredSize&)
+{
+    ASSERT_NOT_IMPLEMENTED_YET();
+    return false;
+}
+
 }
 }
 }
