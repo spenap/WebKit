@@ -174,6 +174,11 @@ void RegExp::finishCreation(VM& vm)
         m_rareData->m_captureGroupNames.swap(pattern.m_captureGroupNames);
         m_rareData->m_namedGroupToParenIndices.swap(pattern.m_namedGroupToParenIndices);
     }
+
+    unsigned offsetVectorSize = offsetVectorBaseForNamedCaptures();
+    if (hasNamedCaptures())
+        offsetVectorSize += m_rareData->m_numDuplicateNamedCaptureGroups;
+    m_ovector.resize(offsetVectorSize);
 }
 
 void RegExp::destroy(JSCell* cell)
@@ -193,6 +198,7 @@ size_t RegExp::estimatedSize(JSCell* cell, VM& vm)
     if (auto* jitCode = thisObject->m_regExpJITCode.get())
         regexDataSize += jitCode->size();
 #endif
+    regexDataSize += thisObject->m_ovector.capacity() * sizeof(int);
     return Base::estimatedSize(cell, vm) + regexDataSize;
 }
 
@@ -285,20 +291,20 @@ void RegExp::compile(VM* vm, Yarr::CharSize charSize, std::optional<StringView> 
     }
 }
 
-int RegExp::match(JSGlobalObject* globalObject, StringView s, unsigned startOffset, Vector<int>& ovector)
+int RegExp::match(JSGlobalObject* globalObject, StringView s, unsigned startOffset, std::span<int> ovector)
 {
     return matchInline(globalObject, globalObject->vm(), s, startOffset, ovector);
 }
 
 bool RegExp::matchConcurrently(
-    VM& vm, StringView s, unsigned startOffset, int& position, Vector<int>& ovector)
+    VM& vm, StringView s, unsigned startOffset, int& position, std::span<int> ovector)
 {
     Locker locker { cellLock() };
 
     if (!hasCodeFor(s.is8Bit() ? Yarr::CharSize::Char8 : Yarr::CharSize::Char16))
         return false;
 
-    position = matchInline<Vector<int>&, Yarr::MatchFrom::CompilerThread>(nullptr, vm, s, startOffset, ovector);
+    position = matchInline<Yarr::MatchFrom::CompilerThread>(nullptr, vm, s, startOffset, ovector);
     if (m_state == ParseError)
         return false;
     return true;

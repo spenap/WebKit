@@ -67,13 +67,13 @@ ALWAYS_INLINE JSArray* createRegExpMatchesArray(
     if constexpr (validateDFGDoesGC)
         vm.verifyCanGC();
 
-    Vector<int, 32> subpatternResults;
-    int position = regExp->matchInline(globalObject, vm, inputValue, startOffset, subpatternResults);
+    int position = regExp->matchInline<Yarr::MatchFrom::VMThread>(globalObject, vm, inputValue, startOffset, regExp->ovectorSpan());
     if (position == -1) {
         result = MatchResult::failed();
         return nullptr;
     }
 
+    auto subpatternResults = regExp->ovectorSpan();
     result.start = position;
     result.end = subpatternResults[1];
     

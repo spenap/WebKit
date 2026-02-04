@@ -737,7 +737,7 @@ ALWAYS_INLINE JSCellButterfly* addToRegExpSearchCache(VM& vm, JSGlobalObject* gl
     if (auto* entry = vm.stringReplaceCache.get(source, regExp)) {
         auto lastMatch = entry->m_lastMatch;
         auto matchResult = entry->m_matchResult;
-        globalObject->regExpGlobalData().resetResultFromCache(globalObject, regExp, string, matchResult, WTF::move(lastMatch));
+        globalObject->regExpGlobalData().resetResultFromCache(globalObject, regExp, string, matchResult, lastMatch.span());
         RELEASE_AND_RETURN(scope, entry->m_result);
     }
 
@@ -795,7 +795,7 @@ ALWAYS_INLINE JSCellButterfly* addToRegExpSearchCache(VM& vm, JSGlobalObject* gl
         return nullptr;
     }
 
-    vm.stringReplaceCache.set(source, regExp, result, globalObject->regExpGlobalData().matchResult(), globalObject->regExpGlobalData().ovector());
+    vm.stringReplaceCache.set(source, regExp, result, globalObject->regExpGlobalData().matchResult(), regExp->ovectorSpan());
     RELEASE_AND_RETURN(scope, result);
 }
 
