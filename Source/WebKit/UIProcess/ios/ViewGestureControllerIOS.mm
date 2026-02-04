@@ -56,7 +56,7 @@
 
 @implementation WKSwipeTransitionController
 {
-    WebKit::ViewGestureController *_gestureController;
+    WeakPtr<WebKit::ViewGestureController> _gestureController;
     RetainPtr<_UINavigationInteractiveTransitionBase> _backTransitionController;
     RetainPtr<_UINavigationInteractiveTransitionBase> _forwardTransitionController;
     WeakObjCPtr<UIView> _gestureRecognizerView;
@@ -103,17 +103,19 @@ static const float swipeSnapshotRemovalRenderTreeSizeTargetFraction = 0.5;
 
 - (void)startInteractiveTransition:(_UINavigationInteractiveTransitionBase *)transition
 {
-    protect(*_gestureController)->beginSwipeGesture(transition, [self directionForTransition:transition]);
+    if (RefPtr gestureController = _gestureController)
+        gestureController->beginSwipeGesture(transition, [self directionForTransition:transition]);
 }
 
 - (BOOL)shouldBeginInteractiveTransition:(_UINavigationInteractiveTransitionBase *)transition
 {
-    if (_gestureController->hasActiveSwipeGesture())
+    RefPtr gestureController = _gestureController;
+    if (!gestureController || gestureController->hasActiveSwipeGesture())
         return NO;
 
     using enum WebKit::ViewGestureController::DeferToConflictingGestures;
     auto deferToConflictingGestures = transition.gestureRecognizer.state == UIGestureRecognizerStateFailed ? Yes : No;
-    return protect(*_gestureController)->canSwipeInDirection([self directionForTransition:transition], deferToConflictingGestures);
+    return gestureController->canSwipeInDirection([self directionForTransition:transition], deferToConflictingGestures);
 }
 
 - (BOOL)interactiveTransition:(_UINavigationInteractiveTransitionBase *)transition gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer
