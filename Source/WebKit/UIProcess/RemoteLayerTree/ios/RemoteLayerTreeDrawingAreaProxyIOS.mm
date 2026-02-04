@@ -44,7 +44,7 @@ constexpr WebCore::FramesPerSecond DisplayLinkFramesPerSecond = 60;
 
 @interface WKDisplayLinkHandler : NSObject {
     WeakPtr<WebKit::RemoteLayerTreeDrawingAreaProxy> _drawingAreaProxy;
-    CADisplayLink *_displayLink;
+    RetainPtr<CADisplayLink> _displayLink;
     WebCore::FramesPerSecond _preferredFramesPerSecond;
     BOOL _wantsHighFrameRate;
     WebCore::DisplayUpdate _currentUpdate;
@@ -98,8 +98,8 @@ static void* displayRefreshRateObservationContext = &displayRefreshRateObservati
             _displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(displayLinkFired:)];
         ALLOW_DEPRECATED_DECLARATIONS_END
             [_displayLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSRunLoopCommonModes];
-            [_displayLink.display addObserver:self forKeyPath:@"refreshRate" options:NSKeyValueObservingOptionNew context:displayRefreshRateObservationContext];
-            _displayLink.paused = YES;
+            [_displayLink.get().display addObserver:self forKeyPath:@"refreshRate" options:NSKeyValueObservingOptionNew context:displayRefreshRateObservationContext];
+            _displayLink.get().paused = YES;
         }
     }
     return self;
@@ -131,7 +131,7 @@ static void* displayRefreshRateObservationContext = &displayRefreshRateObservati
 
 - (void)invalidate
 {
-    [_displayLink.display removeObserver:self forKeyPath:@"refreshRate" context:displayRefreshRateObservationContext];
+    [_displayLink.get().display removeObserver:self forKeyPath:@"refreshRate" context:displayRefreshRateObservationContext];
     [_displayLink invalidate];
     _displayLink = nullptr;
 
@@ -143,7 +143,7 @@ static void* displayRefreshRateObservationContext = &displayRefreshRateObservati
 
 - (void)schedule
 {
-    _displayLink.paused = NO;
+    _displayLink.get().paused = NO;
 #if ENABLE(TIMER_DRIVEN_DISPLAY_REFRESH_FOR_TESTING)
     if (!_updateTimer && _overrideFrameRate.has_value())
         _updateTimer = [NSTimer scheduledTimerWithTimeInterval:1.0 / _overrideFrameRate.value() target:self selector:@selector(timerFired) userInfo:nil repeats:YES];
@@ -152,7 +152,7 @@ static void* displayRefreshRateObservationContext = &displayRefreshRateObservati
 
 - (void)pause
 {
-    _displayLink.paused = YES;
+    _displayLink.get().paused = YES;
 #if ENABLE(TIMER_DRIVEN_DISPLAY_REFRESH_FOR_TESTING)
     [_updateTimer invalidate];
     _updateTimer = nil;
@@ -170,7 +170,7 @@ static void* displayRefreshRateObservationContext = &displayRefreshRateObservati
 {
     RefPtr page = _drawingAreaProxy ? protect(*_drawingAreaProxy)->page() : nullptr;
     if (page && (page->preferences().webAnimationsCustomFrameRateEnabled() || !page->preferences().preferPageRenderingUpdatesNear60FPSEnabled())) {
-        auto minimumRefreshInterval = _displayLink.maximumRefreshRate;
+        auto minimumRefreshInterval = _displayLink.get().maximumRefreshRate;
         if (minimumRefreshInterval > 0)
             return std::round(1.0 / minimumRefreshInterval);
     }
@@ -222,11 +222,11 @@ static void* displayRefreshRateObservationContext = &displayRefreshRateObservati
             WebKit::preferPageRenderingUpdatesNear60FPSDisabledHighFrameRateReason;
         [_displayLink setHighFrameRateReason:highFrameRateReason];
 #else
-        effectiveFramesPerSecond = 1.0 / _displayLink.maximumRefreshRate;
-        _displayLink.preferredFramesPerSecond = effectiveFramesPerSecond;
+        effectiveFramesPerSecond = 1.0 / _displayLink.get().maximumRefreshRate;
+        _displayLink.get().preferredFramesPerSecond = effectiveFramesPerSecond;
 #endif
     } else
-        _displayLink.preferredFramesPerSecond = effectiveFramesPerSecond;
+        _displayLink.get().preferredFramesPerSecond = effectiveFramesPerSecond;
 
     if (_currentUpdate.updatesPerSecond != effectiveFramesPerSecond)
         _currentUpdate = { 0, effectiveFramesPerSecond };

@@ -117,16 +117,17 @@ void WebDataListSuggestionsDropdownIOS::show(WebCore::DataListSuggestionInformat
 
     WebCore::DataListSuggestionActivationType type = information.activationType;
 
-    if (m_contentView._shouldUseContextMenusForFormControls) {
-        m_suggestionsControl = adoptNS([[WKDataListSuggestionsDropdown alloc] initWithInformation:WTF::move(information) inView:m_contentView]);
+    RetainPtr contentView = m_contentView.get();
+    if ([contentView _shouldUseContextMenusForFormControls]) {
+        m_suggestionsControl = adoptNS([[WKDataListSuggestionsDropdown alloc] initWithInformation:WTF::move(information) inView:contentView.get()]);
         [m_suggestionsControl showSuggestionsDropdown:*this activationType:type];
         return;
     }
 
     if (PAL::currentUserInterfaceIdiomIsSmallScreen())
-        m_suggestionsControl = adoptNS([[WKDataListSuggestionsPicker alloc] initWithInformation:WTF::move(information) inView:m_contentView]);
+        m_suggestionsControl = adoptNS([[WKDataListSuggestionsPicker alloc] initWithInformation:WTF::move(information) inView:contentView.get()]);
     else
-        m_suggestionsControl = adoptNS([[WKDataListSuggestionsPopover alloc] initWithInformation:WTF::move(information) inView:m_contentView]);
+        m_suggestionsControl = adoptNS([[WKDataListSuggestionsPopover alloc] initWithInformation:WTF::move(information) inView:contentView.get()]);
 
     [m_suggestionsControl showSuggestionsDropdown:*this activationType:type];
 }

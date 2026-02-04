@@ -543,7 +543,7 @@ constexpr double fasterTapSignificantZoomThreshold = 0.8;
     BOOL _isNone;
     BOOL _isRange;
     BOOL _isEditable;
-    NSArray<WKTextSelectionRect *>*_selectionRects;
+    RetainPtr<NSArray<WKTextSelectionRect *>> _selectionRects;
     NSUInteger _selectedTextLength;
 }
 @property (nonatomic) CGRect startRect;
@@ -15870,8 +15870,17 @@ ALLOW_DEPRECATED_DECLARATIONS_END
 
 - (void)dealloc
 {
-    [_selectionRects release];
     [super dealloc];
+}
+
+- (NSArray<WKTextSelectionRect *> *)selectionRects
+{
+    return _selectionRects.get();
+}
+
+- (void)setSelectionRects:(NSArray<WKTextSelectionRect *> *)selectionRects
+{
+    _selectionRects = adoptNS([selectionRects copy]);
 }
 
 - (NSString *)description
