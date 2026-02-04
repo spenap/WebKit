@@ -36,10 +36,12 @@
 #import "WKDeferringGestureRecognizer.h"
 #import "WKUIScrollEdgeEffect.h"
 #import "WKWebViewIOS.h"
+#import "WKWebViewInternal.h"
 #import "WebPage.h"
 #import <pal/spi/cg/CoreGraphicsSPI.h>
 #import <wtf/WeakObjCPtr.h>
 #import <wtf/cocoa/RuntimeApplicationChecksCocoa.h>
+#import <wtf/cocoa/TypeCastsCocoa.h>
 #import <wtf/cocoa/VectorCocoa.h>
 
 #if HAVE(PEPPER_UI_CORE)
@@ -594,22 +596,22 @@ static inline bool valuesAreWithinOnePixel(CGFloat a, CGFloat b)
 
 - (UIScrollEdgeEffect *)topEdgeEffect
 {
-    return static_cast<UIScrollEdgeEffect *>(self._wk_topEdgeEffect);
+    return checked_objc_cast<UIScrollEdgeEffect>(self._wk_topEdgeEffect);
 }
 
 - (UIScrollEdgeEffect *)leftEdgeEffect
 {
-    return static_cast<UIScrollEdgeEffect *>(self._wk_leftEdgeEffect);
+    return checked_objc_cast<UIScrollEdgeEffect>(self._wk_leftEdgeEffect);
 }
 
 - (UIScrollEdgeEffect *)bottomEdgeEffect
 {
-    return static_cast<UIScrollEdgeEffect *>(self._wk_bottomEdgeEffect);
+    return checked_objc_cast<UIScrollEdgeEffect>(self._wk_bottomEdgeEffect);
 }
 
 - (UIScrollEdgeEffect *)rightEdgeEffect
 {
-    return static_cast<UIScrollEdgeEffect *>(self._wk_rightEdgeEffect);
+    return checked_objc_cast<UIScrollEdgeEffect>(self._wk_rightEdgeEffect);
 }
 
 - (WKUIScrollEdgeEffect *)_wk_topEdgeEffect
