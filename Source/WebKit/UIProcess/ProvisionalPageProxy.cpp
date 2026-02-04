@@ -462,14 +462,17 @@ void ProvisionalPageProxy::didCommitLoadForFrame(IPC::Connection& connection, Fr
     RefPtr page = m_page.get();
     RefPtr pageMainFrame = page ? page->mainFrame() : nullptr;
     if (page && protect(page->preferences())->siteIsolationEnabled() && pageMainFrame) {
-        Ref pageMainFrameProces = pageMainFrame->frameProcess();
+        Ref pageMainFrameProcess = pageMainFrame->frameProcess();
         Site pageMainFrameSite { pageMainFrame->url() };
-        bool frameProecessChanged = m_frameProcess.ptr() != pageMainFrameProces.ptr();
-        if (frameProecessChanged)
+
+        bool frameProcessChanged = m_frameProcess.ptr() != pageMainFrameProcess.ptr();
+        if (frameProcessChanged)
             pageMainFrame->setProcess(m_frameProcess);
 
-        // Transit page in old frame process to remote because pages in that process still need access to this page.
-        if (frameProecessChanged && pageMainFrame == m_mainFrame && m_browsingContextGroup->isFrameProcessInUseForMainFrame(pageMainFrameProces.get())) {
+        // If the originating FrameProcess still has local frames and is still in the same
+        // BrowsingContext group, pages in that process still need access to this page.
+        // So transition the WebPageProxy in that process to a RemotePageProxy.
+        if (frameProcessChanged && pageMainFrame == m_mainFrame && pageMainFrameProcess->frameCount() && pageMainFrameProcess->browsingContextGroup() == m_browsingContextGroup.ptr()) {
             protect(page->legacyMainFrameProcess())->send(Messages::WebPage::LoadDidCommitInAnotherProcess(page->mainFrame()->frameID(), std::nullopt), page->webPageIDInMainFrameProcess());
             m_browsingContextGroup->transitionPageToRemotePage(*page, pageMainFrameSite);
         }
