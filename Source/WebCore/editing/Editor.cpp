@@ -4415,7 +4415,7 @@ static RefPtr<Node> findFirstMarkable(Node* startingNode)
 
 bool Editor::selectionStartHasMarkerFor(DocumentMarkerType markerType, int from, int length) const
 {
-    auto node = findFirstMarkable(document().selection().selection().start().protectedDeprecatedNode().get());
+    auto node = findFirstMarkable(protect(document().selection().selection().start().deprecatedNode()).get());
     if (!node)
         return false;
 
@@ -4435,7 +4435,7 @@ bool Editor::selectionStartHasMarkerFor(DocumentMarkerType markerType, int from,
 
 void Editor::selectionStartSetMarkerForTesting(DocumentMarkerType markerType, int from, int length, const String& data)
 {
-    RefPtr node = findFirstMarkable(document().selection().selection().start().protectedDeprecatedNode().get());
+    RefPtr node = findFirstMarkable(protect(document().selection().selection().start().deprecatedNode()).get());
     if (!node)
         return;
 
