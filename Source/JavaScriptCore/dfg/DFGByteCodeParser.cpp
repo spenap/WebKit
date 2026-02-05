@@ -7412,9 +7412,7 @@ void ByteCodeParser::parseBlock(unsigned limit)
         case op_create_rest: {
             auto bytecode = currentInstruction->as<OpCreateRest>();
             noticeArgumentsUse();
-            Node* arrayLength = get(bytecode.m_arraySize);
-            set(bytecode.m_dst,
-                addToGraph(CreateRest, OpInfo(bytecode.m_numParametersToSkip), arrayLength));
+            set(bytecode.m_dst, addToGraph(CreateRest, OpInfo(bytecode.m_numParametersToSkip)));
             NEXT_OPCODE(op_create_rest);
         }
             

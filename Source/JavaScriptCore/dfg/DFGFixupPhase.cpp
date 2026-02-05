@@ -2918,7 +2918,6 @@ private:
 
         case CreateRest: {
             watchHavingABadTime(node);
-            fixEdge<Int32Use>(node->child1());
             break;
         }
 
