@@ -344,8 +344,8 @@ void ScrollingTreeScrollingNodeDelegateIOS::commitStateAfterChildren(const Scrol
 
 ALLOW_DEPRECATED_DECLARATIONS_BEGIN
             if ([scrollView respondsToSelector:@selector(_setAvoidsJumpOnInterruptedBounce:)]) {
-                scrollView.tracksImmediatelyWhileDecelerating = NO;
-                scrollView._avoidsJumpOnInterruptedBounce = YES;
+                [scrollView setTracksImmediatelyWhileDecelerating:NO];
+                [scrollView _setAvoidsJumpOnInterruptedBounce:YES];
             }
 ALLOW_DEPRECATED_DECLARATIONS_END
         }
