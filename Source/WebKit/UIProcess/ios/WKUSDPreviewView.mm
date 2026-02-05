@@ -134,8 +134,8 @@ static RetainPtr<NSString> getUTIForUSDMIMEType(const String& mimeType)
     [alert addAction:allowAction.get()];
 
     RefPtr page = _webView.get()->_page;
-    UIViewController *presentingViewController = page->uiClient().presentingViewController();
-    [presentingViewController presentViewController:alert.get() animated:YES completion:nil];
+    RetainPtr presentingViewController = page->uiClient().presentingViewController();
+    [presentingViewController.get() presentViewController:alert.get() animated:YES completion:nil];
 }
 
 - (void)_layoutThumbnailView
@@ -164,9 +164,9 @@ static RetainPtr<NSString> getUTIForUSDMIMEType(const String& mimeType)
     // FIXME: When in element fullscreen, UIClient::presentingViewController() may not return the
     // WKFullScreenViewController even though that is the presenting view controller of the WKWebView.
     // We should call PageClientImpl::presentingViewController() instead.
-    UIViewController *presentingViewController = page->uiClient().presentingViewController();
+    RetainPtr presentingViewController = page->uiClient().presentingViewController();
 
-    [presentingViewController presentViewController:previewController animated:YES completion:nil];
+    [presentingViewController.get() presentViewController:previewController animated:YES completion:nil];
 }
 
 #pragma mark WKWebViewContentProvider protocol

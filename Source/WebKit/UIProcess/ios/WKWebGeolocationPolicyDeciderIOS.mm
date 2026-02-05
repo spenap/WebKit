@@ -175,15 +175,15 @@ struct PermissionRequest {
             return;
         }
 
-        NSString *applicationName = appDisplayName();
+        RetainPtr applicationName = appDisplayName();
         RetainPtr<NSString> message;
 
     IGNORE_WARNINGS_BEGIN("format-nonliteral")
         RetainPtr title = adoptNS([[NSString alloc] initWithFormat:WEB_UI_STRING("“%@” would like to use your current location.", "Prompt for a webpage to request location access. The parameter is the domain for the webpage.").createNSString().get(), _activeChallenge->token.get()]);
         if (appHasPreciseLocationPermission())
-            message = adoptNS([[NSString alloc] initWithFormat:WEB_UI_STRING("This website will use your precise location because “%@” currently has access to your precise location.", "Message informing the user that the website will have precise location data").createNSString().get(), applicationName]);
+            message = adoptNS([[NSString alloc] initWithFormat:WEB_UI_STRING("This website will use your precise location because “%@” currently has access to your precise location.", "Message informing the user that the website will have precise location data").createNSString().get(), applicationName.get()]);
         else
-            message = adoptNS([[NSString alloc] initWithFormat:WEB_UI_STRING("This website will use your approximate location because “%@” currently has access to your approximate location.", "Message informing the user that the website will have approximate location data").createNSString().get(), applicationName]);
+            message = adoptNS([[NSString alloc] initWithFormat:WEB_UI_STRING("This website will use your approximate location because “%@” currently has access to your approximate location.", "Message informing the user that the website will have approximate location data").createNSString().get(), applicationName.get()]);
     IGNORE_WARNINGS_END
 
         RetainPtr allowActionTitle = WEB_UI_STRING("Allow", "Action authorizing a webpage to access the user’s location.").createNSString();

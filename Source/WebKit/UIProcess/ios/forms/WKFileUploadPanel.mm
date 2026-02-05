@@ -844,7 +844,7 @@ static NSSet<NSString *> *UTIsForMIMETypes(NSArray *mimeTypes)
 - (void)showFilePickerMenu
 {
     NSArray *mediaTypes = [_acceptedUTIs allObjects];
-    NSArray *documentTypes;
+    RetainPtr<NSArray> documentTypes;
     if (_allowDirectories)
         documentTypes = @[ UTTypeFolder.identifier ];
     else
@@ -854,7 +854,7 @@ static NSSet<NSString *> *UTIsForMIMETypes(NSArray *mimeTypes)
     _uploadFileCoordinator = adoptNS([[NSFileCoordinator alloc] init]);
 
     auto pickerMode = _allowDirectories ? UIDocumentPickerModeOpen : UIDocumentPickerModeImport;
-    _documentPickerController = adoptNS([[UIDocumentPickerViewController alloc] initWithDocumentTypes:documentTypes inMode:pickerMode]);
+    _documentPickerController = adoptNS([[UIDocumentPickerViewController alloc] initWithDocumentTypes:documentTypes.get() inMode:pickerMode]);
     [_documentPickerController setAllowsMultipleSelection:_allowMultipleFiles];
     [_documentPickerController setDelegate:self];
     [_documentPickerController presentationController].delegate = self;
@@ -1159,8 +1159,8 @@ static RetainPtr<NSString> displayStringForDocumentsAtURLs(NSArray<NSURL *> *url
 
 - (void)_uploadItemFromResult:(PHPickerResult *)result successBlock:(void (^)(_WKFileUploadItem *))successBlock failureBlock:(void (^)(void))failureBlock
 {
-    if (NSString *uti = firstUTIThatConformsTo(result.itemProvider.registeredTypeIdentifiers, UTTypeMovie)) {
-        [result.itemProvider loadFileRepresentationForTypeIdentifier:uti completionHandler:^(NSURL *url, NSError *error) {
+    if (RetainPtr uti = firstUTIThatConformsTo(result.itemProvider.registeredTypeIdentifiers, UTTypeMovie)) {
+        [result.itemProvider loadFileRepresentationForTypeIdentifier:uti.get() completionHandler:^(NSURL *url, NSError *error) {
             if (error) {
                 failureBlock();
                 return;
@@ -1182,7 +1182,7 @@ static RetainPtr<NSString> displayStringForDocumentsAtURLs(NSArray<NSURL *> *url
         return;
     }
 
-    NSString *uti = firstUTIThatConformsTo(result.itemProvider.registeredTypeIdentifiers, UTTypeImage);
+    RetainPtr uti = firstUTIThatConformsTo(result.itemProvider.registeredTypeIdentifiers, UTTypeImage);
 
     if (!uti) {
         LOG_ERROR("WKFileUploadPanel: Unexpected media type. Expected image or video");
@@ -1191,7 +1191,7 @@ static RetainPtr<NSString> displayStringForDocumentsAtURLs(NSArray<NSURL *> *url
         return;
     }
 
-    [result.itemProvider loadFileRepresentationForTypeIdentifier:uti completionHandler:^(NSURL *url, NSError *error) {
+    [result.itemProvider loadFileRepresentationForTypeIdentifier:uti.get() completionHandler:^(NSURL *url, NSError *error) {
         if (error) {
             failureBlock();
             return;
@@ -1241,8 +1241,8 @@ static RetainPtr<NSString> displayStringForDocumentsAtURLs(NSArray<NSURL *> *url
     NSString * const kTemporaryDirectoryName = @"WKWebFileUpload";
 
     // Build temporary file path.
-    NSString *temporaryDirectory = FileSystem::createTemporaryDirectory(kTemporaryDirectoryName);
-    NSString *filePath = [temporaryDirectory stringByAppendingPathComponent:imageName];
+    RetainPtr temporaryDirectory = FileSystem::createTemporaryDirectory(kTemporaryDirectoryName);
+    RetainPtr filePath = [temporaryDirectory stringByAppendingPathComponent:imageName];
     if (!filePath) {
         LOG_ERROR("WKFileUploadPanel: Failed to create temporary directory to save image");
         failureBlock();
@@ -1251,14 +1251,14 @@ static RetainPtr<NSString> displayStringForDocumentsAtURLs(NSArray<NSURL *> *url
 
     // Save the image to the temporary file.
     NSError *error = nil;
-    [imageData writeToFile:filePath options:NSDataWritingAtomic error:&error];
+    [imageData writeToFile:filePath.get() options:NSDataWritingAtomic error:&error];
     if (error) {
         LOG_ERROR("WKFileUploadPanel: Error writing image data to temporary file: %@", error);
         failureBlock();
         return;
     }
 
-    successBlock(adoptNS([[_WKImageFileUploadItem alloc] initWithFileURL:[NSURL fileURLWithPath:filePath isDirectory:NO]]).get());
+    successBlock(adoptNS([[_WKImageFileUploadItem alloc] initWithFileURL:[NSURL fileURLWithPath:filePath.get() isDirectory:NO]]).get());
 }
 
 - (void)_uploadItemForJPEGRepresentationOfImage:(UIImage *)image successBlock:(void (^)(_WKFileUploadItem *))successBlock failureBlock:(void (^)(void))failureBlock
@@ -1270,7 +1270,7 @@ static RetainPtr<NSString> displayStringForDocumentsAtURLs(NSArray<NSURL *> *url
         // FIXME: Different compression for different UIImage sizes?
         // FIXME: Should EXIF data be maintained?
         const CGFloat compression = 0.8;
-        NSData *jpeg = UIImageJPEGRepresentation(image, compression);
+        RetainPtr jpeg = UIImageJPEGRepresentation(image, compression);
         if (!jpeg) {
             LOG_ERROR("WKFileUploadPanel: Failed to create JPEG representation for image");
             failureBlock();
@@ -1281,7 +1281,7 @@ static RetainPtr<NSString> displayStringForDocumentsAtURLs(NSArray<NSURL *> *url
         // naming each of the individual uploads image.jpg? This won't work for photos taken with
         // the camera, but would work for photos picked from the library.
         NSString * const kUploadImageName = @"image.jpg";
-        [self _uploadItemForImageData:jpeg imageName:kUploadImageName successBlock:successBlock failureBlock:failureBlock];
+        [self _uploadItemForImageData:jpeg.get() imageName:kUploadImageName successBlock:successBlock failureBlock:failureBlock];
     });
 }
 

@@ -11734,7 +11734,7 @@ static RetainPtr<UITargetedPreview> createFallbackTargetedPreview(UIView *rootVi
 
 - (UITargetedPreview *)_createTargetedContextMenuHintPreviewForFocusedElement:(WebKit::TargetedPreviewPositioning)positioning
 {
-    auto backgroundColor = [&]() -> UIColor * {
+    RetainPtr backgroundColor = [&]() -> UIColor * {
         switch (_focusedElementInformation.elementType) {
         case WebKit::InputType::Date:
         case WebKit::InputType::Month:
@@ -11781,7 +11781,7 @@ static RetainPtr<UITargetedPreview> createFallbackTargetedPreview(UIView *rootVi
         }
     }
 
-    auto targetedPreview = createFallbackTargetedPreview(self, self.containerForContextMenuHintPreviews, previewRect, backgroundColor);
+    auto targetedPreview = createFallbackTargetedPreview(self, self.containerForContextMenuHintPreviews, previewRect, backgroundColor.get());
 
     [self _updateTargetedPreviewScrollViewUsingContainerScrollingNodeID:_focusedElementInformation.containerScrollingNodeID];
 
@@ -13292,13 +13292,13 @@ static BOOL shouldUseMachineReadableCodeMenuFromImageAnalysisResult(CocoaImageAn
         updated = true;
         __block BOOL foundRevealImageItem = NO;
         __block BOOL foundShowTextItem = NO;
-        auto revealImageIdentifier = elementActionTypeToUIActionIdentifier(_WKElementActionTypeRevealImage);
-        auto showTextIdentifier = elementActionTypeToUIActionIdentifier(_WKElementActionTypeImageExtraction);
+        RetainPtr revealImageIdentifier = elementActionTypeToUIActionIdentifier(_WKElementActionTypeRevealImage);
+        RetainPtr showTextIdentifier = elementActionTypeToUIActionIdentifier(_WKElementActionTypeImageExtraction);
         [menu.children enumerateObjectsUsingBlock:^(UIMenuElement *child, NSUInteger index, BOOL* stop) {
             auto *action = dynamic_objc_cast<UIAction>(child);
-            if ([action.identifier isEqualToString:revealImageIdentifier])
+            if ([action.identifier isEqualToString:revealImageIdentifier.get()])
                 foundRevealImageItem = YES;
-            else if ([action.identifier isEqualToString:showTextIdentifier])
+            else if ([action.identifier isEqualToString:showTextIdentifier.get()])
                 foundShowTextItem = YES;
         }];
 
@@ -13317,7 +13317,7 @@ static BOOL shouldUseMachineReadableCodeMenuFromImageAnalysisResult(CocoaImageAn
                 continue;
             }
 
-            if ([action.identifier isEqual:revealImageIdentifier]) {
+            if ([action.identifier isEqual:revealImageIdentifier.get()]) {
                 if (self.hasVisualSearchResultsForImageContextMenu)
                     action.attributes &= ~UIMenuElementAttributesDisabled;
 
@@ -14860,11 +14860,11 @@ static NSArray<WKPreviewAction *> *wkLegacyPreviewActionsFromElementActions(NSAr
 {
     NSMutableArray<WKPreviewAction *> *previewActions = [NSMutableArray arrayWithCapacity:[elementActions count]];
     for (_WKElementAction *elementAction in elementActions) {
-        WKPreviewAction *previewAction = [WKPreviewAction actionWithIdentifier:previewIdentifierForElementAction(elementAction) title:elementAction.title style:UIPreviewActionStyleDefault handler:^(UIPreviewAction *, UIViewController *) {
+        RetainPtr previewAction = [WKPreviewAction actionWithIdentifier:previewIdentifierForElementAction(elementAction) title:elementAction.title style:UIPreviewActionStyleDefault handler:^(UIPreviewAction *, UIViewController *) {
             [elementAction runActionWithElementInfo:elementInfo];
         }];
-        previewAction.image = [_WKElementAction imageForElementActionType:elementAction.type];
-        [previewActions addObject:previewAction];
+        previewAction.get().image = [_WKElementAction imageForElementActionType:elementAction.type];
+        [previewActions addObject:previewAction.get()];
     }
     return previewActions;
 }
@@ -14915,11 +14915,11 @@ static NSMutableArray<UIMenuElement *> *menuElementsFromDefaultActions(const Ret
 
 static UIMenu *menuFromLegacyPreviewOrDefaultActions(UIViewController *previewViewController, const RetainPtr<NSArray>& defaultElementActions, RetainPtr<_WKActivatedElementInfo> elementInfo, NSString *title = nil)
 {
-    auto actions = menuElementsFromLegacyPreview(previewViewController);
+    RetainPtr actions = menuElementsFromLegacyPreview(previewViewController);
     if (!actions)
         actions = menuElementsFromDefaultActions(defaultElementActions, elementInfo);
 
-    return [UIMenu menuWithTitle:title children:actions];
+    return [UIMenu menuWithTitle:title children:actions.get()];
 }
 
 - (void)assignLegacyDataForContextMenuInteraction
@@ -14953,10 +14953,10 @@ static UIMenu *menuFromLegacyPreviewOrDefaultActions(UIViewController *previewVi
 
 ALLOW_DEPRECATED_DECLARATIONS_BEGIN
         if ([uiDelegate respondsToSelector:@selector(webView:previewingViewControllerForElement:defaultActions:)]) {
-            auto defaultActions = wkLegacyPreviewActionsFromElementActions(defaultActionsFromAssistant.get(), elementInfo.get());
+            RetainPtr defaultActions = wkLegacyPreviewActionsFromElementActions(defaultActionsFromAssistant.get(), elementInfo.get());
             auto previewElementInfo = adoptNS([[WKPreviewElementInfo alloc] _initWithLinkURL:url.createNSURL().get()]);
             // FIXME: Clients using this legacy API will always show their previewViewController and ignore _showLinkPreviews.
-            previewViewController = [uiDelegate webView:self.webView previewingViewControllerForElement:previewElementInfo.get() defaultActions:defaultActions];
+            previewViewController = [uiDelegate webView:self.webView previewingViewControllerForElement:previewElementInfo.get() defaultActions:defaultActions.get()];
         } else if ([uiDelegate respondsToSelector:@selector(_webView:previewViewControllerForURL:defaultActions:elementInfo:)])
             previewViewController = [uiDelegate _webView:self.webView previewViewControllerForURL:url.createNSURL().get() defaultActions:defaultActionsFromAssistant.get() elementInfo:elementInfo.get()];
         else if ([uiDelegate respondsToSelector:@selector(_webView:previewViewControllerForURL:)])
@@ -14973,8 +14973,8 @@ ALLOW_DEPRECATED_DECLARATIONS_END
             if (_showLinkPreviews && dataDetectorsResult && dataDetectorsResult.get().previewProvider)
                 _contextMenuLegacyPreviewController = dataDetectorsResult.get().previewProvider();
             if (dataDetectorsResult && dataDetectorsResult.get().actionProvider) {
-                auto menuElements = menuElementsFromDefaultActions(defaultActionsFromAssistant, elementInfo);
-                _contextMenuLegacyMenu = dataDetectorsResult.get().actionProvider(menuElements);
+                RetainPtr menuElements = menuElementsFromDefaultActions(defaultActionsFromAssistant, elementInfo);
+                _contextMenuLegacyMenu = dataDetectorsResult.get().actionProvider(menuElements.get());
             }
             END_BLOCK_OBJC_EXCEPTIONS
             return;
@@ -15207,14 +15207,14 @@ ALLOW_DEPRECATED_DECLARATIONS_END
                     return nil;
 
                 RetainPtr<NSArray<_WKElementAction *>> defaultActionsFromAssistant = [strongSelf->_actionSheetAssistant defaultActionsForImageSheet:elementInfo.get()];
-                auto actions = menuElementsFromDefaultActions(defaultActionsFromAssistant, elementInfo);
+                RetainPtr actions = menuElementsFromDefaultActions(defaultActionsFromAssistant, elementInfo);
 #if ENABLE(IMAGE_ANALYSIS)
                 if (auto *placeholder = [strongSelf placeholderForDynamicallyInsertedImageAnalysisActions])
                     [actions addObject:placeholder];
                 else if (UIMenu *menu = [strongSelf machineReadableCodeSubMenuForImageContextMenu])
                     [actions addObject:menu];
 #endif // ENABLE(IMAGE_ANALYSIS)
-                return [UIMenu menuWithTitle:strongSelf->_positionInformation.title.createNSString().get() children:actions];
+                return [UIMenu menuWithTitle:strongSelf->_positionInformation.title.createNSString().get() children:actions.get()];
             };
 
             UIContextMenuContentPreviewProvider contentPreviewProvider = [weakSelf, cgImage, elementInfo] () -> UIViewController * {
@@ -15409,16 +15409,16 @@ ALLOW_DEPRECATED_DECLARATIONS_END
 
         if ([uiDelegate respondsToSelector:@selector(webView:commitPreviewingViewController:)]) {
 ALLOW_DEPRECATED_DECLARATIONS_BEGIN
-            if (auto viewController = _contextMenuLegacyPreviewController.get())
-                [uiDelegate webView:self.webView commitPreviewingViewController:viewController];
+            if (RetainPtr viewController = _contextMenuLegacyPreviewController.get())
+                [uiDelegate webView:self.webView commitPreviewingViewController:viewController.get()];
 ALLOW_DEPRECATED_DECLARATIONS_END
             return;
         }
 
         if ([uiDelegate respondsToSelector:@selector(_webView:commitPreviewedViewController:)]) {
 ALLOW_DEPRECATED_DECLARATIONS_BEGIN
-            if (auto viewController = _contextMenuLegacyPreviewController.get())
-                [uiDelegate _webView:self.webView commitPreviewedViewController:viewController];
+            if (RetainPtr viewController = _contextMenuLegacyPreviewController.get())
+                [uiDelegate _webView:self.webView commitPreviewedViewController:viewController.get()];
 ALLOW_DEPRECATED_DECLARATIONS_END
             return;
         }
@@ -15609,9 +15609,9 @@ ALLOW_DEPRECATED_DECLARATIONS_END
             DDDetectionController *controller = [PAL::getDDDetectionControllerClassSingleton() sharedController];
             NSDictionary *newContext = nil;
             RetainPtr<NSMutableDictionary> extendedContext;
-            DDResultRef ddResult = [controller resultForURL:dataForPreview.get()[UIPreviewDataLink] identifier:_positionInformation.dataDetectorIdentifier.createNSString().get() selectedText:[self selectedText] results:_positionInformation.dataDetectorResults.get() context:context extendedContext:&newContext];
+            RetainPtr ddResult = [controller resultForURL:dataForPreview.get()[UIPreviewDataLink] identifier:_positionInformation.dataDetectorIdentifier.createNSString().get() selectedText:[self selectedText] results:_positionInformation.dataDetectorResults.get() context:context extendedContext:&newContext];
             if (ddResult)
-                dataForPreview.get()[UIPreviewDataDDResult] = (__bridge id)ddResult;
+                dataForPreview.get()[UIPreviewDataDDResult] = (__bridge id)ddResult.get();
             if (!_positionInformation.textBefore.isEmpty() || !_positionInformation.textAfter.isEmpty()) {
                 extendedContext = adoptNS([@{
                     PAL::get_DataDetectorsUI_kDataDetectorsLeadingTextSingleton() : _positionInformation.textBefore.createNSString().get(),
@@ -15685,11 +15685,11 @@ ALLOW_DEPRECATED_DECLARATIONS_END
             auto previewActions = adoptNS([[NSMutableArray alloc] init]);
             for (_WKElementAction *elementAction in actions.get()) {
 ALLOW_DEPRECATED_DECLARATIONS_BEGIN
-                WKPreviewAction *previewAction = [WKPreviewAction actionWithIdentifier:previewIdentifierForElementAction(elementAction) title:[elementAction title] style:UIPreviewActionStyleDefault handler:^(UIPreviewAction *, UIViewController *) {
+                RetainPtr previewAction = [WKPreviewAction actionWithIdentifier:previewIdentifierForElementAction(elementAction) title:[elementAction title] style:UIPreviewActionStyleDefault handler:^(UIPreviewAction *, UIViewController *) {
                     [elementAction runActionWithElementInfo:elementInfo.get()];
                 }];
 ALLOW_DEPRECATED_DECLARATIONS_END
-                [previewActions addObject:previewAction];
+                [previewActions addObject:previewAction.get()];
             }
 ALLOW_DEPRECATED_DECLARATIONS_BEGIN
             auto previewElementInfo = adoptNS([[WKPreviewElementInfo alloc] _initWithLinkURL:targetURL]);

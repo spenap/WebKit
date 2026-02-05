@@ -1016,7 +1016,7 @@ static NSMutableArray<UIMenuElement *> *menuElementsFromDefaultActions(RetainPtr
             textAtSelection = [_delegate selectedTextForActionSheetAssistant:self];
 
         NSDictionary *newContext = nil;
-        DDResultRef ddResult = [controller resultForURL:_positionInformation->url.createNSURL().get() identifier:_positionInformation->dataDetectorIdentifier.createNSString().get() selectedText:textAtSelection results:_positionInformation->dataDetectorResults.get() context:context extendedContext:&newContext];
+        RetainPtr ddResult = [controller resultForURL:_positionInformation->url.createNSURL().get() identifier:_positionInformation->dataDetectorIdentifier.createNSString().get() selectedText:textAtSelection results:_positionInformation->dataDetectorResults.get() context:context extendedContext:&newContext];
 
         CGRect sourceRect;
         if (_positionInformation->isLink && _positionInformation->textIndicator)
@@ -1028,7 +1028,7 @@ static NSMutableArray<UIMenuElement *> *menuElementsFromDefaultActions(RetainPtr
         auto finalContext = [ddContextMenuActionClass updateContext:newContext withSourceRect:sourceRect];
 
         if (ddResult)
-            return [ddContextMenuActionClass contextMenuConfigurationWithResult:ddResult inView:_view.getAutoreleased() context:finalContext menuIdentifier:nil];
+            return [ddContextMenuActionClass contextMenuConfigurationWithResult:ddResult.get() inView:_view.getAutoreleased() context:finalContext menuIdentifier:nil];
         return [ddContextMenuActionClass contextMenuConfigurationWithURL:_positionInformation->url.createNSURL().get() inView:_view.getAutoreleased() context:finalContext menuIdentifier:nil];
     }
 #endif // ENABLE(DATA_DETECTION)
