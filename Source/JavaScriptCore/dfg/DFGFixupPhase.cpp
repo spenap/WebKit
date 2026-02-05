@@ -3484,7 +3484,6 @@ private:
         case GetCallee:
         case GetArgumentCountIncludingThis:
         case SetArgumentCountIncludingThis:
-        case GetRestLength:
         case GetArgument:
         case Flush:
         case PhantomLocal:

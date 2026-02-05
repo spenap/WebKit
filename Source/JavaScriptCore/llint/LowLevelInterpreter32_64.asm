@@ -3084,20 +3084,6 @@ llintOpWithMetadata(op_profile_control_flow, OpProfileControlFlow, macro (size, 
     dispatch()
 end)
 
-
-llintOpWithReturn(op_get_rest_length, OpGetRestLength, macro (size, get, dispatch, return)
-    loadi PayloadOffset + ArgumentCountIncludingThis[cfr], t0
-    subi 1, t0
-    getu(size, OpGetRestLength, m_numParametersToSkip, t1)
-    bilteq t0, t1, .storeZero
-    subi t1, t0
-    jmp .finish
-.storeZero:
-    move 0, t0
-.finish:
-    return(Int32Tag, t0)
-end)
-
 llintOpWithMetadata(op_iterator_open, OpIteratorOpen, macro (size, get, dispatch, metadata, return)
     macro fastNarrow()
         callSlowPath(_iterator_open_try_fast_narrow)

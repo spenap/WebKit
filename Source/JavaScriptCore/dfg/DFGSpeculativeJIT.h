@@ -1678,7 +1678,6 @@ public:
     void compileSpread(Node*);
     void compileNewArray(Node*);
     void compileNewArrayWithSpread(Node*);
-    void compileGetRestLength(Node*);
     void compileArraySlice(Node*);
     void compileArraySplice(Node*);
     void compileArrayIndexOfOrArrayIncludes(Node*);

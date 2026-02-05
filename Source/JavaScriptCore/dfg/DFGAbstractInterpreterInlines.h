@@ -4122,10 +4122,6 @@ bool AbstractInterpreter<AbstractStateType>::executeEffects(unsigned clobberLimi
     case SetArgumentCountIncludingThis:
         break;
         
-    case GetRestLength:
-        setNonCellTypeForNode(node, SpecInt32Only);
-        break;
-        
     case GetGetter: {
         if (JSValue base = forNode(node->child1()).m_value) {
             GetterSetter* getterSetter = jsDynamicCast<GetterSetter*>(base);

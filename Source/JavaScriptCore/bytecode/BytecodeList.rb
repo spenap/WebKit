@@ -1145,13 +1145,6 @@ op :unreachable
 op :create_rest,
     args: {
         dst: VirtualRegister,
-        arraySize: VirtualRegister,
-        numParametersToSkip: unsigned,
-    }
-
-op :get_rest_length,
-    args: {
-        dst: VirtualRegister,
         numParametersToSkip: unsigned,
     }
 

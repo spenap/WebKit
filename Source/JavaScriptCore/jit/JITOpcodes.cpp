@@ -2145,26 +2145,6 @@ void JIT::emit_op_argument_count(const JSInstruction* currentInstruction)
     emitPutVirtualRegister(dst, result);
 }
 
-void JIT::emit_op_get_rest_length(const JSInstruction* currentInstruction)
-{
-    auto bytecode = currentInstruction->as<OpGetRestLength>();
-    VirtualRegister dst = bytecode.m_dst;
-    unsigned numParamsToSkip = bytecode.m_numParametersToSkip;
-
-    load32(payloadFor(CallFrameSlot::argumentCountIncludingThis), regT0);
-    sub32(TrustedImm32(1), regT0);
-    Jump zeroLength = branch32(LessThanOrEqual, regT0, Imm32(numParamsToSkip));
-    sub32(Imm32(numParamsToSkip), regT0);
-    boxInt32(regT0, jsRegT10);
-    Jump done = jump();
-
-    zeroLength.link(this);
-    moveTrustedValue(jsNumber(0), jsRegT10);
-
-    done.link(this);
-    emitPutVirtualRegister(dst, jsRegT10);
-}
-
 void JIT::emit_op_get_argument(const JSInstruction* currentInstruction)
 {
     auto bytecode = currentInstruction->as<OpGetArgument>();
