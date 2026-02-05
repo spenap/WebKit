@@ -909,7 +909,7 @@ ALLOW_DEPRECATED_DECLARATIONS_END
     self._webView.frame = self.view.bounds;
     [_animatingView insertSubview:self._webView atIndex:0];
 
-    if (auto* manager = self._manager)
+    if (RefPtr<WebKit::WebFullScreenManagerProxy> manager = self._manager)
         manager->setFullscreenAutoHideDuration(Seconds(showHideAnimationDuration));
 
     [super viewWillAppear:animated];
@@ -1022,7 +1022,7 @@ ALLOW_DEPRECATED_DECLARATIONS_END
 
 - (RefPtr<WebCore::PlatformPlaybackSessionInterface>)_playbackSessionInterface
 {
-    auto page = [self._webView _page];
+    RefPtr page = [self._webView _page].get();
     if (!page)
         return nullptr;
 
@@ -1122,7 +1122,7 @@ ALLOW_DEPRECATED_DECLARATIONS_END
 - (void)_updateWebViewFullscreenInsets
 {
     ASSERT(_valid);
-    if (auto* manager = self._manager)
+    if (RefPtr<WebKit::WebFullScreenManagerProxy> manager = self._manager)
         manager->setFullscreenInsets(self._effectiveFullscreenInsets);
 }
 

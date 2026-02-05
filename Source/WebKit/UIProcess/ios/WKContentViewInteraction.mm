@@ -2718,22 +2718,22 @@ static inline WebCore::FloatSize tapHighlightBorderRadius(WebCore::FloatSize bor
 
 - (void)_handleSmartMagnificationInformationForPotentialTap:(WebKit::TapIdentifier)requestID renderRect:(const WebCore::FloatRect&)renderRect fitEntireRect:(BOOL)fitEntireRect viewportMinimumScale:(double)viewportMinimumScale viewportMaximumScale:(double)viewportMaximumScale nodeIsRootLevel:(BOOL)nodeIsRootLevel nodeIsPluginElement:(BOOL)nodeIsPluginElement
 {
-    const auto& preferences = _page->preferences();
+    Ref preferences = _page->preferences();
 
-    ASSERT(preferences.fasterClicksEnabled());
+    ASSERT(preferences->fasterClicksEnabled());
     if (!_potentialTapInProgress)
         return;
 
     // We check both the system preference and the page preference, because we only want this
     // to apply in "desktop" mode.
-    if (preferences.preferFasterClickOverDoubleTap() && _page->preferFasterClickOverDoubleTap()) {
+    if (preferences->preferFasterClickOverDoubleTap() && _page->preferFasterClickOverDoubleTap()) {
         RELEASE_LOG(ViewGestures, "Potential tap found an element and fast taps are preferred. Trigger click. (%p, pageProxyID=%llu)", self, _page->identifier().toUInt64());
-        if (preferences.zoomOnDoubleTapWhenRoot() && nodeIsRootLevel) {
+        if (preferences->zoomOnDoubleTapWhenRoot() && nodeIsRootLevel) {
             RELEASE_LOG(ViewGestures, "The click handler was on a root-level element, so don't disable double-tap. (%p, pageProxyID=%llu)", self, _page->identifier().toUInt64());
             return;
         }
 
-        if (preferences.alwaysZoomOnDoubleTap()) {
+        if (preferences->alwaysZoomOnDoubleTap()) {
             RELEASE_LOG(ViewGestures, "DTTZ is forced on, so don't disable double-tap. (%p, pageProxyID=%llu)", self, _page->identifier().toUInt64());
             return;
         }
@@ -10844,7 +10844,7 @@ static NSArray<NSItemProvider *> *extractItemProvidersFromDropSession(id <UIDrop
     if (!textIndicator->contentImage())
         return;
 
-    auto snapshotWithoutSelection = textIndicator->contentImageWithoutSelection();
+    RefPtr snapshotWithoutSelection = textIndicator->contentImageWithoutSelection();
     if (!snapshotWithoutSelection)
         return;
 

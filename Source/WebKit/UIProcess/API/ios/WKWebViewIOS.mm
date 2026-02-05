@@ -2533,7 +2533,7 @@ static WebCore::FloatPoint constrainContentOffset(WebCore::FloatPoint contentOff
 {
     BOOL sizeChanged = NO;
     if (_page) {
-        if (auto drawingArea = _page->drawingArea())
+        if (RefPtr drawingArea = _page->drawingArea())
             sizeChanged = drawingArea->setSize(WebCore::IntSize(self.bounds.size));
     }
 
@@ -4312,7 +4312,7 @@ static bool isLockdownModeWarningNeeded()
 
 - (void)_hideContentUntilNextUpdate
 {
-    if (auto* area = _page->drawingArea())
+    if (RefPtr area = _page->drawingArea())
         area->hideContentUntilAnyUpdate();
 }
 
@@ -4493,7 +4493,7 @@ static bool isLockdownModeWarningNeeded()
     _perProcessState.lastSentMinimumEffectiveDeviceWidth = newMinimumEffectiveDeviceWidth;
 
     _page->dynamicViewportSizeUpdate({ newViewLayoutSize, newMinimumUnobscuredSize, newMaximumUnobscuredSize, visibleRectInContentCoordinates, unobscuredRectInContentCoordinates, futureUnobscuredRectInSelfCoordinates, unobscuredSafeAreaInsetsExtent, targetScale, newOrientation, newMinimumEffectiveDeviceWidth, ++_currentDynamicViewportSizeUpdateID });
-    if (WebKit::DrawingAreaProxy* drawingArea = _page->drawingArea())
+    if (RefPtr drawingArea = _page->drawingArea())
         drawingArea->setSize(WebCore::IntSize(newBounds.size));
 
     _perProcessState.waitingForCommitAfterAnimatedResize = YES;
@@ -4732,7 +4732,7 @@ static std::optional<WebCore::ViewportArguments> viewportArgumentsFromDictionary
     if (_page->backForwardList().currentItem() == &item._item)
         _page->recordNavigationSnapshot(*_page->backForwardList().currentItem());
 
-    if (auto* viewSnapshot = item._item.snapshot())
+    if (RefPtr viewSnapshot = item._item.snapshot())
         return viewSnapshot->asLayerContents();
 
     return nil;

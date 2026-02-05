@@ -385,7 +385,7 @@ typedef NS_ENUM(NSInteger, _WKPrintRenderingCallbackType) {
 #if ENABLE(GPU_PROCESS)
 - (void)_setupVisibilityPropagationForGPUProcess
 {
-    auto* gpuProcess = _page->configuration().processPool().gpuProcess();
+    RefPtr gpuProcess = _page->configuration().processPool().gpuProcess();
     if (!gpuProcess)
         return;
 
@@ -412,7 +412,7 @@ typedef NS_ENUM(NSInteger, _WKPrintRenderingCallbackType) {
 #if ENABLE(MODEL_PROCESS)
 - (void)_setupVisibilityPropagationForModelProcess
 {
-    auto* modelProcess = _page->configuration().processPool().modelProcess();
+    RefPtr modelProcess = _page->configuration().processPool().modelProcess();
     if (!modelProcess)
         return;
     auto processIdentifier = modelProcess->processID();
@@ -433,7 +433,7 @@ typedef NS_ENUM(NSInteger, _WKPrintRenderingCallbackType) {
 - (void)_removeVisibilityPropagationViewForWebProcess
 {
 #if USE(EXTENSIONKIT)
-    if (auto page = _page.get()) {
+    if (RefPtr page = _page.get()) {
         for (WKVisibilityPropagationView *visibilityPropagationView in _visibilityPropagationViews.get())
             [visibilityPropagationView stopPropagatingVisibilityToProcess:page->legacyMainFrameProcess()];
     }
@@ -450,8 +450,8 @@ typedef NS_ENUM(NSInteger, _WKPrintRenderingCallbackType) {
 - (void)_removeVisibilityPropagationViewForGPUProcess
 {
 #if USE(EXTENSIONKIT)
-    auto page = _page.get();
-    if (auto gpuProcess = page ? page->configuration().processPool().gpuProcess() : nullptr) {
+    RefPtr page = _page.get();
+    if (RefPtr gpuProcess = page ? page->configuration().processPool().gpuProcess() : nullptr) {
         for (WKVisibilityPropagationView *visibilityPropagationView in _visibilityPropagationViews.get())
             [visibilityPropagationView stopPropagatingVisibilityToProcess:*gpuProcess];
     }

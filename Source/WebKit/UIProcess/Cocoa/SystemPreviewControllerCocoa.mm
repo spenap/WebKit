@@ -435,7 +435,7 @@ void SystemPreviewController::begin(const URL& url, const WebCore::SecurityOrigi
         if (!success || !weakThis)
             return completionHandler();
 
-        auto protectedThis = weakThis.get();
+        RefPtr protectedThis = weakThis.get();
         RefPtr webPageProxy = protectedThis->m_webPageProxy.get();
         if (!webPageProxy)
             return completionHandler();
@@ -446,7 +446,7 @@ void SystemPreviewController::begin(const URL& url, const WebCore::SecurityOrigi
             if (!weakThis)
                 return completionHandler();
 
-            auto protectedThis = weakThis.get();
+            RefPtr protectedThis = weakThis.get();
             RetainPtr dataTask = wrapper(task);
             protectedThis->m_wkSystemPreviewDataTaskDelegate = adoptNS([[_WKSystemPreviewDataTaskDelegate alloc] initWithSystemPreviewController:protectedThis]);
             [dataTask setDelegate:protectedThis->m_wkSystemPreviewDataTaskDelegate.get()];
