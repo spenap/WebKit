@@ -28,6 +28,7 @@
 
 #include "GridItemRect.h"
 #include "GridLayout.h"
+#include "GridLayoutState.h"
 #include "GridLayoutUtils.h"
 #include "LayoutBoxGeometry.h"
 #include "LayoutChildIterator.h"
@@ -190,7 +191,9 @@ void GridFormattingContext::layout(GridLayoutConstraints layoutConstraints)
 
     GridDefinition gridDefinition { gridTemplateColumns, gridTemplateRows, autoFlowOptions };
 
-    auto [ usedTrackSizes, gridItemRects ] = GridLayout { *this }.layout(layoutConstraints, unplacedGridItems, gridDefinition);
+    GridLayoutState layoutState { layoutConstraints, gridDefinition };
+
+    auto [ usedTrackSizes, gridItemRects ] = GridLayout { *this }.layout(unplacedGridItems, layoutState);
 
     // Grid layout positions each item within its containing block which is the grid area.
     // Here we translate it to the coordinate space of the grid.
