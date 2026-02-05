@@ -4593,7 +4593,7 @@ WEBCORE_COMMAND_FOR_WEBVIEW(pasteAndMatchStyle);
             newTraits |= UIFontDescriptorTraitItalic;
 
         if (originalTraits != newTraits) {
-            RetainPtr descriptor = [[font fontDescriptor] ?: adoptNS([UIFontDescriptor new]) fontDescriptorWithSymbolicTraits:newTraits];
+            RetainPtr descriptor = [[font fontDescriptor] ?: adoptNS([UIFontDescriptor new]).get() fontDescriptorWithSymbolicTraits:newTraits];
             if (RetainPtr fontWithTraits = [UIFont fontWithDescriptor:descriptor.get() size:[font pointSize]])
                 font = WTF::move(fontWithTraits);
         }

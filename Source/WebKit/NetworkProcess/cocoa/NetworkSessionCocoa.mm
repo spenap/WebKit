@@ -1227,7 +1227,7 @@ ALLOW_DEPRECATED_DECLARATIONS_END
 
     configuration.get()._preventsSystemHTTPProxyAuthentication = parameters.preventsSystemHTTPProxyAuthentication;
     configuration.get()._requiresSecureHTTPSProxyConnection = parameters.requiresSecureHTTPSProxyConnection;
-    configuration.get().connectionProxyDictionary = RetainPtr { (NSDictionary *)parameters.proxyConfiguration.get()?: proxyDictionary(parameters.httpProxy, parameters.httpsProxy) }.get();
+    configuration.get().connectionProxyDictionary = parameters.proxyConfiguration ? RetainPtr { (NSDictionary *)parameters.proxyConfiguration.get() }.get() : proxyDictionary(parameters.httpProxy, parameters.httpsProxy).get();
 
 #if PLATFORM(IOS_FAMILY)
     if (!m_dataConnectionServiceType.isEmpty())

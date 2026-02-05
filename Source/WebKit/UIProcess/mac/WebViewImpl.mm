@@ -4762,7 +4762,7 @@ static RetainPtr<NSString> pathWithUniqueFilenameForPath(NSString *path)
 
         for (unsigned i = 1; ; i++) {
             RetainPtr pathWithAppendedNumber = adoptNS([[NSString alloc] initWithFormat:@"%@-%d", pathWithoutExtensions.get(), i]);
-            updatedPath = [extensions length] ? [pathWithAppendedNumber stringByAppendingPathExtension:extensions.get()] : pathWithAppendedNumber;
+            updatedPath = [extensions length] ? [pathWithAppendedNumber stringByAppendingPathExtension:extensions.get()] : pathWithAppendedNumber.get();
             if (!fileExists(updatedPath.get()))
                 break;
         }

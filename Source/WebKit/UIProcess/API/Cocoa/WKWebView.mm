@@ -3341,7 +3341,9 @@ WebCore::CocoaColor *sampledFixedPositionContentColor(const WebCore::FixedContai
             return;
         }
 
-        RetainPtr edgeColor = cocoaColorOrNil(_fixedContainerEdges.predominantColor(side)) ?: self.underPageBackgroundColor;
+        RetainPtr edgeColor = cocoaColorOrNil(_fixedContainerEdges.predominantColor(side));
+        if (!edgeColor)
+            edgeColor = self.underPageBackgroundColor;
         if (side == WebCore::BoxSide::Top) {
 #if PLATFORM(MAC)
             edgeColor = [self _adjustedColorForTopContentInsetColorFromUIDelegate:edgeColor.get()];
