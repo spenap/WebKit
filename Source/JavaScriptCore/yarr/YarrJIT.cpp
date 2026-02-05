@@ -840,11 +840,10 @@ class YarrGenerator final : public YarrJITInfo {
         }
         loadFromFrame(subpatternBaseFrameLocation + BackTrackInfoParentheses::returnAddressIndex(), tempReg);
         m_jit.storePtr(tempReg, MacroAssembler::Address(parenContextReg, ParenContext::returnAddressOffset()));
-        if (m_compileMode == JITCompileMode::IncludeSubpatterns) {
+        if (shouldRecordSubpatterns()) {
             for (unsigned subpattern = firstSubpattern; subpattern <= lastSubpattern; subpattern++) {
                 static_assert(is64Bit());
-                m_jit.load64(MacroAssembler::Address(m_regs.output, (subpattern << 1) * sizeof(unsigned)), tempReg);
-                m_jit.store64(tempReg, MacroAssembler::Address(parenContextReg, ParenContext::subpatternOffset(subpattern)));
+                m_jit.transfer64(subpatternStartAddress(subpattern), MacroAssembler::Address(parenContextReg, ParenContext::subpatternOffset(subpattern)));
                 if (hasNamedCaptures) {
                     unsigned duplicateNamedGroup = m_pattern.m_duplicateNamedGroupForSubpatternId[subpattern];
                     if (duplicateNamedGroup)
@@ -856,10 +855,10 @@ class YarrGenerator final : public YarrJITInfo {
                     clearSubpattern(subpattern);
             }
             for (unsigned duplicateNamedGroupId : duplicateNamedCaptureGroups) {
-                m_jit.load32(MacroAssembler::Address(m_regs.output, (offsetForDuplicateNamedGroupId(duplicateNamedGroupId) * sizeof(unsigned))), tempReg);
+                loadDuplicateNamedGroupSubpatternId(duplicateNamedGroupId, tempReg);
                 m_jit.store32(tempReg, MacroAssembler::Address(parenContextReg, ParenContext::duplicateNamedCaptureOffset(m_parenContextSizes, duplicateNamedGroupId)));
                 if (clearCapturesAfterSave)
-                    m_jit.store32(MacroAssembler::TrustedImm32(0), MacroAssembler::Address(m_regs.output, (offsetForDuplicateNamedGroupId(duplicateNamedGroupId) * sizeof(unsigned))));
+                    storeDuplicateNamedGroupSubpatternId(duplicateNamedGroupId, 0);
             }
         }
         subpatternBaseFrameLocation += YarrStackSpaceForBackTrackInfoParentheses;
@@ -879,11 +878,10 @@ class YarrGenerator final : public YarrJITInfo {
         storeToFrame(tempReg, subpatternBaseFrameLocation + BackTrackInfoParentheses::matchAmountIndex());
         m_jit.loadPtr(MacroAssembler::Address(parenContextReg, ParenContext::returnAddressOffset()), tempReg);
         storeToFrame(tempReg, subpatternBaseFrameLocation + BackTrackInfoParentheses::returnAddressIndex());
-        if (m_compileMode == JITCompileMode::IncludeSubpatterns) {
+        if (shouldRecordSubpatterns()) {
             for (unsigned subpattern = firstSubpattern; subpattern <= lastSubpattern; subpattern++) {
                 static_assert(is64Bit());
-                m_jit.load64(MacroAssembler::Address(parenContextReg, ParenContext::subpatternOffset(subpattern)), tempReg);
-                m_jit.store64(tempReg, MacroAssembler::Address(m_regs.output, (subpattern << 1) * sizeof(unsigned)));
+                m_jit.transfer64(MacroAssembler::Address(parenContextReg, ParenContext::subpatternOffset(subpattern)), subpatternStartAddress(subpattern));
                 if (hasNamedCaptures) {
                     unsigned duplicateNamedGroup = m_pattern.m_duplicateNamedGroupForSubpatternId[subpattern];
                     if (duplicateNamedGroup)
@@ -892,7 +890,7 @@ class YarrGenerator final : public YarrJITInfo {
             }
             for (unsigned duplicateNamedGroupId : duplicateNamedCaptureGroups) {
                 m_jit.load32(MacroAssembler::Address(parenContextReg, ParenContext::duplicateNamedCaptureOffset(m_parenContextSizes, duplicateNamedGroupId)), tempReg);
-                m_jit.store32(tempReg, MacroAssembler::Address(m_regs.output, (offsetForDuplicateNamedGroupId(duplicateNamedGroupId) * sizeof(int))));
+                storeDuplicateNamedGroupSubpatternIdFromReg(duplicateNamedGroupId, tempReg);
             }
         }
         subpatternBaseFrameLocation += YarrStackSpaceForBackTrackInfoParentheses;
@@ -1406,6 +1404,38 @@ class YarrGenerator final : public YarrJITInfo {
         return CCallHelpers::Address(GPRInfo::callFrameRegister, -(stackSizeForCalleeSaves + m_callFrameSizeInBytes));
     }
 
+    CCallHelpers::Address internalSubpatternOutputAddress(unsigned byteOffset)
+    {
+        ASSERT(m_needsInternalSubpatternOutput);
+        return frameAddress().withOffset(m_internalSubpatternOutputOffsetInFrame * sizeof(void*) + byteOffset);
+    }
+
+    MacroAssembler::Address subpatternStartAddress(unsigned subpatternId)
+    {
+        if (m_needsInternalSubpatternOutput)
+            return internalSubpatternOutputAddress((subpatternId << 1) * sizeof(int));
+        return MacroAssembler::Address(m_regs.output, (subpatternId << 1) * sizeof(int));
+    }
+
+    MacroAssembler::Address subpatternEndAddress(unsigned subpatternId)
+    {
+        return subpatternStartAddress(subpatternId).withOffset(sizeof(int));
+    }
+
+    MacroAssembler::Address duplicateNamedGroupAddress(unsigned duplicateNamedGroupId)
+    {
+        if (m_needsInternalSubpatternOutput) {
+            unsigned offset = (m_pattern.m_numSubpatterns + 1) * 2 + duplicateNamedGroupId;
+            return internalSubpatternOutputAddress(offset * sizeof(int));
+        }
+        return MacroAssembler::Address(m_regs.output, offsetForDuplicateNamedGroupId(duplicateNamedGroupId) * sizeof(int));
+    }
+
+    static bool needsSubpatternRecording(JITCompileMode compileMode, const YarrPattern& pattern)
+    {
+        return compileMode == JITCompileMode::IncludeSubpatterns || (compileMode == JITCompileMode::MatchOnly && pattern.m_containsBackreferences);
+    }
+
     static unsigned alignCallFrameSizeInBytes(unsigned originalCallFrameSize)
     {
         unsigned callFrameSize = originalCallFrameSize;
@@ -1454,27 +1484,45 @@ class YarrGenerator final : public YarrJITInfo {
         generateReturn();
     }
 
-    // Used to record subpatterns, should only be called if m_compileMode is JITCompileMode::IncludeSubpatterns.
+    // Used to record subpatterns, should be called in JITCompileMode::IncludeSubpatterns　or when m_needsInternalSubpatternOutput is true (MatchOnly with backreferences).
     void setSubpatternStart(MacroAssembler::RegisterID reg, unsigned subpattern)
     {
         ASSERT(subpattern);
-        // FIXME: should be able to ASSERT(m_compileMode == JITCompileMode::IncludeSubpatterns), but then this function is conditionally NORETURN. :-(
-        m_jit.store32(reg, MacroAssembler::Address(m_regs.output, (subpattern << 1) * sizeof(int)));
+        m_jit.store32(reg, subpatternStartAddress(subpattern));
     }
     void setSubpatternEnd(MacroAssembler::RegisterID reg, unsigned subpattern)
     {
         ASSERT(subpattern);
-        // FIXME: should be able to ASSERT(m_compileMode == JITCompileMode::IncludeSubpatterns), but then this function is conditionally NORETURN. :-(
-        m_jit.store32(reg, MacroAssembler::Address(m_regs.output, ((subpattern << 1) + 1) * sizeof(int)));
+        m_jit.store32(reg, subpatternEndAddress(subpattern));
     }
     void clearSubpattern(unsigned subpattern)
     {
 #if USE(JSVALUE64)
-        m_jit.store64(MacroAssembler::TrustedImm64(static_cast<uint64_t>(-1)), MacroAssembler::Address(m_regs.output, (subpattern << 1) * sizeof(int)));
+        m_jit.store64(MacroAssembler::TrustedImm64(static_cast<uint64_t>(-1)), subpatternStartAddress(subpattern));
 #else
-        m_jit.store32(MacroAssembler::TrustedImm32(static_cast<uint32_t>(-1)), MacroAssembler::Address(m_regs.output, (subpattern << 1) * sizeof(int)));
-        m_jit.store32(MacroAssembler::TrustedImm32(static_cast<uint32_t>(-1)), MacroAssembler::Address(m_regs.output, ((subpattern << 1) + 1) * sizeof(int)));
+        m_jit.store32(MacroAssembler::TrustedImm32(static_cast<uint32_t>(-1)), subpatternStartAddress(subpattern));
+        m_jit.store32(MacroAssembler::TrustedImm32(static_cast<uint32_t>(-1)), subpatternEndAddress(subpattern));
 #endif
+    }
+
+    void storeDuplicateNamedGroupSubpatternId(unsigned duplicateNamedGroupId, unsigned subpatternId)
+    {
+        m_jit.store32(MacroAssembler::TrustedImm32(subpatternId), duplicateNamedGroupAddress(duplicateNamedGroupId));
+    }
+
+    void storeDuplicateNamedGroupSubpatternIdFromReg(unsigned duplicateNamedGroupId, MacroAssembler::RegisterID reg)
+    {
+        m_jit.store32(reg, duplicateNamedGroupAddress(duplicateNamedGroupId));
+    }
+
+    void loadDuplicateNamedGroupSubpatternId(unsigned duplicateNamedGroupId, MacroAssembler::RegisterID reg)
+    {
+        m_jit.load32(duplicateNamedGroupAddress(duplicateNamedGroupId), reg);
+    }
+
+    bool shouldRecordSubpatterns() const
+    {
+        return m_compileMode == JITCompileMode::IncludeSubpatterns || m_needsInternalSubpatternOutput;
     }
 
     // We use one of three different strategies to track the start of the current match,
@@ -1489,16 +1537,16 @@ class YarrGenerator final : public YarrJITInfo {
     void setMatchStart(MacroAssembler::RegisterID reg)
     {
         ASSERT(!m_pattern.m_body->m_hasFixedSize);
-        if (m_compileMode == JITCompileMode::IncludeSubpatterns)
-            m_jit.store32(reg, MacroAssembler::Address(m_regs.output));
+        if (m_compileMode == JITCompileMode::IncludeSubpatterns || m_needsInternalSubpatternOutput)
+            m_jit.store32(reg, subpatternStartAddress(0));
         else
             m_jit.move(reg, m_regs.output);
     }
     void getMatchStart(MacroAssembler::RegisterID reg)
     {
         ASSERT(!m_pattern.m_body->m_hasFixedSize);
-        if (m_compileMode == JITCompileMode::IncludeSubpatterns)
-            m_jit.load32(MacroAssembler::Address(m_regs.output), reg);
+        if (shouldRecordSubpatterns())
+            m_jit.load32(subpatternStartAddress(0), reg);
         else
             m_jit.move(m_regs.output, reg);
     }
@@ -2018,12 +2066,12 @@ class YarrGenerator final : public YarrJITInfo {
 
             if (subpatternIdReg == InvalidGPRReg) {
                 subpatternIdReg = m_regs.unicodeAndSubpatternIdTemp;
-                m_jit.load32(MacroAssembler::Address(m_regs.output, offsetForDuplicateNamedGroupId(duplicateNamedGroupId) * sizeof(unsigned)), subpatternIdReg);
+                loadDuplicateNamedGroupSubpatternId(duplicateNamedGroupId, subpatternIdReg);
             }
-            loadSubPatternEnd(m_regs.output, subpatternIdReg, endIndex);
+            loadSubPatternEnd(subpatternIdReg, endIndex);
             m_jit.branch32(MacroAssembler::NotEqual, patternIndex, endIndex).linkTo(loop, &m_jit);
         } else
-            m_jit.branch32(MacroAssembler::NotEqual, patternIndex, MacroAssembler::Address(m_regs.output, ((subpatternId << 1) + 1) * sizeof(int))).linkTo(loop, &m_jit);
+            m_jit.branch32(MacroAssembler::NotEqual, patternIndex, subpatternEndAddress(subpatternId)).linkTo(loop, &m_jit);
     }
 
     void generateBackReference(size_t opIndex)
@@ -2064,7 +2112,7 @@ class YarrGenerator final : public YarrJITInfo {
                 else
                     subpatternIdReg  = patternTemp;
 
-                loadSubPatternIdForDuplicateNamedGroup(m_regs.output, duplicateNamedGroupId, subpatternIdReg);
+                loadSubPatternIdForDuplicateNamedGroup(duplicateNamedGroupId, subpatternIdReg);
                 MacroAssembler::Jump emptySubpattern = m_jit.branch32(MacroAssembler::Equal, MacroAssembler::TrustedImm32(0), subpatternIdReg);
                 if (term->quantityType != QuantifierType::FixedCount || term->quantityMaxCount != 1) {
                     // This is an empty match, which is successful.
@@ -2072,9 +2120,9 @@ class YarrGenerator final : public YarrJITInfo {
                 } else
                     zeroLengthMatches.append(emptySubpattern);
 
-                loadSubPattern(m_regs.output, subpatternIdReg, patternIndex, patternTemp);
+                loadSubPattern(subpatternIdReg, patternIndex, patternTemp);
             } else
-                loadSubPattern(m_regs.output, subpatternId, patternIndex, patternTemp);
+                loadSubPattern(subpatternId, patternIndex, patternTemp);
 
             // An empty match is successful without consuming characters
             if (term->quantityType != QuantifierType::FixedCount || term->quantityMaxCount != 1) {
@@ -2109,11 +2157,11 @@ class YarrGenerator final : public YarrJITInfo {
                 matches.append(m_jit.branch32(MacroAssembler::Equal, MacroAssembler::Imm32(term->quantityMaxCount), characterOrTemp));
                 if (duplicateNamedGroupId) {
                     if (m_decodeSurrogatePairs)
-                        loadSubPatternIdForDuplicateNamedGroup(m_regs.output, duplicateNamedGroupId, subpatternIdReg);
+                        loadSubPatternIdForDuplicateNamedGroup(duplicateNamedGroupId, subpatternIdReg);
                     // At this point, we have already checked that subpatternIdReg has a valid subpatternId.
-                    loadSubPattern(m_regs.output, subpatternIdReg, patternIndex, patternTemp);
+                    loadSubPattern(subpatternIdReg, patternIndex, patternTemp);
                 } else
-                    loadSubPattern(m_regs.output, subpatternId, patternIndex, patternTemp);
+                    loadSubPattern(subpatternId, patternIndex, patternTemp);
                 m_jit.jump(outerLoop);
             }
             matches.link(&m_jit);
@@ -2142,11 +2190,11 @@ class YarrGenerator final : public YarrJITInfo {
                 matches.append(m_jit.branch32(MacroAssembler::Equal, MacroAssembler::Imm32(term->quantityMaxCount), characterOrTemp));
             if (duplicateNamedGroupId) {
                 if (m_decodeSurrogatePairs)
-                    loadSubPatternIdForDuplicateNamedGroup(m_regs.output, duplicateNamedGroupId, subpatternIdReg);
+                    loadSubPatternIdForDuplicateNamedGroup(duplicateNamedGroupId, subpatternIdReg);
                 // At this point, we have already checked that subpatternIdReg has a valid subpatternId.
-                loadSubPattern(m_regs.output, subpatternIdReg, patternIndex, patternTemp);
+                loadSubPattern(subpatternIdReg, patternIndex, patternTemp);
             } else
-                loadSubPattern(m_regs.output, subpatternId, patternIndex, patternTemp);
+                loadSubPattern(subpatternId, patternIndex, patternTemp);
 
             // Store current index in frame for restoring after a partial match
             storeToFrame(m_regs.index, parenthesesFrameLocation + BackTrackInfoBackReference::beginIndex());
@@ -2174,12 +2222,12 @@ class YarrGenerator final : public YarrJITInfo {
                 else
                     subpatternIdReg  = patternTemp;
 
-                loadSubPatternIdForDuplicateNamedGroup(m_regs.output, duplicateNamedGroupId, subpatternIdReg);
+                loadSubPatternIdForDuplicateNamedGroup(duplicateNamedGroupId, subpatternIdReg);
                 zeroLengthMatches.append(m_jit.branch32(MacroAssembler::Equal, MacroAssembler::TrustedImm32(0), subpatternIdReg));
 
-                loadSubPattern(m_regs.output, subpatternIdReg, patternIndex, patternTemp);
+                loadSubPattern(subpatternIdReg, patternIndex, patternTemp);
             } else
-                loadSubPattern(m_regs.output, subpatternId, patternIndex, patternTemp);
+                loadSubPattern(subpatternId, patternIndex, patternTemp);
 
             // An empty match is successful without consuming characters
             zeroLengthMatches.append(m_jit.branch32(MacroAssembler::Equal, MacroAssembler::TrustedImm32(-1), patternIndex));
@@ -3550,7 +3598,7 @@ class YarrGenerator final : public YarrJITInfo {
                     // PRIOR alteranative, and we will only check input availability if we
                     // need to progress it forwards.
                     op.m_reentry = m_jit.label();
-                    if (m_compileMode == JITCompileMode::IncludeSubpatterns
+                    if (shouldRecordSubpatterns()
                         && priorAlternative->needToCleanupCaptures()) {
                             for (unsigned subpattern = priorAlternative->firstCleanupSubpatternId(); subpattern <= priorAlternative->m_lastSubpatternId; subpattern++)
                                 clearSubpattern(subpattern);
@@ -3771,7 +3819,7 @@ class YarrGenerator final : public YarrJITInfo {
                 // FIXME: could avoid offsetting this value in JIT code, apply
                 // offsets only afterwards, at the point the results array is
                 // being accessed.
-                if (term->capture() && m_compileMode == JITCompileMode::IncludeSubpatterns) {
+                if (term->capture() && shouldRecordSubpatterns()) {
                     unsigned inputOffset = op.m_checkedOffset - term->inputPosition;
                     if (term->quantityType == QuantifierType::FixedCount)
                         inputOffset += term->parentheses.disjunction->m_minimumSize;
@@ -3802,7 +3850,7 @@ class YarrGenerator final : public YarrJITInfo {
                 // FIXME: could avoid offsetting this value in JIT code, apply
                 // offsets only afterwards, at the point the results array is
                 // being accessed.
-                if (term->capture() && m_compileMode == JITCompileMode::IncludeSubpatterns) {
+                if (term->capture() && shouldRecordSubpatterns()) {
                     auto subpatternId = term->parentheses.subpatternId;
                     unsigned inputOffset = op.m_checkedOffset - term->inputPosition;
                     if (inputOffset) {
@@ -3812,7 +3860,7 @@ class YarrGenerator final : public YarrJITInfo {
                         setSubpatternEnd(m_regs.index, subpatternId);
                     if (m_pattern.m_numDuplicateNamedCaptureGroups) {
                         if (auto duplicateNamedGroupId = m_pattern.m_duplicateNamedGroupForSubpatternId[subpatternId])
-                            m_jit.store32(MacroAssembler::TrustedImm32(subpatternId), MacroAssembler::Address(m_regs.output, (offsetForDuplicateNamedGroupId(duplicateNamedGroupId) * sizeof(int))));
+                            storeDuplicateNamedGroupSubpatternId(duplicateNamedGroupId, subpatternId);
                     }
                 }
 
@@ -4005,7 +4053,7 @@ class YarrGenerator final : public YarrJITInfo {
                 // FIXME: could avoid offsetting this value in JIT code, apply
                 // offsets only afterwards, at the point the results array is
                 // being accessed.
-                if (term->capture() && m_compileMode == JITCompileMode::IncludeSubpatterns) {
+                if (term->capture() && shouldRecordSubpatterns()) {
                     const MacroAssembler::RegisterID indexTemporary = m_regs.regT0;
                     unsigned inputOffset = op.m_checkedOffset - term->inputPosition;
                     if (inputOffset) {
@@ -4044,7 +4092,7 @@ class YarrGenerator final : public YarrJITInfo {
                 // FIXME: could avoid offsetting this value in JIT code, apply
                 // offsets only afterwards, at the point the results array is
                 // being accessed.
-                if (term->capture() && m_compileMode == JITCompileMode::IncludeSubpatterns) {
+                if (term->capture() && shouldRecordSubpatterns()) {
                     const MacroAssembler::RegisterID indexTemporary = m_regs.regT0;
 
                     auto subpatternId = term->parentheses.subpatternId;
@@ -4056,7 +4104,7 @@ class YarrGenerator final : public YarrJITInfo {
                         setSubpatternEnd(m_regs.index, subpatternId);
                     if (m_pattern.m_numDuplicateNamedCaptureGroups) {
                         if (auto duplicateNamedGroupId = m_pattern.m_duplicateNamedGroupForSubpatternId[subpatternId])
-                            m_jit.store32(MacroAssembler::TrustedImm32(subpatternId), MacroAssembler::Address(m_regs.output, (offsetForDuplicateNamedGroupId(duplicateNamedGroupId) * sizeof(int))));
+                            storeDuplicateNamedGroupSubpatternId(duplicateNamedGroupId, subpatternId);
                     }
                 }
 
@@ -4139,7 +4187,7 @@ class YarrGenerator final : public YarrJITInfo {
                 // If inverted, a successful match of the assertion must be treated
                 // as a failure, clear any nested captures and jump to backtracking.
                 if (term->invert()) {
-                    if (m_compileMode == JITCompileMode::IncludeSubpatterns
+                    if (shouldRecordSubpatterns()
                         && term->containsAnyCaptures()) {
                         for (unsigned subpattern = term->parentheses.subpatternId; subpattern <= term->parentheses.lastSubpatternId; subpattern++)
                             clearSubpattern(subpattern);
@@ -4587,16 +4635,16 @@ class YarrGenerator final : public YarrJITInfo {
                 ASSERT(term->quantityMaxCount == 1);
 
                 // We only need to backtrack to this point if capturing or greedy.
-                if ((term->capture() && m_compileMode == JITCompileMode::IncludeSubpatterns) || term->quantityType == QuantifierType::Greedy) {
+                if ((term->capture() && shouldRecordSubpatterns()) || term->quantityType == QuantifierType::Greedy) {
                     m_backtrackingState.link(&m_jit);
 
                     // If capturing, clear the capture (both start and end).
-                    if (term->capture() && m_compileMode == JITCompileMode::IncludeSubpatterns) {
+                    if (term->capture() && shouldRecordSubpatterns()) {
                         auto subpatternId = term->parentheses.subpatternId;
                         clearSubpattern(subpatternId);
                         if (m_pattern.m_numDuplicateNamedCaptureGroups) {
                             if (auto duplicateNamedGroupId = m_pattern.m_duplicateNamedGroupForSubpatternId[subpatternId])
-                                m_jit.store32(MacroAssembler::TrustedImm32(0), MacroAssembler::Address(m_regs.output, (offsetForDuplicateNamedGroupId(duplicateNamedGroupId) * sizeof(int))));
+                                storeDuplicateNamedGroupSubpatternId(duplicateNamedGroupId, 0);
                         }
                     }
 
@@ -4607,7 +4655,7 @@ class YarrGenerator final : public YarrJITInfo {
                         storeToFrame(MacroAssembler::TrustedImm32(-1), parenthesesFrameLocation + BackTrackInfoParenthesesOnce::beginIndex());
 
                         // Clear out any nested captures.
-                        if (m_compileMode == JITCompileMode::IncludeSubpatterns && term->containsAnyCaptures()) {
+                        if (shouldRecordSubpatterns() && term->containsAnyCaptures()) {
                             unsigned firstPatternId = term->parentheses.subpatternId;
                             if (term->capture())
                                 firstPatternId++;
@@ -4616,7 +4664,7 @@ class YarrGenerator final : public YarrJITInfo {
 
                                 if (m_pattern.m_numDuplicateNamedCaptureGroups) {
                                     if (auto duplicateNamedGroupId = m_pattern.m_duplicateNamedGroupForSubpatternId[subpattern])
-                                        m_jit.store32(MacroAssembler::TrustedImm32(0), MacroAssembler::Address(m_regs.output, (offsetForDuplicateNamedGroupId(duplicateNamedGroupId) * sizeof(int))));
+                                        storeDuplicateNamedGroupSubpatternId(duplicateNamedGroupId, 0);
                                 }
                             }
                         }
@@ -6014,26 +6062,34 @@ class YarrGenerator final : public YarrJITInfo {
 #endif
     }
 
-    void loadSubPattern(MacroAssembler::RegisterID outputGPR, unsigned subpatternId, MacroAssembler::RegisterID startIndexGPR, MacroAssembler::RegisterID endIndexOrLenGPR)
+    void loadSubPattern(unsigned subpatternId, MacroAssembler::RegisterID startIndexGPR, MacroAssembler::RegisterID endIndexOrLenGPR)
     {
-        m_jit.loadPair32(outputGPR, MacroAssembler::TrustedImm32((subpatternId << 1) * sizeof(int)), startIndexGPR, endIndexOrLenGPR);
+        m_jit.loadPair32(subpatternStartAddress(subpatternId), startIndexGPR, endIndexOrLenGPR);
     }
 
-    void loadSubPatternIdForDuplicateNamedGroup(MacroAssembler::RegisterID outputGPR, unsigned duplicateNamedGroupId, MacroAssembler::RegisterID subpatternIdGPR)
+    void loadSubPatternIdForDuplicateNamedGroup(unsigned duplicateNamedGroupId, MacroAssembler::RegisterID subpatternIdGPR)
     {
-        m_jit.load32(MacroAssembler::Address(outputGPR, offsetForDuplicateNamedGroupId(duplicateNamedGroupId) * sizeof(unsigned)), subpatternIdGPR);
+        m_jit.load32(duplicateNamedGroupAddress(duplicateNamedGroupId), subpatternIdGPR);
     }
 
-    void loadSubPattern(MacroAssembler::RegisterID outputGPR, MacroAssembler::RegisterID subpatternIdGPR, MacroAssembler::RegisterID startIndexGPR, MacroAssembler::RegisterID endIndexOrLenGPR)
+    void loadSubPattern(MacroAssembler::RegisterID subpatternIdGPR, MacroAssembler::RegisterID startIndexGPR, MacroAssembler::RegisterID endIndexOrLenGPR)
     {
-        m_jit.getEffectiveAddress(MacroAssembler::BaseIndex(outputGPR, subpatternIdGPR, MacroAssembler::TimesEight), endIndexOrLenGPR);
+        if (m_needsInternalSubpatternOutput) {
+            auto frameBase = frameAddress();
+            m_jit.getEffectiveAddress(MacroAssembler::BaseIndex(frameBase.base, subpatternIdGPR, MacroAssembler::TimesEight, frameBase.offset + m_internalSubpatternOutputOffsetInFrame * sizeof(void*)), endIndexOrLenGPR);
+        } else
+            m_jit.getEffectiveAddress(MacroAssembler::BaseIndex(m_regs.output, subpatternIdGPR, MacroAssembler::TimesEight), endIndexOrLenGPR);
         m_jit.loadPair32(endIndexOrLenGPR, startIndexGPR, endIndexOrLenGPR);
     }
 
-    void loadSubPatternEnd(MacroAssembler::RegisterID outputGPR, MacroAssembler::RegisterID subpatternIdGPR, MacroAssembler::RegisterID endIndex)
+    void loadSubPatternEnd(MacroAssembler::RegisterID subpatternIdGPR, MacroAssembler::RegisterID endIndex)
     {
-        m_jit.getEffectiveAddress(MacroAssembler::BaseIndex(outputGPR, subpatternIdGPR, MacroAssembler::TimesEight), endIndex);
-        m_jit.load32(MacroAssembler::Address(endIndex, sizeof(unsigned)), endIndex);
+        if (m_needsInternalSubpatternOutput) {
+            auto frameBase = frameAddress();
+            m_jit.getEffectiveAddress(MacroAssembler::BaseIndex(frameBase.base, subpatternIdGPR, MacroAssembler::TimesEight, frameBase.offset + m_internalSubpatternOutputOffsetInFrame * sizeof(void*)), endIndex);
+        } else
+            m_jit.getEffectiveAddress(MacroAssembler::BaseIndex(m_regs.output, subpatternIdGPR, MacroAssembler::TimesEight), endIndex);
+        m_jit.load32(MacroAssembler::Address(endIndex, sizeof(int)), endIndex);
     }
 
 public:
@@ -6053,11 +6109,12 @@ public:
         , m_callFrameSizeInBytes(alignCallFrameSizeInBytes(m_pattern.m_body->m_callFrameSize))
         , m_canonicalMode(m_pattern.eitherUnicode() ? CanonicalMode::Unicode : CanonicalMode::UCS2)
 #if ENABLE(YARR_JIT_ALL_PARENS_EXPRESSIONS)
-        , m_parenContextSizes(compileMode == JITCompileMode::IncludeSubpatterns ? m_pattern.m_numSubpatterns : 0, compileMode == JITCompileMode::IncludeSubpatterns ? m_pattern.m_numDuplicateNamedCaptureGroups : 0, m_pattern.m_body->m_callFrameSize)
+        , m_parenContextSizes(needsSubpatternRecording(compileMode, m_pattern) ? m_pattern.m_numSubpatterns : 0, needsSubpatternRecording(compileMode, m_pattern) ? m_pattern.m_numDuplicateNamedCaptureGroups : 0, m_pattern.m_body->m_callFrameSize)
 #endif
         , m_sampleString(sampleString)
         , m_sampler(charSize)
     {
+        initializeInternalSubpatternStorageIfNeeded();
     }
 
     YarrGenerator(CCallHelpers& jit, VM* vm, YarrBoyerMooreData* yarrBMData, const YarrJITRegs& regs, YarrPattern& pattern, StringView patternString, CharSize charSize, JITCompileMode compileMode)
@@ -6076,12 +6133,31 @@ public:
         , m_callFrameSizeInBytes(alignCallFrameSizeInBytes(m_pattern.m_body->m_callFrameSize))
         , m_canonicalMode(m_pattern.eitherUnicode() ? CanonicalMode::Unicode : CanonicalMode::UCS2)
 #if ENABLE(YARR_JIT_ALL_PARENS_EXPRESSIONS)
-        , m_parenContextSizes(compileMode == JITCompileMode::IncludeSubpatterns ? m_pattern.m_numSubpatterns : 0, compileMode == JITCompileMode::IncludeSubpatterns ? m_pattern.m_numDuplicateNamedCaptureGroups : 0, m_pattern.m_body->m_callFrameSize)
+        , m_parenContextSizes(needsSubpatternRecording(compileMode, m_pattern) ? m_pattern.m_numSubpatterns : 0, needsSubpatternRecording(compileMode, m_pattern) ? m_pattern.m_numDuplicateNamedCaptureGroups : 0, m_pattern.m_body->m_callFrameSize)
 #endif
         , m_sampler(charSize)
     {
         if (m_pattern.m_containsBackreferences)
             m_usesT2 = true;
+        initializeInternalSubpatternStorageIfNeeded();
+    }
+
+    void initializeInternalSubpatternStorageIfNeeded()
+    {
+#if ENABLE(YARR_JIT_BACKREFERENCES)
+        // For MatchOnly mode with backreferences, we need internal storage for subpattern results
+        // since m_regs.output is not available for subpattern storage in MatchOnly mode.
+        if (m_compileMode == JITCompileMode::MatchOnly && m_pattern.m_containsBackreferences) {
+            m_needsInternalSubpatternOutput = true;
+            // Store subpattern output after the regular frame data
+            m_internalSubpatternOutputOffsetInFrame = m_pattern.m_body->m_callFrameSize;
+            // Each subpattern needs 2 slots (start and end index), plus space for duplicate named groups
+            unsigned subpatternSlots = (m_pattern.m_numSubpatterns + 1) * 2;
+            unsigned duplicateNamedGroupSlots = m_pattern.m_numDuplicateNamedCaptureGroups;
+            unsigned totalAdditionalSlots = subpatternSlots + duplicateNamedGroupSlots;
+            m_callFrameSizeInBytes = alignCallFrameSizeInBytes(m_pattern.m_body->m_callFrameSize + totalAdditionalSlots);
+        }
+#endif
     }
 
     bool isSafeToRecurse() const
@@ -6143,18 +6219,23 @@ public:
         }
 #endif
 
-        if (m_pattern.m_containsBackreferences
+        // With YARR_JIT_BACKREFERENCES enabled, we can now handle backreferences in MatchOnly mode
+        // by using internal frame storage for subpattern results.
 #if ENABLE(YARR_JIT_BACKREFERENCES)
-#if ENABLE(YARR_JIT_BACKREFERENCES_FOR_16BIT_EXPRS)
-            && (m_compileMode == JITCompileMode::MatchOnly)
-#else
-            && (m_compileMode == JITCompileMode::MatchOnly || (m_pattern.ignoreCase() && m_charSize != CharSize::Char8))
-#endif
-#endif
-            ) {
-                codeBlock.setFallBackWithFailureReason(JITFailureReason::BackReference);
-                return;
+#if !ENABLE(YARR_JIT_BACKREFERENCES_FOR_16BIT_EXPRS)
+        // Without 16-bit backreference support, fail for ignoreCase 16-bit patterns
+        if (m_pattern.m_containsBackreferences && m_pattern.ignoreCase() && m_charSize != CharSize::Char8) {
+            codeBlock.setFallBackWithFailureReason(JITFailureReason::BackReference);
+            return;
         }
+#endif
+#else
+        // Without YARR_JIT_BACKREFERENCES, fail for any backreference pattern
+        if (m_pattern.m_containsBackreferences) {
+            codeBlock.setFallBackWithFailureReason(JITFailureReason::BackReference);
+            return;
+        }
+#endif
 
         if (m_pattern.m_containsLookbehinds) {
             codeBlock.setFallBackWithFailureReason(JITFailureReason::Lookbehind);
@@ -6240,8 +6321,8 @@ public:
 #endif
 
         // Initialize subpatterns' starts. And initialize matchStart if `!m_pattern.m_body->m_hasFixedSize`.
-        // If the mode is JITCompileMode::IncludeSubpatterns, then matchStart is subpatterns[0]'s start.
-        if (m_compileMode == JITCompileMode::IncludeSubpatterns) {
+        // If shouldRecordSubpatterns(), then matchStart is subpatterns[0]'s start.
+        if (shouldRecordSubpatterns()) {
             unsigned subpatternId = 0;
             // First subpatternId's start is configured to `index` if !m_pattern.m_body->m_hasFixedSize.
             if (!m_pattern.m_body->m_hasFixedSize) {
@@ -6250,8 +6331,14 @@ public:
             }
             for (; subpatternId < m_pattern.m_numSubpatterns + 1; ++subpatternId)
                 clearSubpattern(subpatternId);
-            for (unsigned i = m_pattern.offsetVectorBaseForNamedCaptures(); i < m_pattern.offsetsSize(); ++i)
-                m_jit.store32(MacroAssembler::TrustedImm32(0), MacroAssembler::Address(m_regs.output, (i) * sizeof(int)));
+            // Initialize named captures / duplicate named group tracking
+            if (m_compileMode == JITCompileMode::IncludeSubpatterns) {
+                for (unsigned i = m_pattern.offsetVectorBaseForNamedCaptures(); i < m_pattern.offsetsSize(); ++i)
+                    m_jit.store32(MacroAssembler::TrustedImm32(0), MacroAssembler::Address(m_regs.output, i * sizeof(int)));
+            } else {
+                for (unsigned i = 1; i <= m_pattern.m_numDuplicateNamedCaptureGroups; ++i)
+                    m_jit.store32(MacroAssembler::TrustedImm32(0), duplicateNamedGroupAddress(i));
+            }
         } else {
             if (!m_pattern.m_body->m_hasFixedSize)
                 setMatchStart(m_regs.index);
@@ -6694,7 +6781,11 @@ private:
 
     bool m_usesSIMD : 1 { false };
     bool m_usesT2 : 1 { false };
+    // True when MatchOnly mode needs internal subpattern output storage for backreferences
+    bool m_needsInternalSubpatternOutput : 1 { false };
     unsigned m_callFrameSizeInBytes;
+    // Frame offset (in slots) for internal subpattern output storage
+    unsigned m_internalSubpatternOutputOffsetInFrame { 0 };
     const CanonicalMode m_canonicalMode;
 #if ENABLE(YARR_JIT_ALL_PARENS_EXPRESSIONS)
     bool m_containsNestedSubpatterns { false };
