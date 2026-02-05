@@ -410,7 +410,7 @@ ALLOW_DEPRECATED_DECLARATIONS_END
 
     _playbackClient.setInterface(playbackSessionInterface.get());
 
-    WebCore::PlaybackSessionModel* playbackSessionModel = playbackSessionInterface ? playbackSessionInterface->playbackSessionModel() : nullptr;
+    CheckedPtr playbackSessionModel = playbackSessionInterface ? playbackSessionInterface->playbackSessionModel() : nullptr;
     self.playing = playbackSessionModel ? playbackSessionModel->isPlaying() : NO;
     bool isPiPEnabled = false;
     if (RefPtr page = [self._webView _page].get())
@@ -1050,7 +1050,7 @@ ALLOW_DEPRECATED_DECLARATIONS_END
     if (!interface)
         return;
 
-    auto model = interface->playbackSessionModel();
+    CheckedPtr model = interface->playbackSessionModel();
     if (!model)
         return;
 
@@ -1071,7 +1071,7 @@ ALLOW_DEPRECATED_DECLARATIONS_END
     if (!playbackSessionInterface)
         return;
 
-    if (auto* playbackSessionModel = playbackSessionInterface->playbackSessionModel())
+    if (CheckedPtr playbackSessionModel = playbackSessionInterface->playbackSessionModel())
         playbackSessionModel->togglePictureInPicture();
 }
 
