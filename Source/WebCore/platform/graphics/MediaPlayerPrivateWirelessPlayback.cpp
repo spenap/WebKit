@@ -172,7 +172,16 @@ void MediaPlayerPrivateWirelessPlayback::updateURLIfNeeded()
     if (!playbackTarget)
         return;
 
-    playbackTarget->loadURL(m_url, [](const MediaDeviceRouteLoadURLResult&) {
+    playbackTarget->loadURL(m_url, [weakThis = ThreadSafeWeakPtr { *this }](const MediaDeviceRouteLoadURLResult& result) {
+        RefPtr protectedThis = weakThis.get();
+        if (!protectedThis)
+            return;
+
+        if (!result) {
+            protectedThis->setNetworkState(MediaPlayer::NetworkState::FormatError);
+            return;
+        }
+
         // FIXME: Advance networkState and readyState once the target has loaded the URL
     });
 }
