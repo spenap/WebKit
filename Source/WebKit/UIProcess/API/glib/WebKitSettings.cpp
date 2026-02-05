@@ -3909,17 +3909,7 @@ WebKitHardwareAccelerationPolicy webkit_settings_get_hardware_acceleration_polic
     g_return_val_if_fail(WEBKIT_IS_SETTINGS(settings), WEBKIT_HARDWARE_ACCELERATION_POLICY_ALWAYS);
 
     WebKitSettingsPrivate* priv = settings->priv;
-#if USE(GTK4)
     return priv->preferences->hardwareAccelerationEnabled() ? WEBKIT_HARDWARE_ACCELERATION_POLICY_ALWAYS : WEBKIT_HARDWARE_ACCELERATION_POLICY_NEVER;
-#else
-    if (!priv->preferences->hardwareAccelerationEnabled())
-        return WEBKIT_HARDWARE_ACCELERATION_POLICY_NEVER;
-
-    if (priv->preferences->forceCompositingMode())
-        return WEBKIT_HARDWARE_ACCELERATION_POLICY_ALWAYS;
-
-    return WEBKIT_HARDWARE_ACCELERATION_POLICY_ON_DEMAND;
-#endif
 }
 
 /**
@@ -3938,6 +3928,11 @@ void webkit_settings_set_hardware_acceleration_policy(WebKitSettings* settings, 
     WebKitSettingsPrivate* priv = settings->priv;
     bool changed = false;
     switch (policy) {
+#if !USE(GTK4)
+    case WEBKIT_HARDWARE_ACCELERATION_POLICY_ON_DEMAND:
+        g_warning("WEBKIT_HARDWARE_ACCELERATION_POLICY_ON_DEMAND is deprecated and is equivalent to WEBKIT_HARDWARE_ACCELERATION_POLICY_ALWAYS now");
+        [[fallthrough]];
+#endif
     case WEBKIT_HARDWARE_ACCELERATION_POLICY_ALWAYS:
         if (!HardwareAccelerationManager::singleton().canUseHardwareAcceleration())
             return;
@@ -3949,12 +3944,9 @@ void webkit_settings_set_hardware_acceleration_policy(WebKitSettings* settings, 
 
         if (!priv->preferences->acceleratedCompositingEnabled() && HardwareAccelerationManager::singleton().acceleratedCompositingModeEnabled()) {
             priv->preferences->setAcceleratedCompositingEnabled(true);
-            changed = true;
-        }
-        if (priv->preferences->acceleratedCompositingEnabled() && !priv->preferences->forceCompositingMode()) {
             priv->preferences->setForceCompositingMode(true);
             priv->preferences->setThreadedScrollingEnabled(true);
-            changed = true;
+
         }
         break;
     case WEBKIT_HARDWARE_ACCELERATION_POLICY_NEVER:
@@ -3965,29 +3957,10 @@ void webkit_settings_set_hardware_acceleration_policy(WebKitSettings* settings, 
 
         if (priv->preferences->acceleratedCompositingEnabled()) {
             priv->preferences->setAcceleratedCompositingEnabled(false);
-            changed = true;
-        }
-
-        if (priv->preferences->forceCompositingMode()) {
             priv->preferences->setForceCompositingMode(false);
             priv->preferences->setThreadedScrollingEnabled(false);
-            changed = true;
         }
         break;
-#if !USE(GTK4)
-    case WEBKIT_HARDWARE_ACCELERATION_POLICY_ON_DEMAND:
-        if (!priv->preferences->acceleratedCompositingEnabled() && HardwareAccelerationManager::singleton().canUseHardwareAcceleration()) {
-            priv->preferences->setAcceleratedCompositingEnabled(true);
-            changed = true;
-        }
-
-        if (priv->preferences->forceCompositingMode() && !HardwareAccelerationManager::singleton().forceAcceleratedCompositingMode()) {
-            priv->preferences->setForceCompositingMode(false);
-            priv->preferences->setThreadedScrollingEnabled(false);
-            changed = true;
-        }
-        break;
-#endif
     }
 
     if (changed)

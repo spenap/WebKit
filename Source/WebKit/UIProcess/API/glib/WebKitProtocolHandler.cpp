@@ -135,10 +135,6 @@ static ASCIILiteral hardwareAccelerationPolicy(WebKitURISchemeRequest* request)
         return "never"_s;
     case WEBKIT_HARDWARE_ACCELERATION_POLICY_ALWAYS:
         return "always"_s;
-#if !USE(GTK4)
-    case WEBKIT_HARDWARE_ACCELERATION_POLICY_ON_DEMAND:
-        return "on demand"_s;
-#endif
     }
 #endif
     RELEASE_ASSERT_NOT_REACHED();
@@ -747,6 +743,10 @@ void WebKitProtocolHandler::handleGPU(WebKitURISchemeRequest* request, RenderPro
 
         if (uiProcessContextIsEGL() && eglGetCurrentContext() != EGL_NO_CONTEXT)
             addEGLInfo(hardwareAccelerationObject);
+    } else {
+#if PLATFORM(GTK)
+        addTableRow(hardwareAccelerationObject, "Buffer format"_s, renderBufferDescription(request));
+#endif
     }
 
     stopTable();

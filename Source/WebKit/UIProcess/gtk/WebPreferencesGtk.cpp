@@ -35,12 +35,11 @@ void WebPreferences::platformInitializeStore()
 {
     const bool canUseHardwareAcceleration = HardwareAccelerationManager::singleton().canUseHardwareAcceleration();
     const bool acceleratedCompositingEnabled = HardwareAccelerationManager::singleton().acceleratedCompositingModeEnabled();
-    const bool forceCompositingMode = HardwareAccelerationManager::singleton().forceAcceleratedCompositingMode();
 
     setHardwareAccelerationEnabled(canUseHardwareAcceleration);
     setAcceleratedCompositingEnabled(acceleratedCompositingEnabled);
-    setForceCompositingMode(forceCompositingMode);
-    setThreadedScrollingEnabled(forceCompositingMode);
+    setForceCompositingMode(acceleratedCompositingEnabled);
+    setThreadedScrollingEnabled(acceleratedCompositingEnabled);
 }
 
 } // namespace WebKit

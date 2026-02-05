@@ -42,16 +42,8 @@ HardwareAccelerationManager::HardwareAccelerationManager()
     if (!AcceleratedBackingStore::canUseHardwareAcceleration()) {
         m_canUseHardwareAcceleration = false;
         m_acceleratedCompositingModeEnabled = false;
-        m_forceAcceleratedCompositingMode = false;
-    } else {
-        if (const auto disableCompositingMode = CStringView::unsafeFromUTF8(getenv("WEBKIT_DISABLE_COMPOSITING_MODE"))) {
-            m_acceleratedCompositingModeEnabled = disableCompositingMode == "0"_s;
-            m_forceAcceleratedCompositingMode = m_acceleratedCompositingModeEnabled;
-        }
-
-        if (const auto forceCompositingMode = CStringView::unsafeFromUTF8(getenv("WEBKIT_FORCE_COMPOSITING_MODE")))
-            m_forceAcceleratedCompositingMode = forceCompositingMode != "0"_s;
-    }
+    } else if (const auto disableCompositingMode = CStringView::unsafeFromUTF8(getenv("WEBKIT_DISABLE_COMPOSITING_MODE")))
+        m_acceleratedCompositingModeEnabled = disableCompositingMode == "0"_s;
 }
 
 } // namespace WebKit
