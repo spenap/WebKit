@@ -3112,7 +3112,7 @@ set(WebCore_PRIVATE_FRAMEWORK_HEADERS
     rendering/FloatingObjects.h
     rendering/GapRects.h
     rendering/GlyphDisplayListCacheRemoval.h
-    rendering/GridLayoutState.h
+    rendering/RenderGridLayoutState.h
     rendering/HitTestLocation.h
     rendering/HitTestRequest.h
     rendering/HitTestResult.h

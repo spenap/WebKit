@@ -1,4 +1,3 @@
-
 /*
  * Copyright (C) 2024 Apple Inc. All rights reserved.
  *
@@ -24,26 +23,36 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "GridLayoutState.h"
-#include <wtf/TZoneMallocInlines.h>
+#pragma once
+
+#include <WebCore/RenderBox.h>
+#include <wtf/CheckedPtr.h>
+#include <wtf/TZoneMalloc.h>
 
 namespace WebCore {
 
-WTF_MAKE_TZONE_ALLOCATED_IMPL(GridLayoutState);
+enum class ItemLayoutRequirement : uint8_t {
+    NeedsColumnAxisStretchAlignment = 1 << 0,
+    MinContentContributionForSecondColumnPass = 1 << 1,
+};
+using ItemsLayoutRequirements = SingleThreadWeakHashMap<RenderBox, OptionSet<ItemLayoutRequirement>>;
 
-bool GridLayoutState::containsLayoutRequirementForGridItem(const RenderBox& gridItem, ItemLayoutRequirement layoutRequirement) const
-{
-    if (auto itr = m_itemsLayoutRequirements.find(gridItem); itr != m_itemsLayoutRequirements.end())
-        return itr->value.contains(layoutRequirement);
-    return false;
-}
+class RenderGridLayoutState {
+    WTF_MAKE_TZONE_ALLOCATED(RenderGridLayoutState);
+public:
+    bool containsLayoutRequirementForGridItem(const RenderBox& gridItem, ItemLayoutRequirement) const;
+    void setLayoutRequirementForGridItem(const RenderBox& gridItem, ItemLayoutRequirement);
 
-void GridLayoutState::setLayoutRequirementForGridItem(const RenderBox& gridItem, ItemLayoutRequirement layoutRequirement)
-{
-    m_itemsLayoutRequirements.ensure(gridItem, [&] {
-        return OptionSet<ItemLayoutRequirement> { };
-    }).iterator->value.add(layoutRequirement);
-}
+    bool needsSecondTrackSizingPass() const { return m_needsSecondTrackSizingPass; }
+    void setNeedsSecondTrackSizingPass() { m_needsSecondTrackSizingPass = true; }
 
-}
+    void setHasAspectRatioBlockSizeDependentItem() { m_hasAspectRatioBlockSizeDependentItem = true; }
+    bool hasAspectRatioBlockSizeDependentItem() const { return m_hasAspectRatioBlockSizeDependentItem; }
+
+private:
+    ItemsLayoutRequirements m_itemsLayoutRequirements;
+    bool m_needsSecondTrackSizingPass { false };
+    bool m_hasAspectRatioBlockSizeDependentItem { false };
+};
+
+} // namespace WebCore
