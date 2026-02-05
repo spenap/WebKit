@@ -105,13 +105,6 @@ private func messageCheckCompletion(
     return false
 }
 
-// FIXME(rdar://130765784): We should be able use the built-in ===, but AnyObject currently excludes foreign reference types
-@_expose(!Cxx) // rdar://169474185
-func === (_ lhs: WebKit.WebBackForwardListItem, _ rhs: WebKit.WebBackForwardListItem) -> Bool {
-    // Safety: Swift represents all reference types, including foreign reference types, as raw pointers
-    unsafe unsafeBitCast(lhs, to: UnsafeRawPointer.self) == unsafeBitCast(rhs, to: UnsafeRawPointer.self)
-}
-
 final class WebBackForwardList {
     private static let defaultCapacity = 100
 
