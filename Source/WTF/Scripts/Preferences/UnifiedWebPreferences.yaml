@@ -278,8 +278,7 @@ AllowMultiElementImplicitSubmission:
 
 AllowMultipleCommitLayerTreePending:
   type: bool
-  status: testable
-  category: dom
+  status: internal
   humanReadableName: "Allow requesting CommitLayerTree before the previous has completed"
   humanReadableDescription: "Allow requesting CommitLayerTree before the previous has completed"
   defaultValue:

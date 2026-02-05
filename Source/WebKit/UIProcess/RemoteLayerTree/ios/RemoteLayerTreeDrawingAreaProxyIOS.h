@@ -71,6 +71,7 @@ private:
 
     RetainPtr<WKDisplayLinkHandler> m_displayLinkHandler;
 
+    bool m_needsDisplayRefreshCallbacksForDrawing { false };
     bool m_needsDisplayRefreshCallbacksForMonotonicAnimations { false };
 };
 
