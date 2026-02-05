@@ -499,6 +499,20 @@ AnimatedImageAsyncDecodingEnabled:
     WebCore:
       default: true
 
+AnonymousBlockGenerationDisabled:
+  type: bool
+  status: unstable
+  category: css
+  humanReadableName: "Disable anonymous block generation"
+  humanReadableDescription: "Disable anonymous block generation for mixed blocks"
+  defaultValue:
+    WebKitLegacy:
+      default: false
+    WebKit:
+      default: false
+    WebCore:
+      default: false
+
 AppBadgeEnabled:
   type: bool
   status: unstable
