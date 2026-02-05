@@ -895,7 +895,7 @@ void WebFrameProxy::sendMessageToInspectorFrontend(const String& targetId, const
         page->inspectorController().sendMessageToInspectorFrontend(targetId, message);
 }
 
-void WebFrameProxy::requestTextExtraction(WebCore::TextExtraction::Request&& request, CompletionHandler<void(WebCore::TextExtraction::Item&&)>&& completion)
+void WebFrameProxy::requestTextExtraction(WebCore::TextExtraction::Request&& request, CompletionHandler<void(WebCore::TextExtraction::Result&&)>&& completion)
 {
     if (RefPtr page = m_page.get(); !page || !page->hasRunningProcess())
         return completion({ });

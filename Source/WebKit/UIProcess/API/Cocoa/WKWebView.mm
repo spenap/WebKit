@@ -6855,18 +6855,19 @@ static RetainPtr<_WKTextExtractionResult> createEmptyTextExtractionResult()
         includeURLs = configuration.includeURLs,
         includeRects = configuration.includeRects,
         onlyIncludeText = configuration.onlyIncludeVisibleText,
+        applyDiscretionaryWordLimit = configuration.maxWordsPerParagraphPolicy == _WKTextExtractionWordLimitPolicyDiscretionary,
         shortenURLs = configuration.shortenURLs,
         maxWordsPerParagraph = WTF::move(maxWordsPerParagraph),
         version,
         replacementStrings = extractReplacementStrings(configuration),
         outputFormat = textExtractionOutputFormat(configuration),
         endTextExtractionScope = WTF::move(endTextExtractionScope)
-    ](auto&& item) mutable {
+    ](auto&& result) mutable {
         RetainPtr strongSelf = weakSelf.get();
         if (!strongSelf)
             return completionHandler(nil);
 
-        if (!item)
+        if (!result)
             return completionHandler(nil);
 
         Vector<WebKit::TextExtractionFilterCallback> filterCallbacks;
@@ -6935,7 +6936,9 @@ static RetainPtr<_WKTextExtractionResult> createEmptyTextExtractionResult()
 #endif // ENABLE(TEXT_EXTRACTION_FILTER)
         }
 
-        if (maxWordsPerParagraph) {
+        static constexpr auto minimumTextLengthWhenApplyingDiscretionaryWordLimit = 1 << 12;
+        bool enforceWordLimit = !applyDiscretionaryWordLimit || result->visibleTextLength >= minimumTextLengthWhenApplyingDiscretionaryWordLimit;
+        if (maxWordsPerParagraph && enforceWordLimit) {
             filterCallbacks.append([wordLimit = WTF::move(maxWordsPerParagraph)](auto& text, auto&&, auto&&) mutable {
                 auto truncatedComponents = text.splitAllowingEmptyEntries('\n').map([wordLimit](auto&& component) {
                     if (component.isEmpty())
@@ -6993,7 +6996,7 @@ static RetainPtr<_WKTextExtractionResult> createEmptyTextExtractionResult()
             outputFormat,
             urlCache.get(),
         };
-        WebKit::convertToText(WTF::move(*item), WTF::move(options), [weakSelf, urlCache, completionHandler = WTF::move(completionHandler), endTextExtractionScope = WTF::move(endTextExtractionScope)](auto&& result) {
+        WebKit::convertToText(WTF::move(result->rootItem), WTF::move(options), [weakSelf, urlCache, completionHandler = WTF::move(completionHandler), endTextExtractionScope = WTF::move(endTextExtractionScope)](auto&& result) {
             RetainPtr strongSelf = weakSelf.get();
             if (!strongSelf)
                 return completionHandler(createEmptyTextExtractionResult().get());
@@ -7248,7 +7251,7 @@ static OptionSet<WebCore::DataDetectorType> coreDataDetectorTypes(_WKTextExtract
 
 #endif // USE(APPLE_INTERNAL_SDK) || (!PLATFORM(WATCHOS) && !PLATFORM(APPLETV))
 
-- (void)_requestTextExtractionInternal:(_WKTextExtractionConfiguration *)configuration completion:(CompletionHandler<void(std::optional<WebCore::TextExtraction::Item>&&)>&&)completion
+- (void)_requestTextExtractionInternal:(_WKTextExtractionConfiguration *)configuration completion:(CompletionHandler<void(std::optional<WebCore::TextExtraction::Result>&&)>&&)completion
 {
 #if USE(APPLE_INTERNAL_SDK) || (!PLATFORM(WATCHOS) && !PLATFORM(APPLETV))
     Ref preferences = _page->preferences();
@@ -7320,18 +7323,18 @@ static OptionSet<WebCore::DataDetectorType> coreDataDetectorTypes(_WKTextExtract
         additionalFrames.add(frame.releaseNonNull());
     }
 
-    auto items = Box<WebCore::TextExtraction::PageItems>::create();
-    auto aggregator = MainRunLoopCallbackAggregator::create([items, completion = WTF::move(completion)] mutable {
-        completion(WebCore::TextExtraction::collatePageItems(WTF::move(*items)));
+    auto results = Box<WebCore::TextExtraction::PageResults>::create();
+    auto aggregator = MainRunLoopCallbackAggregator::create([results, completion = WTF::move(completion)] mutable {
+        completion(WebCore::TextExtraction::collatePageResults(WTF::move(*results)));
     });
 
-    mainFrame->requestTextExtraction(makeRequest({ *mainFrame }), [aggregator, items](auto&& root) {
-        items->mainFrameItem = WTF::move(root);
+    mainFrame->requestTextExtraction(makeRequest({ *mainFrame }), [aggregator, results](auto&& result) {
+        results->mainFrameResult = WTF::move(result);
     });
 
     for (auto& frame : additionalFrames) {
-        frame->requestTextExtraction(makeRequest(frame.copyRef()), [frameID = frame->frameID(), aggregator, items](auto&& root) {
-            auto addResult = items->subFrameItems.add(frameID, makeUniqueRef<WebCore::TextExtraction::Item>(WTF::move(root)));
+        frame->requestTextExtraction(makeRequest(frame.copyRef()), [frameID = frame->frameID(), aggregator, results](auto&& result) {
+            auto addResult = results->subFrameResults.add(frameID, makeUniqueRef<WebCore::TextExtraction::Result>(WTF::move(result)));
             ASSERT_UNUSED(addResult, addResult.isNewEntry);
         });
     }
@@ -7341,15 +7344,15 @@ static OptionSet<WebCore::DataDetectorType> coreDataDetectorTypes(_WKTextExtract
 - (void)_requestTextExtraction:(_WKTextExtractionConfiguration *)configuration completionHandler:(void(^)(WKTextExtractionItem *))completionHandler
 {
 #if USE(APPLE_INTERNAL_SDK) || (!PLATFORM(WATCHOS) && !PLATFORM(APPLETV))
-    [self _requestTextExtractionInternal:configuration completion:[completionHandler = makeBlockPtr(completionHandler), weakSelf = WeakObjCPtr<WKWebView>(self)](auto&& item) {
+    [self _requestTextExtractionInternal:configuration completion:[completionHandler = makeBlockPtr(completionHandler), weakSelf = WeakObjCPtr<WKWebView>(self)](auto&& result) {
         RetainPtr strongSelf = weakSelf.get();
         if (!strongSelf)
             return completionHandler(nil);
 
-        if (!item)
+        if (!result)
             return completionHandler(nil);
 
-        RetainPtr rootItem = WebKit::createItem(WTF::move(*item), [strongSelf](auto& rectInRootView) -> WebCore::FloatRect {
+        RetainPtr rootItem = WebKit::createItem(WTF::move(result->rootItem), [strongSelf](auto& rectInRootView) -> WebCore::FloatRect {
 #if PLATFORM(IOS_FAMILY)
             if (RetainPtr contentView = strongSelf ? strongSelf->_contentView : nil)
                 return { [strongSelf convertRect:rectInRootView fromView:contentView.get()] };

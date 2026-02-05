@@ -1630,7 +1630,7 @@ void WebFrame::sendMessageToInspectorTarget(const String& message)
     ensureInspectorTarget()->sendMessageToTargetBackend(message);
 }
 
-void WebFrame::requestTextExtraction(TextExtraction::Request&& request, CompletionHandler<void(TextExtraction::Item&&)>&& completion)
+void WebFrame::requestTextExtraction(TextExtraction::Request&& request, CompletionHandler<void(TextExtraction::Result&&)>&& completion)
 {
     RefPtr frame = coreLocalFrame();
     if (!frame)

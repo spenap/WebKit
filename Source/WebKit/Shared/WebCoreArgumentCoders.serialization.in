@@ -6900,6 +6900,12 @@ header: <WebCore/TextExtractionTypes.h>
 };
 
 header: <WebCore/TextExtractionTypes.h>
+[CustomHeader] struct WebCore::TextExtraction::Result {
+    WebCore::TextExtraction::Item rootItem;
+    unsigned visibleTextLength;
+};
+
+header: <WebCore/TextExtractionTypes.h>
 [CustomHeader] struct WebCore::TextExtraction::Editable {
     String label;
     String placeholder;
