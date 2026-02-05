@@ -48,8 +48,9 @@ struct GridItemSizingFunctions {
 
 class TrackSizingAlgorithm {
 public:
-    static TrackSizes sizeTracks(const PlacedGridItems&, const ComputedSizesList&, const PlacedGridItemSpanList&, const TrackSizingFunctionsList&, std::optional<LayoutUnit> availableSpace,
-        const GridItemSizingFunctions&, const IntegrationUtils&, const FreeSpaceScenario&);
+    static TrackSizes sizeTracks(const PlacedGridItems&, const ComputedSizesList&, const PlacedGridItemSpanList&,
+    const TrackSizingFunctionsList&, std::optional<LayoutUnit> availableSpace,
+    const GridItemSizingFunctions&, const IntegrationUtils&, const FreeSpaceScenario&, const LayoutUnit& gapSize);
 
 private:
 
@@ -59,7 +60,7 @@ private:
     static FlexTracks collectFlexTracks(const UnsizedTracks&);
     static bool hasFlexTracks(const UnsizedTracks&);
     static double flexFactorSum(const FlexTracks&);
-    static LayoutUnit findSizeOfFr(const UnsizedTracks&, LayoutUnit spaceToFill);
+    static LayoutUnit findSizeOfFr(const UnsizedTracks&, const LayoutUnit& availableSpace, const LayoutUnit& gapSize);
 };
 
 } // namespace WebCore
