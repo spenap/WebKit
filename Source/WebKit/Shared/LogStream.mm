@@ -84,27 +84,26 @@ void LogStream::logOnBehalfOfWebContent(std::span<const uint8_t> logSubsystem, s
     MESSAGE_CHECK(nullTerminatedLogString.size() <= logStringMaxSize, connection);
 
     // os_log_hook on sender side sends a null category and subsystem when logging to OS_LOG_DEFAULT.
-    auto osLog = OSObjectPtr<os_log_t>();
+    OSObjectPtr<os_log_t> osLog;
     if (isNullTerminated(logSubsystem) && isNullTerminated(logCategory)) {
         auto subsystem = byteCast<char>(logSubsystem.data());
         auto category = byteCast<char>(logCategory.data());
         if (equalSpans("Testing\0"_span, logCategory))
             globalLogCountForTesting++;
-        // Adopting is needed here but static analysis is not able to tell.
-        SUPPRESS_RETAINPTR_CTOR_ADOPT osLog = adoptOSObject(os_log_create(subsystem, category));
+        osLog = adoptOSObject(os_log_create(subsystem, category));
     }
-
-    auto osLogPointer = osLog.get() ? osLog.get() : OS_LOG_DEFAULT;
+    if (!osLog)
+        osLog = OS_LOG_DEFAULT;
 
 #if HAVE(OS_SIGNPOST)
-    if (WTFSignpostHandleIndirectLog(osLogPointer, m_pid, byteCast<char>(nullTerminatedLogString)))
+    if (WTFSignpostHandleIndirectLog(osLog.get(), m_pid, byteCast<char>(nullTerminatedLogString)))
         return;
 #endif
 
     // Use '%{public}s' in the format string for the preprocessed string from the WebContent process.
     // This should not reveal any redacted information in the string, since it has already been composed in the WebContent process.
 WTF_ALLOW_UNSAFE_BUFFER_USAGE_BEGIN
-    os_log_with_type(osLogPointer, static_cast<os_log_type_t>(logType), "WebContent[%d] %{public}s", m_pid, byteCast<char>(nullTerminatedLogString).data());
+    SUPPRESS_UNCOUNTED_LOCAL os_log_with_type(osLog.get(), static_cast<os_log_type_t>(logType), "WebContent[%d] %{public}s", m_pid, byteCast<char>(nullTerminatedLogString).data());
 WTF_ALLOW_UNSAFE_BUFFER_USAGE_END
 }
 
