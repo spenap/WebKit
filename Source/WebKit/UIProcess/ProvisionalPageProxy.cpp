@@ -65,6 +65,7 @@
 
 // FIXME: https://bugs.webkit.org/show_bug.cgi?id=306415
 #if ENABLE(BACK_FORWARD_LIST_SWIFT)
+#include "WebBackForwardListSwiftUtilities.h"
 #include "WebKit-Swift.h"
 #endif
 
@@ -336,6 +337,16 @@ void ProvisionalPageProxy::goToBackForwardItem(API::Navigation& navigation, WebB
 
     // FIXME: This is a static analysis false positive. The lamda passed to `setItemsAsRestoredFromSessionIf()` is marked as NOESCAPE so capturing
     // `this` is actually safe.
+#if ENABLE(BACK_FORWARD_LIST_SWIFT)
+    auto backForwardList = page->backForwardList();
+    SUPPRESS_UNCOUNTED_LAMBDA_CAPTURE backForwardList.setItemsAsRestoredFromSessionIf(WebBackForwardListItemFilter::create([this, targetItem = Ref { item }](auto& item) {
+        if (auto* backForwardCacheEntry = item.backForwardCacheEntry()) {
+            if (backForwardCacheEntry->processIdentifier() == process().coreProcessIdentifier())
+                return false;
+        }
+        return &item != targetItem.ptr();
+    }).ptr());
+#else
     Ref backForwardList = page->backForwardList();
     SUPPRESS_UNCOUNTED_LAMBDA_CAPTURE backForwardList->setItemsAsRestoredFromSessionIf([this, targetItem = protect(item)](auto& item) {
         if (auto* backForwardCacheEntry = item.backForwardCacheEntry()) {
@@ -344,6 +355,7 @@ void ProvisionalPageProxy::goToBackForwardItem(API::Navigation& navigation, WebB
         }
         return &item != targetItem.ptr();
     });
+#endif
 
     Ref process { this->process() };
     std::optional<WebsitePoliciesData> websitePoliciesData;
