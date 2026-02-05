@@ -730,10 +730,6 @@ static void addBrowsingContextControllerMethodStubsIfNeeded()
 #if PLATFORM(IOS_FAMILY)
     _pointerTouchCompatibilitySimulator = WTF::makeUnique<WebKit::PointerTouchCompatibilitySimulator>(self);
 #endif
-
-#if HAVE(APPKIT_GESTURES_SUPPORT)
-    _impl->addTextSelectionManager();
-#endif
 }
 
 - (void)_setupPageConfiguration:(Ref<API::PageConfiguration>&)pageConfiguration withPool:(WebKit::WebProcessPool&)pool

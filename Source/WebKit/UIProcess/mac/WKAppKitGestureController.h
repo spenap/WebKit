@@ -25,9 +25,7 @@
 
 #pragma once
 
-#import <wtf/Platform.h>
-
-#if HAVE(APPKIT_GESTURES_SUPPORT)
+#if PLATFORM(MAC)
 
 #import <AppKit/NSGestureRecognizer.h>
 #import <wtf/Forward.h>
@@ -46,4 +44,4 @@ OBJC_CLASS NSPanGestureRecognizer;
 
 @end
 
-#endif // HAVE(APPKIT_GESTURES_SUPPORT)
+#endif

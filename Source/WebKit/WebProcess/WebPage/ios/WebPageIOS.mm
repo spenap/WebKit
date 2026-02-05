@@ -5871,6 +5871,17 @@ void WebPage::requestDocumentEditingContext(DocumentEditingContextRequest&& requ
     completionHandler(WTF::move(context));
 }
 
+bool WebPage::shouldAllowSingleClickToChangeSelection(WebCore::Node& targetNode, const WebCore::VisibleSelection& newSelection)
+{
+    if (RefPtr editableRoot = newSelection.rootEditableElement(); editableRoot && editableRoot == targetNode.rootEditableElement()) {
+        // Text interaction gestures will handle selection in the case where we are already editing the node. In the case where we're
+        // just starting to focus an editable element by tapping on it, only change the selection if we weren't already showing an
+        // input view prior to handling the tap.
+        return !(m_completingSyntheticClick ? m_wasShowingInputViewForFocusedElementDuringLastPotentialTap : m_isShowingInputViewForFocusedElement);
+    }
+    return true;
+}
+
 void WebPage::setShouldRevealCurrentSelectionAfterInsertion(bool shouldRevealCurrentSelectionAfterInsertion)
 {
     if (m_shouldRevealCurrentSelectionAfterInsertion == shouldRevealCurrentSelectionAfterInsertion)

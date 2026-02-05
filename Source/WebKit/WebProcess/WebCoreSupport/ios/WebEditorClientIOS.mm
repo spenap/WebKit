@@ -106,6 +106,12 @@ void WebEditorClient::subFrameScrollPositionChanged()
         page->didScrollSelection();
 }
 
+bool WebEditorClient::shouldAllowSingleClickToChangeSelection(WebCore::Node& targetNode, const WebCore::VisibleSelection& newSelection) const
+{
+    RefPtr page = m_page.get();
+    return page ? page->shouldAllowSingleClickToChangeSelection(targetNode, newSelection) : false;
+}
+
 bool WebEditorClient::shouldRevealCurrentSelectionAfterInsertion() const
 {
     RefPtr page = m_page.get();

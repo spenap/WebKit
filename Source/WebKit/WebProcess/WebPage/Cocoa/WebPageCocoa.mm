@@ -2116,30 +2116,6 @@ bool WebPage::isSpeaking() const
     return result;
 }
 
-bool WebPage::shouldAllowSingleClickToChangeSelection(WebCore::Node& targetNode, const WebCore::VisibleSelection& newSelection)
-{
-#if !PLATFORM(MAC) || HAVE(APPKIT_GESTURES_SUPPORT)
-#if HAVE(APPKIT_GESTURES_SUPPORT)
-    if (!m_page->settings().useAppKitGestures())
-        return true;
-#endif
-
-    if (RefPtr editableRoot = newSelection.rootEditableElement(); editableRoot && editableRoot == targetNode.rootEditableElement()) {
-        // FIXME: This logic should be made consistent for both macOS and iOS.
-#if PLATFORM(MAC)
-        return false;
-#else
-        // Text interaction gestures will handle selection in the case where we are already editing the node. In the case where we're
-        // just starting to focus an editable element by tapping on it, only change the selection if we weren't already showing an
-        // input view prior to handling the tap.
-        return !(m_completingSyntheticClick ? m_wasShowingInputViewForFocusedElementDuringLastPotentialTap : m_isShowingInputViewForFocusedElement);
-#endif
-    }
-#endif // !PLATFORM(MAC) || HAVE(APPKIT_GESTURES_SUPPORT)
-
-    return true;
-}
-
 void WebPage::selectWithGesture(const IntPoint& point, GestureType gestureType, GestureRecognizerState gestureState, bool isInteractingWithFocusedElement, CompletionHandler<void(const WebCore::IntPoint&, GestureType, GestureRecognizerState, OptionSet<SelectionFlags>)>&& completionHandler)
 {
     if (gestureState == GestureRecognizerState::Began)

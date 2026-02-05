@@ -76,7 +76,6 @@
 #import "WKRevealItemPresenter.h"
 #import "WKTextAnimationManagerMac.h"
 #import "WKTextPlaceholder.h"
-#import "WKTextSelectionController.h"
 #import "WKViewLayoutStrategy.h"
 #import "WKWebViewMac.h"
 #import "WebBackForwardList.h"
@@ -1401,10 +1400,7 @@ WebViewImpl::WebViewImpl(WKWebView *view, WebProcessPool& processPool, Ref<API::
             checkedImpl->pageScrollingHysteresisFired(state);
     }, viewStateHysteresis);
 
-#if HAVE(APPKIT_GESTURES_SUPPORT)
     m_appKitGestureController = adoptNS([[WKAppKitGestureController alloc] initWithPage:m_page viewImpl:*this]);
-    m_textSelectionController = adoptNS([[WKTextSelectionController alloc] initWithView:view]);
-#endif
 
     WebProcessPool::statistics().wkViewCount++;
 }
@@ -3620,10 +3616,8 @@ void WebViewImpl::preferencesDidChange()
 {
     updateNeedsViewFrameInWindowCoordinatesIfNeeded();
 
-#if HAVE(APPKIT_GESTURES_SUPPORT)
     if (RetainPtr appKitGestureController = m_appKitGestureController)
         [appKitGestureController enableGesturesIfNeeded];
-#endif
 }
 
 CALayer* WebViewImpl::textIndicatorInstallationLayer()
@@ -7403,13 +7397,6 @@ void WebViewImpl::showCaptionDisplaySettings(WebCore::HTMLMediaElementIdentifier
     completionHandler({ });
 }
 #endif
-
-#if HAVE(APPKIT_GESTURES_SUPPORT)
-void WebViewImpl::addTextSelectionManager()
-{
-    [m_textSelectionController addTextSelectionManager];
-}
-#endif // HAVE(APPKIT_GESTURES_SUPPORT)
 
 } // namespace WebKit
 
