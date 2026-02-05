@@ -25,8 +25,6 @@
 
 #pragma once
 
-#if !defined(__swift__) || (defined(WK_SUPPORTS_SWIFT_OBJCXX_INTEROP) && WK_SUPPORTS_SWIFT_OBJCXX_INTEROP)
-
 // Including more headers here slows down build times a lot.
 // Use forward declarations and WebPageProxyInternals.h instead.
 #include "APIObject.h"
@@ -4150,5 +4148,3 @@ inline void derefWebPageProxy(WebKit::WebPageProxy* WTF_NONNULL obj)
 SPECIALIZE_TYPE_TRAITS_BEGIN(WebKit::WebPageProxy)
     static bool isType(const API::Object& object) { return object.type() == API::Object::Type::Page; }
 SPECIALIZE_TYPE_TRAITS_END()
-
-#endif // !defined(__swift__) || (defined(WK_SUPPORTS_SWIFT_OBJCXX_INTEROP) && WK_SUPPORTS_SWIFT_OBJCXX_INTEROP)
