@@ -3253,11 +3253,6 @@ public:
         return isSetObjectSpeculation(prediction());
     }
 
-    bool shouldSpeculateMapIteratorObject()
-    {
-        return isMapIteratorSpeculation(prediction());
-    }
-
     bool shouldSpeculateGlobalProxy()
     {
         return isGlobalProxySpeculation(prediction());
