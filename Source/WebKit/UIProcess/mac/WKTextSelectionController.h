@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 Apple Inc. All rights reserved.
+ * Copyright (C) 2026 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -25,40 +25,29 @@
 
 #pragma once
 
-#include <wtf/Platform.h>
+#import <wtf/Platform.h>
 
-#if PLATFORM(IOS_FAMILY)
+#if HAVE(APPKIT_GESTURES_SUPPORT)
 
-#include <wtf/RetainPtr.h>
-#include <wtf/Vector.h>
-#include <wtf/text/WTFString.h>
+#import "AppKitSPI.h"
 
-namespace IPC {
-class Decoder;
-class Encoder;
-}
+@class WKWebView;
 
-namespace WebCore {
-class FloatRect;
-}
+NS_HEADER_AUDIT_BEGIN(nullability, sendability)
 
-OBJC_CLASS UIFont;
+NS_SWIFT_UI_ACTOR
+@interface WKTextSelectionController : NSObject
 
-namespace WebKit {
+- (instancetype)initWithView:(WKWebView *)view;
 
-struct WebAutocorrectionData {
-    WebAutocorrectionData() = default;
-    WebAutocorrectionData(Vector<WebCore::FloatRect>&& textRects, std::optional<String>&& fontName, double pointSize, double weight);
-    WebAutocorrectionData(const Vector<WebCore::FloatRect>& textRects, const RetainPtr<UIFont>&);
+- (void)addTextSelectionManager;
 
-    std::optional<String> fontName() const;
-    double fontPointSize() const;
-    double fontWeight() const;
+@end
 
-    Vector<WebCore::FloatRect> textRects;
-    RetainPtr<UIFont> font;
-};
+@interface WKTextSelectionController (NSTextSelectionManagerDelegate) <NSTextSelectionManagerDelegateForWebKit>
 
-} // namespace WebKit
+@end
 
-#endif // PLATFORM(IOS_FAMILY)
+NS_HEADER_AUDIT_END(nullability, sendability)
+
+#endif // HAVE(APPKIT_GESTURES_SUPPORT)
