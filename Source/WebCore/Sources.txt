@@ -251,6 +251,7 @@ Modules/mediastream/MediaDevices.cpp
 Modules/mediastream/MediaStream.cpp
 Modules/mediastream/MediaStreamTrack.cpp
 Modules/mediastream/MediaStreamTrackEvent.cpp
+Modules/mediastream/MediaStreamTrackHandle.cpp
 Modules/mediastream/MediaStreamTrackProcessor.cpp
 Modules/mediastream/MediaTrackCapabilities.cpp
 Modules/mediastream/MediaTrackConstraints.cpp
@@ -4507,6 +4508,7 @@ JSMediaStreamAudioSourceNode.cpp
 JSMediaStreamAudioSourceOptions.cpp
 JSMediaStreamTrack.cpp
 JSMediaStreamTrackEvent.cpp
+JSMediaStreamTrackHandle.cpp
 JSMediaStreamTrackProcessor.cpp
 JSMediaTrackCapabilities.cpp
 JSMediaTrackConstraints.cpp

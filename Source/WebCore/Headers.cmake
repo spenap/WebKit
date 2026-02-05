@@ -586,6 +586,7 @@ set(WebCore_PRIVATE_FRAMEWORK_HEADERS
     Modules/mediastream/MediaDevices.h
     Modules/mediastream/MediaStreamTrack.h
     Modules/mediastream/MediaStreamTrackEvent.h
+    Modules/mediastream/MediaStreamTrackHandle.h
     Modules/mediastream/MediaTrackCapabilities.h
     Modules/mediastream/MediaTrackConstraints.h
     Modules/mediastream/RTCController.h

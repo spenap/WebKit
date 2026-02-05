@@ -38,6 +38,7 @@
 
 #if ENABLE(MEDIA_STREAM)
 #include <WebCore/MediaStreamTrackDataHolder.h>
+#include <WebCore/MediaStreamTrackHandle.h>
 #endif
 #if ENABLE(MEDIA_SOURCE_IN_WORKERS)
 #include <WebCore/MediaSourceHandle.h>
@@ -168,6 +169,7 @@ private:
 #endif
 #if ENABLE(MEDIA_STREAM)
         , Vector<std::unique_ptr<MediaStreamTrackDataHolder>>&& = { }
+        , Vector<std::unique_ptr<MediaStreamTrackHandle::DataHolder>>&& = { }
 #endif
         , uint64_t exposedMessagePortCount = 0
         );
@@ -202,6 +204,7 @@ private:
 #endif
 #if ENABLE(MEDIA_STREAM)
         , Vector<std::unique_ptr<MediaStreamTrackDataHolder>>&& = { }
+        , Vector<std::unique_ptr<MediaStreamTrackHandle::DataHolder>>&& = { }
 #endif
         , uint64_t exposedMessagePortCount = 0
         );
@@ -232,6 +235,7 @@ private:
 #endif
 #if ENABLE(MEDIA_STREAM)
         Vector<std::unique_ptr<MediaStreamTrackDataHolder>> serializedMediaStreamTracks { };
+        Vector<std::unique_ptr<MediaStreamTrackHandle::DataHolder>> serializedMediaStreamTrackHandles { };
 #endif
         std::unique_ptr<ArrayBufferContentsArray> sharedBufferContentsArray { };
         Vector<std::optional<DetachedImageBitmap>> detachedImageBitmaps { };

@@ -5279,6 +5279,21 @@ MediaSourceUseRemoteAudioVideoRenderer:
       default: false
   sharedPreferenceForWebProcess: true
 
+MediaStreamTrackHandleEnabled:
+  type: bool
+  status: preview
+  category: media
+  humanReadableName: "MediaStreamTrackHandle"
+  humanReadableDescription: "Enable MediaStreamTrackHandle"
+  condition: ENABLE(MEDIA_STREAM)
+  defaultValue:
+    WebKitLegacy:
+      default: false
+    WebKit:
+      default: false
+    WebCore:
+      default: false
+
 MediaStreamTrackProcessingEnabled:
   type: bool
   status: mature
