@@ -63,8 +63,10 @@ void RegExpFunctionalTestCollector::outputOneTest(RegExp* regExp, StringView s, 
     for (unsigned i = 0; i <= regExp->numSubpatterns(); i++) {
         int subpatternBegin = ovector[i * 2];
         int subpatternEnd = ovector[i * 2 + 1];
-        if (subpatternBegin == -1)
+        if (subpatternBegin == -1 || subpatternEnd < subpatternBegin) {
+            subpatternBegin = -1;
             subpatternEnd = -1;
+        }
         fprintf(m_file, "%d, %d", subpatternBegin, subpatternEnd);
         if (i < regExp->numSubpatterns())
             fputs(", ", m_file);

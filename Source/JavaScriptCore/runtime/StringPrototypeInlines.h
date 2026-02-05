@@ -753,14 +753,14 @@ ALWAYS_INLINE JSCellButterfly* addToRegExpSearchCache(VM& vm, JSGlobalObject* gl
 
         for (unsigned i = 0; i < regExp->numSubpatterns() + 1; ++i) {
             int matchStart = ovector[i * 2];
-            int matchLen = ovector[i * 2 + 1] - matchStart;
+            int matchEnd = ovector[i * 2 + 1];
 
             JSValue patternValue;
 
-            if (matchStart < 0)
+            if (matchStart < 0 || matchEnd < matchStart)
                 patternValue = jsUndefined();
             else {
-                patternValue = jsSubstringOfResolved(vm, string, matchStart, matchLen);
+                patternValue = jsSubstringOfResolved(vm, string, matchStart, matchEnd - matchStart);
                 RETURN_IF_EXCEPTION(scope, { });
             }
 
@@ -1377,14 +1377,14 @@ ALWAYS_INLINE JSString* replaceUsingRegExpSearch(VM& vm, JSGlobalObject* globalO
 
             for (unsigned i = 0; i < regExp->numSubpatterns() + 1; ++i) {
                 int matchStart = ovector[i * 2];
-                int matchLen = ovector[i * 2 + 1] - matchStart;
+                int matchEnd = ovector[i * 2 + 1];
 
                 JSValue patternValue;
 
-                if (matchStart < 0)
+                if (matchStart < 0 || matchEnd < matchStart)
                     patternValue = jsUndefined();
                 else {
-                    patternValue = jsSubstring(globalObject, vm, string, matchStart, matchLen);
+                    patternValue = jsSubstring(globalObject, vm, string, matchStart, matchEnd - matchStart);
                     RETURN_IF_EXCEPTION(scope, nullptr);
                 }
 
@@ -1399,12 +1399,12 @@ ALWAYS_INLINE JSString* replaceUsingRegExpSearch(VM& vm, JSGlobalObject* globalO
                             groups->putDirect(vm, Identifier::fromString(vm, groupName), patternValue);
                         else if (captureIndex > 0) {
                             int captureStart = ovector[captureIndex * 2];
-                            int captureLen = ovector[captureIndex * 2 + 1] - captureStart;
+                            int captureEnd = ovector[captureIndex * 2 + 1];
                             JSValue captureValue;
-                            if (captureStart < 0)
+                            if (captureStart < 0 || captureEnd < captureStart)
                                 captureValue = jsUndefined();
                             else {
-                                captureValue = jsSubstring(globalObject, vm, string, captureStart, captureLen);
+                                captureValue = jsSubstring(globalObject, vm, string, captureStart, captureEnd - captureStart);
                                 RETURN_IF_EXCEPTION(scope, nullptr);
                             }
                             groups->putDirect(vm, Identifier::fromString(vm, groupName), captureValue);
@@ -1462,14 +1462,14 @@ ALWAYS_INLINE JSString* replaceUsingRegExpSearch(VM& vm, JSGlobalObject* globalO
 
             for (unsigned i = 0; i < regExp->numSubpatterns() + 1; ++i) {
                 int matchStart = ovector[i * 2];
-                int matchLen = ovector[i * 2 + 1] - matchStart;
+                int matchEnd = ovector[i * 2 + 1];
 
                 JSValue patternValue;
 
-                if (matchStart < 0)
+                if (matchStart < 0 || matchEnd < matchStart)
                     patternValue = jsUndefined();
                 else {
-                    patternValue = jsSubstring(globalObject, vm, string, matchStart, matchLen);
+                    patternValue = jsSubstring(globalObject, vm, string, matchStart, matchEnd - matchStart);
                     RETURN_IF_EXCEPTION(scope, nullptr);
                 }
 
@@ -1484,12 +1484,12 @@ ALWAYS_INLINE JSString* replaceUsingRegExpSearch(VM& vm, JSGlobalObject* globalO
                             groups->putDirect(vm, Identifier::fromString(vm, groupName), patternValue);
                         else if (captureIndex > 0) {
                             int captureStart = ovector[captureIndex * 2];
-                            int captureLen = ovector[captureIndex * 2 + 1] - captureStart;
+                            int captureEnd = ovector[captureIndex * 2 + 1];
                             JSValue captureValue;
-                            if (captureStart < 0)
+                            if (captureStart < 0 || captureEnd < captureStart)
                                 captureValue = jsUndefined();
                             else {
-                                captureValue = jsSubstring(globalObject, vm, string, captureStart, captureLen);
+                                captureValue = jsSubstring(globalObject, vm, string, captureStart, captureEnd - captureStart);
                                 RETURN_IF_EXCEPTION(scope, nullptr);
                             }
                             groups->putDirect(vm, Identifier::fromString(vm, groupName), captureValue);

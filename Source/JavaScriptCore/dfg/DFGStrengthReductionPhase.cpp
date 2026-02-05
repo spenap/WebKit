@@ -958,8 +958,9 @@ private:
                         resultArray.append(string.substring(result.start, result.end - result.start));
                         for (unsigned i = 1; i <= regExp->numSubpatterns(); ++i) {
                             int start = ovector[2 * i];
-                            if (start >= 0)
-                                resultArray.append(string.substring(start, ovector[2 * i + 1] - start));
+                            int end = ovector[2 * i + 1];
+                            if (start >= 0 && end >= start)
+                                resultArray.append(string.substring(start, end - start));
                             else
                                 resultArray.append(String());
                         }
