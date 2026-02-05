@@ -1604,6 +1604,8 @@ webkit.org/b/306457 http/wpt/mediarecorder/MediaRecorder-audio-bitrate-webm.html
 webkit.org/b/213699 http/wpt/mediarecorder/MediaRecorder-AV-audio-video-dataavailable.html [ Crash Timeout Failure ]
 webkit.org/b/213699 http/wpt/mediarecorder/MediaRecorder-first-frame.html [ Failure Pass ]
 
+webkit.org/b/307032 imported/w3c/web-platform-tests/mediacapture-streams/MediaStream-removetrack.https.html [ Pass Timeout ]
+
 # No support for Matroska container in GStreamer port.
 http/wpt/mediarecorder/MediaRecorder-matroska-AV-audio-video-dataavailable.html
 
@@ -3247,9 +3249,11 @@ webkit.org/b/232346 imported/w3c/web-platform-tests/html/canvas/element/manual/i
 webkit.org/b/232346 imported/w3c/web-platform-tests/html/canvas/element/manual/imagebitmap/createImageBitmap-flipY.html [ Failure ]
 webkit.org/b/232346 fast/canvas/canvas-createPattern-video-loading.html [ Failure ]
 webkit.org/b/232346 fast/canvas/canvas-createPattern-video-modify.html [ Failure ]
-webkit.org/b/232346 media/video-canvas-createPattern.html [ Failure ]
+webkit.org/b/232346 media/video-canvas-createPattern.html [ Failure Timeout ]
 webkit.org/b/232346 media/video-canvas-drawing-output.html [ Failure ]
 webkit.org/b/232346 media/video-orientation-canvas.html [ Failure ]
+
+webkit.org/b/307033 media/video-main-content-deny-not-in-dom.html [ Pass Timeout ]
 
 # These are skipped globally as they only work with the web-platform.test domain.
 imported/w3c/web-platform-tests/fetch/metadata/fetch.https.sub.any.html [ Pass ]
@@ -4439,7 +4443,7 @@ webkit.org/b/169918 compositing/tiling/tiled-mask-inwindow.html [ Failure ]
 webkit.org/b/169918 compositing/tiling/tiled-reflection-inwindow.html [ Failure ]
 webkit.org/b/169918 compositing/tiling/transform-origin-tiled.html [ Failure ]
 # See also bug #175575
-webkit.org/b/169918 compositing/video/video-object-position.html [ Failure ]
+webkit.org/b/169918 compositing/video/video-object-position.html [ Failure Timeout ]
 webkit.org/b/206499 compositing/visibility/visibility-change-in-subframe.html [ Failure ]
 webkit.org/b/169918 compositing/visibility/visibility-image-layers-dynamic.html [ Failure ]
 webkit.org/b/186667 compositing/repaint/iframes/composited-iframe-with-fixed-background-doc-repaint.html [ Failure Pass ]
