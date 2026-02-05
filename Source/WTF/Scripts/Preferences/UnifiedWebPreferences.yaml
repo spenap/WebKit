@@ -278,20 +278,17 @@ AllowMultiElementImplicitSubmission:
 
 AllowMultipleCommitLayerTreePending:
   type: bool
-  status: internal
+  status: testable
   category: dom
   humanReadableName: "Allow requesting CommitLayerTree before the previous has completed"
   humanReadableDescription: "Allow requesting CommitLayerTree before the previous has completed"
   defaultValue:
     WebKitLegacy:
-      "PLATFORM(IOS_FAMILY)": false
-      default: true
+      default: false
     WebKit:
-      "PLATFORM(IOS_FAMILY)": false
-      default: true
+      default: false
     WebCore:
-      "PLATFORM(IOS_FAMILY)": false
-      default: true
+      default: false
 
 AllowPrivacySensitiveOperationsInNonPersistentDataStores:
   type: bool
