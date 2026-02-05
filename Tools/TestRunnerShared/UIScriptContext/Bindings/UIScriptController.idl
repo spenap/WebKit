@@ -423,6 +423,7 @@ interface UIScriptController {
     readonly attribute boolean isWebContentFirstResponder;
 
     undefined setHardwareKeyboardAttached(boolean attached);
+    undefined setShowKeyboardAfterElementFocusDelay(double delay);
 
     undefined setWebViewEditable(boolean editable);
 

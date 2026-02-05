@@ -8458,6 +8458,9 @@ static RetainPtr<NSObject <WKFormPeripheral>> createInputPeripheralWithView(WebK
 
     _pendingFocusedElementIdentifier = information.identifier;
 
+    if (mayContainSelectableText(information.elementType))
+        _page->setWaitingForPostLayoutEditorStateUpdateAfterFocusingElement(true);
+
     if ([inputDelegate respondsToSelector:@selector(_webView:focusRequiresStrongPasswordAssistance:)]) {
         [self _continueElementDidFocus:information
             requiresStrongPasswordAssistance:[inputDelegate _webView:self.webView focusRequiresStrongPasswordAssistance:focusedElementInfo.get()]
@@ -8526,6 +8529,7 @@ static RetainPtr<NSObject <WKFormPeripheral>> createInputPeripheralWithView(WebK
     _legacyTextInputTraits = nil;
     _extendedTextInputTraits = nil;
 
+    OptionSet<WebKit::RevealFocusedElementDeferralReason> revealFocusedElementDeferralReasons;
     // For elements that have selectable content (e.g. text field) we need to wait for the web process to send an up-to-date
     // selection rect before we can zoom and reveal the selection. Non-selectable elements (e.g. <select>) can be zoomed
     // immediately because they have no selection to reveal.
@@ -8546,15 +8550,17 @@ static RetainPtr<NSObject <WKFormPeripheral>> createInputPeripheralWithView(WebK
             auto keyboard = UIKeyboard.activeKeyboard;
             return keyboard && !keyboard.isMinimized;
         }();
-        _revealFocusedElementDeferrer = WebKit::RevealFocusedElementDeferrer::create(self, [&] {
-            OptionSet reasons { WebKit::RevealFocusedElementDeferralReason::EditorState };
-            if (!self._scroller.firstResponderKeyboardAvoidanceEnabled)
-                reasons.add(WebKit::RevealFocusedElementDeferralReason::KeyboardDidShow);
-            else if (_waitingForKeyboardAppearanceAnimationToStart || ignorePreviousKeyboardWillShowNotification)
-                reasons.add(WebKit::RevealFocusedElementDeferralReason::KeyboardWillShow);
-            return reasons;
-        }());
-        _page->setWaitingForPostLayoutEditorStateUpdateAfterFocusingElement(true);
+
+        if (_page->waitingForPostLayoutEditorStateUpdateAfterFocusingElement())
+            revealFocusedElementDeferralReasons.add(WebKit::RevealFocusedElementDeferralReason::EditorState);
+
+        if (!self._scroller.firstResponderKeyboardAvoidanceEnabled)
+            revealFocusedElementDeferralReasons.add(WebKit::RevealFocusedElementDeferralReason::KeyboardDidShow);
+        else if (_waitingForKeyboardAppearanceAnimationToStart || ignorePreviousKeyboardWillShowNotification)
+            revealFocusedElementDeferralReasons.add(WebKit::RevealFocusedElementDeferralReason::KeyboardWillShow);
+
+        if (!revealFocusedElementDeferralReasons.isEmpty())
+            _revealFocusedElementDeferrer = WebKit::RevealFocusedElementDeferrer::create(self, revealFocusedElementDeferralReasons);
     }
 
     if (![self isFirstResponder])
@@ -8601,7 +8607,7 @@ static RetainPtr<NSObject <WKFormPeripheral>> createInputPeripheralWithView(WebK
     if (editableChanged)
         [_webView _scheduleVisibleContentRectUpdate];
 
-    if (!requiresKeyboard)
+    if (!requiresKeyboard || revealFocusedElementDeferralReasons.isEmpty())
         [self _zoomToRevealFocusedElement];
 
     [self _updateAccessory];
