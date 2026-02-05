@@ -23,6 +23,7 @@
 #include "GraphicsContextGL.h"
 #include "Logging.h"
 #include "PlatformDisplay.h"
+#include <wtf/StringPrintStream.h>
 #include <wtf/TZoneMallocInlines.h>
 #include <wtf/Vector.h>
 #include <wtf/text/StringToIntegerConversion.h>
@@ -370,16 +371,22 @@ static void logGLDebugMessage(GLenum source, GLenum type, GLuint identifier, GLe
     };
 
     RELEASE_LOG_WITH_LEVEL(GLContext, logLevel(severity), "%s (%s) [id=%ld]: %s", sourceName(source), typeName(type), identifier, message);
+    if (type == GL_DEBUG_TYPE_ERROR_KHR && LOG_CHANNEL(GLContext).level >= WTFLogLevel::Debug) {
+        WTF::StringPrintStream backtraceStream;
+        WTFReportBacktraceWithPrefixAndPrintStream(backtraceStream, "#");
+        RELEASE_LOG(GLContext, "Backtrace leading to error:\n%s", backtraceStream.toString().utf8().data());
+    }
 }
 
 bool GLContext::enableDebugLogging()
 {
     const char* glExtensions = reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS));
+    const bool backtraceOnError = LOG_CHANNEL(GLContext).level >= WTFLogLevel::Debug;
 
 #if USE(LIBEPOXY)
     if ((!epoxy_is_desktop_gl() && glVersion() >= 320) || isExtensionSupported(glExtensions, "GL_KHR_debug") || isExtensionSupported(glExtensions, "GL_ARB_debug_output")) {
         glDebugMessageCallbackKHR(logGLDebugMessage, nullptr);
-        glEnable(GL_DEBUG_OUTPUT_KHR);
+        glEnable(backtraceOnError ? GL_DEBUG_OUTPUT_SYNCHRONOUS_KHR : GL_DEBUG_OUTPUT_KHR);
         return true;
     }
 #else
@@ -392,7 +399,7 @@ bool GLContext::enableDebugLogging()
 
     if (debugMessageCallback) {
         debugMessageCallback(logGLDebugMessage, nullptr);
-        glEnable(GL_DEBUG_OUTPUT_KHR);
+        glEnable(backtraceOnError ? GL_DEBUG_OUTPUT_SYNCHRONOUS_KHR : GL_DEBUG_OUTPUT_KHR);
         return true;
     }
 #endif
