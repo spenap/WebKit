@@ -119,7 +119,7 @@ AcceleratedSurface::AcceleratedSurface(WebPage& webPage, Function<void()>&& fram
     : m_webPage(webPage)
     , m_frameCompleteHandler(WTF::move(frameCompleteHandler))
     , m_id(generateID())
-    , m_swapChain(m_id, renderingPurpose, webPage.corePage()->settings().useHardwareBuffersForFrameRendering())
+    , m_swapChain(m_id, renderingPurpose, webPage.corePage()->settings().hardwareAccelerationEnabled())
     , m_isVisible(webPage.activityState().contains(ActivityState::IsVisible))
     , m_useExplicitSync(usesGL() && useExplicitSync())
 {

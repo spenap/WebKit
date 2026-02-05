@@ -67,7 +67,7 @@ WebPageProxy* RemoteWebInspectorUIProxy::platformCreateFrontendPageAndWindow()
 
     // If hardware acceleration is available and not forced already, force it always for the remote inspector view.
     const auto& hardwareAccelerationManager = HardwareAccelerationManager::singleton();
-    if (hardwareAccelerationManager.canUseHardwareAcceleration() && !hardwareAccelerationManager.forceHardwareAcceleration()) {
+    if (hardwareAccelerationManager.canUseHardwareAcceleration() && !hardwareAccelerationManager.forceAcceleratedCompositingMode()) {
         preferences->setForceCompositingMode(true);
         preferences->setThreadedScrollingEnabled(true);
     }

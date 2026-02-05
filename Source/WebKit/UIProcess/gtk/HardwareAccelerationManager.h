@@ -36,13 +36,15 @@ public:
     static HardwareAccelerationManager& singleton();
 
     bool canUseHardwareAcceleration() const { return m_canUseHardwareAcceleration; }
-    bool forceHardwareAcceleration() const { return m_forceHardwareAcceleration; }
+    bool acceleratedCompositingModeEnabled() const { return m_acceleratedCompositingModeEnabled; }
+    bool forceAcceleratedCompositingMode() const { return m_forceAcceleratedCompositingMode; }
 
 private:
     HardwareAccelerationManager();
 
-    bool m_canUseHardwareAcceleration : 1;
-    bool m_forceHardwareAcceleration : 1;
+    bool m_canUseHardwareAcceleration : 1 { true };
+    bool m_acceleratedCompositingModeEnabled : 1 { true };
+    bool m_forceAcceleratedCompositingMode : 1 { true };
 };
 
 } // namespace WebKit

@@ -3447,6 +3447,20 @@ HTTPSByDefaultEnabled:
     WebCore:
       default: false
 
+HardwareAccelerationEnabled:
+  type: bool
+  status: internal
+  humanReadableName: "Hardware acceleration"
+  humanReadableDescription: "Enable hardware acceleration"
+  condition: PLATFORM(GTK) || ENABLE(WPE_PLATFORM)
+  defaultValue:
+    WebKitLegacy:
+      default: true
+    WebKit:
+      default: true
+    WebCore:
+      default: true
+
 HiddenPageCSSAnimationSuspensionEnabled:
   type: bool
   status: embedder
@@ -8580,17 +8594,6 @@ UseGiantTiles:
       default: false
     WebCore:
       default: false
-
-UseHardwareBuffersForFrameRendering:
-  type: bool
-  status: embedder
-  defaultValue:
-    WebKitLegacy:
-      default: true
-    WebKit:
-      default: true
-    WebCore:
-      default: true
 
 UseIFCForSVGText:
   type: bool

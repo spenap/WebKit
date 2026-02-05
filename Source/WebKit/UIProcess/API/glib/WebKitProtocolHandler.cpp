@@ -630,8 +630,6 @@ void WebKitProtocolHandler::handleGPU(WebKitURISchemeRequest* request, RenderPro
 
 #if PLATFORM(GTK)
     addTableRow(versionObject, "GTK version"_s, makeString(GTK_MAJOR_VERSION, '.', GTK_MINOR_VERSION, '.', GTK_MICRO_VERSION, " (build) "_s, gtk_get_major_version(), '.', gtk_get_minor_version(), '.', gtk_get_micro_version(), " (runtime)"_s));
-
-    bool usingDMABufRenderer = AcceleratedBackingStore::checkRequirements();
 #endif
 
 #if PLATFORM(WPE)
@@ -725,7 +723,7 @@ void WebKitProtocolHandler::handleGPU(WebKitURISchemeRequest* request, RenderPro
     if (policy != "never"_s) {
         addTableRow(hardwareAccelerationObject, "API"_s, String::fromUTF8(openGLAPI()));
 #if PLATFORM(GTK)
-        bool showBuffersInfo = usingDMABufRenderer;
+        bool showBuffersInfo = true;
 #elif PLATFORM(WPE) && ENABLE(WPE_PLATFORM)
         bool showBuffersInfo = usingWPEPlatformAPI;
 #else
