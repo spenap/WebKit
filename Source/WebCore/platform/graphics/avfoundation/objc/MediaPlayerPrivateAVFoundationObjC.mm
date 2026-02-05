@@ -431,6 +431,9 @@ MediaPlayerPrivateAVFoundationObjC::MediaPlayerPrivateAVFoundationObjC(MediaPlay
 {
     ALWAYS_LOG(LOGIDENTIFIER);
     m_muted = player.muted();
+    m_volume = player.volume();
+    m_isVideoPlayer = player.isVideoPlayer();
+
 #if HAVE(SPATIAL_TRACKING_LABEL)
     m_defaultSpatialTrackingLabel = player.defaultSpatialTrackingLabel();
     m_spatialTrackingLabel = player.spatialTrackingLabel();
@@ -1102,12 +1105,17 @@ void MediaPlayerPrivateAVFoundationObjC::createAVPlayer()
         m_avPlayer.get().preventsAutomaticBackgroundingDuringVideoPlayback = NO;
 #endif
 
-    if (m_muted) {
+    [m_avPlayer setVolume:m_volume];
+
+    if (m_muted)
         [m_avPlayer setMuted:m_muted];
 
-        if (player->isVideoPlayer())
-            m_avPlayer.get().suppressesAudioRendering = YES;
-    }
+    if (m_isVideoPlayer)
+        [m_avPlayer _setSuppressesAudioRendering:!m_isAudible];
+
+#if HAVE(AVPLAYER_PARTICIPATESINAUDIOSESSION)
+    [m_avPlayer setParticipatesInAudioSession:m_isAudible completionHandler:nil];
+#endif
 
 #if HAVE(SPATIAL_TRACKING_LABEL)
     updateSpatialTrackingLabel();
@@ -1633,6 +1641,10 @@ void MediaPlayerPrivateAVFoundationObjC::setVolume(float volume)
     if (m_volumeLocked)
         return;
 
+    if (m_volume == volume)
+        return;
+    m_volume = volume;
+
     if (!m_avPlayer)
         return;
 
@@ -1649,13 +1661,12 @@ void MediaPlayerPrivateAVFoundationObjC::setMuted(bool muted)
     ALWAYS_LOG(LOGIDENTIFIER, muted);
 
     m_muted = muted;
+    updateIsAudible();
 
     if (!m_avPlayer)
         return;
 
     [m_avPlayer setMuted:m_muted];
-    if (!m_muted)
-        m_avPlayer.get().suppressesAudioRendering = NO;
 }
 
 void MediaPlayerPrivateAVFoundationObjC::setRateDouble(double rate)
@@ -2277,6 +2288,24 @@ void MediaPlayerPrivateAVFoundationObjC::updateVideoLayerGravity(ShouldAnimate s
     [CATransaction commit];
 
     syncTextTrackBounds();
+}
+
+void MediaPlayerPrivateAVFoundationObjC::updateIsAudible()
+{
+    bool isAudible = hasAudio() && !m_muted && m_volume;
+    if (m_isAudible == isAudible)
+        return;
+    m_isAudible = isAudible;
+
+    if (!m_avPlayer)
+        return;
+
+    if (m_isVideoPlayer)
+        [m_avPlayer _setSuppressesAudioRendering:!m_isAudible];
+
+#if HAVE(AVPLAYER_PARTICIPATESINAUDIOSESSION)
+    [m_avPlayer setParticipatesInAudioSession:m_isAudible completionHandler:nil];
+#endif
 }
 
 void MediaPlayerPrivateAVFoundationObjC::metadataLoaded()
