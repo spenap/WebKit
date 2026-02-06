@@ -527,7 +527,6 @@ rendering/style/RenderStyle+GettersInlines.h
 rendering/style/RenderStyle+SettersInlines.h
 rendering/style/RenderStyle.cpp
 rendering/style/RenderStyle.h
-rendering/style/RenderStyleBase+GettersInlines.h
 rendering/style/StyleCachedImage.cpp
 rendering/style/StyleCanvasImage.cpp
 rendering/style/StyleGeneratedImage.cpp

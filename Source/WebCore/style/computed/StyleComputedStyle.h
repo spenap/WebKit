@@ -92,7 +92,7 @@ public:
 #endif
 
 private:
-    friend class WebCore::RenderStyleBase;
+    friend class WebCore::RenderStyleProperties;
 
     ComputedStyle(ComputedStyle&&);
     ComputedStyle& operator=(ComputedStyle&&);

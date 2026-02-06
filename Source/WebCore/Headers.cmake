@@ -3221,8 +3221,6 @@ set(WebCore_PRIVATE_FRAMEWORK_HEADERS
     rendering/style/PositionTryOrder.h
     rendering/style/RenderStyle.h
     rendering/style/RenderStyle+GettersInlines.h
-    rendering/style/RenderStyleBase.h
-    rendering/style/RenderStyleBase+GettersInlines.h
     rendering/style/RenderStyleConstants.h
     rendering/style/StyleCachedImage.h
     rendering/style/StyleContentAlignmentData.h

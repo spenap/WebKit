@@ -58,7 +58,6 @@ class LayoutSize;
 class LayoutUnit;
 class RenderElement;
 class RenderStyle;
-class RenderStyleBase;
 class RenderStyleProperties;
 class ScrollTimeline;
 class TransformationMatrix;
@@ -826,7 +825,6 @@ protected:
     friend class ChangedAnimatablePropertiesFunctions;
     friend class DifferenceFunctions;
     friend class WebCore::RenderStyle;
-    friend class WebCore::RenderStyleBase;
     friend class WebCore::RenderStyleProperties;
 
     ComputedStyleBase(ComputedStyleBase&&);

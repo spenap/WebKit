@@ -33,7 +33,7 @@
 #include "Pagination.h"
 #include "RenderBlock.h"
 #include "RenderElement.h"
-#include "RenderStyleBase+ConstructionInlines.h"
+#include "RenderStyleProperties+ConstructionInlines.h"
 #include "RenderStyle+SettersInlines.h"
 #include "RenderTheme.h"
 #include "StyleCustomPropertyRegistry.h"
