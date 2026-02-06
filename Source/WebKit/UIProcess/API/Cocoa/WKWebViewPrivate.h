@@ -637,8 +637,8 @@ typedef NS_OPTIONS(NSUInteger, _WKWebViewDataType) {
     _WKWebViewDataTypeSessionStorage = 1 << 0
 } WK_API_AVAILABLE(macos(15.4), ios(18.4), visionos(2.4));
 
-- (void)_fetchDataOfTypes:(_WKWebViewDataType)dataTypes completionHandler:(WK_SWIFT_UI_ACTOR void (^)(NSData *))completionHandler WK_API_AVAILABLE(macos(15.4), ios(18.4), visionos(2.4));
-- (void)_restoreData:(NSData *)data completionHandler:(WK_SWIFT_UI_ACTOR void(^)(BOOL))completionHandler WK_API_AVAILABLE(macos(15.4), ios(18.4), visionos(2.4));
+- (void)_fetchDataOfTypes:(_WKWebViewDataType)dataTypes completionHandler:(WK_SWIFT_UI_ACTOR void (^)(NSData *))completionHandler WK_API_DEPRECATED_WITH_REPLACEMENT ("-fetchDataOfTypes:completionHandler:", macos(15.4, 26.0), ios(18.4, 26.0), visionos(2.4, 26.0));
+- (void)_restoreData:(NSData *)data completionHandler:(WK_SWIFT_UI_ACTOR void(^)(BOOL))completionHandler WK_API_DEPRECATED_WITH_REPLACEMENT ("-restoreData:completionHandler:", macos(15.4, 26.0), ios(18.4, 26.0), visionos(2.4, 26.0));
 
 @property (nonatomic) audit_token_t presentingApplicationAuditToken WK_API_AVAILABLE(macos(15.4), ios(18.4), visionos(2.4));
 
