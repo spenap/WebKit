@@ -193,6 +193,22 @@ static inline TextNodesAndText collectText(const SimpleRange& range, IncludeText
     return nodesAndText;
 }
 
+static void addBoxShadowIfNeeded(Node& node, String&& styleValue)
+{
+    Ref document = node.document();
+    if (!document->settings().textExtractionDebugUIEnabled())
+        return;
+
+    RefPtr element = lineageOfType<HTMLElement>(node).first();
+    if (!element)
+        return;
+
+    if (element == document->body())
+        return;
+
+    element->setInlineStyleProperty(CSSPropertyBoxShadow, WTF::move(styleValue), IsImportant::Yes);
+}
+
 using ClientNodeAttributesMap = WeakHashMap<Node, HashMap<String, String>, WeakPtrImplWithEventTargetData>;
 
 struct TraversalContext {
@@ -1072,11 +1088,8 @@ Result extractItem(Request&& request, LocalFrame& frame)
         extractionRootNode = findContainerNodeForDataDetectorResults(*extractionRootNode, request.dataDetectorTypes);
 #endif
 
-    if (frame.settings().textExtractionDebugUIEnabled() && extractionRootNode) {
-        RefPtr elementAncestor = lineageOfType<HTMLElement>(*extractionRootNode).first();
-        if (elementAncestor && elementAncestor != bodyElement)
-            elementAncestor->setInlineStyleProperty(CSSPropertyBoxShadow, "0 0 10px #0088FF"_s, IsImportant::Yes);
-    }
+    if (extractionRootNode)
+        addBoxShadowIfNeeded(*extractionRootNode, "0 0 10px #0088FF"_s);
 
     if (!extractionRootNode)
         return { root, 0 };
@@ -1471,6 +1484,8 @@ static void dispatchSimulatedClick(Node& targetNode, const String& searchText, C
     if (!frame)
         return completion(false, nullFrameDescription);
 
+    addBoxShadowIfNeeded(targetNode, "0 0 16px #34c759"_s);
+
     std::optional<FloatRect> targetRectInRootView;
     if (!searchText.isEmpty()) {
         auto foundRange = searchForText(*element, searchText);
@@ -1523,6 +1538,7 @@ static bool selectOptionByValue(NodeIdentifier identifier, const String& optionT
         if (optionText.isEmpty())
             return false;
 
+        addBoxShadowIfNeeded(*select, "0 0 16px #34c759"_s);
         select->setValue(optionText);
         return select->selectedIndex() != -1;
     }
@@ -1559,6 +1575,7 @@ static void selectText(LocalFrame& frame, std::optional<NodeIdentifier>&& identi
     if (RefPtr control = dynamicDowncast<HTMLTextFormControlElement>(*foundNode)) {
         // FIXME: This should probably honor `searchText`.
         control->select();
+        addBoxShadowIfNeeded(*control, "0 0 16px #34c759"_s);
         return completion(true, { });
     }
 
@@ -1609,6 +1626,7 @@ static void scrollBy(LocalFrame& frame, std::optional<NodeIdentifier>&& identifi
     if (!scroller)
         return completion(false, "No scrollable area found"_s);
 
+    addBoxShadowIfNeeded(*foundNode, "0 0 16px #34c759"_s);
     scroller->scrollToOffsetWithoutAnimation(FloatPoint { scroller->scrollOffset() } + scrollDelta);
     completion(true, { });
 }
@@ -1854,6 +1872,8 @@ static String textDescription(Node* node, Vector<String>& stringsToValidate)
 {
     if (!node)
         return { };
+
+    addBoxShadowIfNeeded(*node, "0 0 16px #ff383c"_s);
 
     auto addRenderedTextOrLabeledChild = [&](const String& description) {
         StringBuilder extendedDescription;
