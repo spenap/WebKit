@@ -1143,7 +1143,7 @@ Ref<RTCIceTransport> RTCPeerConnection::getOrCreateIceTransport(UniqueRef<RTCIce
     auto index = m_iceTransports.findIf([&backend](auto& transport) { return backend.get() == transport->backend(); });
     if (index == notFound) {
         index = m_iceTransports.size();
-        m_iceTransports.append(RTCIceTransport::create(*protectedScriptExecutionContext(), WTF::move(backend), *this));
+        m_iceTransports.append(RTCIceTransport::create(*protect(scriptExecutionContext()), WTF::move(backend), *this));
     }
 
     return m_iceTransports[index].copyRef();

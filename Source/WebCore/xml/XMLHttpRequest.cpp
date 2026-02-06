@@ -215,7 +215,7 @@ Ref<Blob> XMLHttpRequest::createResponseBlob()
     Vector<uint8_t> data;
     if (m_binaryResponseBuilder)
         data = m_binaryResponseBuilder.takeBuffer()->extractData();
-    return Blob::create(protectedScriptExecutionContext().get(), WTF::move(data), responseMIMEType(FinalMIMEType::Yes)); // responseMIMEType defaults to text/xml which may be incorrect.
+    return Blob::create(protect(scriptExecutionContext()).get(), WTF::move(data), responseMIMEType(FinalMIMEType::Yes)); // responseMIMEType defaults to text/xml which may be incorrect.
 }
 
 RefPtr<ArrayBuffer> XMLHttpRequest::createResponseArrayBuffer()
@@ -336,7 +336,7 @@ ExceptionOr<void> XMLHttpRequest::setWithCredentials(bool value)
 ExceptionOr<void> XMLHttpRequest::open(const String& method, const String& url)
 {
     // If the async argument is omitted, set async to true.
-    return open(method, protectedScriptExecutionContext()->completeURL(url), true);
+    return open(method, protect(scriptExecutionContext())->completeURL(url), true);
 }
 
 ExceptionOr<void> XMLHttpRequest::open(const String& method, const URL& url, bool async)
@@ -400,7 +400,7 @@ ExceptionOr<void> XMLHttpRequest::open(const String& method, const URL& url, boo
 
 ExceptionOr<void> XMLHttpRequest::open(const String& method, const String& url, bool async, const String& user, const String& password)
 {
-    auto urlWithCredentials = protectedScriptExecutionContext()->completeURL(url);
+    auto urlWithCredentials = protect(scriptExecutionContext())->completeURL(url);
     if (!user.isNull())
         urlWithCredentials.setUser(user);
     if (!password.isNull())
@@ -445,7 +445,7 @@ std::optional<ExceptionOr<void>> XMLHttpRequest::prepareToSend()
 
 ExceptionOr<void> XMLHttpRequest::send(std::optional<SendTypes>&& sendType)
 {
-    InspectorInstrumentation::willSendXMLHttpRequest(protectedScriptExecutionContext().get(), url().string());
+    InspectorInstrumentation::willSendXMLHttpRequest(protect(scriptExecutionContext()).get(), url().string());
     m_userGestureToken = UserGestureIndicator::currentUserGesture();
 
     ExceptionOr<void> result;
@@ -528,7 +528,7 @@ ExceptionOr<void> XMLHttpRequest::send(Blob& body)
             // but because of the architecture of blob-handling that will require a fair amount of work.
 
             ASCIILiteral consoleMessage { "POST of a Blob to non-HTTP protocols in XMLHttpRequest.send() is currently unsupported."_s };
-            protectedScriptExecutionContext()->addConsoleMessage(MessageSource::JS, MessageLevel::Warning, consoleMessage);
+            protect(scriptExecutionContext())->addConsoleMessage(MessageSource::JS, MessageLevel::Warning, consoleMessage);
 
             return createRequest();
         }
@@ -570,7 +570,7 @@ ExceptionOr<void> XMLHttpRequest::send(DOMFormData& body)
 ExceptionOr<void> XMLHttpRequest::send(ArrayBuffer& body)
 {
     ASCIILiteral consoleMessage { "ArrayBuffer is deprecated in XMLHttpRequest.send(). Use ArrayBufferView instead."_s };
-    protectedScriptExecutionContext()->addConsoleMessage(MessageSource::JS, MessageLevel::Warning, consoleMessage);
+    protect(scriptExecutionContext())->addConsoleMessage(MessageSource::JS, MessageLevel::Warning, consoleMessage);
     return sendBytesData(body.span());
 }
 
@@ -807,7 +807,7 @@ ExceptionOr<void> XMLHttpRequest::setRequestHeader(const String& name, const Str
         return Exception { ExceptionCode::SyntaxError };
 
     if (isForbiddenHeader(name, normalizedValue)) {
-        logConsoleError(protectedScriptExecutionContext().get(), makeString("Refused to set unsafe header \""_s, name, '"'));
+        logConsoleError(protect(scriptExecutionContext()).get(), makeString("Refused to set unsafe header \""_s, name, '"'));
         return { };
     }
 

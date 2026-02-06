@@ -140,12 +140,12 @@ ExceptionOr<Ref<ReadableStream>> ReadableStream::createFromJSValues(JSC::JSGloba
     if (result.hasException())
         return result.releaseException();
 
-    return adoptRef(*new ReadableStream(jsDOMGlobalObject.protectedScriptExecutionContext().get(), result.releaseReturnValue()));
+    return adoptRef(*new ReadableStream(protect(jsDOMGlobalObject.scriptExecutionContext()).get(), result.releaseReturnValue()));
 }
 
 ExceptionOr<Ref<ReadableStream>> ReadableStream::createFromByteUnderlyingSource(JSDOMGlobalObject& globalObject, JSC::JSValue underlyingSource, UnderlyingSource&& underlyingSourceDict, double highWaterMark)
 {
-    Ref readableStream = adoptRef(*new ReadableStream(globalObject.protectedScriptExecutionContext().get()));
+    Ref readableStream = adoptRef(*new ReadableStream(protect(globalObject.scriptExecutionContext()).get()));
 
     auto exception = readableStream->setupReadableByteStreamControllerFromUnderlyingSource(globalObject, underlyingSource, WTF::move(underlyingSourceDict), highWaterMark);
     if (exception.hasException())
@@ -167,7 +167,7 @@ ExceptionOr<Ref<ReadableStream>> ReadableStream::create(JSDOMGlobalObject& globa
 Ref<ReadableStream> ReadableStream::create(Ref<InternalReadableStream>&& internalReadableStream)
 {
     auto* globalObject = internalReadableStream->globalObject();
-    return adoptRef(*new ReadableStream(globalObject->protectedScriptExecutionContext().get(), WTF::move(internalReadableStream)));
+    return adoptRef(*new ReadableStream(protect(globalObject->scriptExecutionContext()).get(), WTF::move(internalReadableStream)));
 }
 
 class AsyncIteratorSource : public ReadableStreamSource, public RefCountedAndCanMakeWeakPtr<AsyncIteratorSource> {
@@ -383,7 +383,7 @@ ReadableStreamDefaultReader* ReadableStream::defaultReader()
 // https://streams.spec.whatwg.org/#abstract-opdef-createreadablebytestream
 Ref<ReadableStream> ReadableStream::createReadableByteStream(JSDOMGlobalObject& globalObject, ReadableByteStreamController::PullAlgorithm&& pullAlgorithm, ReadableByteStreamController::CancelAlgorithm&& cancelAlgorithm, ByteStreamOptions&& options)
 {
-    Ref readableStream = adoptRef(*new ReadableStream(globalObject.protectedScriptExecutionContext().get(), { }, WTF::move(options.dependencyToVisit), options.isSourceReachableFromOpaqueRoot));
+    Ref readableStream = adoptRef(*new ReadableStream(protect(globalObject.scriptExecutionContext()).get(), { }, WTF::move(options.dependencyToVisit), options.isSourceReachableFromOpaqueRoot));
     readableStream->setupReadableByteStreamController(globalObject, WTF::move(pullAlgorithm), WTF::move(cancelAlgorithm), options.highwaterMark, options.startSynchronously);
     return readableStream;
 }

@@ -56,7 +56,6 @@ public:
     const Document& document() const { return m_document; }
 
     HTMLModelElement* immersiveElement() const;
-    RefPtr<HTMLModelElement> protectedImmersiveElement() const { return immersiveElement(); }
 
     void requestImmersive(HTMLModelElement*, CompletionHandler<void(ExceptionOr<void>)>&&);
     void exitImmersive(CompletionHandler<void(ExceptionOr<void>)>&&);

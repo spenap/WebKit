@@ -164,7 +164,7 @@ ExceptionOr<void> FetchRequest::initializeOptions(const Init& init)
 {
     ASSERT(scriptExecutionContext());
 
-    auto exception = buildOptions(m_options, m_request, m_referrer, m_priority, *protectedScriptExecutionContext(), init);
+    auto exception = buildOptions(m_options, m_request, m_referrer, m_priority, *protect(scriptExecutionContext()), init);
     if (exception)
         return WTF::move(exception.value());
 

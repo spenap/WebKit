@@ -96,7 +96,7 @@ private:
 BroadcastChannel::MainThreadBridge::MainThreadBridge(BroadcastChannel& channel, const String& name)
     : m_broadcastChannel(channel)
     , m_name(name.isolatedCopy())
-    , m_origin(partitionedSecurityOriginFromContext(*channel.protectedScriptExecutionContext()).isolatedCopy())
+    , m_origin(partitionedSecurityOriginFromContext(*protect(channel.scriptExecutionContext())).isolatedCopy())
 {
 }
 

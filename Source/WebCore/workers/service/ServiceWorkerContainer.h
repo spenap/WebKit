@@ -147,7 +147,6 @@ private:
     Ref<SWClientConnection> ensureProtectedSWClientConnection();
 
     ScriptExecutionContext* scriptExecutionContext() const final;
-    using ActiveDOMObject::protectedScriptExecutionContext;
     enum EventTargetInterfaceType eventTargetInterface() const final { return EventTargetInterfaceType::ServiceWorkerContainer; }
     void refEventTarget() final;
     void derefEventTarget() final;

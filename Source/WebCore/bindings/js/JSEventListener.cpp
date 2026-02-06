@@ -206,13 +206,13 @@ void JSEventListener::handleEvent(ScriptExecutionContext& scriptExecutionContext
         if (scope.exception()) [[unlikely]] {
             auto* exception = scope.exception();
             scope.clearException();
-            event.protectedTarget()->uncaughtExceptionInEventHandler();
+            protect(event.target())->uncaughtExceptionInEventHandler();
             reportException(jsFunctionGlobalObject, exception);
             return;
         }
         callData = JSC::getCallData(handleEventFunction);
         if (callData.type == CallData::Type::None) {
-            event.protectedTarget()->uncaughtExceptionInEventHandler();
+            protect(event.target())->uncaughtExceptionInEventHandler();
             reportException(jsFunctionGlobalObject, createTypeError(lexicalGlobalObject, "'handleEvent' property of event listener should be callable"_s));
             return;
         }
@@ -248,7 +248,7 @@ void JSEventListener::handleEvent(ScriptExecutionContext& scriptExecutionContext
         }
 
         if (exception) {
-            event.protectedTarget()->uncaughtExceptionInEventHandler();
+            protect(event.target())->uncaughtExceptionInEventHandler();
             reportException(jsFunctionGlobalObject, exception);
             return true;
         }

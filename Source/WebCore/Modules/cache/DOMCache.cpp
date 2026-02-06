@@ -240,7 +240,7 @@ ExceptionOr<Ref<FetchRequest>> DOMCache::requestFromInfo(RequestInfo&& info, boo
             return Exception { ExceptionCode::TypeError, "Request method is not GET"_s };
         }
     } else {
-        auto result = FetchRequest::create(*protectedScriptExecutionContext(), WTF::move(info), { });
+        auto result = FetchRequest::create(*protect(scriptExecutionContext()), WTF::move(info), { });
         if (result.hasException())
             return result.releaseException();
         request = result.releaseReturnValue();
@@ -401,7 +401,7 @@ void DOMCache::put(RequestInfo&& info, Ref<FetchResponse>&& response, DOMPromise
 
     // FIXME: for efficiency, we should load blobs/form data directly instead of going through the readableStream path.
     if (response->isBlobBody() || response->isBlobFormData()) {
-        auto streamOrException = response->readableStream(*protectedScriptExecutionContext()->globalObject());
+        auto streamOrException = response->readableStream(*protect(scriptExecutionContext())->globalObject());
         if (streamOrException.hasException()) [[unlikely]] {
             promise.reject(streamOrException.releaseException());
             return;

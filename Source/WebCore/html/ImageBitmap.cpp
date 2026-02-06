@@ -811,7 +811,7 @@ private:
     void createImageBitmapAndCallCompletionHandlerSoon(RefPtr<ArrayBuffer>&& arrayBuffer)
     {
         m_arrayBufferToProcess = WTF::move(arrayBuffer);
-        protectedScriptExecutionContext()->checkedEventLoop()->queueTask(TaskSource::InternalAsyncTask, [weakThis = WeakPtr { *this }] {
+        protect(scriptExecutionContext())->checkedEventLoop()->queueTask(TaskSource::InternalAsyncTask, [weakThis = WeakPtr { *this }] {
             if (RefPtr protectedThis = weakThis.get())
                 protectedThis->createImageBitmapAndCallCompletionHandler();
         });

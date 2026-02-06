@@ -788,7 +788,7 @@ BarProp& LocalDOMWindow::toolbar()
 Navigator& LocalDOMWindow::navigator()
 {
     if (!m_navigator)
-        m_navigator = Navigator::create(protectedScriptExecutionContext().get(), *this);
+        m_navigator = Navigator::create(protect(scriptExecutionContext()).get(), *this);
     ASSERT(m_navigator->scriptExecutionContext() == document());
 
     return *m_navigator;

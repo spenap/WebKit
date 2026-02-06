@@ -291,7 +291,7 @@ void Blob::loadBlob(FileReaderLoader::ReadType readType, Function<void(BlobLoade
         pendingActivity->object().m_blobLoaders.take(&blobLoader);
     });
 
-    blobLoader->start(*this, protectedScriptExecutionContext().get(), readType);
+    blobLoader->start(*this, protect(scriptExecutionContext()).get(), readType);
 
     if (blobLoader->isLoading())
         m_blobLoaders.add(WTF::move(blobLoader));

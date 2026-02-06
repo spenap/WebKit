@@ -171,7 +171,6 @@ public:
     // EventTarget
     enum EventTargetInterfaceType eventTargetInterface() const final { return EventTargetInterfaceType::RTCPeerConnection; }
     ScriptExecutionContext* scriptExecutionContext() const final;
-    using ActiveDOMObject::protectedScriptExecutionContext;
 
     // API used by PeerConnectionBackend and relatives
     void updateIceGatheringState(RTCIceGatheringState);

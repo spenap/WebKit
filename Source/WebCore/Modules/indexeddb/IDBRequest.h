@@ -108,7 +108,6 @@ public:
     IndexedDB::IndexRecordType requestedIndexRecordType() const;
 
     ScriptExecutionContext* scriptExecutionContext() const final;
-    using IDBActiveDOMObject::protectedScriptExecutionContext;
 
     // ActiveDOMObject.
     void ref() const final { ThreadSafeRefCounted::ref(); }

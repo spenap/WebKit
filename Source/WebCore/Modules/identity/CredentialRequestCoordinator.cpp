@@ -147,7 +147,7 @@ void CredentialRequestCoordinator::prepareCredentialRequest(const Document& docu
 
     setState(PickerState::Presenting);
     setCurrentPromise(WTF::move(promise));
-    observeContext(document.protectedScriptExecutionContext().get());
+    observeContext(protect(document.scriptExecutionContext()).get());
 
     auto validatedCredentialRequests = validatedRequestsOrException.releaseReturnValue();
     DigitalCredentialsRequestData requestData {

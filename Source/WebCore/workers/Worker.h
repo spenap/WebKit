@@ -79,7 +79,6 @@ public:
     const String& name() const { return m_options.name; }
 
     ScriptExecutionContext* scriptExecutionContext() const final;
-    using ActiveDOMObject::protectedScriptExecutionContext;
 
     void dispatchEvent(Event&) final;
     void reportError(const String&);

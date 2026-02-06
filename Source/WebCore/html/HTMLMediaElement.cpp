@@ -3879,7 +3879,7 @@ void HTMLMediaElement::setAudioOutputDevice(String&& deviceId, DOMPromiseDeferre
     if (RefPtr player = m_player)
         player->audioOutputDeviceChanged();
 
-    protectedScriptExecutionContext()->checkedEventLoop()->queueTask(TaskSource::MediaElement, [this, protectedThis = Ref { *this }, deviceId = WTF::move(deviceId), promise = WTF::move(promise)]() mutable {
+    protect(scriptExecutionContext())->checkedEventLoop()->queueTask(TaskSource::MediaElement, [this, protectedThis = Ref { *this }, deviceId = WTF::move(deviceId), promise = WTF::move(promise)]() mutable {
         m_audioOutputHashedDeviceId = WTF::move(deviceId);
         promise.resolve();
     });
@@ -5086,7 +5086,7 @@ void HTMLMediaElement::mediaPlayerDidAddAudioTrack(AudioTrackPrivate& track)
         setAutoplayEventPlaybackState(AutoplayEventPlaybackState::PreventedAutoplay);
     }
 
-    addAudioTrack(AudioTrack::create(protectedScriptExecutionContext().get(), track));
+    addAudioTrack(AudioTrack::create(protect(scriptExecutionContext()).get(), track));
 }
 
 void HTMLMediaElement::mediaPlayerDidAddTextTrack(InbandTextTrackPrivate& track)
@@ -5123,7 +5123,7 @@ void HTMLMediaElement::mediaPlayerDidAddTextTrack(InbandTextTrackPrivate& track)
 
 void HTMLMediaElement::mediaPlayerDidAddVideoTrack(VideoTrackPrivate& track)
 {
-    addVideoTrack(VideoTrack::create(protectedScriptExecutionContext().get(), track));
+    addVideoTrack(VideoTrack::create(protect(scriptExecutionContext()).get(), track));
 }
 
 void HTMLMediaElement::mediaPlayerDidRemoveAudioTrack(AudioTrackPrivate& track)
@@ -5309,7 +5309,7 @@ ExceptionOr<Ref<TextTrack>> HTMLMediaElement::addTextTrack(const AtomString& kin
 AudioTrackList& HTMLMediaElement::ensureAudioTracks()
 {
     if (!m_audioTracks) {
-        lazyInitialize(m_audioTracks, AudioTrackList::create(ActiveDOMObject::protectedScriptExecutionContext().get()));
+        lazyInitialize(m_audioTracks, AudioTrackList::create(protect(ActiveDOMObject::scriptExecutionContext()).get()));
         m_audioTracks->setOpaqueRootObserver(m_opaqueRootProvider);
     }
 
@@ -5319,7 +5319,7 @@ AudioTrackList& HTMLMediaElement::ensureAudioTracks()
 TextTrackList& HTMLMediaElement::ensureTextTracks()
 {
     if (!m_textTracks) {
-        lazyInitialize(m_textTracks, TextTrackList::create(ActiveDOMObject::protectedScriptExecutionContext().get()));
+        lazyInitialize(m_textTracks, TextTrackList::create(protect(ActiveDOMObject::scriptExecutionContext()).get()));
         m_textTracks->setOpaqueRootObserver(m_opaqueRootProvider);
         m_textTracks->setDuration(durationMediaTime());
     }
@@ -5330,7 +5330,7 @@ TextTrackList& HTMLMediaElement::ensureTextTracks()
 VideoTrackList& HTMLMediaElement::ensureVideoTracks()
 {
     if (!m_videoTracks) {
-        lazyInitialize(m_videoTracks, VideoTrackList::create(ActiveDOMObject::protectedScriptExecutionContext().get()));
+        lazyInitialize(m_videoTracks, VideoTrackList::create(protect(ActiveDOMObject::scriptExecutionContext()).get()));
         m_videoTracks->setOpaqueRootObserver(m_opaqueRootProvider);
     }
 

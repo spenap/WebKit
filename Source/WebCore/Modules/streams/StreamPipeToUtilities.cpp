@@ -46,7 +46,7 @@ class StreamPipeToState : public RefCounted<StreamPipeToState>, public ContextDe
 public:
     static Ref<StreamPipeToState> create(JSDOMGlobalObject& globalObject, Ref<ReadableStream>&& source, Ref<WritableStream>&& destination, Ref<ReadableStreamDefaultReader>&& reader, Ref<InternalWritableStreamWriter>&& writer, StreamPipeOptions&& options, RefPtr<DeferredPromise>&& promise)
     {
-        Ref state = adoptRef(*new StreamPipeToState(globalObject.protectedScriptExecutionContext().get(), WTF::move(source), WTF::move(destination), WTF::move(reader), WTF::move(writer), WTF::move(options), WTF::move(promise)));
+        Ref state = adoptRef(*new StreamPipeToState(protect(globalObject.scriptExecutionContext()).get(), WTF::move(source), WTF::move(destination), WTF::move(reader), WTF::move(writer), WTF::move(options), WTF::move(promise)));
 
         state->handleSignal();
 

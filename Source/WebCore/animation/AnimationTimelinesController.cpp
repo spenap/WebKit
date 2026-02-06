@@ -229,7 +229,7 @@ void AnimationTimelinesController::updateAnimationsAndSendEvents(ReducedResoluti
 
         // 7. Dispatch each of the events in events to dispatch at their corresponding target using the order established in the previous step.
         for (auto& event : events)
-            event->protectedTarget()->dispatchEvent(event);
+            protect(event->target())->dispatchEvent(event);
     }
 
     // This will cancel any scheduled invalidation if we end up removing all animations.

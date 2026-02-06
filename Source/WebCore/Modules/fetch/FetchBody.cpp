@@ -203,7 +203,7 @@ void FetchBody::consumeAsStream(FetchBodyOwner& owner, FetchBodySource& source)
     } else if (isBlob())
         owner.loadBlob(protect(blobBody()).get(), nullptr);
     else if (isFormData())
-        checkedConsumer()->consumeFormDataAsStream(protect(formDataBody()).get(), source, owner.protectedScriptExecutionContext().get());
+        checkedConsumer()->consumeFormDataAsStream(protect(formDataBody()).get(), source, protect(owner.scriptExecutionContext()).get());
     else if (CheckedRef consumer = this->consumer(); consumer->hasData())
         closeStream = source.enqueue(consumer->asArrayBuffer());
     else
@@ -243,7 +243,7 @@ void FetchBody::consumeBlob(FetchBodyOwner& owner, Ref<DeferredPromise>&& promis
 
 void FetchBody::consumeFormData(FetchBodyOwner& owner, Ref<DeferredPromise>&& promise)
 {
-    checkedConsumer()->resolveWithFormData(WTF::move(promise), owner.contentType(), protect(formDataBody()).get(), owner.protectedScriptExecutionContext().get());
+    checkedConsumer()->resolveWithFormData(WTF::move(promise), owner.contentType(), protect(formDataBody()).get(), protect(owner.scriptExecutionContext()).get());
     m_data = nullptr;
 }
 

@@ -244,7 +244,7 @@ JSC::JSValue ScriptController::linkAndEvaluateModuleScriptInWorld(LoadableModule
     Ref protectedFrame { m_frame.get() };
 
     NakedPtr<JSC::Exception> evaluationException;
-    auto returnValue = JSExecState::linkAndEvaluateModule(lexicalGlobalObject, Identifier::fromUid(vm, moduleScript.protectedModuleKey().get()), jsUndefined(), evaluationException);
+    auto returnValue = JSExecState::linkAndEvaluateModule(lexicalGlobalObject, Identifier::fromUid(vm, protect(moduleScript.moduleKey()).get()), jsUndefined(), evaluationException);
     if (evaluationException) {
         // FIXME: Give a chance to dump the stack trace if the "crossorigin" attribute allows.
         // https://bugs.webkit.org/show_bug.cgi?id=164539
@@ -957,12 +957,12 @@ public:
 
     void reportWarning(const String& message) const final
     {
-        m_globalObject->protectedScriptExecutionContext()->addConsoleMessage(MessageSource::JS, MessageLevel::Warning, message);
+        protect(m_globalObject->scriptExecutionContext())->addConsoleMessage(MessageSource::JS, MessageLevel::Warning, message);
     }
 
     void reportError(const String& message) const final
     {
-        m_globalObject->protectedScriptExecutionContext()->addConsoleMessage(MessageSource::JS, MessageLevel::Error, message);
+        protect(m_globalObject->scriptExecutionContext())->addConsoleMessage(MessageSource::JS, MessageLevel::Error, message);
     }
 
 private:

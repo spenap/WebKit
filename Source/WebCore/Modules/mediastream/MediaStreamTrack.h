@@ -204,7 +204,6 @@ public:
 protected:
     MediaStreamTrack(ScriptExecutionContext&, Ref<MediaStreamTrackPrivate>&&);
 
-    using ActiveDOMObject::protectedScriptExecutionContext;
 
 private:
     explicit MediaStreamTrack(MediaStreamTrack&);

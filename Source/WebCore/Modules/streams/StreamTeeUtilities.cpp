@@ -48,7 +48,7 @@ public:
     static Ref<StreamTeeState> create(JSDOMGlobalObject& globalObject, Ref<ReadableStream>&& stream, Ref<Reader>&& reader)
     {
         auto [cancelPromise, cancelDeferred] = createPromiseAndWrapper(globalObject);
-        return adoptRef(*new StreamTeeState(globalObject.protectedScriptExecutionContext().get(), WTF::move(stream), WTF::move(reader), WTF::move(cancelDeferred), WTF::move(cancelPromise)));
+        return adoptRef(*new StreamTeeState(protect(globalObject.scriptExecutionContext()).get(), WTF::move(stream), WTF::move(reader), WTF::move(cancelDeferred), WTF::move(cancelPromise)));
     }
 
     ~StreamTeeState();

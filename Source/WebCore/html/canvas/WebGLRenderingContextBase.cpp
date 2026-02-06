@@ -491,7 +491,7 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(CanvasBase& canvas, CanvasR
     , m_generatedImageCache(4)
     , m_attributes(WTF::move(attributes))
     , m_creationAttributes(m_attributes)
-    , m_numGLErrorsToConsoleAllowed(protectedScriptExecutionContext()->settingsValues().webGLErrorsToConsoleEnabled ? maxGLErrorsAllowedToConsole : 0)
+    , m_numGLErrorsToConsoleAllowed(protect(scriptExecutionContext())->settingsValues().webGLErrorsToConsoleEnabled ? maxGLErrorsAllowedToConsole : 0)
 {
     ASSERT(isWebGL());
 }

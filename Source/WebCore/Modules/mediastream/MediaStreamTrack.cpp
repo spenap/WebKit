@@ -234,7 +234,7 @@ RefPtr<MediaStreamTrack> MediaStreamTrack::clone()
 
     ALWAYS_LOG(LOGIDENTIFIER);
 
-    auto clone = MediaStreamTrack::create(*protectedScriptExecutionContext(), m_private->clone(), RegisterCaptureTrackToOwner::No);
+    auto clone = MediaStreamTrack::create(*protect(scriptExecutionContext()), m_private->clone(), RegisterCaptureTrackToOwner::No);
 
     clone->m_readyState = m_readyState;
     if (clone->ended() && clone->m_readyState == State::Live)
@@ -501,7 +501,7 @@ void MediaStreamTrack::trackEnded(MediaStreamTrackPrivate&)
     ALWAYS_LOG(LOGIDENTIFIER);
 
     if (m_isCaptureTrack && m_private->captureDidFail() && m_readyState != State::Ended)
-        protectedScriptExecutionContext()->addConsoleMessage(MessageSource::JS, MessageLevel::Error, "A MediaStreamTrack ended due to a capture failure"_s);
+        protect(scriptExecutionContext())->addConsoleMessage(MessageSource::JS, MessageLevel::Error, "A MediaStreamTrack ended due to a capture failure"_s);
 
     // http://w3c.github.io/mediacapture-main/#life-cycle
     // When a MediaStreamTrack track ends for any reason other than the stop() method being invoked, the User Agent must
