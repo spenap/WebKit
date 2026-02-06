@@ -322,7 +322,7 @@ void ViewGestureController::beginSwipeGesture(_UINavigationInteractiveTransition
     auto pageID = page->identifier();
     GestureID gestureID = m_currentGestureID;
     [m_swipeTransitionContext _setCompletionHandler:[pageID, gestureID, targetItem] (_UIViewControllerTransitionContext *context, BOOL didComplete) {
-        if (auto gestureController = controllerForGesture(pageID, gestureID))
+        if (RefPtr gestureController = controllerForGesture(pageID, gestureID))
             gestureController->endSwipeGesture(targetItem.get(), context, !didComplete);
     }];
 
@@ -431,7 +431,7 @@ void ViewGestureController::endSwipeGesture(WebBackForwardListItem* targetItem, 
         }
 
         page->callAfterNextPresentationUpdate([pageID, gestureID] {
-            if (auto gestureController = controllerForGesture(pageID, gestureID))
+            if (RefPtr gestureController = controllerForGesture(pageID, gestureID))
                 gestureController->willCommitPostSwipeTransitionLayerTree(true);
         });
         drawingArea->hideContentUntilPendingUpdate();

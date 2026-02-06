@@ -1583,7 +1583,7 @@ void WebPage::cancelPotentialTapInFrame(WebFrame& frame)
         selectionChangedHandler();
 
     if (m_potentialTapNode) {
-        auto* potentialTapFrame = m_potentialTapNode->document().frame();
+        RefPtr potentialTapFrame = m_potentialTapNode->document().frame();
         if (potentialTapFrame && !potentialTapFrame->tree().isDescendantOf(frame.coreLocalFrame()))
             return;
     }
@@ -3148,12 +3148,12 @@ void WebPage::prepareToRunModalJavaScriptDialog()
     preemptivelySendAutocorrectionContext();
 }
 
-static HTMLAnchorElement* containingLinkAnchorElement(Element& element)
+static RefPtr<HTMLAnchorElement> containingLinkAnchorElement(Element& element)
 {
     // FIXME: There is code in the drag controller that supports any link, even if it's not an HTMLAnchorElement. Why is this different?
-    for (auto& currentElement : lineageOfType<HTMLAnchorElement>(element)) {
-        if (currentElement.isLink())
-            return &currentElement;
+    for (Ref currentElement : lineageOfType<HTMLAnchorElement>(element)) {
+        if (currentElement->isLink())
+            return currentElement;
     }
     return nullptr;
 }
@@ -3316,7 +3316,7 @@ static std::optional<std::pair<RenderImage&, Image&>> imageRendererAndImage(Elem
     if (!renderImage->cachedImage() || renderImage->cachedImage()->errorOccurred())
         return std::nullopt;
 
-    auto* image = renderImage->cachedImage()->imageForRenderer(renderImage);
+    RefPtr image = renderImage->cachedImage()->imageForRenderer(renderImage);
     if (!image || image->width() <= 1 || image->height() <= 1)
         return std::nullopt;
 
@@ -3421,7 +3421,7 @@ static void elementPositionInformation(WebPage& page, Element& element, const In
 
     RefPtr elementForScrollTesting = linkElement ? linkElement.get() : &element;
     if (CheckedPtr renderer = elementForScrollTesting->renderer()) {
-        if (auto* scrollingCoordinator = page.scrollingCoordinator())
+        if (RefPtr scrollingCoordinator = page.scrollingCoordinator())
             info.containerScrollingNodeID = scrollingCoordinator->scrollableContainerNodeID(*renderer);
     }
 
@@ -3454,7 +3454,7 @@ static void elementPositionInformation(WebPage& page, Element& element, const In
     
 static void selectionPositionInformation(WebPage& page, const InteractionInformationRequest& request, InteractionInformationAtPosition& info)
 {
-    auto* localMainFrame = dynamicDowncast<WebCore::LocalFrame>(page.corePage()->mainFrame());
+    RefPtr localMainFrame = dynamicDowncast<WebCore::LocalFrame>(page.corePage()->mainFrame());
     if (!localMainFrame)
         return;
 
@@ -3532,7 +3532,7 @@ static void textInteractionPositionInformation(WebPage& page, const HTMLInputEle
         return;
 
     constexpr OptionSet<HitTestRequest::Type> hitType { HitTestRequest::Type::ReadOnly, HitTestRequest::Type::Active, HitTestRequest::Type::AllowVisibleChildFrameContentOnly };
-    auto* localMainFrame = dynamicDowncast<WebCore::LocalFrame>(page.corePage()->mainFrame());
+    RefPtr localMainFrame = dynamicDowncast<WebCore::LocalFrame>(page.corePage()->mainFrame());
     if (!localMainFrame)
         return;
     HitTestResult result = localMainFrame->eventHandler().hitTestResultAtPoint(request.point, hitType);
@@ -3942,7 +3942,7 @@ std::optional<FocusedElementInformation> WebPage::focusedElementInformation()
         information.insideFixedPosition = inFixed;
         information.isRTL = renderer->writingMode().isBidiRTL();
 
-        if (auto* scrollingCoordinator = this->scrollingCoordinator())
+        if (RefPtr scrollingCoordinator = this->scrollingCoordinator())
             information.containerScrollingNodeID = scrollingCoordinator->scrollableContainerNodeID(*renderer);
     } else
         information.interactionRect = { };
@@ -4884,13 +4884,13 @@ void WebPage::updateVisibleContentRects(const VisibleContentRectUpdateInfo& visi
         return;
     RefPtr frameView = *localMainFrame->view();
 
-    if (auto* scrollingCoordinator = this->scrollingCoordinator()) {
-        auto& remoteScrollingCoordinator = downcast<RemoteScrollingCoordinator>(*scrollingCoordinator);
+    if (RefPtr scrollingCoordinator = this->scrollingCoordinator()) {
+        Ref remoteScrollingCoordinator = downcast<RemoteScrollingCoordinator>(*scrollingCoordinator);
         if (auto mainFrameScrollingNodeID = frameView->scrollingNodeID()) {
             if (visibleContentRectUpdateInfo.viewStability().contains(ViewStabilityFlag::ScrollViewRubberBanding))
-                remoteScrollingCoordinator.addNodeWithActiveRubberBanding(*mainFrameScrollingNodeID);
+                remoteScrollingCoordinator->addNodeWithActiveRubberBanding(*mainFrameScrollingNodeID);
             else
-                remoteScrollingCoordinator.removeNodeWithActiveRubberBanding(*mainFrameScrollingNodeID);
+                remoteScrollingCoordinator->removeNodeWithActiveRubberBanding(*mainFrameScrollingNodeID);
         }
     }
 

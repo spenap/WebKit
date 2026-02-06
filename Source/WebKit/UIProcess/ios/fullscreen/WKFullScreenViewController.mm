@@ -1026,7 +1026,7 @@ ALLOW_DEPRECATED_DECLARATIONS_END
     if (!page)
         return nullptr;
 
-    WebKit::PlaybackSessionManagerProxy* playbackSessionManager = page->playbackSessionManager();
+    RefPtr playbackSessionManager = page->playbackSessionManager();
     if (!playbackSessionManager)
         return nullptr;
 
