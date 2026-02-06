@@ -1671,7 +1671,7 @@ public:
     inline bool isSameOriginAsTopDocument() const; // Defined in DocumentSecurityOrigin
     bool shouldForceNoOpenerBasedOnCOOP() const;
 
-    WEBCORE_EXPORT const CrossOriginOpenerPolicy& crossOriginOpenerPolicy() const final;
+    WEBCORE_EXPORT CrossOriginOpenerPolicy crossOriginOpenerPolicy() const final;
 
     void willLoadScriptElement(const URL&);
     void willLoadFrameElement(const URL&);

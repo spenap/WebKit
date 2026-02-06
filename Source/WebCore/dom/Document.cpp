@@ -8577,9 +8577,7 @@ bool Document::shouldForceNoOpenerBasedOnCOOP() const
     if (!settings().crossOriginOpenerPolicyEnabled())
         return false;
 
-    auto coopValue = CrossOriginOpenerPolicyValue::UnsafeNone;
-    if (RefPtr mainFrameDocument = this->mainFrameDocument())
-        coopValue = mainFrameDocument->crossOriginOpenerPolicy().value;
+    auto coopValue = crossOriginOpenerPolicy().value;
 
     return (coopValue == CrossOriginOpenerPolicyValue::SameOrigin || coopValue == CrossOriginOpenerPolicyValue::SameOriginPlusCOEP) && !isSameOriginAsTopDocument();
 }
@@ -11605,15 +11603,16 @@ void Document::decrementModelElementCount()
 
 #endif
 
-const CrossOriginOpenerPolicy& Document::crossOriginOpenerPolicy() const
+CrossOriginOpenerPolicy Document::crossOriginOpenerPolicy() const
 {
-    if (RefPtr mainFrameDocument = this->mainFrameDocument()) {
-        if (mainFrameDocument.get() == this)
-            return SecurityContext::crossOriginOpenerPolicy();
-        return mainFrameDocument->crossOriginOpenerPolicy();
+    if (isTopDocument())
+        return SecurityContext::crossOriginOpenerPolicy();
+
+    if (RefPtr page = this->page()) {
+        if (auto policy = protect(page->mainFrame())->frameDocumentSecurityPolicy())
+            return policy->crossOriginOpenerPolicy;
     }
 
-    LOG_ONCE(SiteIsolation, "Unable to properly calculate Document::crossOriginOpenerPolicy() without access to the main frame document ");
     return SecurityContext::crossOriginOpenerPolicy();
 }
 

@@ -83,7 +83,7 @@ public:
     const CrossOriginEmbedderPolicy& crossOriginEmbedderPolicy() const { return m_crossOriginEmbedderPolicy; }
     void setCrossOriginEmbedderPolicy(const CrossOriginEmbedderPolicy& crossOriginEmbedderPolicy) { m_crossOriginEmbedderPolicy = crossOriginEmbedderPolicy; }
 
-    virtual const CrossOriginOpenerPolicy& crossOriginOpenerPolicy() const { return m_crossOriginOpenerPolicy; }
+    virtual CrossOriginOpenerPolicy crossOriginOpenerPolicy() const { return m_crossOriginOpenerPolicy; }
     void setCrossOriginOpenerPolicy(const CrossOriginOpenerPolicy& crossOriginOpenerPolicy) { m_crossOriginOpenerPolicy = crossOriginOpenerPolicy; }
 
     const IntegrityPolicy* integrityPolicy() const;
