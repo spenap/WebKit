@@ -822,6 +822,7 @@ public:
     };
 
 protected:
+    friend class Adjuster;
     friend class ChangedAnimatablePropertiesFunctions;
     friend class DifferenceFunctions;
     friend class WebCore::RenderStyle;

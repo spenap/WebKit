@@ -75,67 +75,7 @@ inline void RenderStyle::copyPseudoElementBitsFrom(const RenderStyle& other)
     return m_computedStyle.copyPseudoElementBitsFrom(other.m_computedStyle);
 }
 
-// MARK: - Style adjustment utilities
-
-inline void RenderStyle::setPageScaleTransform(float scale)
-{
-    m_computedStyle.setPageScaleTransform(scale);
-}
-
-inline void RenderStyle::setColumnStylesFromPaginationMode(PaginationMode paginationMode)
-{
-    m_computedStyle.setColumnStylesFromPaginationMode(paginationMode);
-}
-
-inline void RenderStyle::adjustAnimations()
-{
-    m_computedStyle.adjustAnimations();
-}
-
-inline void RenderStyle::adjustTransitions()
-{
-    m_computedStyle.adjustTransitions();
-}
-
-inline void RenderStyle::adjustBackgroundLayers()
-{
-    m_computedStyle.adjustBackgroundLayers();
-}
-
-inline void RenderStyle::adjustMaskLayers()
-{
-    m_computedStyle.adjustMaskLayers();
-}
-
-inline void RenderStyle::adjustScrollTimelines()
-{
-    m_computedStyle.adjustScrollTimelines();
-}
-
-inline void RenderStyle::adjustViewTimelines()
-{
-    m_computedStyle.adjustViewTimelines();
-}
-
-inline void RenderStyle::addToTextDecorationLineInEffect(Style::TextDecorationLine value)
-{
-    m_computedStyle.addToTextDecorationLineInEffect(value);
-}
-
-inline void RenderStyle::containIntrinsicWidthAddAuto()
-{
-    m_computedStyle.containIntrinsicWidthAddAuto();
-}
-
-inline void RenderStyle::containIntrinsicHeightAddAuto()
-{
-    m_computedStyle.containIntrinsicHeightAddAuto();
-}
-
-inline void RenderStyle::setGridAutoFlowDirection(Style::GridAutoFlow::Direction direction)
-{
-    m_computedStyle.setGridAutoFlowDirection(direction);
-}
+// MARK: - Style reset utilities
 
 inline void RenderStyle::resetBorderBottom()
 {

@@ -86,21 +86,7 @@ public:
     bool fontCascadeEqual(const RenderStyle&) const;
     bool scrollSnapDataEquivalent(const RenderStyle&) const;
 
-    // MARK: - Style adjustment utilities
-
-    inline void setPageScaleTransform(float);
-    inline void setColumnStylesFromPaginationMode(PaginationMode);
-    inline void addToTextDecorationLineInEffect(Style::TextDecorationLine);
-    inline void containIntrinsicWidthAddAuto();
-    inline void containIntrinsicHeightAddAuto();
-    inline void setGridAutoFlowDirection(Style::GridAutoFlow::Direction);
-
-    void adjustAnimations();
-    void adjustTransitions();
-    void adjustBackgroundLayers();
-    void adjustMaskLayers();
-    void adjustScrollTimelines();
-    void adjustViewTimelines();
+    // MARK: - Style reset utilities
 
     inline void resetBorder();
     inline void resetBorderExceptRadius();
