@@ -137,7 +137,7 @@ public:
     };
 
 private:
-    static EGLContext createContextForEGLVersion(EGLDisplay, EGLConfig, EGLContext);
+    static EGLContext createEGLContext(GLDisplay&, EGLConfig, EGLContext);
 
     static std::unique_ptr<GLContext> createWindowContext(GLDisplay&, Target, GLNativeWindowType, EGLContext sharingContext);
     static std::unique_ptr<GLContext> createSurfacelessContext(GLDisplay&, Target, EGLContext sharingContext);

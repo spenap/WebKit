@@ -140,7 +140,7 @@ std::unique_ptr<GLContext> GLContext::createWindowContext(GLDisplay& display, Ta
         return nullptr;
     }
 
-    EGLContext context = createContextForEGLVersion(eglDisplay, config, sharingContext);
+    auto context = createEGLContext(display, config, sharingContext);
     if (context == EGL_NO_CONTEXT) {
         RELEASE_LOG_INFO(Compositing, "Cannot create EGL window context: %s\n", lastErrorString());
         return nullptr;
@@ -195,7 +195,7 @@ std::unique_ptr<GLContext> GLContext::createSurfacelessContext(GLDisplay& displa
         return nullptr;
     }
 
-    EGLContext context = createContextForEGLVersion(eglDisplay, config, sharingContext);
+    auto context = createEGLContext(display, config, sharingContext);
     if (context == EGL_NO_CONTEXT) {
         RELEASE_LOG_INFO(Compositing, "Cannot create EGL surfaceless context: %s\n", lastErrorString());
         return nullptr;
@@ -213,7 +213,7 @@ std::unique_ptr<GLContext> GLContext::createPbufferContext(GLDisplay& display, E
         return nullptr;
     }
 
-    EGLContext context = createContextForEGLVersion(eglDisplay, config, sharingContext);
+    auto context = createEGLContext(display, config, sharingContext);
     if (context == EGL_NO_CONTEXT) {
         RELEASE_LOG_INFO(Compositing, "Cannot create EGL Pbuffer context: %s\n", lastErrorString());
         return nullptr;
@@ -479,16 +479,26 @@ RefPtr<GLDisplay> GLContext::display() const
     return m_display.get();
 }
 
-EGLContext GLContext::createContextForEGLVersion(EGLDisplay eglDisplay, EGLConfig config, EGLContext sharingContext)
+EGLContext GLContext::createEGLContext(GLDisplay& display, EGLConfig config, EGLContext sharingContext)
 {
-    EGLint contextAttributes[] = {
+    Vector<EGLint, 5> contextAttributes {
         EGL_CONTEXT_CLIENT_VERSION, 2,
-#if !LOG_DISABLED || !RELEASE_LOG_DISABLED
-        EGL_CONTEXT_OPENGL_DEBUG, shouldEnableDebugLogging() ? EGL_TRUE : EGL_FALSE,
-#endif
-        EGL_NONE,
     };
-    return eglCreateContext(eglDisplay, config, sharingContext, contextAttributes);
+
+#if !LOG_DISABLED || !RELEASE_LOG_DISABLED
+    if (shouldEnableDebugLogging()) {
+        if (display.checkVersion(1, 5)) {
+            contextAttributes.append(EGL_CONTEXT_OPENGL_DEBUG);
+            contextAttributes.append(EGL_TRUE);
+        } else {
+            contextAttributes.append(EGL_CONTEXT_FLAGS_KHR);
+            contextAttributes.append(EGL_CONTEXT_OPENGL_DEBUG_BIT_KHR);
+        }
+    }
+#endif
+
+    contextAttributes.append(EGL_NONE);
+    return eglCreateContext(display.eglDisplay(), config, sharingContext, contextAttributes.span().data());
 }
 
 bool GLContext::makeCurrentImpl()
