@@ -28,6 +28,7 @@
 # * Cookie
 # * CSS
 # * DOM
+# * Damage Tracking
 # * Editing
 # * Events
 # * Fonts
@@ -35,6 +36,7 @@
 # * GStreamer
 # * Media-controls-related
 # * HiDPI
+# * HTML
 # * HTTP
 # * Images
 # * IndexedDB
@@ -588,9 +590,10 @@ webkit.org/b/272225 media/media-source/media-managedmse-resume-after-stall.html 
 
 # Test was flaky already before 263317 but it does "enhance its flakyness"
 webkit.org/b/263317 media/video-played-collapse.html [ Failure Pass ]
-webkit.org/b/263317 media/media-source/media-controller-media-source-play-then-pause.html [ Pass Timeout ]
-webkit.org/b/263317 media/media-source/media-source-seek-and-play.html [ Pass Timeout ]
 webkit.org/b/298491 media/media-vp9-reschange-webm.html [ Timeout ]
+
+webkit.org/b/307141 media/media-source/media-source-seek-and-play.html [ Failure Pass ]
+webkit.org/b/307141 media/media-source/media-controller-media-source-play-then-pause.html [ Failure Pass ]
 
 # NOTIFICATION_EVENT tests
 http/tests/workers/service/shownotification-allowed-document.html [ Pass ]
@@ -616,6 +619,8 @@ imported/w3c/web-platform-tests/css/css-anchor-position/anchor-position-dynamic-
 imported/w3c/web-platform-tests/css/css-anchor-position/anchor-scroll-position-try-007.html [ Pass ]
 imported/w3c/web-platform-tests/css/css-anchor-position/anchor-scroll-position-try-008.html [ Pass ]
 imported/w3c/web-platform-tests/css/css-anchor-position/anchor-scroll-position-try-010.html [ Pass ]
+
+imported/w3c/web-platform-tests/css/css-anchor-position/anchor-scroll-composited-scrolling-paint-001.html [ Pass ImageOnlyFailure ]
 
 imported/w3c/web-platform-tests/css/css-images/image-orientation/image-orientation-background-properties.html [ Pass ]
 imported/w3c/web-platform-tests/css/css-images/image-orientation/image-orientation-default.html [ Pass ]
@@ -1134,6 +1139,8 @@ compositing/repaint/not-self-painting-layer-stops-compositing.html [ ImageOnlyFa
 
 webkit.org/b/305740 compositing/backing/solid-color-with-paints-into-ancestor.html [ ImageOnlyFailure Pass ]
 
+imported/w3c/web-platform-tests/css/compositing/mix-blend-mode/mix-blend-mode-plus-lighter-svg.html [ ImageOnlyFailure Pass ]
+
 #////////////////////////////////////////////////////////////////////////////////////////
 # End of Compositing tests
 #////////////////////////////////////////////////////////////////////////////////////////
@@ -1366,6 +1373,16 @@ webkit.org/b/305744 imported/w3c/web-platform-tests/html/dom/idlharness.https.ht
 #////////////////////////////////////////////////////////////////////////////////////////
 
 #////////////////////////////////////////////////////////////////////////////////////////
+# Damage Tracking-related bugs
+#////////////////////////////////////////////////////////////////////////////////////////
+
+webkit.org/b/307135 platform/glib/damage/animations-opacity-to-invisibility.html [ Failure Pass ]
+
+#////////////////////////////////////////////////////////////////////////////////////////
+# End of Damage Tracking-related bugs
+#////////////////////////////////////////////////////////////////////////////////////////
+
+#////////////////////////////////////////////////////////////////////////////////////////
 # Editing-related bugs
 #////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1588,6 +1605,8 @@ webkit.org/b/182103 fast/forms/focus-selection-textarea.html [ Failure ]
 # GStreamer-related bugs
 #////////////////////////////////////////////////////////////////////////////////////////
 
+webkit.org/b/307144 media/video-restricted-invisible-autoplay-not-allowed.html [ Timeout Pass ]
+
 webkit.org/b/254520 media/video-ended-event-negative-playback.html [ Failure Timeout Pass ]
 webkit.org/b/254519 media/media-continues-playing-after-replace-source.html [ Failure Pass ]
 webkit.org/b/254521 imported/w3c/web-platform-tests/media-source/mediasource-getvideoplaybackquality.html [ Pass Failure ]
@@ -1647,6 +1666,8 @@ webkit.org/b/234352 media/track/track-webvtt-no-snap-to-lines-overlap.html [ Ima
 webkit.org/b/234352 media/track/track-webvtt-snap-to-lines-inline-style.html [ ImageOnlyFailure Pass ]
 webkit.org/b/234352 media/track/track-webvtt-snap-to-lines-left-right.html [ ImageOnlyFailure Pass ]
 webkit.org/b/234352 media/video-with-alpha.html [ ImageOnlyFailure Pass ]
+
+media/track/webvtt-ruby.html [ Timeout Pass ]
 
 # Race conditions from missing this patch:
 # https://gitlab.freedesktop.org/gstreamer/gstreamer/-/merge_requests/3471 (still flaky with GStreamer 1.24)
@@ -1784,6 +1805,8 @@ http/wpt/mediasession/gpuProcessCrash-voiceDetection.html [ Skip ]
 # MSE text tracks not supported
 webkit.org/b/281343 media/media-source/media-managedmse-webvtt-track.html [ Skip ]
 
+webkit.org/b/307142 media/video-currentTime.html [ Failure Pass ]
+
 #////////////////////////////////////////////////////////////////////////////////////////
 # End of GStreamer-related bugs
 #////////////////////////////////////////////////////////////////////////////////////////
@@ -1840,6 +1863,19 @@ webkit.org/b/179948 fast/hidpi/filters-reference.html [ ImageOnlyFailure ]
 
 
 #////////////////////////////////////////////////////////////////////////////////////////
+# HTML-related bugs
+#////////////////////////////////////////////////////////////////////////////////////////
+
+webkit.org/b/298269 imported/w3c/web-platform-tests/html/anonymous-iframe/session-storage.tentative.https.window.html [ Pass Failure ]
+
+webkit.org/b/305509 imported/w3c/web-platform-tests/html/semantics/embedded-content/media-elements/track/track-element/track-cues-pause-on-exit.html [ Failure Pass ]
+
+#////////////////////////////////////////////////////////////////////////////////////////
+# End of HTML-related bugs
+#////////////////////////////////////////////////////////////////////////////////////////
+
+
+#////////////////////////////////////////////////////////////////////////////////////////
 # HTTP-related bugs
 #////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1866,6 +1902,8 @@ webkit.org/b/123431 http/tests/local/link-stylesheet-load-order.html [ Failure ]
 # Doesn't support .rtfd (Rich Text Format Directory). Require FILE_REPLACEMENT.
 webkit.org/b/296171 fast/files/filereader-zip-bundle-using-open-panel.html [ Skip ]
 webkit.org/b/296171 http/tests/local/fileapi/upload-zip-bundle-as-blob-using-open-panel.html [ Skip ]
+
+webkit.org/b/306360 http/tests/download/sandboxed-iframe-download-not-allowed.html [ Pass Failure ]
 
 #////////////////////////////////////////////////////////////////////////////////////////
 # End of HTTP-related bugs
@@ -2031,6 +2069,8 @@ webkit.org/b/201270 [ Debug ] http/tests/security/showModalDialog-sync-cross-ori
 
 webkit.org/b/263720 http/tests/security/redirect-BLOCKED-to-localURL.html [ Crash ]
 
+webkit.org/b/164539 http/tests/security/module-crossorigin-error-event-information.html [ Failure Pass ]
+
 # WebKitTestRunner needs a more-complete implementation of eventSender
 # https://bugs.webkit.org/show_bug.cgi?id=42194
 webkit.org/b/42194 http/tests/security/drag-drop-same-unique-origin.html [ Failure ]
@@ -2064,8 +2104,10 @@ http/tests/security/contentSecurityPolicy/report-only-from-header.py [ DumpJSCon
 
 http/tests/security/xss-ALLOWED-xsl-external-entity-xslt-docloader.html [ DumpJSConsoleLogInStdErr ]
 
+webkit.org/b/305509 http/tests/security/webaudio-render-remote-audio-allowed-crossorigin.html [ Pass Timeout ]
 webkit.org/b/298703 http/tests/security/webaudio-render-remote-audio-allowed-crossorigin-redirect.html [ Timeout Pass ]
 webkit.org/b/298703 http/tests/security/webaudio-render-remote-audio-blocked-no-crossorigin.html [ Timeout Pass ]
+webkit.org/b/305509 http/tests/security/webaudio-render-remote-audio-blocked-no-crossorigin-redirect.html [ Pass Timeout ]
 
 #////////////////////////////////////////////////////////////////////////////////////////
 # End of Security-related bugs
@@ -2444,6 +2486,8 @@ webkit.org/b/226807 imported/w3c/web-platform-tests/webaudio/the-audio-api/the-a
 # AudioWorklet.
 webkit.org/b/218010 imported/w3c/web-platform-tests/webaudio/the-audio-api/the-audioworklet-interface/audioworkletnode-output-channel-count.https.html [ Failure Pass ]
 webkit.org/b/218010 imported/w3c/web-platform-tests/webaudio/the-audio-api/the-audioworklet-interface/suspended-context-messageport.https.html [ Failure Pass ]
+
+webaudio/crashtest/audioworklet-concurrent-resampler-crash.html [ Timeout Pass ]
 
 #////////////////////////////////////////////////////////////////////////////////////////
 # End of WebAudio-related bugs
@@ -3083,6 +3127,8 @@ imported/w3c/web-platform-tests/WebCryptoAPI/ [ Slow ]
 webkit.org/b/280672 imported/w3c/web-platform-tests/WebCryptoAPI/sign_verify/eddsa_small_order_points.https.any.html [ Crash ]
 webkit.org/b/280672 imported/w3c/web-platform-tests/WebCryptoAPI/sign_verify/eddsa_small_order_points.https.any.worker.html [ Crash ]
 
+webkit.org/b/307140 imported/w3c/web-platform-tests/WebCryptoAPI/sign_verify/eddsa_curve25519.https.any.worker.html [ Failure Pass ]
+
 webkit.org/b/150806 imported/w3c/web-platform-tests/xhr/send-timeout-events.htm [ Failure Pass ]
 
 webkit.org/b/202736 [ Release ] http/wpt/cache-storage/quota-third-party.https.html [ Failure Pass ]
@@ -3096,6 +3142,8 @@ imported/w3c/web-platform-tests/content-security-policy/img-src/img-src-port-wil
 imported/w3c/web-platform-tests/content-security-policy/reporting/report-original-url-on-mixed-content-frame.https.sub.html [ Failure ]
 
 webkit.org/b/231083 imported/w3c/web-platform-tests/content-security-policy/generic/policy-inherited-correctly-by-plznavigate.html [ Failure Pass ]
+
+webkit.org/b/307132 imported/w3c/web-platform-tests/content-security-policy/inheritance/history.sub.html [ Failure Pass Crash ]
 
 # Failing since deferred async loading enabled until document is loaded enabled.
 webkit.org/b/208104 imported/w3c/web-platform-tests/html/semantics/scripting-1/the-script-element/execution-timing/085.html [ Failure Pass ]
@@ -3230,6 +3278,8 @@ http/tests/media/now-playing-info-default-artwork-favicon.html [ Skip ]
 http/tests/media/now-playing-info-media-session-artwork-favicon.html [ Skip ]
 media/now-playing-info-media-session-private-browsing.html [ Skip ]
 media/now-playing-info-media-session-suspend-playback.html [ Skip ]
+
+webkit.org/b/304995 [ Release ] imported/w3c/web-platform-tests/largest-contentful-paint/video-poster.html [ Pass Failure ]
 
 imported/w3c/web-platform-tests/html/rendering/replaced-elements/embedded-content-rendering-rules/canvas-update-with-border-object-fit.html [ Pass ]
 

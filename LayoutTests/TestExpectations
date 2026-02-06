@@ -1421,6 +1421,8 @@ http/tests/websocket/tests/hybi/imported/blink/permessage-deflate-split-frames.h
 http/tests/websocket/tests/hybi/imported/blink/permessage-deflate-unsolicited-negotiation-response.html [ Skip ]
 http/tests/websocket/tests/hybi/imported/blink/permessage-deflate-window-bits.html [ Skip ]
 
+webkit.org/b/307136 http/tests/canvas/ctx.2d-canvas-style-pattern-no-document-leak.html [ Failure Pass ]
+
 imported/w3c/web-platform-tests/html/canvas/offscreen/manual/the-offscreen-canvas/offscreencanvas.resize.html [ Failure Pass ]
 imported/w3c/web-platform-tests/html/canvas/offscreen/the-offscreen-canvas/size.large.html [ Skip ]
 
@@ -2722,6 +2724,7 @@ imported/w3c/web-platform-tests/webrtc/protocol/h264-profile-levels.https.html [
 imported/w3c/web-platform-tests/webrtc/RTCRtpParameters-encodings.html [ Pass Failure ]
 imported/w3c/web-platform-tests/mst-content-hint/RTCRtpSendParameters-degradationEffect.html [ Failure ]
 
+imported/w3c/web-platform-tests/webrtc/RTCPeerConnection-createOffer.html [ Failure Pass ]
 imported/w3c/web-platform-tests/webrtc/RTCPeerConnection-getStats-timestamp.https.html [ Pass Failure ]
 imported/w3c/web-platform-tests/webrtc-stats/getStats-remote-candidate-ufrag.html [ Failure ]
 imported/w3c/web-platform-tests/webrtc-stats/supported-stats.https.html [ Failure ]
@@ -8223,6 +8226,8 @@ webkit.org/b/301250 ipc/dictionary-callbacks.html [ Skip ]
 imported/w3c/web-platform-tests/fetch/security/dangling-markup/dangling-markup-mitigation.tentative.https.html [ Skip ]
 
 webkit.org/b/89153 http/tests/websocket/tests/hybi/workers/close.html [ Pass Failure ]
+
+webkit.org/b/307133 http/tests/webcodecs/audio-encoder-callbacks-do-not-leak.html [ Pass Failure ]
 
 # webkit.org/b/287997 4X imported/w3c/web-platform-tests/editing/other/insertparagraph-in-child-of-html.tentative.html?designMode=on&white-space= are flaky text failures
 imported/w3c/web-platform-tests/editing/other/insertparagraph-in-child-of-html.tentative.html?designMode=on&white-space=normal [ Pass Failure ]
