@@ -65,6 +65,7 @@
 #include "JSRTCEncodedAudioFrame.h"
 #include "JSRTCEncodedVideoFrame.h"
 #include "JSReadableStream.h"
+#include "JSTransformStream.h"
 #include "JSWebCodecsAudioData.h"
 #include "JSWebCodecsEncodedAudioChunk.h"
 #include "JSWebCodecsEncodedVideoChunk.h"
@@ -266,6 +267,7 @@ enum SerializationTag {
 #endif
     ReadableStreamTag = 65,
     WritableStreamTag = 66,
+    TransformStreamTag = 67,
     ErrorTag = 255
 };
 
@@ -376,6 +378,7 @@ static ASCIILiteral name(SerializationTag tag)
 #endif
     case ReadableStreamTag: return "ReadableStreamTag"_s;
     case WritableStreamTag: return "WritableStreamTag"_s;
+    case TransformStreamTag : return "TransformStreamTag"_s;
     case ErrorTag: return "ErrorTag"_s;
     }
     return "<unknown tag>"_s;
@@ -528,6 +531,7 @@ static bool isTypeExposedToGlobalObject(JSC::JSGlobalObject& globalObject, Seria
 #endif
     case ReadableStreamTag:
     case WritableStreamTag:
+    case TransformStreamTag:
         break;
     }
     return false;
@@ -844,6 +848,7 @@ static_assert(TerminatorTag > MAX_ARRAY_INDEX);
  *    | RTCEncodedVideoFrameTag <identifier:uint32_t>
  *    | ReadableStreamTag <identifier:uint32_t><messagePortIdentifier:uint32_t>
  *    | WritableStreamTag <identifier:uint32_t><messagePortIdentifier:uint32_t>
+ *    | TransformStreamTag <identifier:uint32_t><messagePortIdentifiers:uint32_t>
  *
  * Inside certificate, data is serialized in this format as per spec:
  *
@@ -1133,6 +1138,7 @@ public:
 #endif
             { },
             { },
+            { },
 #if ENABLE(MEDIA_SOURCE_IN_WORKERS)
             { },
 #endif
@@ -1168,6 +1174,7 @@ public:
 #endif
             const Vector<Ref<ReadableStream>>& readableStreams,
             const Vector<Ref<WritableStream>>& writableStreams,
+            const Vector<Ref<TransformStream>>& transformStreams,
 #if ENABLE(MEDIA_SOURCE_IN_WORKERS)
             const Vector<Ref<MediaSourceHandle>>& mediaSourceHandles,
 #endif
@@ -1206,6 +1213,7 @@ public:
 #endif
             readableStreams,
             writableStreams,
+            transformStreams,
 #if ENABLE(MEDIA_SOURCE_IN_WORKERS)
             mediaSourceHandles,
 #endif
@@ -1271,6 +1279,7 @@ private:
 #endif
             const Vector<Ref<ReadableStream>>& readableStreams,
             const Vector<Ref<WritableStream>>& writableStreams,
+            const Vector<Ref<TransformStream>>& transformStreams,
 #if ENABLE(MEDIA_SOURCE_IN_WORKERS)
             const Vector<Ref<MediaSourceHandle>>& mediaSourceHandles,
 #endif
@@ -1330,6 +1339,7 @@ private:
 #endif
         fillTransferMap(readableStreams, m_transferredReadableStreams);
         fillTransferMap(writableStreams, m_transferredWritableStreams);
+        fillTransferMap(transformStreams, m_transferredTransformStreams);
 #if ENABLE(MEDIA_SOURCE_IN_WORKERS)
         fillTransferMap(mediaSourceHandles, m_transferredMediaSourceHandles);
 #endif
@@ -1872,6 +1882,18 @@ private:
 
         code = SerializationReturnCode::DataCloneError;
     }
+    void dumpTransformStream(JSObject* obj, SerializationReturnCode& code)
+    {
+        auto index = m_transferredTransformStreams.find(obj);
+        if (index != m_transferredTransformStreams.end()) {
+            write(TransformStreamTag);
+            write(index->value + 1);
+            write(m_transferredMessagePorts.size() + m_transferredReadableStreams.size() + m_transferredWritableStreams.size() + + 2 * index->value);
+            return;
+        }
+
+        code = SerializationReturnCode::DataCloneError;
+    }
 #if ENABLE(WEB_CODECS)
     void dumpWebCodecsEncodedVideoChunk(JSObject* obj)
     {
@@ -2291,6 +2313,10 @@ private:
             }
             if (obj->inherits<JSWritableStream>()) {
                 dumpWritableStream(obj, code);
+                return true;
+            }
+            if (obj->inherits<JSTransformStream>()) {
+                dumpTransformStream(obj, code);
                 return true;
             }
             if (obj->inherits<JSDOMException>()) {
@@ -2853,6 +2879,7 @@ private:
 #endif
     ObjectPoolMap m_transferredReadableStreams;
     ObjectPoolMap m_transferredWritableStreams;
+    ObjectPoolMap m_transferredTransformStreams;
 #if ENABLE(MEDIA_SOURCE_IN_WORKERS)
     ObjectPoolMap m_transferredMediaSourceHandles;
 #endif
@@ -4901,6 +4928,33 @@ private:
         }
         return getJSValue(*addResult.iterator->value);
     }
+    JSValue readTransformStream()
+    {
+        uint32_t transformStreamIndex;
+        if (!read(transformStreamIndex) || !transformStreamIndex) {
+            SERIALIZE_TRACE("FAIL deserialize");
+            fail();
+            return JSValue();
+        }
+        uint32_t messagePortsIndex;
+        if (!read(messagePortsIndex) || !m_messagePorts.size()  || messagePortsIndex >= m_messagePorts.size() - 1) {
+            SERIALIZE_TRACE("FAIL deserialize");
+            fail();
+            return JSValue();
+        }
+
+        auto addResult = m_transformStreams.add(transformStreamIndex, nullptr);
+        if (addResult.isNewEntry) {
+            auto transformStreamOrError = TransformStream::runTransferReceivingSteps(*jsCast<JSDOMGlobalObject*>(m_lexicalGlobalObject), { m_messagePorts.at(messagePortsIndex).get(), m_messagePorts.at(messagePortsIndex + 1).get() });
+            if (transformStreamOrError.hasException()) {
+                SERIALIZE_TRACE("FAIL creating writable stream");
+                fail();
+                return JSValue();
+            }
+            addResult.iterator->value = transformStreamOrError.releaseReturnValue();
+        }
+        return getJSValue(*addResult.iterator->value);
+    }
 #if ENABLE(WEB_CODECS)
     JSValue readWebCodecsEncodedVideoChunk()
     {
@@ -5647,6 +5701,8 @@ private:
             return readReadableStream();
         case WritableStreamTag:
             return readWritableStream();
+        case TransformStreamTag:
+            return readTransformStream();
 #if ENABLE(WEB_CODECS)
         case WebCodecsEncodedVideoChunkTag:
             return readWebCodecsEncodedVideoChunk();
@@ -5719,6 +5775,7 @@ private:
 #endif
     HashMap<uint32_t, RefPtr<ReadableStream>> m_readableStreams;
     HashMap<uint32_t, RefPtr<WritableStream>> m_writableStreams;
+    HashMap<uint32_t, RefPtr<TransformStream>> m_transformStreams;
 #if ENABLE(MEDIA_SOURCE_IN_WORKERS)
     Vector<RefPtr<DetachedMediaSourceHandle>> m_detachedMediaSourceHandles;
     Vector<RefPtr<MediaSourceHandle>> m_mediaSourceHandles;
@@ -6452,14 +6509,23 @@ static bool canDetachRTCDataChannels(const Vector<Ref<RTCDataChannel>>& channels
 #endif
 
 template<typename Transferable>
-static bool canTransfer(const Vector<Ref<Transferable>>& transferables)
+static std::optional<HashSet<Ref<Transferable>>> canTransfer(const Vector<Ref<Transferable>>& transferables)
 {
     HashSet<Ref<Transferable>> visited;
     for (auto& transferable : transferables) {
         if (!transferable->canTransfer())
-            return false;
+            return { };
         // Check the return value of add, we should not encounter duplicates.
         if (!visited.add(transferable.get()))
+            return { };
+    }
+    return visited;
+}
+
+static bool validateStreams(const HashSet<Ref<ReadableStream>>& readableStreams, const HashSet<Ref<WritableStream>>& writableStreams, const Vector<Ref<TransformStream>>& transformStreams)
+{
+    for (auto& transform : transformStreams) {
+        if (readableStreams.contains(Ref { transform->readable() }) || writableStreams.contains(Ref { transform->writable() }))
             return false;
     }
     return true;
@@ -6531,6 +6597,7 @@ ExceptionOr<Ref<SerializedScriptValue>> SerializedScriptValue::create(JSGlobalOb
 #endif
     Vector<Ref<ReadableStream>> readableStreams;
     Vector<Ref<WritableStream>> writableStreams;
+    Vector<Ref<TransformStream>> transformStreams;
 #if ENABLE(MEDIA_SOURCE_IN_WORKERS)
     Vector<Ref<MediaSourceHandle>> mediaSourceHandles;
 #endif
@@ -6597,6 +6664,10 @@ ExceptionOr<Ref<SerializedScriptValue>> SerializedScriptValue::create(JSGlobalOb
             writableStreams.append(writableStream.releaseNonNull());
             continue;
         }
+        if (RefPtr transformStream = JSTransformStream::toWrapped(vm, transferable.get())) {
+            transformStreams.append(transformStream.releaseNonNull());
+            continue;
+        }
 #if ENABLE(MEDIA_SOURCE_IN_WORKERS)
         if (RefPtr handle = JSMediaSourceHandle::toWrapped(vm, transferable.get())) {
             if (handle->isDetached())
@@ -6649,9 +6720,15 @@ ExceptionOr<Ref<SerializedScriptValue>> SerializedScriptValue::create(JSGlobalOb
     if (!canDetachRTCDataChannels(dataChannels))
         return Exception { ExceptionCode::DataCloneError };
 #endif
-    if (!canTransfer<ReadableStream>(readableStreams))
+    auto readableStreamSet = canTransfer<ReadableStream>(readableStreams);
+    if (!readableStreamSet)
         return Exception { ExceptionCode::DataCloneError };
-    if (!canTransfer<WritableStream>(writableStreams))
+    auto writableStreamSet = canTransfer<WritableStream>(writableStreams);
+    if (!writableStreamSet)
+        return Exception { ExceptionCode::DataCloneError };
+    if (!canTransfer<TransformStream>(transformStreams))
+        return Exception { ExceptionCode::DataCloneError };
+    if (!validateStreams(*readableStreamSet, *writableStreamSet, transformStreams))
         return Exception { ExceptionCode::DataCloneError };
 #if ENABLE(MEDIA_SOURCE_IN_WORKERS)
     if (!canDetachMediaSourceHandles(mediaSourceHandles))
@@ -6704,6 +6781,7 @@ ExceptionOr<Ref<SerializedScriptValue>> SerializedScriptValue::create(JSGlobalOb
 #endif
         readableStreams,
         writableStreams,
+        transformStreams,
 #if ENABLE(MEDIA_SOURCE_IN_WORKERS)
         mediaSourceHandles,
 #endif
@@ -6772,6 +6850,14 @@ ExceptionOr<Ref<SerializedScriptValue>> SerializedScriptValue::create(JSGlobalOb
         if (detachedOrException.hasException())
             return detachedOrException.releaseException();
         messagePorts.append(detachedOrException.releaseReturnValue().writableStreamPort);
+    }
+    for (auto& transformStream : transformStreams) {
+        auto detachedOrException = transformStream->runTransferSteps(*JSC::jsCast<JSDOMGlobalObject*>(&lexicalGlobalObject));
+        if (detachedOrException.hasException())
+            return detachedOrException.releaseException();
+        auto detachedTransform = detachedOrException.releaseReturnValue();
+        messagePorts.append(WTF::move(detachedTransform.readablePort));
+        messagePorts.append(WTF::move(detachedTransform.writablePort));
     }
 #if ENABLE(MEDIA_SOURCE_IN_WORKERS)
     Vector<RefPtr<DetachedMediaSourceHandle>> detachedMediaSourceHandles;
