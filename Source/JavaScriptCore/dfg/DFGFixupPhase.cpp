@@ -1109,7 +1109,8 @@ private:
             break;
         }
 
-        case StringStartsWith: {
+        case StringStartsWith:
+        case StringEndsWith: {
             fixEdge<StringUse>(node->child1());
             fixEdge<StringUse>(node->child2());
             if (node->child3())

@@ -17289,16 +17289,18 @@ void SpeculativeJIT::compileStringIndexOf(Node* node)
     strictInt32Result(resultGPR, node);
 }
 
-void SpeculativeJIT::compileStringStartsWith(Node* node)
+void SpeculativeJIT::compileStringStartsOrEndsWith(Node* node)
 {
+    bool isStartsWith = node->op() == StringStartsWith;
+
     if (node->child3()) {
         SpeculateCellOperand base(this, node->child1());
         SpeculateCellOperand argument(this, node->child2());
-        SpeculateInt32Operand index(this, node->child3());
+        SpeculateInt32Operand position(this, node->child3());
 
         GPRReg baseGPR = base.gpr();
         GPRReg argumentGPR = argument.gpr();
-        GPRReg indexGPR = index.gpr();
+        GPRReg positionGPR = position.gpr();
 
         speculateString(node->child1(), baseGPR);
         speculateString(node->child2(), argumentGPR);
@@ -17306,7 +17308,10 @@ void SpeculativeJIT::compileStringStartsWith(Node* node)
         flushRegisters();
         GPRFlushedCallResult result(this);
         GPRReg resultGPR = result.gpr();
-        callOperation(operationStringStartsWithWithIndex, resultGPR, LinkableConstant::globalObject(*this, node), baseGPR, argumentGPR, indexGPR);
+        if (isStartsWith)
+            callOperation(operationStringStartsWithWithIndex, resultGPR, LinkableConstant::globalObject(*this, node), baseGPR, argumentGPR, positionGPR);
+        else
+            callOperation(operationStringEndsWithWithEndPosition, resultGPR, LinkableConstant::globalObject(*this, node), baseGPR, argumentGPR, positionGPR);
 
         unblessedBooleanResult(resultGPR, node);
         return;
@@ -17324,7 +17329,10 @@ void SpeculativeJIT::compileStringStartsWith(Node* node)
     flushRegisters();
     GPRFlushedCallResult result(this);
     GPRReg resultGPR = result.gpr();
-    callOperation(operationStringStartsWith, resultGPR, LinkableConstant::globalObject(*this, node), baseGPR, argumentGPR);
+    if (isStartsWith)
+        callOperation(operationStringStartsWith, resultGPR, LinkableConstant::globalObject(*this, node), baseGPR, argumentGPR);
+    else
+        callOperation(operationStringEndsWith, resultGPR, LinkableConstant::globalObject(*this, node), baseGPR, argumentGPR);
 
     unblessedBooleanResult(resultGPR, node);
 }

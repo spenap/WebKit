@@ -1187,7 +1187,8 @@ private:
             break;
         }
 
-        case StringStartsWith: {
+        case StringStartsWith:
+        case StringEndsWith: {
             setPrediction(SpecBoolean);
             break;
         }

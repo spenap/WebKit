@@ -482,6 +482,7 @@ bool doesGC(Graph& graph, Node* node)
     case DateSetTime:
     case StringIndexOf:
     case StringStartsWith:
+    case StringEndsWith:
     case ResolvePromiseFirstResolving:
     case RejectPromiseFirstResolving:
     case FulfillPromiseFirstResolving:

@@ -3081,22 +3081,25 @@ auto ByteCodeParser::handleIntrinsicCall(Node* callee, Operand resultOperand, Ca
             return CallOptimizationResult::Inlined;
         }
 
-        case StringPrototypeStartsWithIntrinsic: {
+        case StringPrototypeStartsWithIntrinsic:
+        case StringPrototypeEndsWithIntrinsic: {
             if (argumentCountIncludingThis < 2)
                 return CallOptimizationResult::DidNothing;
 
             if (m_inlineStackTop->m_exitProfile.hasExitSite(m_currentIndex, Uncountable) || m_inlineStackTop->m_exitProfile.hasExitSite(m_currentIndex, BadType))
                 return CallOptimizationResult::DidNothing;
 
+            NodeType nodeType = intrinsic == StringPrototypeStartsWithIntrinsic ? StringStartsWith : StringEndsWith;
+
             insertChecks();
             Node* thisValue = get(virtualRegisterForArgumentIncludingThis(0, registerOffset));
             Node* search = get(virtualRegisterForArgumentIncludingThis(1, registerOffset));
             Node* result = nullptr;
             if (argumentCountIncludingThis == 2)
-                result = addToGraph(StringStartsWith, thisValue, search);
+                result = addToGraph(nodeType, thisValue, search);
             else {
-                Node* index = get(virtualRegisterForArgumentIncludingThis(2, registerOffset));
-                result = addToGraph(StringStartsWith, thisValue, search, index);
+                Node* position = get(virtualRegisterForArgumentIncludingThis(2, registerOffset));
+                result = addToGraph(nodeType, thisValue, search, position);
             }
 
             setResult(result);

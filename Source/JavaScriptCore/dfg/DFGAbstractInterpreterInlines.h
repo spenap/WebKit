@@ -2608,6 +2608,7 @@ bool AbstractInterpreter<AbstractStateType>::executeEffects(unsigned clobberLimi
         break;
 
     case StringStartsWith:
+    case StringEndsWith:
         setNonCellTypeForNode(node, SpecBoolean);
         break;
 

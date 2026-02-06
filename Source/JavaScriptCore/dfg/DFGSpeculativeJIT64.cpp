@@ -3782,8 +3782,9 @@ void SpeculativeJIT::compile(Node* node)
         break;
     }
 
-    case StringStartsWith: {
-        compileStringStartsWith(node);
+    case StringStartsWith:
+    case StringEndsWith: {
+        compileStringStartsOrEndsWith(node);
         break;
     }
 

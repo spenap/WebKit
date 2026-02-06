@@ -358,7 +358,8 @@ private:
             break;
         }
 
-        case StringStartsWith: {
+        case StringStartsWith:
+        case StringEndsWith: {
             node->child1()->mergeFlags(NodeBytecodeUsesAsValue);
             node->child2()->mergeFlags(NodeBytecodeUsesAsValue);
             if (node->child3())

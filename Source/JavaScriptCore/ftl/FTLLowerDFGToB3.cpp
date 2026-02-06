@@ -1362,7 +1362,8 @@ private:
             compileStringIndexOf();
             break;
         case StringStartsWith:
-            compileStringStartsWith();
+        case StringEndsWith:
+            compileStringStartsOrEndsWith();
             break;
         case GetByOffset:
         case GetGetterSetterByOffset:
@@ -11595,15 +11596,23 @@ IGNORE_CLANG_WARNINGS_END
             setInt32(vmCall(Int32, operationStringIndexOf, weakPointer(globalObject), base, search));
     }
 
-    void compileStringStartsWith()
+    void compileStringStartsOrEndsWith()
     {
+        bool isStartsWith = m_node->op() == StringStartsWith;
         LValue base = lowString(m_node->child1());
         LValue search = lowString(m_node->child2());
         auto* globalObject = m_graph.globalObjectFor(m_origin.semantic);
-        if (m_node->child3())
-            setBoolean(vmCall(Int32, operationStringStartsWithWithIndex, weakPointer(globalObject), base, search, lowInt32(m_node->child3())));
-        else
-            setBoolean(vmCall(Int32, operationStringStartsWith, weakPointer(globalObject), base, search));
+        if (m_node->child3()) {
+            if (isStartsWith)
+                setBoolean(vmCall(Int32, operationStringStartsWithWithIndex, weakPointer(globalObject), base, search, lowInt32(m_node->child3())));
+            else
+                setBoolean(vmCall(Int32, operationStringEndsWithWithEndPosition, weakPointer(globalObject), base, search, lowInt32(m_node->child3())));
+        } else {
+            if (isStartsWith)
+                setBoolean(vmCall(Int32, operationStringStartsWith, weakPointer(globalObject), base, search));
+            else
+                setBoolean(vmCall(Int32, operationStringEndsWith, weakPointer(globalObject), base, search));
+        }
     }
 
     void compileGetByOffset()
