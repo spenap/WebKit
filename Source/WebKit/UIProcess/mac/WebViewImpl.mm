@@ -3865,6 +3865,11 @@ NSUInteger WebViewImpl::accessibilityUIProcessLocalTokenHash()
     return [m_remoteAccessibilityTokenGeneratedByUIProcess hash];
 }
 
+NSData *WebViewImpl::remoteAccessibilityChildToken()
+{
+    return m_remoteAccessibilityChildToken.get();
+}
+
 NSArray<NSNumber *> *WebViewImpl::registeredRemoteAccessibilityPids()
 {
     NSMutableArray<NSNumber *> *result = [NSMutableArray new];

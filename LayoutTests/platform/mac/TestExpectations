@@ -120,6 +120,10 @@ fast/dom/Window/slow-unload-handler-only-frame-is-stopped.html
 
 webkit.org/b/306558 accessibility/mac/style-range.html [ Failure ]
 
+# Skip accessibility tests that use the accessibility client API on most builders;
+# requires an extra permission for WKTR
+accessibility/mac/client [ Skip ]
+
 # Skip glib-only combobox accessibility tests.
 accessibility/combobox/gtk [ Skip ]
 
