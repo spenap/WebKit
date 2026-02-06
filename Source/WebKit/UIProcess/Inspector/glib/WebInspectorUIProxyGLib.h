@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 Igalia S.L.
+ * Copyright (C) 2026 Igalia S.L.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,51 +23,14 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "WebInspectorUI.h"
-
-#if ENABLE(WPE_PLATFORM)
+#pragma once
 
 #include <gio/gio.h>
-#include <wtf/glib/GResources.h>
-#include <wtf/glib/GUniquePtr.h>
+#include <wtf/Forward.h>
+#include <wtf/glib/GRefPtr.h>
 
 namespace WebKit {
 
-void WebInspectorUI::didEstablishConnection()
-{
-    WTF::registerInspectorResourceIfNeeded();
-}
-
-bool WebInspectorUI::canSave(InspectorFrontendClient::SaveMode saveMode)
-{
-    switch (saveMode) {
-    case InspectorFrontendClient::SaveMode::SingleFile:
-        return true;
-
-    case InspectorFrontendClient::SaveMode::FileVariants:
-        return false;
-    }
-
-    ASSERT_NOT_REACHED();
-    return false;
-}
-
-bool WebInspectorUI::canLoad()
-{
-    return false;
-}
-
-bool WebInspectorUI::canPickColorFromScreen()
-{
-    return false;
-}
-
-String WebInspectorUI::localizedStringsURL() const
-{
-    return "resource:///org/webkit/inspector/Localizations/en.lproj/localizedStrings.js"_s;
-}
+void platformSaveDataToFile(GRefPtr<GFile>&&, const String& content, bool base64Encoded);
 
 } // namespace WebKit
-
-#endif // ENABLE(WPE_PLATFORM)
