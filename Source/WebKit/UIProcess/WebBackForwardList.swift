@@ -259,7 +259,7 @@ final class WebBackForwardList {
         assert(contentsMatch(webPageProxy.identifier(), item.pageID()) && contentsMatch(itemID, item.identifier()))
         if let process = WebKit.AuxiliaryProcessProxy.fromConnection(connection) {
             // The downcast in C++ is really just used to assert that the process is a WebProcessProxy
-            assert(downcastToWebProcessProxy(process).__convertToBool())
+            assert(WebKit.downcastToWebProcessProxy(process).__convertToBool())
             let hasBackForwardCacheEntry = item.backForwardCacheEntry() != nil
             if hasBackForwardCacheEntry != frameState.ptr().hasCachedPage {
                 // Safety: accessing suspendedPage pointer just to check nullness, no dereference occurs
@@ -302,8 +302,8 @@ final class WebBackForwardList {
         if let webPageProxy = page.get() {
             if messageCheckCompletion(
                 process: WebKit.RefWebProcessProxy(webPageProxy.legacyMainFrameProcess()),
-                assertion: { !WebKit.isInspectorPage(webPageProxy) },
-                completionHandler: { completionHandler.pointee(consuming: counts()) }
+                completionHandler: { completionHandler.pointee(consuming: counts()) },
+                !WebKit.isInspectorPage(webPageProxy)
             ) {
                 return
             }
