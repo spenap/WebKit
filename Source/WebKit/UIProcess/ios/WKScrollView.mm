@@ -73,10 +73,10 @@
 {
     NSMethodSignature *signature = [super methodSignatureForSelector:aSelector];
     if (!signature)
-        signature = [static_cast<NSObject *>(_internalDelegate.get()) methodSignatureForSelector:aSelector];
+        signature = [static_cast<NSObject *>(_internalDelegate.get().get()) methodSignatureForSelector:aSelector];
 
     if (!signature)
-        signature = [static_cast<NSObject *>(_externalDelegate.get()) methodSignatureForSelector:aSelector];
+        signature = [static_cast<NSObject *>(_externalDelegate.get().get()) methodSignatureForSelector:aSelector];
 
     return signature;
 }
