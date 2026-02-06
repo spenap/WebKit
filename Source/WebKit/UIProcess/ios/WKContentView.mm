@@ -161,7 +161,7 @@ typedef NS_ENUM(NSInteger, _WKPrintRenderingCallbackType) {
 - (void)beginUndoGrouping
 {
     if (!_isRegisteringUndoCommand)
-        [_contentView _closeCurrentTypingCommand];
+        [protect(_contentView) _closeCurrentTypingCommand];
 
     [super beginUndoGrouping];
 }
@@ -593,7 +593,7 @@ typedef NS_ENUM(NSInteger, _WKPrintRenderingCallbackType) {
             return;
 
         // FIXME: This is only necessary to work around rdar://153991882.
-        [strongSelf->_webView _updateHiddenScrollPocketEdges];
+        [strongSelf->_webView.get() _updateHiddenScrollPocketEdges];
     });
 #endif // ENABLE(CONTENT_INSET_BACKGROUND_FILL)
 }
@@ -976,7 +976,7 @@ static void storeAccessibilityRemoteConnectionInformation(id element, pid_t pid,
     if (boundsChanged)
         [self setBounds:contentBounds];
 
-    [_webView _didCommitLayerTree:layerTreeTransaction mainFrameData:mainFrameData pageData:pageData transactionID:transactionID];
+    [_webView.get() _didCommitLayerTree:layerTreeTransaction mainFrameData:mainFrameData pageData:pageData transactionID:transactionID];
 
     if (_interactionViewsContainerView) {
         WebCore::FloatPoint scaledOrigin = layerTreeTransaction.scrollOrigin();
@@ -986,14 +986,14 @@ static void storeAccessibilityRemoteConnectionInformation(id element, pid_t pid,
     }
 
     Ref page = *_page;
-    
+
     if (boundsChanged) {
         // FIXME: factor computeLayoutViewportRect() into something that gives us this rect.
         WebCore::FloatRect fixedPositionRect = page->computeLayoutViewportRect(page->unobscuredContentRect(), page->unobscuredContentRectRespectingInputViewBounds(), page->layoutViewportRect(), self.webView.scrollView.zoomScale, WebCore::LayoutViewportConstraint::Unconstrained);
         [self updateFixedClippingView:fixedPositionRect];
 
         // We need to push the new content bounds to the webview to update fixed position rects.
-        [_webView _scheduleVisibleContentRectUpdate];
+        [_webView.get() _scheduleVisibleContentRectUpdate];
     }
     
     // Updating the selection requires a full editor state. If the editor state is missing post layout
@@ -1005,7 +1005,7 @@ static void storeAccessibilityRemoteConnectionInformation(id element, pid_t pid,
 
 - (void)_layerTreeCommitComplete
 {
-    [_webView _layerTreeCommitComplete];
+    [_webView.get() _layerTreeCommitComplete];
 }
 
 - (void)_setAcceleratedCompositingRootView:(UIView *)rootView
@@ -1018,12 +1018,12 @@ static void storeAccessibilityRemoteConnectionInformation(id element, pid_t pid,
 
 - (BOOL)_scrollToRect:(CGRect)targetRect withOrigin:(CGPoint)origin minimumScrollDistance:(CGFloat)minimumScrollDistance
 {
-    return [_webView _scrollToRect:targetRect origin:origin minimumScrollDistance:minimumScrollDistance];
+    return [_webView.get() _scrollToRect:targetRect origin:origin minimumScrollDistance:minimumScrollDistance];
 }
 
 - (void)_zoomToFocusRect:(CGRect)rectToFocus selectionRect:(CGRect)selectionRect fontSize:(float)fontSize minimumScale:(double)minimumScale maximumScale:(double)maximumScale allowScaling:(BOOL)allowScaling forceScroll:(BOOL)forceScroll
 {
-    [_webView _zoomToFocusRect:rectToFocus
+    [_webView.get() _zoomToFocusRect:rectToFocus
                  selectionRect:selectionRect
                       fontSize:fontSize
                   minimumScale:minimumScale
@@ -1034,32 +1034,32 @@ static void storeAccessibilityRemoteConnectionInformation(id element, pid_t pid,
 
 - (BOOL)_zoomToRect:(CGRect)targetRect withOrigin:(CGPoint)origin fitEntireRect:(BOOL)fitEntireRect minimumScale:(double)minimumScale maximumScale:(double)maximumScale minimumScrollDistance:(CGFloat)minimumScrollDistance
 {
-    return [_webView _zoomToRect:targetRect withOrigin:origin fitEntireRect:fitEntireRect minimumScale:minimumScale maximumScale:maximumScale minimumScrollDistance:minimumScrollDistance];
+    return [_webView.get() _zoomToRect:targetRect withOrigin:origin fitEntireRect:fitEntireRect minimumScale:minimumScale maximumScale:maximumScale minimumScrollDistance:minimumScrollDistance];
 }
 
 - (void)_zoomOutWithOrigin:(CGPoint)origin
 {
-    return [_webView _zoomOutWithOrigin:origin animated:YES];
+    return [_webView.get() _zoomOutWithOrigin:origin animated:YES];
 }
 
 - (void)_zoomToInitialScaleWithOrigin:(CGPoint)origin
 {
-    return [_webView _zoomToInitialScaleWithOrigin:origin animated:YES];
+    return [_webView.get() _zoomToInitialScaleWithOrigin:origin animated:YES];
 }
 
 - (double)_initialScaleFactor
 {
-    return [_webView _initialScaleFactor];
+    return [_webView.get() _initialScaleFactor];
 }
 
 - (double)_contentZoomScale
 {
-    return [_webView _contentZoomScale];
+    return [_webView.get() _contentZoomScale];
 }
 
 - (double)_targetContentZoomScaleForRect:(const WebCore::FloatRect&)targetRect currentScale:(double)currentScale fitEntireRect:(BOOL)fitEntireRect minimumScale:(double)minimumScale maximumScale:(double)maximumScale
 {
-    return [_webView _targetContentZoomScaleForRect:targetRect currentScale:currentScale fitEntireRect:fitEntireRect minimumScale:minimumScale maximumScale:maximumScale];
+    return [_webView.get() _targetContentZoomScaleForRect:targetRect currentScale:currentScale fitEntireRect:fitEntireRect minimumScale:minimumScale maximumScale:maximumScale];
 }
 
 - (UIScreen *)_screen

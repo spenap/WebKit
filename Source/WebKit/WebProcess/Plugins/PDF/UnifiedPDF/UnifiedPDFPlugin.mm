@@ -4420,7 +4420,7 @@ void UnifiedPDFPlugin::handleSyntheticClick(PlatformMouseEvent&& event)
         if (!page)
             return;
 
-        [selection addSelection:selectionAtPoint(pointInPage, page.get(), TextGranularity::WordGranularity)];
+        [selection addSelection:protect(selectionAtPoint(pointInPage, page.get(), TextGranularity::WordGranularity)).get()];
 
         auto [startPage, startPointInPage] = selectionCaretPointInPage(selection.get(), SelectionEndpoint::Start);
         if (!startPage)

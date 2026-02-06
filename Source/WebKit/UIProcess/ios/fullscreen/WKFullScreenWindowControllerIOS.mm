@@ -43,6 +43,7 @@
 #import "WebFullScreenManagerProxy.h"
 #import "WebPageProxy.h"
 #import "WebPreferences.h"
+#import <CoreGraphics/CoreGraphics.h>
 #import <Foundation/Foundation.h>
 #import <Security/SecCertificate.h>
 #import <Security/SecTrust.h>
@@ -51,6 +52,7 @@
 #import <WebCore/GeometryUtilities.h>
 #import <WebCore/IntRect.h>
 #import <WebCore/LocalizedStrings.h>
+#import <WebCore/PlatformGraphicsContext.h>
 #import <WebCore/Timer.h>
 #import <WebCore/VideoPresentationInterfaceAVKitLegacy.h>
 #import <WebCore/VideoPresentationInterfaceTVOS.h>
@@ -385,7 +387,7 @@ static constexpr NSString *kPrefersFullScreenDimmingKey = @"WebKitPrefersFullScr
 
 - (void)dealloc
 {
-    [_viewController release];
+    SUPPRESS_UNRETAINED_ARG [_viewController release];
     [super dealloc];
 }
 
@@ -1169,7 +1171,7 @@ ALLOW_DEPRECATED_DECLARATIONS_END
         [CATransaction begin];
         [CATransaction setDisableActions:YES];
 
-        [[_webViewPlaceholder layer] setContents:(id)[snapshotImage CGImage]];
+        [[_webViewPlaceholder layer] setContents:(id)protect<CGImage>([snapshotImage CGImage]).get()];
         WebKit::replaceViewWithView(webView.get(), _webViewPlaceholder.get());
 
         [webView setAutoresizingMask:(UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight)];

@@ -613,7 +613,7 @@ void RemoteLayerTreePropertyApplier::applyProperties(RemoteLayerTreeNode& node, 
 #endif
 
 #if PLATFORM(IOS_FAMILY)
-    applyPropertiesToUIView(node.uiView(), properties, relatedLayers);
+    applyPropertiesToUIView(protect(node.uiView()).get(), properties, relatedLayers);
 #endif
 
     END_BLOCK_OBJC_EXCEPTIONS
@@ -628,7 +628,8 @@ void RemoteLayerTreePropertyApplier::applyHierarchyUpdates(RemoteLayerTreeNode& 
 
 #if PLATFORM(IOS_FAMILY)
     auto hasViewChildren = [&] {
-        if (node.uiView() && [[node.uiView() subviews] count])
+        RetainPtr uiView = node.uiView();
+        if (uiView && [[uiView subviews] count])
             return true;
         if (properties.children.isEmpty())
             return false;

@@ -886,7 +886,7 @@ static const CGFloat groupHeaderCollapseButtonTransitionDuration = 0.3f;
 
 - (void)didTapHeader:(id)sender
 {
-    [_tableViewController didTapSelectPickerGroupHeaderView:self];
+    [protect(_tableViewController.get()) didTapSelectPickerGroupHeaderView:self];
     [self setCollapsed:!_collapsed animated:YES];
 }
 
@@ -987,14 +987,15 @@ static NSString *optionCellReuseIdentifier = @"WKSelectPickerTableViewCell";
 {
     [super viewWillAppear:animated];
 
-    [_previousButton setEnabled:_contentView.focusedElementInformation.hasPreviousNode];
-    [_nextButton setEnabled:_contentView.focusedElementInformation.hasNextNode];
+    RetainPtr protectedContentView = _contentView;
+    [_previousButton setEnabled:[protectedContentView focusedElementInformation].hasPreviousNode];
+    [_nextButton setEnabled:[protectedContentView focusedElementInformation].hasNextNode];
 }
 
 - (NSInteger)numberOfRowsInGroup:(NSInteger)groupID
 {
     NSInteger rowCount = 0;
-    for (auto& option : _contentView.focusedSelectElementOptions) {
+    for (auto& option : [protect(_contentView) focusedSelectElementOptions]) {
         if (option.isGroup)
             continue;
 
@@ -1015,7 +1016,7 @@ static NSString *optionCellReuseIdentifier = @"WKSelectPickerTableViewCell";
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    if (_contentView.focusedSelectElementOptions.isEmpty())
+    if ([protect(_contentView) focusedSelectElementOptions].isEmpty())
         return 1;
 
     if ([_collapsedSections containsObject:@(section)])
@@ -1046,7 +1047,7 @@ static NSString *optionCellReuseIdentifier = @"WKSelectPickerTableViewCell";
         return nil;
 
     NSInteger groupCount = 0;
-    for (auto& option : _contentView.focusedSelectElementOptions) {
+    for (auto& option : [protect(_contentView) focusedSelectElementOptions]) {
         if (!option.isGroup)
             continue;
 
@@ -1108,7 +1109,7 @@ static NSString *optionCellReuseIdentifier = @"WKSelectPickerTableViewCell";
     int optionIndex = 0;
     int rowIndex = 0;
 
-    for (auto& option : _contentView.focusedSelectElementOptions) {
+    for (auto& option : [protect(_contentView) focusedSelectElementOptions]) {
         if (option.isGroup) {
             rowIndex = 0;
             continue;
@@ -1127,7 +1128,7 @@ static NSString *optionCellReuseIdentifier = @"WKSelectPickerTableViewCell";
 - (OptionItem *)optionItemAtIndexPath:(NSIndexPath *)indexPath
 {
     NSInteger index = 0;
-    for (auto& option : _contentView.focusedSelectElementOptions) {
+    for (auto& option : [protect(_contentView) focusedSelectElementOptions]) {
         if (option.isGroup || option.parentGroupID != indexPath.section)
             continue;
 
@@ -1142,11 +1143,11 @@ static NSString *optionCellReuseIdentifier = @"WKSelectPickerTableViewCell";
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    auto cell = retainPtr([tableView dequeueReusableCellWithIdentifier:optionCellReuseIdentifier]);
+    auto cell = retainPtr([tableView dequeueReusableCellWithIdentifier:protect(optionCellReuseIdentifier)]);
     if (!cell)
-        cell = adoptNS([[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:optionCellReuseIdentifier]);
+        cell = adoptNS([[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:protect(optionCellReuseIdentifier)]);
 
-    if (_contentView.focusedSelectElementOptions.isEmpty()) {
+    if ([protect(_contentView) focusedSelectElementOptions].isEmpty()) {
         [cell textLabel].enabled = NO;
         [cell textLabel].text = WEB_UI_STRING_KEY("No Options", "No Options Select Popover", "Empty select list").createNSString().get();
         [cell setUserInteractionEnabled:NO];
@@ -1193,7 +1194,7 @@ ALLOW_DEPRECATED_DECLARATIONS_BEGIN
         cell.imageView.image = [[UIImage systemImageNamed:@"circle"] imageWithTintColor:UIColor.tertiaryLabelColor renderingMode:UIImageRenderingModeAlwaysOriginal];
 ALLOW_DEPRECATED_DECLARATIONS_END
 
-    [_contentView updateFocusedElementSelectedIndex:[self findItemIndexAt:indexPath] allowsMultipleSelection:true];
+    [protect(_contentView) updateFocusedElementSelectedIndex:[self findItemIndexAt:indexPath] allowsMultipleSelection:true];
     option->isSelected = !option->isSelected;
 }
 

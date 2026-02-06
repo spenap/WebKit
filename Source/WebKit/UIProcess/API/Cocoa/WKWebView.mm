@@ -3594,7 +3594,7 @@ static ASCIILiteral descriptionForReason(WebKit::HideScrollPocketReason reason)
 {
     if (insets.top < 0 || insets.left < 0 || insets.right < 0 || insets.bottom < 0) {
 #if PLATFORM(IOS_FAMILY)
-        [NSException raise:NSInvalidArgumentException format:@"-obscuredContentInsets cannot be negative: %@", NSStringFromUIEdgeInsets(insets)];
+        [NSException raise:NSInvalidArgumentException format:@"-obscuredContentInsets cannot be negative: %@", protect(NSStringFromUIEdgeInsets(insets)).get()];
 #else
         [NSException raise:NSInvalidArgumentException format:@"-obscuredContentInsets cannot be negative: { top=%f, left=%f, bottom=%f, right=%f }"
             , insets.top, insets.left, insets.bottom, insets.right];

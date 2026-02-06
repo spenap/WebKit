@@ -71,6 +71,7 @@
 #import "WebProcessPool.h"
 #import "_WKActivatedElementInfoInternal.h"
 #import "_WKWarningView.h"
+#import <CoreGraphics/CGColor.h>
 #import <WebCore/BoxSides.h>
 #import <WebCore/ColorCocoa.h>
 #import <WebCore/ContentsFormatCocoa.h>
@@ -648,7 +649,7 @@ enum class AllowPageBackgroundColorOverride : bool { No, Yes };
 static WebCore::Color baseScrollViewBackgroundColor(WKWebView *webView, AllowPageBackgroundColorOverride allowPageBackgroundColorOverride)
 {
     if (webView->_customContentView)
-        return WebCore::roundAndClampToSRGBALossy([webView->_customContentView backgroundColor].CGColor);
+        return WebCore::roundAndClampToSRGBALossy(protect<CGColorRef>([webView->_customContentView backgroundColor].CGColor));
 
     if (webView->_gestureController) {
         WebCore::Color color = webView->_gestureController->backgroundColorForCurrentSnapshot();
@@ -668,14 +669,14 @@ static WebCore::Color scrollViewBackgroundColor(WKWebView *webView, AllowPageBac
         return WebCore::Color::transparentBlack;
 
     WebCore::Color color;
-    [WebCore::traitCollectionWithAdjustedIdiomForSystemColors(webView.traitCollection) performAsCurrentTraitCollection:[&, webView = RetainPtr { webView }] {
+    [protect(WebCore::traitCollectionWithAdjustedIdiomForSystemColors(webView.traitCollection)) performAsCurrentTraitCollection:[&, webView = RetainPtr { webView }] {
         color = baseScrollViewBackgroundColor(webView.get(), allowPageBackgroundColorOverride);
 
         if (!color.isValid() && webView->_contentView)
-            color = WebCore::roundAndClampToSRGBALossy([webView->_contentView backgroundColor].CGColor);
+            color = WebCore::roundAndClampToSRGBALossy(protect<CGColorRef>([webView->_contentView backgroundColor].CGColor));
 
         if (!color.isValid())
-            color = WebCore::roundAndClampToSRGBALossy(UIColor.systemBackgroundColor.CGColor);
+            color = WebCore::roundAndClampToSRGBALossy(protect<CGColorRef>(UIColor.systemBackgroundColor.CGColor));
     }];
 
     return color;
@@ -3749,7 +3750,7 @@ static bool isLockdownModeWarningNeeded()
             SUPPRESS_UNRETAINED_ARG RetainPtr title = adoptNS([[NSString alloc] initWithFormat:WEB_UI_NSSTRING(@"Lockdown Mode is Turned On For “%@“", "Lockdown Mode alert title"), appDisplayName]);
             auto alert = WebKit::createUIAlertController(title.get(), message.get());
 
-            [alert addAction:[UIAlertAction actionWithTitle:WEB_UI_NSSTRING(@"OK", "Lockdown Mode alert OK button") style:UIAlertActionStyleDefault handler:nil]];
+            [alert addAction:[UIAlertAction actionWithTitle:protect(WEB_UI_NSSTRING(@"OK", "Lockdown Mode alert OK button")).get() style:UIAlertActionStyleDefault handler:nil]];
 
             auto presentationViewController = [protectedSelf _wk_viewControllerForFullScreenPresentation];
             [presentationViewController presentViewController:alert.get() animated:YES completion:nil];
@@ -4601,7 +4602,7 @@ static bool isLockdownModeWarningNeeded()
         CGContextScaleCTM(context.get(), imageScale, imageScale);
         [customContentView.get().layer renderInContext:context.get()];
 
-        completionHandler([UIGraphicsGetImageFromCurrentImageContext() CGImage]);
+        completionHandler([protect(UIGraphicsGetImageFromCurrentImageContext()) CGImage]);
 
         UIGraphicsEndImageContext();
         return;

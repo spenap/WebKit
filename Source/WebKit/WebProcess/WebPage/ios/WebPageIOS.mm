@@ -682,8 +682,9 @@ bool WebPage::parentProcessHasServiceWorkerEntitlement() const
 {
     if (disableServiceWorkerEntitlementTestingOverride)
         return false;
-    
-    static bool hasEntitlement = WTF::hasEntitlement(WebProcess::singleton().parentProcessConnection()->xpcConnection(), "com.apple.developer.WebKit.ServiceWorkers"_s) || WTF::hasEntitlement(WebProcess::singleton().parentProcessConnection()->xpcConnection(), "com.apple.developer.web-browser"_s);
+
+    RetainPtr xpcConnection = WebProcess::singleton().parentProcessConnection()->xpcConnection();
+    static bool hasEntitlement = WTF::hasEntitlement(xpcConnection.get(), "com.apple.developer.WebKit.ServiceWorkers"_s) || WTF::hasEntitlement(xpcConnection.get(), "com.apple.developer.web-browser"_s);
     return hasEntitlement;
 }
 
@@ -732,7 +733,7 @@ void WebPage::getSelectionContext(CompletionHandler<void(const String&, const St
     
 void WebPage::updateRemotePageAccessibilityOffset(WebCore::FrameIdentifier, WebCore::IntPoint offset)
 {
-    [accessibilityRemoteObject() setRemoteFrameOffset:offset];
+    [protect(accessibilityRemoteObject()) setRemoteFrameOffset:offset];
 }
 
 static RetainPtr<NSDictionary> createAccessibillityTokenDictionary(WebCore::AccessibilityRemoteToken elementToken)
@@ -4724,7 +4725,7 @@ void WebPage::viewportConfigurationChanged(ZoomToInitialScale zoomToInitialScale
 
 void WebPage::applicationWillResignActive()
 {
-    [[NSNotificationCenter defaultCenter] postNotificationName:WebUIApplicationWillResignActiveNotification object:nil];
+    [[NSNotificationCenter defaultCenter] postNotificationName:protect(WebUIApplicationWillResignActiveNotification).get() object:nil];
 
     // FIXME(224775): Move to WebProcess
     if (RefPtr manager = mediaSessionManagerIfExists())
@@ -4736,7 +4737,7 @@ void WebPage::applicationWillResignActive()
 
 void WebPage::applicationDidEnterBackground(bool isSuspendedUnderLock)
 {
-    [[NSNotificationCenter defaultCenter] postNotificationName:WebUIApplicationDidEnterBackgroundNotification object:nil userInfo:@{@"isSuspendedUnderLock": @(isSuspendedUnderLock)}];
+    [[NSNotificationCenter defaultCenter] postNotificationName:protect(WebUIApplicationDidEnterBackgroundNotification).get() object:nil userInfo:@{@"isSuspendedUnderLock": @(isSuspendedUnderLock)}];
 
     m_isSuspendedUnderLock = isSuspendedUnderLock;
     if (!m_backgroundTextExtractionEnabled)
@@ -4763,7 +4764,7 @@ void WebPage::applicationWillEnterForeground(bool isSuspendedUnderLock)
     if (!m_backgroundTextExtractionEnabled)
         unfreezeLayerTree(LayerTreeFreezeReason::BackgroundApplication);
 
-    [[NSNotificationCenter defaultCenter] postNotificationName:WebUIApplicationWillEnterForegroundNotification object:nil userInfo:@{@"isSuspendedUnderLock": @(isSuspendedUnderLock)}];
+    [[NSNotificationCenter defaultCenter] postNotificationName:protect(WebUIApplicationWillEnterForegroundNotification).get() object:nil userInfo:@{@"isSuspendedUnderLock": @(isSuspendedUnderLock)}];
 
     // FIXME(224775): Move to WebProcess
     if (RefPtr manager = mediaSessionManagerIfExists())
@@ -4775,7 +4776,7 @@ void WebPage::applicationWillEnterForeground(bool isSuspendedUnderLock)
 
 void WebPage::applicationDidBecomeActive()
 {
-    [[NSNotificationCenter defaultCenter] postNotificationName:WebUIApplicationDidBecomeActiveNotification object:nil];
+    [[NSNotificationCenter defaultCenter] postNotificationName:protect(WebUIApplicationDidBecomeActiveNotification).get() object:nil];
 
     // FIXME(224775): Move to WebProcess
     if (RefPtr manager = mediaSessionManagerIfExists())

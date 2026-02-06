@@ -516,12 +516,13 @@ void RemoteScrollingCoordinatorProxyIOS::establishLayerTreeScrollingRelations(co
             RefPtr node = scrollingTree().nodeForID(overflowNodeID);
             RefPtr overflowNode = dynamicDowncast<ScrollingTreeOverflowScrollingNode>(node.get());
             MESSAGE_CHECK(overflowNode);
-            auto layerID = RemoteLayerTreeNode::layerID(static_cast<CALayer*>(overflowNode->scrollContainerLayer()));
+            RetainPtr scrollContainerLayer = static_cast<CALayer*>(overflowNode->scrollContainerLayer());
+            auto layerID = RemoteLayerTreeNode::layerID(scrollContainerLayer.get());
             MESSAGE_CHECK(layerID);
             stationaryScrollContainerIDs.append(*layerID);
         }
 
-        if (RefPtr layerNode = RemoteLayerTreeNode::forCALayer(positionedNode->layer())) {
+        if (RefPtr layerNode = RemoteLayerTreeNode::forCALayer(protect(positionedNode->layer()))) {
             layerNode->setStationaryScrollContainerIDs(WTF::move(stationaryScrollContainerIDs));
             m_layersWithScrollingRelations.add(layerNode->layerID());
         }
@@ -532,7 +533,7 @@ void RemoteScrollingCoordinatorProxyIOS::establishLayerTreeScrollingRelations(co
         RefPtr overflowNode = dynamicDowncast<ScrollingTreeOverflowScrollingNode>(node.get());
         MESSAGE_CHECK(overflowNode);
 
-        if (RefPtr layerNode = RemoteLayerTreeNode::forCALayer(scrollProxyNode->layer())) {
+        if (RefPtr layerNode = RemoteLayerTreeNode::forCALayer(protect(scrollProxyNode->layer()))) {
             layerNode->setActingScrollContainerID(RemoteLayerTreeNode::layerID(static_cast<CALayer*>(overflowNode->scrollContainerLayer())));
             m_layersWithScrollingRelations.add(layerNode->layerID());
         }
@@ -737,7 +738,7 @@ void RemoteScrollingCoordinatorProxyIOS::updateAnimationStacks(NOESCAPE const Fu
         RefPtr animationStack = animatedNode->animationStack();
         ASSERT(animationStack);
         if (predicate(*animationStack))
-            animationStack->applyEffectsFromMainThread(animatedNode->layer(), animatedNode->backdropRootIsOpaque());
+            animationStack->applyEffectsFromMainThread(protect(animatedNode->layer()), animatedNode->backdropRootIsOpaque());
 
         // We can clear the effect stack if it's empty, but the previous
         // call to applyEffects() is important so that the base values

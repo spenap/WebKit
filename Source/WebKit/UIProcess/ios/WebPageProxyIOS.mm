@@ -1296,7 +1296,7 @@ void WebPageProxy::showValidationMessage(const IntRect& anchorClientRect, String
     // FIXME: When in element fullscreen, UIClient::presentingViewController() may not return the
     // WKFullScreenViewController even though that is the presenting view controller of the WKWebView.
     // We should call PageClientImpl::presentingViewController() instead.
-    m_validationBubble->setAnchorRect(anchorClientRect, uiClient().presentingViewController());
+    m_validationBubble->setAnchorRect(anchorClientRect, protect(uiClient().presentingViewController()));
 
     // If we are currently doing a scrolling / zoom animation, then we'll delay showing the validation
     // bubble until the animation is over.

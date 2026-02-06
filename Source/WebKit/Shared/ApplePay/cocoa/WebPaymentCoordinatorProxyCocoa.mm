@@ -539,7 +539,7 @@ void WebPaymentCoordinatorProxy::platformBeginApplePaySetup(const PaymentSetupCo
 
     auto request = adoptNS([PAL::allocPKPaymentSetupRequestInstance() init]);
     [request setConfiguration:configuration.platformConfiguration().get()];
-    [request setPaymentSetupFeatures:features.platformFeatures()];
+    [request setPaymentSetupFeatures:protect(features.platformFeatures()).get()];
 
     auto paymentSetupViewController = adoptNS([PAL::allocPKPaymentSetupViewControllerInstance() initWithPaymentSetupRequest:request.get()]);
     if (!paymentSetupViewController) {
@@ -560,7 +560,7 @@ void WebPaymentCoordinatorProxy::platformBeginApplePaySetup(const PaymentSetupCo
 
 void WebPaymentCoordinatorProxy::platformEndApplePaySetup()
 {
-    [m_paymentSetupViewController dismissViewControllerAnimated:YES completion:nil];
+    [m_paymentSetupViewController.get() dismissViewControllerAnimated:YES completion:nil];
     m_paymentSetupViewController = nil;
 }
 

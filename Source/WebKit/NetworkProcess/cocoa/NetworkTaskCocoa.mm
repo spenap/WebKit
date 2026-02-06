@@ -367,7 +367,7 @@ void NetworkTaskCocoa::updateTaskWithStoragePartitionIdentifier(const WebCore::R
 void NetworkTaskCocoa::willPerformHTTPRedirection(WebCore::ResourceResponse&& redirectResponse, WebCore::ResourceRequest&& request, RedirectCompletionHandler&& completionHandler)
 {
 #if ENABLE(APP_PRIVACY_REPORT)
-    request.setIsAppInitiated(request.nsURLRequest(WebCore::HTTPBodyUpdatePolicy::DoNotUpdateHTTPBody).attribution == NSURLRequestAttributionDeveloper);
+    request.setIsAppInitiated([protect(request.nsURLRequest(WebCore::HTTPBodyUpdatePolicy::DoNotUpdateHTTPBody)) attribution] == NSURLRequestAttributionDeveloper);
 #endif
 
     setCookieTransform(request, IsRedirect::Yes);

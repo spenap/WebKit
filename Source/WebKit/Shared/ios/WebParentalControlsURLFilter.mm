@@ -72,7 +72,7 @@ void WebParentalControlsURLFilter::isURLAllowedImpl(const URL& mainDocumentURL, 
 #if HAVE(WEBCONTENTRESTRICTIONS_TRANSITIVE_TRUST)
         [ensureWebContentFilter() evaluateURL:url.createNSURL().get() mainDocumentURL:mainDocumentURL.createNSURL().get() completionHandler:makeBlockPtr([completionHandler = WTF::move(completionHandler)](BOOL shouldBlock, NSData *replacementData) mutable {
 #else
-        [ensureWebContentFilter() evaluateURL:url.createNSURL().get() completionHandler:makeBlockPtr([completionHandler = WTF::move(completionHandler)](BOOL shouldBlock, NSData *replacementData) mutable {
+        [protect(ensureWebContentFilter()) evaluateURL:url.createNSURL().get() completionHandler:makeBlockPtr([completionHandler = WTF::move(completionHandler)](BOOL shouldBlock, NSData *replacementData) mutable {
 #endif
             completionHandler(!shouldBlock, replacementData);
         }).get()];
@@ -89,7 +89,7 @@ void WebParentalControlsURLFilter::allowURL(const URL& url, CompletionHandler<vo
             return;
         }
 
-        [ensureWebContentFilter() allowURL:url.createNSURL().get() completionHandler:makeBlockPtr([completionHandler = WTF::move(completionHandler)](BOOL didAllow, NSError *) mutable {
+        [protect(ensureWebContentFilter()) allowURL:url.createNSURL().get() completionHandler:makeBlockPtr([completionHandler = WTF::move(completionHandler)](BOOL didAllow, NSError *) mutable {
             RELEASE_LOG(Loading, "WebParentalControlsURLFilter::allowURL result %d.\n", didAllow);
             callOnMainRunLoop([didAllow, completionHandler = WTF::move(completionHandler)] mutable {
                 completionHandler(didAllow);

@@ -188,7 +188,7 @@ ALLOW_DEPRECATED_DECLARATIONS_BEGIN
     self.view.frame = UIScreen.mainScreen.bounds;
 ALLOW_DEPRECATED_DECLARATIONS_END
     self.view.backgroundColor = [UIColor blackColor];
-    [_avPlayerViewController view].autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    [_avPlayerViewController.get() view].autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 }
 
 #if !PLATFORM(VISION)

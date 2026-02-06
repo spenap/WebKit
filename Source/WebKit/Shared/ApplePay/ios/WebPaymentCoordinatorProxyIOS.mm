@@ -85,7 +85,7 @@ void WebPaymentCoordinatorProxy::platformShowPaymentUI(WebPageProxyIdentifier we
         });
 #else
         UNUSED_VARIABLE(webPageProxyID);
-        protect(paymentCoordinatorProxy->m_authorizationPresenter)->present(paymentCoordinatorProxy->checkedClient()->paymentCoordinatorPresentingViewController(*paymentCoordinatorProxy), WTF::move(completionHandler));
+        protect(paymentCoordinatorProxy->m_authorizationPresenter)->present(protect(paymentCoordinatorProxy->checkedClient()->paymentCoordinatorPresentingViewController(*paymentCoordinatorProxy)).get(), WTF::move(completionHandler));
 #endif
     });
 }

@@ -1011,7 +1011,7 @@ void WebPageProxy::requestActiveNowPlayingSessionInfo(CompletionHandler<void(boo
 void WebPageProxy::setLastNavigationWasAppInitiated(ResourceRequest& request)
 {
 #if ENABLE(APP_PRIVACY_REPORT)
-    auto isAppInitiated = request.nsURLRequest(WebCore::HTTPBodyUpdatePolicy::DoNotUpdateHTTPBody).attribution == NSURLRequestAttributionDeveloper;
+    auto isAppInitiated = [protect(request.nsURLRequest(WebCore::HTTPBodyUpdatePolicy::DoNotUpdateHTTPBody)) attribution] == NSURLRequestAttributionDeveloper;
     if (m_configuration->appInitiatedOverrideValueForTesting() != AttributionOverrideTesting::NoOverride)
         isAppInitiated = m_configuration->appInitiatedOverrideValueForTesting() == AttributionOverrideTesting::AppInitiated;
 

@@ -203,7 +203,7 @@ static constexpr Seconds indicatorMoveDuration { 0.3_s };
 - (void)_updateLabel:(bool)labelTextShouldChange
 {
     if (labelTextShouldChange)
-        [_button setTitle:[NSString localizedStringWithFormat:WEB_UI_NSSTRING(@"%1$d of %2$d", "Label for PDF page number indicator."), _currentPageNumber, _pageCount] forState:UIControlStateNormal];
+        SUPPRESS_UNRETAINED_ARG [_button setTitle:[NSString localizedStringWithFormat:WEB_UI_NSSTRING(@"%1$d of %2$d", "Label for PDF page number indicator."), _currentPageNumber, _pageCount] forState:UIControlStateNormal];
     [self sizeToFit];
 
     if (!_pageCount || !_currentPageNumber)

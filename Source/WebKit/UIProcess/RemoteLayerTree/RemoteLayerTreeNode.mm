@@ -288,7 +288,7 @@ NSString *RemoteLayerTreeNode::appendLayerDescription(NSString *description, CAL
 void RemoteLayerTreeNode::addToHostingNode(RemoteLayerTreeNode& hostingNode)
 {
 #if PLATFORM(IOS_FAMILY)
-    [hostingNode.uiView() addSubview:uiView()];
+    [protect(hostingNode.uiView()) addSubview:protect(uiView()).get()];
 #else
     [protect(hostingNode.layer()) addSublayer:protect(layer()).get()];
 #endif
@@ -297,7 +297,7 @@ void RemoteLayerTreeNode::addToHostingNode(RemoteLayerTreeNode& hostingNode)
 void RemoteLayerTreeNode::removeFromHostingNode()
 {
 #if PLATFORM(IOS_FAMILY)
-    [uiView() removeFromSuperview];
+    [protect(uiView()) removeFromSuperview];
 #else
     [protect(layer()) removeFromSuperlayer];
 #endif

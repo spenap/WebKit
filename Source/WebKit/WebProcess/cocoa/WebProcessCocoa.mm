@@ -633,7 +633,7 @@ void WebProcess::platformInitializeWebProcess(WebProcessCreationParameters& para
 #endif
 
 #if ENABLE(CLOSE_WEBCONTENT_XPC_CONNECTION_POST_LAUNCH)
-    xpc_connection_cancel(parentProcessConnection()->xpcConnection());
+    xpc_connection_cancel(protect(parentProcessConnection()->xpcConnection()));
 #endif
 
     if (getenv("WEBKIT_PAUSE_WEB_PROCESS_ON_LAUNCH"))
