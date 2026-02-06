@@ -2824,7 +2824,7 @@ Seconds WebProcessPool::defaultWebProcessSuspensionDelay()
 {
     static Seconds delay = []() {
         auto value = CFPreferencesGetAppIntegerValue(CFSTR("DebugWebProcessSuspensionDelay"), kCFPreferencesCurrentApplication, nullptr);
-        return value > 0 ? Seconds(value) : 8_min;
+        return value > 0 ? Seconds(value) : 4_min;
     }();
     return delay;
 }
