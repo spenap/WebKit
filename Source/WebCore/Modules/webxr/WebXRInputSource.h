@@ -65,7 +65,7 @@ public:
     PlatformXR::InputSourceHandle handle() const { return m_source.handle; }
     XRHandedness handedness() const { return m_source.handedness; }
     XRTargetRayMode targetRayMode() const { return m_source.targetRayMode; };
-    const WebXRSpace& targetRaySpace() const {return m_targetRaySpace.get(); };
+    WebXRSpace& targetRaySpace() const { return m_targetRaySpace.get(); };
     WebXRSpace* gripSpace() const { return m_gripSpace.get(); }
     const Vector<String>& profiles() const { return m_source.profiles; };
     double connectTime() const { return m_connectTime; }
