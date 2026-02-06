@@ -1709,9 +1709,17 @@ void KeyframeEffect::computeAcceleratedPropertiesState()
 
     if (RefPtr document = this->document()) {
         auto& settings = document->settings();
+        auto isMarker = m_pseudoElementIdentifier && m_pseudoElementIdentifier->type == PseudoElementType::Marker;
+
+        auto isAcceleratedProperty = [&](AnimatableCSSProperty property) {
+            if (isMarker && std::holds_alternative<CSSPropertyID>(property) && !Style::isValidMarkerStyleProperty(std::get<CSSPropertyID>(property)))
+                return false;
+            return Style::Interpolation::isAccelerated(property, settings);
+        };
+
         for (auto property : m_blendingKeyframes.properties()) {
             // If any animated property can be accelerated, then the animation should run accelerated.
-            if (Style::Interpolation::isAccelerated(property, settings))
+            if (isAcceleratedProperty(property))
                 hasSomeAcceleratedProperties = true;
             else
                 hasSomeUnacceleratedProperties = true;
