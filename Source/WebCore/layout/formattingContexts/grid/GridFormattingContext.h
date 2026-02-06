@@ -66,7 +66,12 @@ struct GridDefinition {
 
 struct GridLayoutConstraints {
     std::optional<LayoutUnit> inlineAxisAvailableSpace;
+    std::optional<LayoutUnit> gridContainerInlineMinimumSize;
+    std::optional<LayoutUnit> gridContainerInlineMaximumSize;
+
     std::optional<LayoutUnit> blockAxisAvailableSpace;
+    std::optional<LayoutUnit> gridContainerBlockMinimumSize;
+    std::optional<LayoutUnit> gridContainerBlockMaximumSize;
 };
 
 class GridFormattingContext {

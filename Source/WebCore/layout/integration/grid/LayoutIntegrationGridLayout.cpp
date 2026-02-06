@@ -55,6 +55,20 @@ void GridLayout::updateFormattingContextGeometries()
     boxGeometryUpdater.setFormattingContextContentGeometry(CheckedRef { layoutState() }->geometryForBox(gridBox()).contentBoxWidth(), { });
 }
 
+template <typename SizeType>
+static std::optional<LayoutUnit> sizeValue(const SizeType& computedSize, const Style::ZoomFactor& gridContainerZoom)
+{
+    return WTF::switchOn(computedSize,
+        [&gridContainerZoom](const SizeType::Fixed& fixedValue) -> std::optional<LayoutUnit> {
+            return Style::evaluate<LayoutUnit>(fixedValue, gridContainerZoom);
+        },
+        [](const auto&) -> std::optional<LayoutUnit> {
+            ASSERT_NOT_IMPLEMENTED_YET();
+            return { };
+        }
+    );
+}
+
 static inline Layout::GridLayoutConstraints constraintsForGridContent(const Layout::ElementBox& gridContainer)
 {
     CheckedRef gridContainerRenderer = downcast<RenderGrid>(*gridContainer.rendererForIntegration());
@@ -66,9 +80,17 @@ static inline Layout::GridLayoutConstraints constraintsForGridContent(const Layo
     }();
     auto availableBlockSpace = gridContainerRenderer->availableLogicalHeightForContentBox();
 
+    CheckedRef gridContainerStyle = gridContainerRenderer->style();
+    auto gridContainerZoom = gridContainerStyle->usedZoomForLength();
+
     return {
-        .inlineAxisAvailableSpace = availableInlineSpace,
-        .blockAxisAvailableSpace = availableBlockSpace
+        availableInlineSpace,
+        sizeValue(gridContainerStyle->minWidth(), gridContainerZoom),
+        sizeValue(gridContainerStyle->maxWidth(), gridContainerZoom),
+
+        availableBlockSpace,
+        sizeValue(gridContainerStyle->minHeight(), gridContainerZoom),
+        sizeValue(gridContainerStyle->maxHeight(), gridContainerZoom)
     };
 }
 
