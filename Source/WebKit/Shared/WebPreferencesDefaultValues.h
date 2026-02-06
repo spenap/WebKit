@@ -226,4 +226,8 @@ bool defaultAllowMultipleCommitLayerTreePending();
 bool defaultCaptionDisplaySettingsEnabled();
 #endif
 
+#if ENABLE(MEDIA_STREAM)
+bool defaultShouldEnableScreenCapture();
+#endif
+
 } // namespace WebKit
