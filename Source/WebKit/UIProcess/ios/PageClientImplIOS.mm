@@ -692,6 +692,11 @@ void PageClientImpl::clearBrowsingWarningIfForMainFrameNavigation()
     [webView() _clearBrowsingWarningIfForMainFrameNavigation];
 }
 
+bool PageClientImpl::hasBrowsingWarning() const
+{
+    return !![webView() _safeBrowsingWarning];
+}
+
 void PageClientImpl::exitAcceleratedCompositingMode()
 {
     notImplemented();

@@ -171,6 +171,7 @@ private:
     void showBrowsingWarning(const BrowsingWarning&, CompletionHandler<void(Variant<WebKit::ContinueUnsafeLoad, URL>&&)>&&) override;
     void clearBrowsingWarning() override;
     void clearBrowsingWarningIfForMainFrameNavigation() override;
+    bool hasBrowsingWarning() const override;
 
     void enterAcceleratedCompositingMode(const LayerTreeContext&) override;
     void exitAcceleratedCompositingMode() override;

@@ -8433,6 +8433,11 @@ void WebPageProxy::decidePolicyForNavigationAction(Ref<WebProcessProxy>&& proces
     auto transaction = std::optional(protectedPageLoadState->transaction());
 
     bool fromAPI = request.url() == protectedPageLoadState->pendingAPIRequestURL();
+    if (frame.isMainFrame() && protectedPageClient->hasBrowsingWarning() && !(fromAPI || (navigationID && navigationID == protectedPageLoadState->pendingAPIRequest().navigationID))) {
+        WEBPAGEPROXY_RELEASE_LOG(Loading, "decidePolicyForNavigationAction: Ignoring navigation because a safe browsing warning is currently shown");
+        return completionHandler(PolicyDecision { isNavigatingToAppBoundDomain() });
+    }
+
     if (navigationID && !fromAPI)
         protectedPageLoadState->clearPendingAPIRequest(*transaction);
 
