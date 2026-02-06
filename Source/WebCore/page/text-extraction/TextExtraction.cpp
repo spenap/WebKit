@@ -456,6 +456,9 @@ static inline Variant<SkipExtraction, ItemData, URL, Editable> extractItemData(N
 
                 auto shortenedURLString = [&] {
                     auto shortenedURL = StringEntropyHelpers::removeHighEntropyComponents(url);
+                    if (shortenedURL.protocolIsFile())
+                        return shortenedURL.path().toString();
+
                     auto shortenedString = shortenedURL.string();
                     if (!shortenedURL.protocolIsInHTTPFamily())
                         return shortenedString;
