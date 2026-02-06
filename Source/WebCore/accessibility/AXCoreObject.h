@@ -1687,6 +1687,14 @@ struct TimeoutSafeSemaphore : RefCounted<TimeoutSafeSemaphore<T>> {
     bool wait(Seconds timeout) { return semaphore.waitFor(timeout); }
 };
 
+// Timeout constants for retrieveValueFromMainThreadWithTimeoutAndDefault.
+// These are grouped by operation type to make it easier to tune timeouts.
+constexpr Seconds HitTestTimeout = 15_ms;
+constexpr Seconds BoundingBoxTimeout = 25_ms;
+constexpr Seconds GeneralPropertyTimeout = 25_ms;
+constexpr Seconds VisibilityCheckTimeout = 50_ms;
+constexpr Seconds SpellCheckTimeout = 100_ms;
+constexpr Seconds InteractiveTimeout = 250_ms;
 
 template<typename U>
 inline DidTimeout performFunctionOnMainThreadAndWaitWithTimeout(U&& lambda, Seconds timeout)
@@ -1745,6 +1753,33 @@ inline auto retrieveValueFromMainThreadWithTimeout(U&& lambda, Seconds timeout)
     }
     // If we completed in time, the value was written before the signal, so we can safely read it.
     return TimeoutableValue<RetrieveValueType> { semaphore->value };
+}
+
+template<typename U, typename DefaultType>
+inline auto retrieveValueFromMainThreadWithTimeoutAndDefault(U&& lambda, Seconds timeout, DefaultType&& defaultValue)
+{
+    using RetrieveValueType = decltype(lambda());
+
+    if (isMainThread())
+        return std::forward<U>(lambda)();
+
+    Ref<TimeoutSafeSemaphore<RetrieveValueType>> semaphore = adoptRef(*new TimeoutSafeSemaphore<RetrieveValueType>);
+    ensureOnMainThread([semaphore, lambda = std::forward<U>(lambda)] () mutable {
+        // Execute lambda and store result.
+        semaphore->value = lambda();
+        // Only signal if the calling thread didn't timeout waiting for the main-thread to complete the lambda.
+        if (semaphore->shouldSignal.exchange(false, std::memory_order_acq_rel))
+            semaphore->signal();
+    });
+
+    bool completedInTime = semaphore->wait(timeout);
+    if (!completedInTime) {
+        // If we timed out, prevent a later signal attempt from the lambda.
+        semaphore->shouldSignal.exchange(false, std::memory_order_acq_rel);
+        return static_cast<RetrieveValueType>(std::forward<DefaultType>(defaultValue));
+    }
+    // If we completed in time, the value was written before the signal, so we can safely read it.
+    return *semaphore->value;
 }
 
 template<typename T, typename U> inline T retrieveValueFromMainThread(U&& lambda)
