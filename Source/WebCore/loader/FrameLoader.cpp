@@ -2591,7 +2591,7 @@ void FrameLoader::transitionToCommitted(CachedPage* cachedPage)
             // Create a document view for this document, or used the cached view.
             if (cachedPage) {
                 ASSERT(cachedPage->documentLoader());
-                cachedPage->protectedDocumentLoader()->attachToFrame(protect(m_frame));
+                protect(cachedPage->documentLoader())->attachToFrame(protect(m_frame));
                 m_client->transitionToCommittedFromCachedFrame(cachedPage->cachedMainFrame());
             } else
                 m_client->transitionToCommittedForNewPage(m_documentLoader && m_documentLoader->isInFinishedLoadingOfEmptyDocument() ?
