@@ -41,6 +41,24 @@
 
 namespace WebCore {
 
+static void readableStreamPipeTo(JSDOMGlobalObject&, Ref<ReadableStream>&&, Ref<WritableStream>&&, Ref<ReadableStreamDefaultReader>&&, Ref<InternalWritableStreamWriter>&&, StreamPipeOptions&&, RefPtr<DeferredPromise>&&);
+
+std::optional<Exception> readableStreamPipeTo(JSDOMGlobalObject& globalObject, ReadableStream& source, WritableStream& destination, StreamPipeOptions&& options, RefPtr<DeferredPromise>&& promise)
+{
+    auto readerOrException = ReadableStreamDefaultReader::create(globalObject, source);
+    if (readerOrException.hasException())
+        return readerOrException.releaseException();
+
+    auto writerOrException = acquireWritableStreamDefaultWriter(globalObject, destination);
+    if (writerOrException.hasException())
+        return writerOrException.releaseException();
+
+    source.markAsDisturbed();
+
+    readableStreamPipeTo(globalObject, source, destination, readerOrException.releaseReturnValue(), writerOrException.releaseReturnValue(), WTF::move(options), WTF::move(promise));
+    return { };
+}
+
 class PipeToDefaultReadRequest;
 class StreamPipeToState : public RefCounted<StreamPipeToState>, public ContextDestructionObserver {
 public:

@@ -588,23 +588,6 @@ void ReadableStream::addReadRequest(Ref<ReadableStreamReadRequest>&& readRequest
     return defaultReader->addReadRequest(WTF::move(readRequest));
 }
 
-// https://streams.spec.whatwg.org/#readable-stream-pipe-to
-static std::optional<Exception> pipeToInternal(JSDOMGlobalObject& globalObject, ReadableStream& source, WritableStream& destination, StreamPipeOptions&& options, RefPtr<DeferredPromise>&& promise)
-{
-    auto readerOrException = ReadableStreamDefaultReader::create(globalObject, source);
-    if (readerOrException.hasException())
-        return readerOrException.releaseException();
-
-    auto writerOrException = acquireWritableStreamDefaultWriter(globalObject, destination);
-    if (writerOrException.hasException())
-        return writerOrException.releaseException();
-
-    source.markAsDisturbed();
-
-    readableStreamPipeTo(globalObject, source, destination, readerOrException.releaseReturnValue(), writerOrException.releaseReturnValue(), WTF::move(options), WTF::move(promise));
-    return { };
-}
-
 // https://streams.spec.whatwg.org/#rs-pipe-to
 void ReadableStream::pipeTo(JSDOMGlobalObject& globalObject, WritableStream& destination, StreamPipeOptions&& options, Ref<DeferredPromise>&& promise)
 {
@@ -618,7 +601,7 @@ void ReadableStream::pipeTo(JSDOMGlobalObject& globalObject, WritableStream& des
         return;
     }
 
-    pipeToInternal(globalObject, *this, destination, WTF::move(options), WTF::move(promise));
+    readableStreamPipeTo(globalObject, *this, destination, WTF::move(options), WTF::move(promise));
 }
 
 // https://streams.spec.whatwg.org/#rs-pipe-through
@@ -630,7 +613,7 @@ ExceptionOr<Ref<ReadableStream>> ReadableStream::pipeThrough(JSDOMGlobalObject& 
     SUPPRESS_UNCOUNTED_ARG if (transform.writable->locked())
         return Exception { ExceptionCode::TypeError, "transform writable is locked"_s };
 
-    pipeToInternal(globalObject, *this, WTF::move(transform.writable), WTF::move(options), nullptr);
+    readableStreamPipeTo(globalObject, *this, WTF::move(transform.writable), WTF::move(options), nullptr);
 
     return WTF::move(transform.readable);
 }
@@ -840,7 +823,7 @@ ExceptionOr<DetachedReadableStream> ReadableStream::runTransferSteps(JSDOMGlobal
     }
     Ref writable = result.releaseReturnValue();
 
-    if (auto exception = pipeToInternal(globalObject, *this, writable.get(), { }, nullptr)) {
+    if (auto exception = readableStreamPipeTo(globalObject, *this, writable.get(), { }, nullptr)) {
         port2->close();
         return WTF::move(*exception);
     }
