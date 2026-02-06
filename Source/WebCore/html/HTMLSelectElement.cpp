@@ -381,7 +381,7 @@ bool HTMLSelectElement::isMouseFocusable() const
 
 bool HTMLSelectElement::canSelectAll() const
 {
-    return !usesMenuList();
+    return m_multiple;
 }
 
 RenderPtr<RenderElement> HTMLSelectElement::createElementRenderer(RenderStyle&& style, const RenderTreePosition&)
@@ -671,7 +671,7 @@ int HTMLSelectElement::nextSelectableListIndexPageAway(int startIndex, SkipDirec
 
 void HTMLSelectElement::selectAll()
 {
-    ASSERT(!usesMenuList());
+    ASSERT(m_multiple);
     if (!renderer() || !m_multiple)
         return;
 
