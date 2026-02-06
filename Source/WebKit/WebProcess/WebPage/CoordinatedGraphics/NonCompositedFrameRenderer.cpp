@@ -70,7 +70,10 @@ bool NonCompositedFrameRenderer::initialize()
 
 NonCompositedFrameRenderer::~NonCompositedFrameRenderer()
 {
+    if (m_context)
+        m_context->makeContextCurrent();
     m_surface->willDestroyGLContext();
+    m_context = nullptr;
     m_surface->willDestroyCompositingRunLoop();
 }
 
@@ -120,7 +123,7 @@ void NonCompositedFrameRenderer::display()
         PlatformDisplay::sharedDisplay().skiaGLContext()->makeContextCurrent();
 
     canvas->save();
-    GraphicsContextSkia graphicsContext(*canvas, m_surface->usesGL() ? RenderingMode::Accelerated : RenderingMode::Unaccelerated, RenderingPurpose::Unspecified);
+    GraphicsContextSkia graphicsContext(*canvas, m_context ? RenderingMode::Accelerated : RenderingMode::Unaccelerated, RenderingPurpose::Unspecified);
     graphicsContext.applyDeviceScaleFactor(webPage->deviceScaleFactor());
 
 #if ENABLE(DAMAGE_TRACKING)
@@ -145,8 +148,12 @@ void NonCompositedFrameRenderer::display()
     webPage->drawRect(graphicsContext, rectToRepaint);
     canvas->restore();
 
-    if (m_context)
+    if (m_context) {
+        if (auto* surface = canvas->getSurface())
+            PlatformDisplay::sharedDisplay().skiaGrContext()->flushAndSubmit(surface, GrSyncCpu::kNo);
+
         m_context->makeContextCurrent();
+    }
 
     m_canRenderNextFrame = false;
     m_surface->didRenderFrame();

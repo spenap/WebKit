@@ -271,15 +271,6 @@ std::unique_ptr<GLFence> AcceleratedSurface::RenderTargetShareableBuffer::create
 
 void AcceleratedSurface::RenderTargetShareableBuffer::sync(bool useExplicitSync)
 {
-#if USE(SKIA)
-    if (m_skiaSurface) {
-        PlatformDisplay::sharedDisplay().skiaGrContext()->flushAndSubmit(
-            m_skiaSurface.get(),
-            GLFence::isSupported(PlatformDisplay::sharedDisplay().glDisplay()) ? GrSyncCpu::kNo : GrSyncCpu::kYes
-        );
-    }
-#endif
-
     if (auto fence = createRenderingFence(useExplicitSync)) {
         m_renderingFenceFD = fence->exportFD();
         if (!m_renderingFenceFD)
