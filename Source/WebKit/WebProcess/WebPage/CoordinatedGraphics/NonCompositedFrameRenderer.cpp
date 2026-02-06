@@ -123,7 +123,7 @@ void NonCompositedFrameRenderer::display()
         PlatformDisplay::sharedDisplay().skiaGLContext()->makeContextCurrent();
 
     canvas->save();
-    GraphicsContextSkia graphicsContext(*canvas, m_context ? RenderingMode::Accelerated : RenderingMode::Unaccelerated, RenderingPurpose::Unspecified);
+    GraphicsContextSkia graphicsContext(*canvas, m_context ? RenderingMode::Accelerated : RenderingMode::Unaccelerated, RenderingPurpose::DOM);
     graphicsContext.applyDeviceScaleFactor(webPage->deviceScaleFactor());
 
 #if ENABLE(DAMAGE_TRACKING)
