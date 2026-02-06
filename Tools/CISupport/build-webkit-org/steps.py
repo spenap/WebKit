@@ -34,7 +34,7 @@ import re
 import socket
 import sys
 
-from Shared.steps import ShellMixin, SetBuildSummary
+from Shared.steps import ShellMixin, SetBuildSummary, InstallSwiftToolchain, InstallMetalToolchain, SWIFT_TOOLCHAIN_NAME, SWIFT_TOOLCHAIN_BUNDLE_IDENTIFIER, USER_TOOLCHAINS_DIR
 
 if sys.version_info < (3, 9):  # noqa: UP036
     print('ERROR: Minimum supported Python version for this code is Python 3.9')
@@ -1710,9 +1710,15 @@ class ScanBuild(steps.ShellSequence, ShellMixin):
     @defer.inlineCallbacks
     def run(self):
         self.commands = []
-        build_command = f"Tools/Scripts/build-and-analyze --output-dir {os.path.join(self.getProperty('builddir'), f'build/{SCAN_BUILD_OUTPUT_DIR}')} --configuration {self.build.getProperty('configuration')} "
-        build_command += f"--only-smart-pointers --analyzer-path={os.path.join(self.getProperty('builddir'), 'llvm-project/build/bin/clang')} "
-        build_command += '--scan-build-path=../llvm-project/clang/tools/scan-build/bin/scan-build --sdkroot=macosx --preprocessor-additions=CLANG_WEBKIT_BRANCH=1 '
+
+        build_command = f"Tools/Scripts/build-and-analyze --output-dir {os.path.join(self.getProperty('builddir'), f'build/{SCAN_BUILD_OUTPUT_DIR}')} --configuration {self.build.getProperty('configuration')} --only-smart-pointers "
+        if self.getProperty('platform', '').lower() == 'ios':
+            sdkroot = 'iphonesimulator'
+            build_command += f'--toolchain {SWIFT_TOOLCHAIN_BUNDLE_IDENTIFIER} '
+        else:
+            sdkroot = 'macosx'
+            build_command += f"--analyzer-path={os.path.join(self.getProperty('builddir'), 'llvm-project/build/bin/clang')} "
+        build_command += f'--scan-build-path=../llvm-project/clang/tools/scan-build/bin/scan-build --sdkroot={sdkroot} --preprocessor-additions=CLANG_WEBKIT_BRANCH=1 '
         build_command += '2>&1 | python3 Tools/Scripts/filter-test-logs scan-build --output build-log.txt'
 
         for command in [
@@ -2294,13 +2300,56 @@ class RebootWithUpdatedCrossTargetImage(shell.ShellCommand):
 
 class BuildSwift(shell.ShellCommand, ShellMixin):
     name = 'build-swift'
+    flunkOnFailure = True
 
     def __init__(self, **kwargs):
         super().__init__(logEnviron=False, workdir=SWIFT_DIR, **kwargs)
 
     @defer.inlineCallbacks
     def run(self):
-        self.command = ['utils/build-script', '--skip-build-benchmarks', '--swift-darwin-supported-archs', self.getProperty('architecture'), '--release', '--no-assertions', '--swift-disable-dead-stripping', '--bootstrapping=hosttools']
+        builddir = self.getProperty('builddir')
+        swift_install_dir = f'{builddir}/{SWIFT_DIR}/swift-nightly-install'
+        swift_symroot_dir = f'{builddir}/{SWIFT_DIR}/swift-nightly-symroot'
+
+        self.command = [
+            'utils/build-script',
+            '--swift-install-components=autolink-driver;back-deployment;compiler;clang-resource-dir-symlink;libexec;stdlib;sdk-overlay;static-mirror-lib;toolchain-tools;license;sourcekit-xpc-service;sourcekit-inproc;swift-remote-mirror;swift-remote-mirror-headers',
+            '--llvm-install-components=llvm-ar;llvm-nm;llvm-ranlib;llvm-cov;llvm-profdata;llvm-objdump;llvm-objcopy;llvm-symbolizer;IndexStore;clang;clang-resource-headers;builtins;runtimes;clangd;libclang;dsymutil;LTO;clang-features-file;lld',
+            '--ios',
+            '--release',
+            '--no-assertions',
+            '--compiler-vendor=apple',
+            '--infer-cross-compile-hosts-on-darwin',
+            '--build-ninja',
+            '--skip-build-benchmarks',
+            '--skip-tvos',
+            '--skip-watchos',
+            '--skip-xros',
+            '--build-subdir=buildbot_osx',
+            '--install-llvm',
+            '--install-swift',
+            f'--install-destdir={swift_install_dir}',
+            f'--install-prefix=/Library/Developer/Toolchains/{SWIFT_TOOLCHAIN_NAME}.xctoolchain/usr',
+            '--darwin-install-extract-symbols',
+            f'--install-symroot={swift_symroot_dir}',
+            f'--installable-package={swift_install_dir}/{SWIFT_TOOLCHAIN_NAME}-osx.tar.gz',
+            f'--symbols-package={swift_install_dir}/{SWIFT_TOOLCHAIN_NAME}-osx-symbols.tar.gz',
+            f'--darwin-toolchain-bundle-identifier={SWIFT_TOOLCHAIN_BUNDLE_IDENTIFIER}',
+            '--darwin-toolchain-display-name=WebKit Swift Toolchain',
+            '--darwin-toolchain-display-name-short=WebKit Swift',
+            f'--darwin-toolchain-name={SWIFT_TOOLCHAIN_NAME}',
+            '--darwin-toolchain-version=6.0.0',
+            '--darwin-toolchain-alias=webkit',
+            '--darwin-toolchain-require-use-os-runtime=0',
+            '--skip-test-swift=1',
+            '--skip-test-cmark=1',
+            '--swift-testing=1',
+            '--install-swift-testing=1',
+            '--swift-testing-macros=1',
+            '--install-swift-testing-macros=1',
+            '--swift-driver=1',
+            '--install-swift-driver=1',
+        ]
 
         filter_command = ' '.join(quote(str(c)) for c in self.command) + f" 2>&1 | python3 {self.getProperty('builddir')}/build/Tools/Scripts/filter-test-logs swift --output {self.getProperty('builddir')}/build/swift-build-log.txt"
         self.command = self.shell_command(filter_command)
@@ -2326,12 +2375,17 @@ class BuildSwift(shell.ShellCommand, ShellMixin):
             if self.getProperty('current_swift_tag', ''):
                 return WARNINGS
             self.build.buildFinished(['Failed to set up swift, retrying update'], RETRY)
+        else:
+            self.setProperty('swift_toolchain_rebuilt', True)
+            steps_to_add += [InstallSwiftToolchain(), InstallMetalToolchain()]
+
+        self.build.addStepsAfterCurrentStep(steps_to_add)
 
         return defer.returnValue(rc)
 
     def getResultSummary(self):
         if self.results == SKIPPED:
-            return {'step': 'Swift executable already exists'}
+            return {'step': 'Swift toolchain already exists'}
         elif self.results == WARNINGS:
             return {'step': 'Failed to update swift, using previous checkout'}
         elif self.results != SUCCESS:
@@ -2339,6 +2393,6 @@ class BuildSwift(shell.ShellCommand, ShellMixin):
         return {'step': 'Successfully built Swift'}
 
     def doStepIf(self, step):
-        if not self.getProperty('has_swift_executable'):
+        if not self.getProperty('has_swift_toolchain'):
             return True
         return self.getProperty('canonical_swift_tag') and self.getProperty('current_swift_tag', '') != self.getProperty('canonical_swift_tag')
