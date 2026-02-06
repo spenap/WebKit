@@ -3295,6 +3295,7 @@ void Element::addShadowRoot(Ref<ShadowRoot>&& newShadowRoot)
             RenderTreeUpdater::tearDownRenderersForShadowRootInsertion(*this);
 
         ensureElementRareData().setShadowRoot(WTF::move(newShadowRoot));
+        setHasShadowRoot(true);
 
         shadowRoot->setHost(*this);
         shadowRoot->setParentTreeScope(treeScope());
@@ -3340,6 +3341,7 @@ void Element::removeShadowRootSlow(ShadowRoot& oldRoot)
     ASSERT(!oldRoot.renderer());
 
     elementRareData()->clearShadowRoot();
+    setHasShadowRoot(false);
 
     oldRoot.setHost(nullptr);
     oldRoot.setParentTreeScope(document());
