@@ -321,7 +321,7 @@ static void resolveIntrinsicTrackSizes(UnsizedTracks& unsizedTracks, const Place
 // https://drafts.csswg.org/css-grid-1/#algo-track-sizing
 TrackSizes TrackSizingAlgorithm::sizeTracks(const PlacedGridItems& gridItems, const ComputedSizesList& gridItemComputedSizesList,
     const PlacedGridItemSpanList& gridItemSpanList, const TrackSizingFunctionsList& trackSizingFunctions,
-    std::optional<LayoutUnit> availableSpace, const GridItemSizingFunctions& gridItemSizingFunctions,
+    std::optional<LayoutUnit> availableGridSpace, const GridItemSizingFunctions& gridItemSizingFunctions,
     const IntegrationUtils& integrationUtils, const FreeSpaceScenario& freeSpaceScenario, const LayoutUnit& gapSize)
 {
     ASSERT(gridItems.size() == gridItemSpanList.size());
@@ -358,25 +358,25 @@ TrackSizes TrackSizingAlgorithm::sizeTracks(const PlacedGridItems& gridItems, co
         if (freeSpaceScenario == FreeSpaceScenario::Indefinite) {
             // FIXME: Implement indefinite free space (spec §11.7 Scenario 3).
             // Compute flex fraction based on max-content contributions.
-            ASSERT(!availableSpace);
+            ASSERT(!availableGridSpace);
             notImplemented();
             return;
         }
 
         ASSERT(freeSpaceScenario == FreeSpaceScenario::Definite);
-        ASSERT(availableSpace.has_value());
+        ASSERT(availableGridSpace.has_value());
 
         // https://drafts.csswg.org/css-grid-1/#algo-flex-tracks
         // "If the free space is zero...the used flex fraction is zero."
         // If availableSpace is zero, free space must also be 0.
-        if (availableSpace.value() == 0_lu)
+        if (availableGridSpace.value() == 0_lu)
             return;
 
         // https://drafts.csswg.org/css-grid-1/#algo-flex-tracks
         // Otherwise, if the free space is a definite length:
         // The used flex fraction is the result of finding the size of an fr using all of the
         // grid tracks and a space to fill of the available grid space (minus gutters).
-        auto frSize = findSizeOfFr(unsizedTracks, availableSpace.value(), gapSize);
+        auto frSize = findSizeOfFr(unsizedTracks, availableGridSpace.value(), gapSize);
 
         // For each flexible track, if the product of the used flex fraction and the track's flex factor is greater than the track's base size, set its base size to that product.
         for (auto& flexTrack : flexTracks) {
