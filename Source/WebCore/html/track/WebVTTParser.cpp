@@ -411,7 +411,7 @@ bool WebVTTParser::checkAndStoreStyleSheet(StringView line)
         if (styleRule->properties().isEmpty())
             continue;
 
-        sanitizedStyleSheetBuilder.append(selectorText, " { "_s, styleRule->protectedProperties()->asText(CSS::defaultSerializationContext()), "  }\n"_s);
+        sanitizedStyleSheetBuilder.append(selectorText, " { "_s, protect(styleRule->properties())->asText(CSS::defaultSerializationContext()), "  }\n"_s);
     }
 
     // It would be more stylish to parse the stylesheet only once instead of serializing a sanitized version.

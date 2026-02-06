@@ -147,11 +147,6 @@ void CSSToLengthConversionData::setUsesContainerUnits() const
         m_styleBuilderState->setUsesContainerUnits();
 }
 
-CheckedPtr<Style::BuilderState> CSSToLengthConversionData::protectedStyleBuilderState() const
-{
-    return m_styleBuilderState;
-}
-
 bool CSSToLengthConversionData::evaluationTimeZoomEnabled() const
 {
     ASSERT(m_style);
