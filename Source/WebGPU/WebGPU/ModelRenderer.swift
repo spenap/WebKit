@@ -21,7 +21,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
 
-#if canImport(RealityCoreRenderer, _version: 6) && canImport(USDStageKit, _version: 34)
+#if canImport(RealityCoreRenderer, _version: 6) && canImport(USDStageKit, _version: 34) && !os(iOS)
 
 import QuartzCore
 @_spi(RealityCoreRendererAPI) @_spi(Private) import RealityKit

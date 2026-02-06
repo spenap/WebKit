@@ -26,7 +26,7 @@ internal import OSLog
 internal import WebGPU_Private.ModelTypes
 internal import simd
 
-#if canImport(RealityCoreRenderer, _version: 6) && canImport(USDStageKit, _version: 34)
+#if canImport(RealityCoreRenderer, _version: 6) && canImport(USDStageKit, _version: 34) && !os(iOS)
 @_spi(RealityCoreRendererAPI) import RealityKit
 @_spi(RealityCoreTextureProcessingAPI) import RealityCoreTextureProcessing
 @_spi(UsdLoaderAPI) import _USDKit_RealityKit
