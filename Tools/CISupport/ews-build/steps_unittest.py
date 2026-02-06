@@ -10394,6 +10394,7 @@ class TestTrigger(BuildStepMixinAdditions, unittest.TestCase):
         self.assertIn('ews_revision', props)
         self.assertIn('parent_buildnumber', props)
         self.assertIn('parent_builderid', props)
+        self.assertIn('rebuild_without_change_on_builder', props)
         self.assertNotIn('github.number', props)
         self.assertNotIn('github.head.sha', props)
         self.assertNotIn('repository', props)

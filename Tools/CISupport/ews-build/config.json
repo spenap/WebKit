@@ -299,6 +299,7 @@
       "name": "macOS-Sequoia-Release-Build-EWS", "shortname": "mac", "icon": "buildOnly",
       "factory": "macOSBuildFactory", "platform": "mac-sequoia",
       "configuration": "release", "architectures": ["x86_64", "arm64"],
+      "rebuild_without_change_on_builder": true,
       "triggers": ["api-tests-mac-ews", "macos-sequoia-release-wk1-tests-ews", "macos-sequoia-release-wk2-tests-ews", "macos-sequoia-release-wk2-intel-tests-ews", "macos-release-wk2-stress-tests-ews"],
       "workernames": ["ews101", "ews102", "ews103", "ews105", "ews116", "ews117", "ews118", "ews119", "ews120", "ews141", "ews145", "ews147", "ews148", "ews161", "ews162"]
     },
