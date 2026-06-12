@@ -165,6 +165,27 @@ ADD_WK2_TEST(TestInputMethodContext ${TOOLS_DIR}/TestWebKitAPI/Tests/WebKit/WKPa
 
 if (ENABLE_WEBXR AND USE_OPENXR)
     ADD_WK2_TEST(TestWebKitWebXR ${TOOLS_DIR}/TestWebKitAPI/Tests/WebKit/WKPage/glib/TestWebKitWebXR.cpp)
+
+    # In-process mock OpenXR runtime: a module the real loader dlopens (selected via
+    # XR_RUNTIME_JSON), so the test exercises the production OpenXR path and only swaps
+    # what sits behind the loader. See Tools/TestWebKitAPI/openxr-mock/MockOpenXRRuntime.cpp.
+    add_library(MockOpenXRRuntime MODULE ${TOOLS_DIR}/TestWebKitAPI/openxr-mock/MockOpenXRRuntime.cpp)
+    target_include_directories(MockOpenXRRuntime PRIVATE ${OPENXR_INCLUDE_DIRS})
+    set_target_properties(MockOpenXRRuntime PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${TEST_BINARY_DIR})
+
+    # Active-runtime manifest pointing at the freshly-built mock module (absolute path).
+    file(GENERATE
+        OUTPUT ${TEST_BINARY_DIR}/mock_openxr_runtime.json
+        CONTENT "{ \"file_format_version\": \"1.0.0\", \"runtime\": { \"library_path\": \"$<TARGET_FILE:MockOpenXRRuntime>\" } }\n"
+    )
+
+    ADD_WK2_TEST(TestOpenXRInstanceLifecycle ${TOOLS_DIR}/TestWebKitAPI/Tests/WebKit/WKPage/glib/TestOpenXRInstanceLifecycle.cpp)
+    add_dependencies(TestOpenXRInstanceLifecycle MockOpenXRRuntime)
+    # The test selects the mock runtime itself (no Monado, no runner changes); the
+    # program name deliberately omits "WebXR" so the runner does not route it to Monado.
+    target_compile_definitions(TestOpenXRInstanceLifecycle PRIVATE
+        MOCK_OPENXR_RUNTIME_JSON="${TEST_BINARY_DIR}/mock_openxr_runtime.json"
+    )
 endif ()
 
 if (ENABLE_2022_GLIB_API)

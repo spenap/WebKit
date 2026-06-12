@@ -74,8 +74,14 @@ void PlatformXRSystem::invalidate(InvalidationReason reason)
     if (!page)
         return;
 
-    if (m_immersiveSessionState == ImmersiveSessionState::Idle)
+    if (m_immersiveSessionState == ImmersiveSessionState::Idle) {
+        // No active immersive session, so the session lifecycle has nothing to tear
+        // down, but an OpenXR instance may still be alive from device enumeration (e.g.
+        // navigator.xr.isSessionSupported()).
+        if (reason == InvalidationReason::State && xrCoordinator())
+            xrCoordinator()->releaseInstanceIfIdle();
         return;
+    }
 
     if (xrCoordinator())
         xrCoordinator()->endSessionIfExists(*page);

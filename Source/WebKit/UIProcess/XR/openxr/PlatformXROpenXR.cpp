@@ -423,6 +423,17 @@ void OpenXRCoordinator::endSessionIfExists(WebPageProxy& page)
         });
 }
 
+void OpenXRCoordinator::releaseInstanceIfIdle()
+{
+    ASSERT(RunLoop::isMain());
+    LOG(XR, "OpenXRCoordinator::releaseInstanceIfIdle");
+    if (std::holds_alternative<Active>(m_state)) {
+        LOG(XR, "... skipping, a session is active");
+        return;
+    }
+    cleanupInstanceAndAssociatedResources();
+}
+
 void OpenXRCoordinator::scheduleAnimationFrame(WebPageProxy& page, std::optional<PlatformXR::RequestData>&& requestData, PlatformXR::Device::RequestFrameCallback&& onFrameUpdateCallback)
 {
     WTF::switchOn(m_state,
