@@ -24,4 +24,3 @@
 #include "WebsitePoliciesData.h"
 
 API::WebsitePolicies* webkitWebsitePoliciesGetWebsitePolicies(WebKitWebsitePolicies*);
-WebKit::WebsitePoliciesData webkitWebsitePoliciesGetPoliciesData(WebKitWebsitePolicies*);
