@@ -310,22 +310,25 @@ void InputMethodFilter::preeditChanged()
     webkit_input_method_context_get_preedit(m_context.get(), &preeditText.outPtr(), &underlines, &cursorOffset);
 
     auto newPreedit = GMallocString::unsafeAdoptFromUTF8(WTF::move(preeditText));
-    if (newPreedit == m_preedit.text.utf8()) {
-        g_list_free_full(underlines, reinterpret_cast<GDestroyNotify>(webkit_input_method_underline_free));
-        return;
-    }
-
-    m_preedit.text = String::fromUTF8(newPreedit.span());
-    m_preedit.cursorOffset = std::min(cursorOffset, m_preedit.text.length());
-    m_preedit.underlines.clear();
+    auto text = String::fromUTF8(newPreedit.span());
+    auto newCursorOffset = std::min(cursorOffset, text.length());
+    Vector<CompositionUnderline> newUnderlines;
     if (underlines) {
         for (auto* it = underlines; it; it = g_list_next(it)) {
             auto* underline = static_cast<WebKitInputMethodUnderline*>(it->data);
-            m_preedit.underlines.append(webkitInputMethodUnderlineGetCompositionUnderline(underline));
+            newUnderlines.append(webkitInputMethodUnderlineGetCompositionUnderline(underline));
         }
         g_list_free_full(underlines, reinterpret_cast<GDestroyNotify>(webkit_input_method_underline_free));
     } else
-        m_preedit.underlines.append(CompositionUnderline(0, m_preedit.text.length(), CompositionUnderlineColor::TextColor, Color(Color::black), false));
+        newUnderlines.append(CompositionUnderline(0, text.length(), CompositionUnderlineColor::TextColor, Color(Color::black), false));
+
+    // The input method can move its caret or change the underlines without changing the preedit text.
+    if (newPreedit == m_preedit.text.utf8() && (text.isEmpty() || (newCursorOffset == m_preedit.cursorOffset && newUnderlines == m_preedit.underlines)))
+        return;
+
+    m_preedit.text = WTF::move(text);
+    m_preedit.cursorOffset = newCursorOffset;
+    m_preedit.underlines = WTF::move(newUnderlines);
 
     auto* webView = webkitInputMethodContextGetWebView(m_context.get());
     ASSERT(webView);

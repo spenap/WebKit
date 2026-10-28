@@ -56,6 +56,8 @@ typedef struct _WebKitInputMethodContextMock {
     // Offset of the input method caret inside the preedit, or -1 for the end of the preedit.
     // Counted in bytes, like GString::len, which matches the ASCII preedits used here.
     int preeditCursorOffset;
+    // End of the underline under the preedit, or -1 for the end of the preedit. Counted in bytes too.
+    int preeditUnderlineEnd;
     char* surroundingText;
     unsigned surroundingCursorIndex;
     unsigned surroundingSelectionIndex;
@@ -103,7 +105,7 @@ static void webkitInputMethodContextMockGetPreedit(WebKitInputMethodContext* con
     if (text)
         *text = mock->preedit ? g_strdup(mock->preedit->str) : g_strdup("");
     if (underlines)
-        *underlines = mock->preedit ? g_list_prepend(*underlines, webkit_input_method_underline_new(0, mock->preedit->len)) : nullptr;
+        *underlines = mock->preedit ? g_list_prepend(*underlines, webkit_input_method_underline_new(0, mock->preeditUnderlineEnd < 0 ? mock->preedit->len : std::min<unsigned>(mock->preeditUnderlineEnd, mock->preedit->len))) : nullptr;
     if (cursorOffset) {
         if (!mock->preedit)
             *cursorOffset = 0;
@@ -313,6 +315,7 @@ static void webkit_input_method_context_mock_class_init(WebKitInputMethodContext
 static void webkit_input_method_context_mock_init(WebKitInputMethodContextMock* mock)
 {
     mock->preeditCursorOffset = -1;
+    mock->preeditUnderlineEnd = -1;
 }
 
 class InputMethodTest: public WebViewTest {
@@ -649,6 +652,7 @@ public:
     }
 
     void setPreeditCursorOffset(int offset) { m_context->preeditCursorOffset = offset; }
+    void setPreeditUnderlineEnd(int end) { m_context->preeditUnderlineEnd = end; }
 
     void waitForCursorAreaCount(unsigned count, unsigned timeoutMilliseconds = 0)
     {
@@ -1522,6 +1526,65 @@ static void testWebKitInputMethodContextPreeditCursor(InputMethodTest* test, gco
     test->keyStrokeAndWaitForEvents(KEY(Escape), 3);
 }
 
+static void testWebKitInputMethodContextPreeditCursorMove(InputMethodTest* test, gconstpointer)
+{
+    test->loadHtml(testHTML, nullptr);
+    test->waitUntilLoadFinished();
+
+    test->focusEditableAndWaitUntilInputMethodEnabled();
+
+    test->keyStrokeAndWaitForEvents(KEY(w), 4, { WebViewTest::Modifiers::Control, WebViewTest::Modifiers::Shift });
+    test->keyStrokeAndWaitForEvents(KEY(g), 7);
+    test->keyStrokeAndWaitForEvents(KEY(t), 10);
+    test->m_events.clear();
+    g_assert_cmpuint(test->editableSelectionStart(), ==, 3);
+    test->runJavaScriptAndWaitUntilFinished("window.inputTypes = []; input.addEventListener('beforeinput', event => inputTypes.push(event.inputType))", nullptr);
+
+    // The input method moves its caret inside the preedit without changing the text.
+    test->setPreeditCursorOffset(1);
+    g_signal_emit_by_name(test->m_context.get(), "preedit-changed", nullptr);
+    {
+        auto editableValue = test->editableValue();
+        g_assert_cmpstr(editableValue.get(), ==, "wgt");
+    }
+    g_assert_cmpuint(test->editableSelectionStart(), ==, 1);
+    g_assert_cmpuint(test->editableSelectionEnd(), ==, 1);
+    g_assert_cmpuint(test->m_events.size(), ==, 2);
+    g_assert_true(test->m_events[0].type == InputMethodTest::Event::Type::KeyDown);
+    g_assert_cmpuint(test->m_events[0].keyCode, ==, 229);
+    g_assert_true(test->m_events[1].type == InputMethodTest::Event::Type::CompositionUpdate);
+    ASSERT_CMP_CSTRING(test->m_events[1].data, ==, "wgt");
+    test->m_events.clear();
+    {
+        auto* jsResult = test->runJavaScriptAndWaitUntilFinished("JSON.stringify(inputTypes)", nullptr);
+        GUniquePtr<char> inputTypes(WebViewTest::javascriptResultToCString(jsResult));
+        g_assert_cmpstr(inputTypes.get(), ==, "[\"insertCompositionText\"]");
+    }
+
+    // And back to the end.
+    test->setPreeditCursorOffset(3);
+    g_signal_emit_by_name(test->m_context.get(), "preedit-changed", nullptr);
+    g_assert_cmpuint(test->editableSelectionStart(), ==, 3);
+    g_assert_cmpuint(test->editableSelectionEnd(), ==, 3);
+    test->m_events.clear();
+
+    // An update with nothing changed is still ignored.
+    g_signal_emit_by_name(test->m_context.get(), "preedit-changed", nullptr);
+    g_assert_cmpuint(test->editableSelectionStart(), ==, 3);
+    g_assert_true(test->m_events.isEmpty());
+
+    // An update that only changes the underlines, as when a Japanese input method moves to another clause.
+    test->setPreeditUnderlineEnd(1);
+    g_signal_emit_by_name(test->m_context.get(), "preedit-changed", nullptr);
+    g_assert_cmpuint(test->editableSelectionStart(), ==, 3);
+    g_assert_cmpuint(test->m_events.size(), ==, 2);
+    g_assert_true(test->m_events[1].type == InputMethodTest::Event::Type::CompositionUpdate);
+    ASSERT_CMP_CSTRING(test->m_events[1].data, ==, "wgt");
+    test->m_events.clear();
+
+    test->keyStrokeAndWaitForEvents(KEY(Escape), 3);
+}
+
 static void testWebKitInputMethodContextPreeditOverSelection(InputMethodTest* test, gconstpointer)
 {
     test->loadHtml(testHTML, nullptr);
@@ -2364,6 +2427,7 @@ void beforeAll()
     InputMethodTest::add("WebKitInputMethodContext", "reset", testWebKitInputMethodContextReset);
     InputMethodTest::add("WebKitInputMethodContext", "cursor-area", testWebKitInputMethodContextCursorArea);
     InputMethodTest::add("WebKitInputMethodContext", "preedit-cursor", testWebKitInputMethodContextPreeditCursor);
+    InputMethodTest::add("WebKitInputMethodContext", "preedit-cursor-move", testWebKitInputMethodContextPreeditCursorMove);
     InputMethodTest::add("WebKitInputMethodContext", "preedit-over-selection", testWebKitInputMethodContextPreeditOverSelection);
     InputMethodTest::add("WebKitInputMethodContext", "commit-without-preedit", testWebKitInputMethodContextCommitWithoutPreedit);
 #if ENABLE(WPE_PLATFORM)
