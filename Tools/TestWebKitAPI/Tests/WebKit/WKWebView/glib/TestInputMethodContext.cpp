@@ -1383,6 +1383,56 @@ static void testWebKitInputMethodContextDeleteSurroundingPrevented(InputMethodTe
     g_assert_true(WebViewTest::javascriptResultToBoolean(jsResult));
 }
 
+static void testWebKitInputMethodContextDeleteSurroundingAfterCommits(InputMethodTest* test, gconstpointer)
+{
+    test->loadHtml(testHTML, nullptr);
+    test->waitUntilLoadFinished();
+
+    test->focusEditableAndWaitUntilInputMethodEnabled();
+
+    // Commits are sent to the web process as key events, one at a time, so the second one waits in the
+    // UI process until the first is handled. The deletion refers to the text after both commits, so it
+    // must not be applied before the second one.
+    test->m_eventsExpected = 2;
+    g_signal_emit_by_name(test->m_context.get(), "committed", "abc", nullptr);
+    g_signal_emit_by_name(test->m_context.get(), "committed", "def", nullptr);
+    test->deleteSurrounding(-1, 1);
+    g_main_loop_run(test->m_mainLoop);
+    test->m_eventsExpected = 0;
+    test->m_events.clear();
+
+    auto editableValue = test->editableValue();
+    g_assert_cmpstr(editableValue.get(), ==, "abcde");
+}
+
+#if ENABLE(WPE_PLATFORM)
+static void testWebKitInputMethodContextDeleteSurroundingAfterCancelledPreedit(InputMethodTest* test, gconstpointer)
+{
+    if (!test->m_display) {
+        g_test_skip("Needs the WPE platform API");
+        return;
+    }
+
+    test->loadHtml(testHTML, nullptr);
+    test->waitUntilLoadFinished();
+
+    test->focusEditableAndWaitUntilInputMethodEnabled();
+
+    // The preedit waits in the UI process behind the commit, and the deletion waits behind the preedit.
+    // Losing the focus cancels the composition, which drops the queued preedit, but not the deletion.
+    g_signal_emit_by_name(test->m_context.get(), "committed", "abc", nullptr);
+    test->m_context->preedit = g_string_new("x");
+    g_signal_emit_by_name(test->m_context.get(), "preedit-started", nullptr);
+    g_signal_emit_by_name(test->m_context.get(), "preedit-changed", nullptr);
+    test->deleteSurrounding(-1, 1);
+    wpe_view_focus_out(webkit_web_view_get_wpe_view(test->m_webView.get()));
+
+    // Cancelling the composition confirms the preedit text, which never reached the page, after the deletion.
+    auto editableValue = test->editableValue();
+    g_assert_cmpstr(editableValue.get(), ==, "abx");
+}
+#endif
+
 static void testWebKitInputMethodContextReset(InputMethodTest* test, gconstpointer)
 {
     test->loadHtml(testHTML, nullptr);
@@ -2361,6 +2411,10 @@ void beforeAll()
     InputMethodTest::add("WebKitInputMethodContext", "delete-surrounding-surrogate-pair-password", testWebKitInputMethodContextDeleteSurroundingSurrogatePairPassword);
     InputMethodTest::add("WebKitInputMethodContext", "delete-surrounding-grapheme-cluster", testWebKitInputMethodContextDeleteSurroundingGraphemeCluster);
     InputMethodTest::add("WebKitInputMethodContext", "delete-surrounding-prevented", testWebKitInputMethodContextDeleteSurroundingPrevented);
+    InputMethodTest::add("WebKitInputMethodContext", "delete-surrounding-after-commits", testWebKitInputMethodContextDeleteSurroundingAfterCommits);
+#if ENABLE(WPE_PLATFORM)
+    InputMethodTest::add("WebKitInputMethodContext", "delete-surrounding-after-cancelled-preedit", testWebKitInputMethodContextDeleteSurroundingAfterCancelledPreedit);
+#endif
     InputMethodTest::add("WebKitInputMethodContext", "reset", testWebKitInputMethodContextReset);
     InputMethodTest::add("WebKitInputMethodContext", "cursor-area", testWebKitInputMethodContextCursorArea);
     InputMethodTest::add("WebKitInputMethodContext", "preedit-cursor", testWebKitInputMethodContextPreeditCursor);

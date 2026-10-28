@@ -5478,6 +5478,9 @@ void WebPageProxy::sendKeyEvent(Ref<NativeWebKeyboardEvent>&& event)
     targetProcess->recordUserGestureAuthorizationToken(webPageIDInMainFrameProcess(), event->authorizationToken());
     if (event->isActivationTriggeringEvent())
         targetFrame->notifyActivated(internals().lastActivationTimestamp);
+#if PLATFORM(GTK) || PLATFORM(WPE)
+    Ref sentEvent = event.copyRef();
+#endif
     sendWithAsyncReplyToProcessContainingFrame(targetFrameID, Messages::WebPage::KeyEvent(targetFrameID, WTF::move(event)), [weakThis = WeakPtr { *this }] (IPC::Connection* connection, bool handled) mutable {
         RefPtr protectedThis = weakThis.get();
         if (!protectedThis || !connection)
@@ -5489,6 +5492,9 @@ void WebPageProxy::sendKeyEvent(Ref<NativeWebKeyboardEvent>&& event)
         WebProcessProxy::fromConnection(*connection)->stopResponsivenessTimer();
         protectedThis->keyEventHandlingCompleted(handled);
     });
+#if PLATFORM(GTK) || PLATFORM(WPE)
+    sendPendingDeleteSurroundings(sentEvent);
+#endif
 }
 
 bool WebPageProxy::handleKeyboardEvent(Ref<NativeWebKeyboardEvent>&& event)
@@ -15867,6 +15873,9 @@ void WebPageProxy::resetStateAfterProcessExited(ProcessTerminationReason termina
     internals().remoteFrameMouseEventTimeoutTimer.stop();
     internals().lastFrameHandlingMouseMove = std::nullopt;
     internals().keyEventQueue.clear();
+#if PLATFORM(GTK) || PLATFORM(WPE)
+    internals().pendingDeleteSurroundings.clear();
+#endif
     if (m_wheelEventCoalescer)
         m_wheelEventCoalescer->clear();
 
@@ -18104,11 +18113,27 @@ void WebPageProxy::cancelComposition(const String& compositionString)
 
     // Remove any pending composition key event.
     if (internals().keyEventQueue.size() > 1) {
+        // A deletion that followed a removed event now follows the closest event before it that stays in the queue.
+        Ref<NativeWebKeyboardEvent> previousKeptEvent = internals().keyEventQueue.first();
+        for (auto& event : internals().keyEventQueue) {
+            if (event.ptr() == internals().keyEventQueue.first().ptr() || !event->handledByInputMethod()) {
+                previousKeptEvent = event;
+                continue;
+            }
+            for (auto& pending : internals().pendingDeleteSurroundings) {
+                if (pending.previousKeyEvent.ptr() == event.ptr())
+                    pending.previousKeyEvent = previousKeptEvent;
+            }
+        }
+
         auto event = internals().keyEventQueue.takeFirst();
         internals().keyEventQueue.removeAllMatching([](const auto& event) {
             return event->handledByInputMethod();
         });
         internals().keyEventQueue.prepend(WTF::move(event));
+
+        // The first event has already been sent.
+        sendPendingDeleteSurroundings(internals().keyEventQueue.first());
     }
     send(Messages::WebPage::CancelComposition(compositionString));
 }
@@ -18118,7 +18143,24 @@ void WebPageProxy::deleteSurrounding(int64_t offset, unsigned characterCount)
     if (!hasRunningProcess())
         return;
 
+    // The input method refers to the text as it is after the key events it has already sent, which include
+    // its commits and preedit updates. Only the first queued key event has been sent to the web process, so
+    // wait for the last one to be sent before sending the deletion.
+    if (internals().keyEventQueue.size() > 1) {
+        internals().pendingDeleteSurroundings.append({ internals().keyEventQueue.last(), offset, characterCount });
+        return;
+    }
+
     send(Messages::WebPage::DeleteSurrounding(offset, characterCount));
+}
+
+void WebPageProxy::sendPendingDeleteSurroundings(const NativeWebKeyboardEvent& sentEvent)
+{
+    auto& pendingDeleteSurroundings = internals().pendingDeleteSurroundings;
+    while (!pendingDeleteSurroundings.isEmpty() && pendingDeleteSurroundings.first().previousKeyEvent.ptr() == &sentEvent) {
+        auto pending = pendingDeleteSurroundings.takeFirst();
+        send(Messages::WebPage::DeleteSurrounding(pending.offset, pending.characterCount));
+    }
 }
 
 #endif // PLATFORM(GTK) || PLATFORM(WPE)

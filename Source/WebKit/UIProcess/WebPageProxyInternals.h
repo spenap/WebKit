@@ -451,6 +451,14 @@ public:
 
 #if PLATFORM(GTK) || PLATFORM(WPE)
     RunLoop::Timer activityStateChangeTimer;
+
+    // Input method deletions waiting in order for the queued key event they follow to be sent.
+    struct PendingDeleteSurrounding {
+        Ref<NativeWebKeyboardEvent> previousKeyEvent;
+        int64_t offset;
+        unsigned characterCount;
+    };
+    Deque<PendingDeleteSurrounding> pendingDeleteSurroundings;
 #endif
 
 #if PLATFORM(MAC)
