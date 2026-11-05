@@ -25,17 +25,18 @@
 #include <algorithm>
 #include <android/trace.h>
 #include <array>
+#include <atomic>
 #include <cstdarg>
 #include <cstdio>
 #include <span>
 #include <string_view>
+#include <sys/system_properties.h>
 #include <wtf/SystemTracing.h>
 
 namespace WTF {
 
-// Every TracePointCode, so a slice name can be derived from the enumerator itself. rawCodeName()
-// has no default case, so a code added to the enum but not here is a -Wswitch warning rather than
-// a trace point that silently goes missing.
+// Every TracePointCode, so a slice name can be derived from the enumerator itself instead
+// of a hand-written table that silently goes stale when upstream adds a code.
 #define WTF_TRACE_POINT_CODE_LIST(M) \
     M(VMEntryScopeStart) \
     M(VMEntryScopeEnd) \
@@ -176,27 +177,113 @@ namespace {
 
 enum class SliceKind : uint8_t { Begin, End, Instant };
 
+enum class Coverage : uint8_t { Off, Scroll, Layers, Shaders, All };
+
 } // namespace
 
-static const char* rawCodeName(TracePointCode code)
+static const char* rawCodeName(unsigned code)
 {
+    switch (static_cast<TracePointCode>(code)) {
 #define WTF_TRACE_POINT_CODE_NAME(name) case name: return #name;
-
-    switch (code) {
         WTF_TRACE_POINT_CODE_LIST(WTF_TRACE_POINT_CODE_NAME)
-    case WTFRange:
-    case JavaScriptRange:
-    case WebCoreRange:
-    case WebKitRange:
-    case WebKit2Range:
-    case UIProcessRange:
-    case GPUProcessRange:
-    case GTKWPEPortRange:
-        return nullptr;
-    }
-
 #undef WTF_TRACE_POINT_CODE_NAME
+    default:
+        break;
+    }
     return nullptr;
+}
+
+// The subset that says something about a scroll: what the main thread is busy with, when
+// the scrolling thread is blocked on it, and when a frame actually reaches the compositor.
+static bool isScrollRelevant(unsigned code)
+{
+    switch (static_cast<TracePointCode>(code)) {
+    case StyleRecalcStart:
+    case StyleRecalcEnd:
+    case RenderTreeBuildStart:
+    case RenderTreeBuildEnd:
+    case PerformLayoutStart:
+    case PerformLayoutEnd:
+    case RenderTreeLayoutStart:
+    case RenderTreeLayoutEnd:
+    case PaintLayerStart:
+    case PaintLayerEnd:
+    case RAFCallbackStart:
+    case RAFCallbackEnd:
+    case UpdateTouchRegionsStart:
+    case UpdateTouchRegionsEnd:
+    case ComputeEventRegionsStart:
+    case ComputeEventRegionsEnd:
+    case ScheduleRenderingUpdate:
+    case TriggerRenderingUpdate:
+    case RenderingUpdateStart:
+    case RenderingUpdateEnd:
+    case CompositingUpdateStart:
+    case CompositingUpdateEnd:
+    case DispatchTouchEventsStart:
+    case DispatchTouchEventsEnd:
+    case ParseHTMLStart:
+    case ParseHTMLEnd:
+    case ScrollingThreadRenderUpdateSyncStart:
+    case ScrollingThreadRenderUpdateSyncEnd:
+    case ScrollingThreadDisplayDidRefreshStart:
+    case ScrollingThreadDisplayDidRefreshEnd:
+    case ScrollingTreeDisplayDidRefresh:
+    case ProgrammaticScroll:
+    case PerformOpportunisticallyScheduledTasksStart:
+    case PerformOpportunisticallyScheduledTasksEnd:
+    case ThreadTimersStart:
+    case ThreadTimersEnd:
+    case TimerFiredStart:
+    case TimerFiredEnd:
+    case IncrementalSweepStart:
+    case IncrementalSweepEnd:
+    case SyncTouchEventStart:
+    case SyncTouchEventEnd:
+    case SyncMessageStart:
+    case SyncMessageEnd:
+    case LayerTreeHostRenderingUpdateStart:
+    case LayerTreeHostRenderingUpdateEnd:
+    case WaitForCompositionCompletionStart:
+    case WaitForCompositionCompletionEnd:
+    case RenderLayerTreeStart:
+    case RenderLayerTreeEnd:
+    case UpdateLayerContentBuffersStart:
+    case UpdateLayerContentBuffersEnd:
+        return true;
+    default:
+        return false;
+    }
+}
+
+// ThreadedScrollingTree opens this span on the main thread and closes it on the scrolling
+// thread, so it cannot use a thread-scoped slice.
+static bool isCrossThreadSpan(unsigned code)
+{
+    return code == ScrollingThreadRenderUpdateSyncStart || code == ScrollingThreadRenderUpdateSyncEnd;
+}
+
+static Coverage readCoverage()
+{
+    char value[PROP_VALUE_MAX] = { };
+    if (__system_property_get("debug.wpe.atrace", value) <= 0)
+        return Coverage::Scroll;
+    std::string_view setting { value };
+    if (setting == "off" || setting == "0")
+        return Coverage::Off;
+    if (setting == "all")
+        return Coverage::All;
+    if (setting == "layers")
+        return Coverage::Layers;
+    if (setting == "shaders")
+        return Coverage::Shaders;
+    return Coverage::Scroll;
+}
+
+static Coverage coverage()
+{
+    static Coverage coverage = readCoverage();
+    return coverage;
 }
 
 // The enumerators are named <Span><Start|Begin|End|Stop>, so the span name and whether the
@@ -230,51 +317,75 @@ static SliceKind sliceKindAndName(std::string_view rawName, std::span<char> buff
     return SliceKind::Instant;
 }
 
-// Thread-scoped slices nest, so every begin needs its end on the same thread.
-static void emitThreadSlice(SliceKind kind, const char* name)
-{
-    switch (kind) {
-    case SliceKind::Begin:
-        ATrace_beginSection(name);
-        break;
-    case SliceKind::End:
-        ATrace_endSection();
-        break;
-    case SliceKind::Instant:
-        // ATrace has no instant event, so a zero-length slice stands in for one.
-        ATrace_beginSection(name);
-        ATrace_endSection();
-        break;
-    }
-}
-
-// Process-scoped slices pair by name and cookie, so they can end on another thread than the one
-// they began on.
-static void emitAsyncSlice(SliceKind kind, const char* name, int32_t cookie)
-{
-    if (kind == SliceKind::Begin)
-        ATrace_beginAsyncSection(name, cookie);
-    else
-        ATrace_endAsyncSection(name, cookie);
-}
-
-// These carry the same data at their begin and at their end, which tells apart what they trace,
-// and may end on another thread, so pair them by that data, as SysprofAnnotator does. Without data
-// there is nothing to pair by, so they become a thread-scoped slice. Perfetto keeps only the first
-// of repeated begins with the same name and cookie, so a load that begins again on a redirect is
-// still timed from its first begin.
-static void emitSliceByData(SliceKind kind, const char* name, uint64_t data)
-{
-    if (!data) {
-        emitThreadSlice(kind, name);
-        return;
-    }
-    emitAsyncSlice(kind, name, ATraceAnnotator::cookieForValue(static_cast<uintptr_t>(data)));
-}
-
 bool ATraceAnnotator::isEnabled()
 {
-    return ATrace_isEnabled();
+    return coverage() != Coverage::Off && ATrace_isEnabled();
+}
+
+bool ATraceAnnotator::shaderTracingRequested()
+{
+    return coverage() == Coverage::Shaders;
+}
+
+bool ATraceAnnotator::layersEnabled()
+{
+    auto requested = coverage();
+    return (requested == Coverage::Layers || requested == Coverage::All) && ATrace_isEnabled();
+}
+
+ATraceFormattedScope::ATraceFormattedScope(bool enabled, const char* format, ...)
+{
+    if (!enabled)
+        return;
+
+    char buffer[256];
+    va_list args;
+    va_start(args, format);
+    vsnprintf(buffer, sizeof(buffer), format, args);
+    va_end(args);
+
+    ATrace_beginSection(buffer);
+    m_active = true;
+}
+
+ATraceFormattedScope::~ATraceFormattedScope()
+{
+    if (m_active)
+        ATrace_endSection();
+}
+
+int32_t ATraceAnnotator::nextCookie()
+{
+    static std::atomic<int32_t> cookie { 1 };
+    return cookie.fetch_add(1, std::memory_order_relaxed) & 0x7fffffff;
+}
+
+void ATraceAnnotator::begin(const char* name)
+{
+    if (!isEnabled())
+        return;
+    ATrace_beginSection(name);
+}
+
+void ATraceAnnotator::beginFormatted(const char* format, ...)
+{
+    if (!isEnabled())
+        return;
+
+    char buffer[256];
+    va_list args;
+    va_start(args, format);
+    vsnprintf(buffer, sizeof(buffer), format, args);
+    va_end(args);
+
+    ATrace_beginSection(buffer);
+}
+
+void ATraceAnnotator::end()
+{
+    if (!isEnabled())
+        return;
+    ATrace_endSection();
 }
 
 void ATraceAnnotator::beginAsync(const char* name, int32_t cookie)
@@ -299,11 +410,10 @@ void ATraceAnnotator::instant(const char* format, ...)
     char buffer[256];
     va_list args;
     va_start(args, format);
-    WTF_ALLOW_UNSAFE_BUFFER_USAGE_BEGIN
     vsnprintf(buffer, sizeof(buffer), format, args);
-    WTF_ALLOW_UNSAFE_BUFFER_USAGE_END
     va_end(args);
 
+    // ATrace has no instant event, so a zero-length slice stands in for one.
     ATrace_beginSection(buffer);
     ATrace_endSection();
 }
@@ -315,50 +425,49 @@ void ATraceAnnotator::counter(const char* name, int64_t value)
     ATrace_setCounter(name, value);
 }
 
-void ATraceAnnotator::tracePoint(unsigned code, uint64_t data1)
+void ATraceAnnotator::tracePoint(unsigned code, uint64_t data1, uint64_t, uint64_t, uint64_t)
 {
-    if (!isEnabled())
+    auto requested = coverage();
+    if (requested == Coverage::Off || !ATrace_isEnabled())
+        return;
+    if (requested != Coverage::All && !isScrollRelevant(code))
         return;
 
-    auto traceCode = static_cast<TracePointCode>(code);
-    const char* rawName = rawCodeName(traceCode);
+    const char* rawName = rawCodeName(code);
     if (!rawName)
         return;
 
     std::array<char, 128> name;
     auto kind = sliceKindAndName(rawName, std::span { name });
 
-    switch (traceCode) {
-    // The begin and the end of a load are named differently, so the suffix cannot give them the
-    // one name they need to pair.
-    case MainResourceLoadDidStartProvisional:
-        emitSliceByData(SliceKind::Begin, "MainResourceLoad", data1);
+    if (isCrossThreadSpan(code)) {
+        // Only one of these is ever in flight per process, so a fixed cookie is enough.
+        if (kind == SliceKind::Begin)
+            ATrace_beginAsyncSection(name.data(), 0);
+        else {
+            ATrace_endAsyncSection(name.data(), 0);
+            if (code == ScrollingThreadRenderUpdateSyncEnd) {
+                // data1 is set when the scrolling thread gave up waiting for the main thread.
+                ATrace_setCounter("wpe.scroll.desynchronized", data1 ? 1 : 0);
+                if (data1) {
+                    ATrace_beginSection("scroll: desynchronized, main thread rendering update too slow");
+                    ATrace_endSection();
+                }
+            }
+        }
+        return;
+    }
+
+    switch (kind) {
+    case SliceKind::Begin:
+        ATrace_beginSection(name.data());
         break;
-    case MainResourceLoadDidEnd:
-        emitSliceByData(SliceKind::End, "MainResourceLoad", data1);
+    case SliceKind::End:
+        ATrace_endSection();
         break;
-    case SubresourceLoadWillStart:
-        emitSliceByData(SliceKind::Begin, "SubresourceLoad", data1);
-        break;
-    case SubresourceLoadDidEnd:
-        emitSliceByData(SliceKind::End, "SubresourceLoad", data1);
-        break;
-    case FlushRemoteImageBufferStart:
-    case FlushRemoteImageBufferEnd:
-    case ProcessLaunchStart:
-    case ProcessLaunchEnd:
-    case FromJSStart:
-    case FromJSStop:
-        emitSliceByData(kind, name.data(), data1);
-        break;
-    // ThreadedScrollingTree begins this one on the main thread and ends it on the scrolling
-    // thread. Only one is ever in flight per process, so a fixed cookie is enough.
-    case ScrollingThreadRenderUpdateSyncStart:
-    case ScrollingThreadRenderUpdateSyncEnd:
-        emitAsyncSlice(kind, name.data(), 0);
-        break;
-    default:
-        emitThreadSlice(kind, name.data());
+    case SliceKind::Instant:
+        ATrace_beginSection(name.data());
+        ATrace_endSection();
         break;
     }
 }
