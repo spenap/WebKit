@@ -39,6 +39,7 @@
 #include "GraphicsLayerCoordinated.h"
 #include "NativeImage.h"
 #include <wtf/MainThread.h>
+#include <wtf/SystemTracing.h>
 
 #if USE(TEXTURE_MAPPER)
 #include "CoordinatedBackingStore.h"
@@ -192,6 +193,12 @@ void CoordinatedPlatformLayer::setPosition(FloatPoint&& position)
 {
     assertIsHeld(m_lock);
     m_pendingState.position = WTF::move(position);
+}
+
+void CoordinatedPlatformLayer::setTracesScrollPosition()
+{
+    Locker locker { m_lock };
+    m_tracesScrollPosition = true;
 }
 
 void CoordinatedPlatformLayer::setPositionForScrolling(const FloatPoint& position)
@@ -1079,6 +1086,10 @@ void CoordinatedPlatformLayer::flushPositionChanges(const OptionSet<CompositionR
     auto applyPositionChanges = [this](auto& layer) {
         assertIsHeld(m_lock);
         if (m_pendingChanges.contains(Change::Position)) {
+            if (m_tracesScrollPosition) {
+                WPE_TRACE_COUNTER("wpe.scroll.drawn-x", static_cast<int64_t>(-m_position.x() * 100));
+                WPE_TRACE_COUNTER("wpe.scroll.drawn-y", static_cast<int64_t>(-m_position.y() * 100));
+            }
             layer.setPosition(m_position);
             m_pendingChanges.remove(Change::Position);
         }

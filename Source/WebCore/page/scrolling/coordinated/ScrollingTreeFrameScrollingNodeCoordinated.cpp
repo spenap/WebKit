@@ -109,6 +109,8 @@ void ScrollingTreeFrameScrollingNodeCoordinated::repositionScrollingLayers()
         return;
 
     auto scrollPosition = currentScrollPosition();
+    if (isRootNode())
+        scrollLayer->setTracesScrollPosition();
     scrollLayer->setPositionForScrolling(-scrollPosition);
 }
 

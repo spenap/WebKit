@@ -114,6 +114,7 @@ public:
 
     void setPosition(FloatPoint&&) WTF_REQUIRES_LOCK(m_lock);
     void setPositionForScrolling(const FloatPoint&);
+    void setTracesScrollPosition();
     const FloatPoint& position() const WTF_REQUIRES_LOCK(m_lock);
     void setTopLeftPositionForScrolling(const FloatPoint&);
     FloatPoint topLeftPositionForScrolling();
@@ -369,6 +370,7 @@ private:
 #if ENABLE(SCROLLING_THREAD)
     Markable<ScrollingNodeID> m_scrollingNodeID WTF_GUARDED_BY_LOCK(m_lock);
 #endif
+    bool m_tracesScrollPosition WTF_GUARDED_BY_LOCK(m_lock) { false };
 
     struct {
         std::optional<FloatPoint> position;
