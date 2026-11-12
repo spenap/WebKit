@@ -52,7 +52,7 @@ set(WPEPlatformWayland_SYSTEM_INCLUDE_DIRECTORIES
 
 set(WPEPlatformWayland_LIBRARIES
     GLib::GioUnix
-    ${WAYLAND_LIBRARIES}
+    ${WAYLAND_LINK_LIBRARIES}
     ${WPEPlatform_LIBRARIES}
 )
 
