@@ -20,9 +20,6 @@ list(APPEND WTF_SOURCES
     glib/TimeZoneGLib.cpp
     glib/URLGLib.cpp
 
-    linux/CurrentProcessMemoryStatus.cpp
-    linux/HighPriorityThreads.cpp
-
     posix/CPUTimePOSIX.cpp
     posix/FileHandlePOSIX.cpp
     posix/FileSystemPOSIX.cpp
@@ -41,12 +38,28 @@ if (ANDROID)
     list(APPEND WTF_SOURCES
         generic/MemoryFootprintGeneric.cpp
         generic/MemoryPressureHandlerGeneric.cpp
+
+        linux/CurrentProcessMemoryStatus.cpp
+        linux/HighPriorityThreads.cpp
     )
-else ()
+elseif (CMAKE_SYSTEM_NAME MATCHES "Linux")
     list(APPEND WTF_SOURCES
+        linux/CurrentProcessMemoryStatus.cpp
+        linux/HighPriorityThreads.cpp
         linux/MemoryFootprintLinux.cpp
 
         unix/MemoryPressureHandlerUnix.cpp
+    )
+elseif (CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
+    list(APPEND WTF_SOURCES
+        generic/MemoryFootprintGeneric.cpp
+
+        unix/MemoryPressureHandlerUnix.cpp
+    )
+else ()
+    list(APPEND WTF_SOURCES
+        generic/MemoryFootprintGeneric.cpp
+        generic/MemoryPressureHandlerGeneric.cpp
     )
 endif ()
 
