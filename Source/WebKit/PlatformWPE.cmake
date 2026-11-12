@@ -448,6 +448,11 @@ if (ANDROID)
     list(APPEND WebKit_PRIVATE_LIBRARIES intl)
 endif ()
 
+if (CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
+    find_package(Intl REQUIRED)
+    list(APPEND WebKit_PRIVATE_LIBRARIES Intl::Intl)
+endif ()
+
 if (USE_ATK)
     list(APPEND WebKit_PRIVATE_LIBRARIES
         ATK::ATK
