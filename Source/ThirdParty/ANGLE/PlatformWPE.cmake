@@ -1,6 +1,9 @@
 if (is_android)
     list(APPEND ANGLE_DEFINITIONS ANGLE_PLATFORM_ANDROID)
 else ()
+    # Also on FreeBSD and other non-Linux Unix systems: ANGLE uses ANGLE_PLATFORM_LINUX to pick
+    # the EGL display. Only code that needs the Linux kernel (futexes, CLOCK_MONOTONIC_RAW) is
+    # switched off on FreeBSD.
     list(APPEND ANGLE_DEFINITIONS ANGLE_PLATFORM_LINUX EGL_NO_PLATFORM_SPECIFIC_TYPES)
 endif ()
 include(linux.cmake)
