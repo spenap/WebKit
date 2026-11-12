@@ -36,7 +36,7 @@
 #include <windows.h>
 #endif
 
-#if PAS_OS(LINUX) || PAS_PLATFORM(PLAYSTATION)
+#if PAS_OS(LINUX) || PAS_OS(FREEBSD) || PAS_PLATFORM(PLAYSTATION)
 #include <time.h>
 #endif
 
@@ -79,7 +79,7 @@ uint64_t pas_get_current_monotonic_time_nanoseconds(void)
     return result;
 }
 
-#elif PAS_OS(LINUX)
+#elif PAS_OS(LINUX) || (PAS_OS(FREEBSD) && !PAS_PLATFORM(PLAYSTATION))
 
 uint64_t pas_get_current_monotonic_time_nanoseconds(void)
 {
