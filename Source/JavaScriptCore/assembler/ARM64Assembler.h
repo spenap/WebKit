@@ -4078,6 +4078,8 @@ public:
             linuxPageFlush(current, current + page);
 
         linuxPageFlush(current, end);
+#elif OS(FREEBSD)
+        __builtin___clear_cache(static_cast<char*>(code), static_cast<char*>(code) + size);
 #elif OS(WINDOWS)
         FlushInstructionCache(GetCurrentProcess(), code, size);
 #else
