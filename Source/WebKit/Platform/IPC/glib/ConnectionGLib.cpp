@@ -479,8 +479,9 @@ bool Connection::sendOutputMessage(UnixMessage&& outputMessage)
 
     auto* controlMessagePtr = controlMessage.get();
     GUniqueOutPtr<GError> error;
+    // A SOCK_SEQPACKET record ends at MSG_EOR. Linux also ends one at every send, but FreeBSD does not.
     auto bytesWritten = g_socket_send_message(m_socket.get(), nullptr, outputVector, outputVectorLength,
-        controlMessagePtr ? &controlMessagePtr : nullptr, controlMessagePtr ? 1 : 0, 0, m_cancellable.get(), &error.outPtr());
+        controlMessagePtr ? &controlMessagePtr : nullptr, controlMessagePtr ? 1 : 0, MSG_EOR, m_cancellable.get(), &error.outPtr());
     if (controlMessage) {
         // File descriptors are owned by UnixMessage, so steal them from the control message to avoid a double close.
         g_free(g_unix_fd_message_steal_fds(G_UNIX_FD_MESSAGE(controlMessage.get()), nullptr));
