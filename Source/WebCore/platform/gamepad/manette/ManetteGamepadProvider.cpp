@@ -27,7 +27,7 @@
 #include "config.h"
 #include "ManetteGamepadProvider.h"
 
-#if ENABLE(GAMEPAD) && OS(LINUX)
+#if ENABLE(GAMEPAD) && USE(MANETTE)
 
 #include "GUniquePtrManette.h"
 #include "GamepadProviderClient.h"
@@ -206,4 +206,4 @@ void ManetteGamepadProvider::stopEffects(unsigned gamepadIndex, const String& ga
 
 } // namespace WebCore
 
-#endif // ENABLE(GAMEPAD) && OS(LINUX)
+#endif // ENABLE(GAMEPAD) && USE(MANETTE)

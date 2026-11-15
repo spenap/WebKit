@@ -25,7 +25,7 @@
 
 #pragma once
 
-#if ENABLE(GAMEPAD) && OS(LINUX)
+#if ENABLE(GAMEPAD) && USE(MANETTE)
 
 #include "GamepadEffectParameters.h"
 #include "PlatformGamepad.h"
@@ -112,4 +112,4 @@ private:
 
 } // namespace WebCore
 
-#endif // ENABLE(GAMEPAD) && OS(LINUX)
+#endif // ENABLE(GAMEPAD) && USE(MANETTE)

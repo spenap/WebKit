@@ -26,7 +26,7 @@
 #include "config.h"
 #include "ManetteGamepad.h"
 
-#if ENABLE(GAMEPAD) && OS(LINUX)
+#if ENABLE(GAMEPAD) && USE(MANETTE)
 
 #include "ManetteGamepadProvider.h"
 #include "SharedGamepadValue.h"
@@ -343,4 +343,4 @@ void ManetteGamepad::effectDurationTimerFired()
 
 } // namespace WebCore
 
-#endif // ENABLE(GAMEPAD) && OS(LINUX)
+#endif // ENABLE(GAMEPAD) && USE(MANETTE)

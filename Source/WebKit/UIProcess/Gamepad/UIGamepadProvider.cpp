@@ -251,7 +251,7 @@ Vector<std::optional<GamepadData>> UIGamepadProvider::snapshotGamepads()
     });
 }
 
-#if !PLATFORM(COCOA) && !(USE(MANETTE) && OS(LINUX)) && !USE(LIBWPE) && !ENABLE(WPE_PLATFORM)
+#if !PLATFORM(COCOA) && !USE(MANETTE) && !USE(LIBWPE) && !ENABLE(WPE_PLATFORM)
 
 void UIGamepadProvider::platformSetDefaultGamepadProvider()
 {
@@ -272,7 +272,7 @@ void UIGamepadProvider::platformStartMonitoringInput()
 {
 }
 
-#endif // !PLATFORM(COCOA) && !(USE(MANETTE) && OS(LINUX)) && !USE(LIBWPE) && !ENABLE(WPE_PLATFORM)
+#endif // !PLATFORM(COCOA) && !USE(MANETTE) && !USE(LIBWPE) && !ENABLE(WPE_PLATFORM)
 
 }
 
