@@ -89,6 +89,10 @@ if (ENABLE_WPE_PLATFORM)
     )
 endif ()
 
+if (ENABLE_WPE_PLATFORM_DRM)
+    list(APPEND TestWebKit_SOURCES Tests/WebKit/wpe/WPEDRMDamageHistory.cpp)
+endif ()
+
 # TestWebKitAPIBase
 target_include_directories(TestWebKitAPIBase PRIVATE
     ${CMAKE_SOURCE_DIR}/Source

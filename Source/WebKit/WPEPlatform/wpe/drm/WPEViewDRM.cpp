@@ -27,6 +27,7 @@
 #include "WPEViewDRM.h"
 
 #include "DRMUniquePtr.h"
+#include "WPEDRMDamageHistory.h"
 #include "WPEDisplayDRMPrivate.h"
 #include "WPEScreenDRMPrivate.h"
 #include "WPEToplevelDRM.h"
@@ -71,8 +72,7 @@ struct _WPEViewDRMPrivate {
     GRefPtr<GSource> eventSource;
     OptionSet<UpdateFlags> updateFlags;
     std::unique_ptr<RunLoop::Timer> cursorUpdateTimer;
-    unsigned shmFrameNumber { 0 };
-    Vector<std::optional<Vector<WPERectangle>>> shmDamageHistory;
+    WPE::DRM::DamageHistory shmDamageHistory;
 };
 WEBKIT_DEFINE_FINAL_TYPE(WPEViewDRM, wpe_view_drm, WPE_TYPE_VIEW, WPEView)
 
@@ -255,52 +255,6 @@ static GQuark shmLastCopiedFrameQuark()
 {
     static GQuark quark = g_quark_from_static_string("wpe-view-drm-shm-last-copied-frame");
     return quark;
-}
-
-static constexpr size_t maximumSHMDamageHistory = 4;
-
-static void recordFrameDamage(WPEViewDRM* view, std::optional<Vector<WPERectangle>>&& damage)
-{
-    auto* priv = view->priv;
-    priv->shmFrameNumber++;
-    priv->shmDamageHistory.append(WTF::move(damage));
-    if (priv->shmDamageHistory.size() > maximumSHMDamageHistory)
-        priv->shmDamageHistory.removeAt(0);
-}
-
-static Vector<WPERectangle> shmCopyRegion(WPEViewDRM* view, WPEBuffer* buffer)
-{
-    auto* priv = view->priv;
-    int width = wpe_buffer_get_width(buffer);
-    int height = wpe_buffer_get_height(buffer);
-    Vector<WPERectangle> fullFrame { { 0, 0, width, height } };
-
-    unsigned lastCopiedFrame = GPOINTER_TO_UINT(g_object_get_qdata(G_OBJECT(buffer), shmLastCopiedFrameQuark()));
-    size_t age = priv->shmFrameNumber - lastCopiedFrame;
-    if (!lastCopiedFrame || age > priv->shmDamageHistory.size())
-        return fullFrame;
-
-    Vector<WPERectangle> region;
-    uint64_t damagedArea = 0;
-    for (const auto& damage : priv->shmDamageHistory.span().last(age)) {
-        if (!damage)
-            return fullFrame;
-
-        for (const auto& rect : *damage) {
-            int x = std::clamp(rect.x, 0, width);
-            int y = std::clamp(rect.y, 0, height);
-            int right = std::clamp<int64_t>(static_cast<int64_t>(rect.x) + rect.width, x, width);
-            int bottom = std::clamp<int64_t>(static_cast<int64_t>(rect.y) + rect.height, y, height);
-            if (x == right || y == bottom)
-                continue;
-            region.append({ x, y, right - x, bottom - y });
-            damagedArea += static_cast<uint64_t>(right - x) * (bottom - y);
-        }
-    }
-
-    if (damagedArea * 2 >= static_cast<uint64_t>(width) * height)
-        return fullFrame;
-    return region;
 }
 
 static bool drmBufferCopySHM(const WPE::DRM::Buffer& drmBuffer, WPEBufferSHM* buffer, std::span<const WPERectangle> region, GError** error)
@@ -586,7 +540,8 @@ static gboolean wpeViewDRMRenderBuffer(WPEView* view, WPEBuffer* buffer, const W
     // Recorded before anything can fail: later frames are relative to this one even if it is not shown.
     // Shared memory buffers copied before a dma-buf frame do not know what it changed.
     bool isSHM = WPE_IS_BUFFER_SHM(buffer);
-    recordFrameDamage(WPE_VIEW_DRM(view), isSHM && nDamageRects ? std::optional(Vector<WPERectangle>(unsafeMakeSpan(damageRects, nDamageRects))) : std::nullopt);
+    auto* priv = WPE_VIEW_DRM(view)->priv;
+    priv->shmDamageHistory.recordFrame(isSHM && nDamageRects ? std::optional(Vector<WPERectangle>(unsafeMakeSpan(damageRects, nDamageRects))) : std::nullopt);
 
     auto* drmBuffer = static_cast<WPE::DRM::Buffer*>(wpe_buffer_get_user_data(buffer));
     if (!drmBuffer) {
@@ -599,14 +554,14 @@ static gboolean wpeViewDRMRenderBuffer(WPEView* view, WPEBuffer* buffer, const W
     if (isSHM) {
         // Shared memory buffers are rendered by the CPU, so there is no fence to wait for before the copy.
         ASSERT(!renderingFence);
-        auto region = shmCopyRegion(WPE_VIEW_DRM(view), buffer);
+        unsigned lastCopiedFrame = GPOINTER_TO_UINT(g_object_get_qdata(G_OBJECT(buffer), shmLastCopiedFrameQuark()));
+        auto region = priv->shmDamageHistory.regionSince(lastCopiedFrame, wpe_buffer_get_width(buffer), wpe_buffer_get_height(buffer));
         if (!drmBufferCopySHM(*drmBuffer, WPE_BUFFER_SHM(buffer), region.span(), error))
             return FALSE;
-        g_object_set_qdata(G_OBJECT(buffer), shmLastCopiedFrameQuark(), GUINT_TO_POINTER(WPE_VIEW_DRM(view)->priv->shmFrameNumber));
+        g_object_set_qdata(G_OBJECT(buffer), shmLastCopiedFrameQuark(), GUINT_TO_POINTER(priv->shmDamageHistory.frameNumber()));
     } else
         drmBuffer->setFenceFD(WTF::move(renderingFence));
 
-    auto* priv = WPE_VIEW_DRM(view)->priv;
     priv->pendingBuffer = buffer;
     priv->damageRects.clear();
     priv->damageRects.reserveInitialCapacity(nDamageRects);
