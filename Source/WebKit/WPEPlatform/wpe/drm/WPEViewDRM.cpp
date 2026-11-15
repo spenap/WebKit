@@ -38,9 +38,11 @@
 #include <wtf/OptionSet.h>
 #include <wtf/RunLoop.h>
 #include <wtf/SafeStrerror.h>
+#include <wtf/Scope.h>
 #include <wtf/Seconds.h>
 #include <wtf/glib/GLibExtras.h>
 #include <wtf/glib/GRefPtr.h>
+#include <wtf/glib/GSpanExtras.h>
 #include <wtf/glib/WTFGType.h>
 
 enum class UpdateFlags : uint8_t {
@@ -69,6 +71,8 @@ struct _WPEViewDRMPrivate {
     GRefPtr<GSource> eventSource;
     OptionSet<UpdateFlags> updateFlags;
     std::unique_ptr<RunLoop::Timer> cursorUpdateTimer;
+    unsigned shmFrameNumber { 0 };
+    Vector<std::optional<Vector<WPERectangle>>> shmDamageHistory;
 };
 WEBKIT_DEFINE_FINAL_TYPE(WPEViewDRM, wpe_view_drm, WPE_TYPE_VIEW, WPEView)
 
@@ -142,10 +146,33 @@ static void wpeViewDRMDispose(GObject* object)
     G_OBJECT_CLASS(wpe_view_drm_parent_class)->dispose(object);
 }
 
-static WPE::DRM::Buffer* drmBufferCreateDMABuf(WPEView* view, WPEBuffer* buffer, bool modifiersSupported, GError** error)
+static WPE::DRM::Buffer* drmBufferAttach(WPEBuffer* buffer, struct gbm_bo* bo, GError** error)
 {
-    auto* device = wpe_display_drm_get_device(WPE_DISPLAY_DRM(wpe_view_get_display(view)));
+    auto drmBuffer = WPE::DRM::Buffer::create(bo);
+    if (!drmBuffer) {
+        g_set_error_literal(error, WPE_VIEW_ERROR, WPE_VIEW_ERROR_RENDER_FAILED, "Failed to render buffer: failed to create DRM frame buffer");
+        gbm_bo_destroy(bo);
+        return nullptr;
+    }
+
+    auto* drmBufferPtr = drmBuffer.get();
+    wpe_buffer_set_user_data(buffer, drmBuffer.release(), reinterpret_cast<GDestroyNotify>(+[](void* userData) {
+        delete static_cast<WPE::DRM::Buffer*>(userData);
+    }));
+    return drmBufferPtr;
+}
+
+static WPE::DRM::Buffer* drmBufferCreateDMABuf(WPEView* view, WPEBuffer* buffer, GError** error)
+{
+    auto* display = WPE_DISPLAY_DRM(wpe_view_get_display(view));
     auto* dmaBuffer = WPE_BUFFER_DMA_BUF(buffer);
+    if (!wpeDisplayDRMGetPrimaryPlane(display).supportsFormat(wpe_buffer_dma_buf_get_format(dmaBuffer), wpe_buffer_dma_buf_get_modifier(dmaBuffer))) {
+        g_set_error_literal(error, WPE_VIEW_ERROR, WPE_VIEW_ERROR_RENDER_FAILED, "Failed to render buffer: buffer format is not supported by DRM plane");
+        return nullptr;
+    }
+
+    auto* device = wpe_display_drm_get_device(display);
+    bool modifiersSupported = wpe_display_drm_supports_modifiers(display);
     struct gbm_bo* bo;
     if (modifiersSupported) {
         auto planeCount = wpe_buffer_dma_buf_get_n_planes(dmaBuffer);
@@ -187,27 +214,139 @@ static WPE::DRM::Buffer* drmBufferCreateDMABuf(WPEView* view, WPEBuffer* buffer,
         return nullptr;
     }
 
-    auto drmBuffer = WPE::DRM::Buffer::create(bo);
-    if (!drmBuffer) {
-        g_set_error_literal(error, WPE_VIEW_ERROR, WPE_VIEW_ERROR_RENDER_FAILED, "Failed to render buffer: failed to create DRM frame buffer");
-        gbm_bo_destroy(bo);
+    return drmBufferAttach(buffer, bo, error);
+}
+
+static std::optional<uint32_t> scanoutFormatForSHM(const WPE::DRM::Plane& plane, WPEPixelFormat pixelFormat)
+{
+    std::array<uint32_t, 2> candidates { };
+    switch (pixelFormat) {
+    case WPE_PIXEL_FORMAT_ARGB8888:
+        candidates = { DRM_FORMAT_XRGB8888, DRM_FORMAT_ARGB8888 };
+        break;
+    }
+
+    for (auto format : candidates) {
+        if (plane.supportsFormat(format, DRM_FORMAT_MOD_LINEAR))
+            return format;
+    }
+    return std::nullopt;
+}
+
+static WPE::DRM::Buffer* drmBufferCreateSHM(WPEView* view, WPEBuffer* buffer, GError** error)
+{
+    auto* display = WPE_DISPLAY_DRM(wpe_view_get_display(view));
+    auto format = scanoutFormatForSHM(wpeDisplayDRMGetPrimaryPlane(display), wpe_buffer_shm_get_format(WPE_BUFFER_SHM(buffer)));
+    if (!format) {
+        g_set_error_literal(error, WPE_VIEW_ERROR, WPE_VIEW_ERROR_RENDER_FAILED, "Failed to render buffer: no DRM plane format for shared memory buffers");
         return nullptr;
     }
 
-    auto* drmBufferPtr = drmBuffer.get();
-    wpe_buffer_set_user_data(buffer, drmBuffer.release(), reinterpret_cast<GDestroyNotify>(+[](void* userData) {
-        delete static_cast<WPE::DRM::Buffer*>(userData);
-    }));
-    return drmBufferPtr;
+    auto* bo = gbm_bo_create(wpe_display_drm_get_device(display), wpe_buffer_get_width(buffer), wpe_buffer_get_height(buffer), *format, GBM_BO_USE_SCANOUT | GBM_BO_USE_LINEAR);
+    if (!bo) {
+        g_set_error_literal(error, WPE_VIEW_ERROR, WPE_VIEW_ERROR_RENDER_FAILED, "Failed to render buffer: failed to create scanout buffer");
+        return nullptr;
+    }
+
+    return drmBufferAttach(buffer, bo, error);
 }
 
-static WPE::DRM::Buffer* drmBufferCreate(WPEView* view, WPEBuffer* buffer, bool modifiersSupported, GError** error)
+static GQuark shmLastCopiedFrameQuark()
+{
+    static GQuark quark = g_quark_from_static_string("wpe-view-drm-shm-last-copied-frame");
+    return quark;
+}
+
+static constexpr size_t maximumSHMDamageHistory = 4;
+
+static void recordFrameDamage(WPEViewDRM* view, std::optional<Vector<WPERectangle>>&& damage)
+{
+    auto* priv = view->priv;
+    priv->shmFrameNumber++;
+    priv->shmDamageHistory.append(WTF::move(damage));
+    if (priv->shmDamageHistory.size() > maximumSHMDamageHistory)
+        priv->shmDamageHistory.removeAt(0);
+}
+
+static Vector<WPERectangle> shmCopyRegion(WPEViewDRM* view, WPEBuffer* buffer)
+{
+    auto* priv = view->priv;
+    int width = wpe_buffer_get_width(buffer);
+    int height = wpe_buffer_get_height(buffer);
+    Vector<WPERectangle> fullFrame { { 0, 0, width, height } };
+
+    unsigned lastCopiedFrame = GPOINTER_TO_UINT(g_object_get_qdata(G_OBJECT(buffer), shmLastCopiedFrameQuark()));
+    size_t age = priv->shmFrameNumber - lastCopiedFrame;
+    if (!lastCopiedFrame || age > priv->shmDamageHistory.size())
+        return fullFrame;
+
+    Vector<WPERectangle> region;
+    uint64_t damagedArea = 0;
+    for (const auto& damage : priv->shmDamageHistory.span().last(age)) {
+        if (!damage)
+            return fullFrame;
+
+        for (const auto& rect : *damage) {
+            int x = std::clamp(rect.x, 0, width);
+            int y = std::clamp(rect.y, 0, height);
+            int right = std::clamp<int64_t>(static_cast<int64_t>(rect.x) + rect.width, x, width);
+            int bottom = std::clamp<int64_t>(static_cast<int64_t>(rect.y) + rect.height, y, height);
+            if (x == right || y == bottom)
+                continue;
+            region.append({ x, y, right - x, bottom - y });
+            damagedArea += static_cast<uint64_t>(right - x) * (bottom - y);
+        }
+    }
+
+    if (damagedArea * 2 >= static_cast<uint64_t>(width) * height)
+        return fullFrame;
+    return region;
+}
+
+static bool drmBufferCopySHM(const WPE::DRM::Buffer& drmBuffer, WPEBufferSHM* buffer, std::span<const WPERectangle> region, GError** error)
+{
+    auto* bo = drmBuffer.bufferObject();
+    uint32_t width = gbm_bo_get_width(bo);
+    uint32_t height = gbm_bo_get_height(bo);
+    size_t rowSize = width * sizeof(uint32_t);
+    auto source = span(wpe_buffer_shm_get_data(buffer));
+    size_t sourceStride = wpe_buffer_shm_get_stride(buffer);
+    if (sourceStride < rowSize || source.size() < sourceStride * (height - 1) + rowSize) {
+        g_set_error_literal(error, WPE_VIEW_ERROR, WPE_VIEW_ERROR_RENDER_FAILED, "Failed to render buffer: shared memory buffer is too small");
+        return false;
+    }
+
+    uint32_t stride = 0;
+    void* mapData = nullptr;
+    bool isFullFrame = region.size() == 1 && !region[0].x && !region[0].y && static_cast<uint32_t>(region[0].width) == width && static_cast<uint32_t>(region[0].height) == height;
+    auto* mappedData = gbm_bo_map(bo, 0, 0, width, height, isFullFrame ? GBM_BO_TRANSFER_WRITE : GBM_BO_TRANSFER_READ_WRITE, &stride, &mapData);
+    if (!mappedData) {
+        g_set_error_literal(error, WPE_VIEW_ERROR, WPE_VIEW_ERROR_RENDER_FAILED, "Failed to render buffer: failed to map scanout buffer");
+        return false;
+    }
+    auto unmap = makeScopeExit([&] {
+        gbm_bo_unmap(bo, mapData);
+    });
+
+    auto destination = unsafeMakeSpan(static_cast<uint8_t*>(mappedData), static_cast<size_t>(stride) * height);
+    for (const auto& rect : region) {
+        size_t offset = static_cast<size_t>(rect.x) * sizeof(uint32_t);
+        size_t size = static_cast<size_t>(rect.width) * sizeof(uint32_t);
+        for (size_t row = rect.y; row < static_cast<size_t>(rect.y) + rect.height; ++row)
+            memcpySpan(destination.subspan(row * stride + offset, size), source.subspan(row * sourceStride + offset, size));
+    }
+    return true;
+}
+
+static WPE::DRM::Buffer* drmBufferCreate(WPEView* view, WPEBuffer* buffer, GError** error)
 {
     // FIXME: check bounds.
     if (WPE_IS_BUFFER_DMA_BUF(buffer))
-        return drmBufferCreateDMABuf(view, buffer, modifiersSupported, error);
+        return drmBufferCreateDMABuf(view, buffer, error);
 
-    // FIXME: implement.
+    if (WPE_IS_BUFFER_SHM(buffer))
+        return drmBufferCreateSHM(view, buffer, error);
+
     g_set_error_literal(error, WPE_VIEW_ERROR, WPE_VIEW_ERROR_RENDER_FAILED, "Failed to render buffer: unsupported buffer");
     return nullptr;
 }
@@ -399,16 +538,6 @@ static bool wpeViewDRMCommitLegacy(WPEViewDRM* view, const WPE::DRM::Buffer& buf
     return true;
 }
 
-static std::pair<uint32_t, uint64_t> wpeBufferFormat(WPEBuffer* buffer)
-{
-    if (WPE_IS_BUFFER_DMA_BUF(buffer)) {
-        auto* dmaBuffer = WPE_BUFFER_DMA_BUF(buffer);
-        return { wpe_buffer_dma_buf_get_format(dmaBuffer), wpe_buffer_dma_buf_get_modifier(dmaBuffer) };
-    }
-
-    return { DRM_FORMAT_INVALID, DRM_FORMAT_MOD_INVALID };
-}
-
 static std::optional<uint32_t> buildDamageBlob(WPEDisplayDRM* display, const Vector<drm_mode_rect>& damageRects, GError** error)
 {
     if (damageRects.isEmpty())
@@ -454,22 +583,28 @@ static gboolean wpeViewDRMRequestUpdate(WPEViewDRM* view, GError** error)
 
 static gboolean wpeViewDRMRenderBuffer(WPEView* view, WPEBuffer* buffer, const WPERectangle* damageRects, guint nDamageRects, GError** error)
 {
+    // Recorded before anything can fail: later frames are relative to this one even if it is not shown.
+    // Shared memory buffers copied before a dma-buf frame do not know what it changed.
+    bool isSHM = WPE_IS_BUFFER_SHM(buffer);
+    recordFrameDamage(WPE_VIEW_DRM(view), isSHM && nDamageRects ? std::optional(Vector<WPERectangle>(unsafeMakeSpan(damageRects, nDamageRects))) : std::nullopt);
+
     auto* drmBuffer = static_cast<WPE::DRM::Buffer*>(wpe_buffer_get_user_data(buffer));
     if (!drmBuffer) {
-        auto* display = WPE_DISPLAY_DRM(wpe_view_get_display(view));
-        auto& plane = wpeDisplayDRMGetPrimaryPlane(display);
-        auto format = wpeBufferFormat(buffer);
-        if (!plane.supportsFormat(format.first, format.second)) {
-            g_set_error_literal(error, WPE_VIEW_ERROR, WPE_VIEW_ERROR_RENDER_FAILED, "Failed to render buffer: buffer format is not supported by DRM plane");
-            return FALSE;
-        }
-
-        drmBuffer = drmBufferCreate(view, buffer, wpe_display_drm_supports_modifiers(display), error);
+        drmBuffer = drmBufferCreate(view, buffer, error);
         if (!drmBuffer)
             return FALSE;
     }
 
-    drmBuffer->setFenceFD(UnixFileDescriptor { wpe_buffer_take_rendering_fence(buffer), UnixFileDescriptor::Adopt });
+    UnixFileDescriptor renderingFence { wpe_buffer_take_rendering_fence(buffer), UnixFileDescriptor::Adopt };
+    if (isSHM) {
+        // Shared memory buffers are rendered by the CPU, so there is no fence to wait for before the copy.
+        ASSERT(!renderingFence);
+        auto region = shmCopyRegion(WPE_VIEW_DRM(view), buffer);
+        if (!drmBufferCopySHM(*drmBuffer, WPE_BUFFER_SHM(buffer), region.span(), error))
+            return FALSE;
+        g_object_set_qdata(G_OBJECT(buffer), shmLastCopiedFrameQuark(), GUINT_TO_POINTER(WPE_VIEW_DRM(view)->priv->shmFrameNumber));
+    } else
+        drmBuffer->setFenceFD(WTF::move(renderingFence));
 
     auto* priv = WPE_VIEW_DRM(view)->priv;
     priv->pendingBuffer = buffer;
