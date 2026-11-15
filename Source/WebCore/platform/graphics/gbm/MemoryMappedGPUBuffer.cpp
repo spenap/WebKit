@@ -36,7 +36,9 @@
 #include "VivanteSuperTiledTextureInlines.h"
 #include <epoxy/egl.h>
 #include <fcntl.h>
+#if __has_include(<linux/dma-buf.h>)
 #include <linux/dma-buf.h>
+#endif
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 #include <unistd.h>
@@ -507,6 +509,7 @@ std::unique_ptr<MemoryMappedGPUBuffer::AccessScope> MemoryMappedGPUBuffer::Acces
 
 bool MemoryMappedGPUBuffer::performDMABufSyncSystemCall(OptionSet<DMABufSyncFlag> flags)
 {
+#if __has_include(<linux/dma-buf.h>)
     constexpr unsigned maxRetries = 10;
 
     struct dma_buf_sync sync;
@@ -536,6 +539,10 @@ bool MemoryMappedGPUBuffer::performDMABufSyncSystemCall(OptionSet<DMABufSyncFlag
     }
 
     return true;
+#else
+    UNUSED_PARAM(flags);
+    return false;
+#endif
 }
 
 } // namespace WebCore
