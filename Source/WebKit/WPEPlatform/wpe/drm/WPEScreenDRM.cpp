@@ -32,6 +32,8 @@
 #include <fcntl.h>
 #include <wtf/glib/GRefPtr.h>
 #include <wtf/glib/WTFGType.h>
+#include <wtf/text/StringToIntegerConversion.h>
+#include <wtf/text/StringView.h>
 #include <xf86drm.h>
 
 /**
@@ -98,6 +100,39 @@ static void wpe_screen_drm_class_init(WPEScreenDRMClass* screenDRMClass)
     screenClass->get_sync_observer = wpeScreenDRMGetSyncObserver;
 }
 
+static std::optional<drmModeModeInfo> modeFromEnvironment(const WPE::DRM::Connector& connector, const std::optional<drmModeModeInfo>& currentMode)
+{
+    const char* value = getenv("WPE_DRM_MODE");
+    auto modeString = StringView::fromLatin1(value).trim(isASCIIWhitespace);
+    if (modeString.isEmpty())
+        return std::nullopt;
+
+    auto sizeEnd = modeString.find('@');
+    auto size = modeString.left(sizeEnd);
+    auto separator = size.find('x');
+    auto width = parseInteger<uint16_t>(size.left(separator));
+    auto height = separator == notFound ? std::nullopt : parseInteger<uint16_t>(size.substring(separator + 1));
+    auto refresh = sizeEnd == notFound ? std::optional<uint32_t>(0) : parseInteger<uint32_t>(modeString.substring(sizeEnd + 1));
+    if (!width || !height || !refresh) {
+        g_warning("Invalid WPE_DRM_MODE='%s' value, expected WIDTHxHEIGHT or WIDTHxHEIGHT@REFRESH.", value);
+        return std::nullopt;
+    }
+
+    auto matches = [&](const drmModeModeInfo& mode) {
+        return !(mode.flags & DRM_MODE_FLAG_INTERLACE) && mode.hdisplay == *width && mode.vdisplay == *height && (!*refresh || mode.vrefresh == *refresh);
+    };
+    if (currentMode && matches(*currentMode))
+        return currentMode;
+    if (auto index = connector.preferredModeIndex(); index && matches(connector.modes()[*index]))
+        return connector.modes()[*index];
+    for (const auto& mode : connector.modes()) {
+        if (matches(mode))
+            return mode;
+    }
+    g_warning("WPE_DRM_MODE='%s' does not match any mode of the connector.", value);
+    return std::nullopt;
+}
+
 WPEScreen* wpeScreenDRMCreate(std::unique_ptr<WPE::DRM::Crtc>&& crtc, const WPE::DRM::Connector& connector)
 {
     auto* screen = WPE_SCREEN(g_object_new(WPE_TYPE_SCREEN_DRM, "id", crtc->id(), nullptr));
@@ -106,7 +141,9 @@ WPEScreen* wpeScreenDRMCreate(std::unique_ptr<WPE::DRM::Crtc>&& crtc, const WPE:
 
     wpe_screen_set_physical_size(screen, connector.widthMM(), connector.heightMM());
 
-    if (const auto& mode = priv->crtc->currentMode())
+    if (auto mode = modeFromEnvironment(connector, priv->crtc->currentMode()))
+        priv->mode = mode.value();
+    else if (const auto& mode = priv->crtc->currentMode())
         priv->mode = mode.value();
     else {
         if (const auto& preferredModeIndex = connector.preferredModeIndex())

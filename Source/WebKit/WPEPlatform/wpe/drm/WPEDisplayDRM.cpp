@@ -393,14 +393,10 @@ static gboolean wpeDisplayDRMSetup(WPEDisplayDRM* displayDRM, const char* device
 
     int x = crtc->x();
     int y = crtc->y();
-    int width = crtc->width();
-    int height = crtc->height();
     displayDRM->priv->screen = wpeScreenDRMCreate(WTF::move(crtc), *displayDRM->priv->connector);
-    if (!width || !height) {
-        auto* mode = wpeScreenDRMGetMode(WPE_SCREEN_DRM(displayDRM->priv->screen.get()));
-        width = mode->hdisplay;
-        height = mode->vdisplay;
-    }
+    auto* mode = wpeScreenDRMGetMode(WPE_SCREEN_DRM(displayDRM->priv->screen.get()));
+    int width = mode->hdisplay;
+    int height = mode->vdisplay;
 
     wpeScreenDRMCreateDumbBufferIfNeeded(WPE_SCREEN_DRM(displayDRM->priv->screen.get()), displayDRM->priv->fd.value(), displayDRM->priv->connector->id());
 
