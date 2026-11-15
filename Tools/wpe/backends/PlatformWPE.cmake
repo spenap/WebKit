@@ -28,7 +28,7 @@ list(APPEND WPEToolingBackends_LIBRARIES
     WPE::FDO
     XkbCommon::XkbCommon
     ${LIBEPOXY_LIBRARIES}
-    ${WAYLAND_LIBRARIES}
+    ${WAYLAND_LINK_LIBRARIES}
 )
 
 list(APPEND WPEToolingBackends_DEFINITIONS USE_GLIB=1)

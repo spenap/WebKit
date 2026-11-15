@@ -86,7 +86,7 @@ if (ENABLE_WAYLAND_TARGET)
         ${WAYLAND_INCLUDE_DIRS}
     )
     list(APPEND WebCore_LIBRARIES
-        ${WAYLAND_LIBRARIES}
+        ${WAYLAND_LINK_LIBRARIES}
     )
 endif ()
 
